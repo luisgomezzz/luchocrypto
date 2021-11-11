@@ -34,7 +34,7 @@ def main() -> None:
 
     #mazmorra - monedas que no quiero operar en orden de castigo
     #mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
-    mazmorra=['NADA'] 
+    mazmorra=['NADA '] 
 
     #alarma
     duration = 1000  # milliseconds
