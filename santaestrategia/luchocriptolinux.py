@@ -16,7 +16,7 @@ porcentajedia = 5
 
 #mazmorra - monedas que no quiero operar en orden de castigo
 mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
-#mazmorra=['LRCUSDT'] 
+#mazmorra=['LRCUSDT '] 
 
 primer_stop_loss_porc = 0.6 #porcentaje mínimo de ganancia para crear el primer stopp loss
 
