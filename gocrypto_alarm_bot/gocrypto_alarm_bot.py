@@ -37,8 +37,8 @@ def main() -> None:
     mazmorra=['NADA '] 
 
     #alarma
-    duration = 1000  # milliseconds
-    freq = 440  # Hz
+    #duration = 1000  # milliseconds
+    #freq = 440  # Hz
    
     ventana = 40 #Ventana de búsqueda en minutos.   
 
@@ -54,7 +54,7 @@ def main() -> None:
     mandomensaje ("Starting... ",chatid)
     try:
 
-        while 1==1:#dt.datetime.today().hour >=10 and dt.datetime.today().hour <=16: #horario en donde las oportunidades no son tan volátiles. Además no jugar sábados y domingos.
+        while True:
 
           porcentaje=porcentajedia
              
@@ -79,17 +79,25 @@ def main() -> None:
 
                         trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)
 
-                        precioanterior = float(min(trades, key=lambda x:x['p'])['p'])
+                        preciomenor = float(min(trades, key=lambda x:x['p'])['p'])
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
                         preciomayor = float(max(trades, key=lambda x:x['p'])['p'])        
 
-                        if ((precioactual - precioanterior)*(100/precioanterior))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
-                            print("\rOportunidad "+par+" Subió un",round(((precioactual - precioanterior)*(100/precioanterior)),2),"%\033[K")
-                            os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+                        if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
+                            #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
                             #input("Press Enter to continue...")     
-                            mensaje=par+" up "+str(round(((precioactual - precioanterior)*(100/precioanterior)),2))+"%"
+                            mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"%"
+                            print (mensaje)
                             mandomensaje (mensaje,idgrupo)
-                            mandomensaje (mensaje,chatid)  
+                            mandomensaje (mensaje,chatid) 
+
+                        if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
+                            #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+                            #input("Press Enter to continue...")     
+                            mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"%"
+                            print (mensaje)
+                            mandomensaje (mensaje,idgrupo)
+                            mandomensaje (mensaje,chatid) 
                         
                         sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
                         sys.stdout.flush()
