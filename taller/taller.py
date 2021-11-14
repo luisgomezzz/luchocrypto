@@ -1,23 +1,19 @@
 #modulo de ordenes
 from binance.client import Client
 import os
-import math
 import ccxt
 from pprint import pprint
 import datetime as dt
-from datetime import datetime
-from datetime import timedelta
-import pandas as pd
-import requests
+import talib
+import numpy as np
+from datetime import datetime, date, time, timedelta
 
 os.system("clear")
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='BTCSTUSDT'
-duration = 1000  # milliseconds
-freq = 440  # Hz
-os.system("clear")
+par ='BTCUSDT'
+
 client = Client(binance_api, binance_secret)
 exchange_info = client.futures_exchange_info()
 exchange = ccxt.binance({
@@ -29,13 +25,18 @@ exchange = ccxt.binance({
    },
 })
 
-comienzo = datetime.now() - timedelta(minutes=1)
-comienzoms = int(comienzo.timestamp() * 1000)
-finalms = int(datetime.now().timestamp() * 1000)
+#------------------------------------------------------------------------------------------
 
-trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)
+now = datetime.now() # current date and time
+hoy = now.strftime("%d %b %Y")
 
-precioanterior = float(min(trades, key=lambda x:x['p'])['p'])
+haceNdias=(now-timedelta(days=300)).strftime("%d %b %Y")
 
-print(trades)           
-print(precioanterior)
+candles = client.get_historical_klines(par,Client.KLINE_INTERVAL_1DAY,haceNdias,hoy)
+
+all4th = [el[4] for el in candles]
+
+np_float_data = np.array([float(x) for x in all4th])
+np_out=talib.RSI(np_float_data)
+
+print(np_out[-1])
