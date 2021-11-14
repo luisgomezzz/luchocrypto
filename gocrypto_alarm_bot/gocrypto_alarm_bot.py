@@ -86,7 +86,7 @@ def main() -> None:
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
                             #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
                             #input("Press Enter to continue...")     
-                            mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"%"+ventana+"minutes"
+                            mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% "+ventana+" minutes"
                             print (mensaje)
                             mandomensaje (mensaje,idgrupo)
                             mandomensaje (mensaje,chatid) 
@@ -94,7 +94,7 @@ def main() -> None:
                         if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
                             #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
                             #input("Press Enter to continue...")     
-                            mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"%"+ventana+"minutes"
+                            mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% "+ventana+" minutes"
                             print (mensaje)
                             mandomensaje (mensaje,idgrupo)
                             mandomensaje (mensaje,chatid) 
