@@ -102,12 +102,11 @@ def main() -> None:
 
                         preciomenor = float(min(trades, key=lambda x:x['p'])['p'])
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
-                        preciomayor = float(max(trades, key=lambda x:x['p'])['p'])        
+                        preciomayor = float(max(trades, key=lambda x:x['p'])['p'])
 
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
                             #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
                             #input("Press Enter to continue...")     
-                            print("paso")
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI14: "+str(truncate(rsi14(client,par),2))
                             print (mensaje)
                             mandomensaje (mensaje,idgrupo)
@@ -116,7 +115,6 @@ def main() -> None:
                         if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
                             #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
                             #input("Press Enter to continue...")     
-                            print("paso")
                             mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI14: "+str(truncate(rsi14(client,par),2))
                             print (mensaje)
                             mandomensaje (mensaje,idgrupo)
