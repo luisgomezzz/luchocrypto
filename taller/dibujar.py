@@ -10,16 +10,9 @@ from argparse import ArgumentParser
 from bob_telegram_tools.bot import TelegramBot
 import matplotlib.pyplot as plt
 
-
 token = '2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g'
 user_id = '@gofrecrypto'
 bot = TelegramBot(token, user_id)
-
-
-# This method delete the generetad image
-#bot.clean_tmp_dir()
-
-
 
 def createZigZagPoints(dfSeries, minSegSize=0.1, sizeInDevs=0.5):
 	minRetrace = minSegSize
@@ -117,10 +110,10 @@ for ticker in tickers:
 					if (endx>x_max):
 						x_max=endx
 					plt.hlines(y=sum/len(values), xmin=startx, xmax=endx, linewidth=1, color='r')
-		bot.send_plot(plt)	
+		#bot.send_plot(plt)	
 		if (x_max>args.min):
 			plt.title(ticker)
-			#plt.show()
+			plt.show()
 		plt.clf()
 		plt.cla()
 		plt.close()

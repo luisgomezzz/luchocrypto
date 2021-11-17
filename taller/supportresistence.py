@@ -73,4 +73,5 @@ def supportresistance(par):
 
 #########################################################################
 
-salida=supportresistance("BTCUS")
+salida=supportresistance("BTCUSDT")
+print(salida)
