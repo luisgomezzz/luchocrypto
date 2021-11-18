@@ -48,7 +48,7 @@ args = parser.parse_args()
 
 #S&P 500 Tickers
 if (args.tickers=="SPY500"):
-	tickers = ['BTC-USD']
+	tickers = ['ONGC-USD']
 else:
 	tickers = args.tickers.split(",")
 

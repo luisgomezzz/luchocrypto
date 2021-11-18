@@ -73,5 +73,5 @@ def supportresistance(par):
 
 #########################################################################
 
-salida=supportresistance("BTCUSDT")
+salida=supportresistance("ONT-USD")
 print(salida)
