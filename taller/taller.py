@@ -3,16 +3,20 @@ from binance.client import Client
 import os
 import ccxt
 from pprint import pprint
-import datetime as dt
-import talib
-import numpy as np
 from datetime import datetime, date, time, timedelta
-
+import pandas as pd
+################
+import sys
+sys.path.insert(1,'/home/lucho/PERSONALREPO/luchocrypto/')
+import tradeando as tr
+import pandas_ta as ta
+import matplotlib.pyplot as plt   # needs pip install
+################3
 os.system("clear")
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='BTCUSDT'
+par ='ETHUSDT'
 
 client = Client(binance_api, binance_secret)
 exchange_info = client.futures_exchange_info()
@@ -25,18 +29,4 @@ exchange = ccxt.binance({
    },
 })
 
-#------------------------------------------------------------------------------------------
 
-now = datetime.now() # current date and time
-hoy = now.strftime("%d %b %Y")
-
-haceNdias=(now-timedelta(days=300)).strftime("%d %b %Y")
-
-candles = client.get_historical_klines(par,Client.KLINE_INTERVAL_1DAY,haceNdias,hoy)
-
-all4th = [el[4] for el in candles]
-
-np_float_data = np.array([float(x) for x in all4th])
-np_out=talib.RSI(np_float_data)
-
-print(np_out[-1])
