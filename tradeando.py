@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 import math
+from pkg_resources import ensure_directory
 import yfinance
 import matplotlib.dates as mpl_dates
 import pandas as pd
@@ -14,6 +15,7 @@ from mplfinance.original_flavor import candlestick2_ohlc
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import ccxt
+import talib.abstract as tl
 import pandas_ta as ta
 
 def truncate(number, digits) -> float:
@@ -184,3 +186,41 @@ def dibujo(par) -> plt:
             #plt.cla()
             #plt.close()
         except Exception as e: print(e)        
+
+def ema(par, period, posi =-1, field='close' ):   
+    #posi: -1 indicates last position
+    exchange=ccxt.binance()
+    bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=300)
+    df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
+    return tl.EMA(df, timeperiod=period, price=field).iloc[posi]    
+
+def ema3(par, posi =-1, short=50, medium=100, large=150, field='close' ):   
+    #posi: -1 indicates last position
+    exchange=ccxt.binance()
+    bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=300)
+    df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
+    return [tl.EMA(df, timeperiod=short, price=field).iloc[posi],tl.EMA(df, timeperiod=medium, price=field).iloc[posi],tl.EMA(df, timeperiod=large, price=field).iloc[posi]]
+           
+def estrategia3emas (par):
+    output=False
+    now=ema3(par,-1)
+    minago=ema3(par,-30)
+
+    myradiansshort = math.atan2(minago[0]-now[0],30)
+    mydegreesshort = math.degrees(myradiansshort)
+
+    myradiansmedium = math.atan2(minago[1]-now[1],30)
+    mydegreesmedium = math.degrees(myradiansmedium)
+
+    myradianslarge = math.atan2(minago[2]-now[2],30)
+    mydegreeslarge = math.degrees(myradianslarge)
+
+    #si el angulo esta entre 60 y 30 y entre ellos no difiere en mas de 10 grados
+    if 60 <= mydegreesshort <= 30:
+        if abs(mydegreesshort - mydegreesmedium) < 10:
+            if abs(mydegreesmedium - mydegreeslarge) < 10:
+                output=True
+            else:
+                output=False
+    
+    return output
