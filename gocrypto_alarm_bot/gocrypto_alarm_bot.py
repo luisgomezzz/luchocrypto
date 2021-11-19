@@ -90,6 +90,9 @@ def main() -> None:
                             botlaburo.send_plot(tr.dibujo(par))
                             botamigos.send_plot(tr.dibujo(par))
                             botlaburo.send_text(tr.supportresistance(par))
+                        
+                        if tr.estrategia3emas (par) == True:
+                            botlaburo.send_text("estrategia 3 gemas")
 
                         sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
                         sys.stdout.flush()
