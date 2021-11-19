@@ -1,7 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
 import math
-from pkg_resources import ensure_directory
 import yfinance
 import matplotlib.dates as mpl_dates
 import pandas as pd
@@ -17,6 +16,15 @@ import matplotlib.pyplot as plt
 import ccxt
 import talib.abstract as tl
 import pandas_ta as ta
+from os import system, name
+
+def clear():  
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
 
 def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
@@ -174,7 +182,7 @@ def dibujo(par) -> plt:
                         for value in values:
                             sum = sum + value
                         if (endx>x_max):
-                            x_max=endx
+                           x_max=endx
                         plt.hlines(y=sum/len(values), xmin=startx, xmax=endx, linewidth=1, color='r')
             #botlaburo.send_plot(plt)
             #botamigos.send_plot(plt)	

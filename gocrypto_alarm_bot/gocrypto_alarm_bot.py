@@ -1,13 +1,12 @@
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import sys
-import os
 import pandas as pd
 pd.core.common.is_list_like = pd.api.types.is_list_like
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 from bob_telegram_tools.bot import TelegramBot
-sys.path.insert(1,'/home/lucho/PERSONALREPO/luchocrypto/')
+sys.path.insert(1,'./')
 import tradeando as tr
 import ccxt
 
@@ -39,7 +38,7 @@ def main() -> None:
     client = Client(binance_api, binance_secret)
 
     #*****************************************************PROGRAMA PRINCIPAL *************************************************************
-    os.system("clear")
+    tr.clear()
 
     lista_de_monedas = client.futures_exchange_info()['symbols']
     
@@ -97,11 +96,14 @@ def main() -> None:
                         sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
                         sys.stdout.flush()
                         
+                    except KeyboardInterrupt:
+                        print("\rSalida solicitada.\033[K")
+                        sys.exit()
                     except:
                         sys.stdout.write("\rFalla típica de conexión catcheada...:D\033[K")
                         sys.stdout.flush()
                         pass
-
+                    
                 except KeyboardInterrupt:
                    print("\rSalida solicitada.\033[K")
                    sys.exit()            
