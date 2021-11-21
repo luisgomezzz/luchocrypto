@@ -17,6 +17,26 @@ import ccxt
 import talib.abstract as tl
 import pandas_ta as ta
 from os import system, name
+import ccxt
+import os
+
+def historicdf(par):
+    ## Datos para indicadores que precisan muchos días hacia atrás para su análisis.
+    exchange=ccxt.binance()
+    barsindicators = exchange.fetch_ohlcv(par,timeframe='1d',limit=300)
+    dfindicators = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+    return dfindicators
+
+def sound():
+    duration = 1000  # milliseconds
+    freq = 440  # Hz
+
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
 
 def clear():  
     # for windows
@@ -77,12 +97,6 @@ def supportresistance(par):
         pass
 
     return output            
-
-def rsi14 (par) -> float:
-    exchange=ccxt.binance()
-    bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=20160)
-    df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
-    return float(df.ta.rsi().iloc[-1])
 
 def createZigZagPoints(dfSeries, minSegSize=0.1, sizeInDevs=0.5):
 
@@ -193,42 +207,4 @@ def dibujo(par) -> plt:
             #plt.clf()
             #plt.cla()
             #plt.close()
-        except Exception as e: print(e)        
-
-def ema(par, period, posi =-1, field='close' ):   
-    #posi: -1 indicates last position
-    exchange=ccxt.binance()
-    bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=300)
-    df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
-    return tl.EMA(df, timeperiod=period, price=field).iloc[posi]    
-
-def ema3(par, posi =-1, short=50, medium=100, large=150, field='close' ):   
-    #posi: -1 indicates last position
-    exchange=ccxt.binance()
-    bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=300)
-    df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
-    return [tl.EMA(df, timeperiod=short, price=field).iloc[posi],tl.EMA(df, timeperiod=medium, price=field).iloc[posi],tl.EMA(df, timeperiod=large, price=field).iloc[posi]]
-           
-def estrategia3emas (par):
-    output=False
-    now=ema3(par,-1)
-    minago=ema3(par,-30)
-
-    myradiansshort = math.atan2(minago[0]-now[0],30)
-    mydegreesshort = math.degrees(myradiansshort)
-
-    myradiansmedium = math.atan2(minago[1]-now[1],30)
-    mydegreesmedium = math.degrees(myradiansmedium)
-
-    myradianslarge = math.atan2(minago[2]-now[2],30)
-    mydegreeslarge = math.degrees(myradianslarge)
-
-    #si el angulo esta entre 60 y 30 y entre ellos no difiere en mas de 10 grados
-    if 60 <= mydegreesshort <= 30:
-        if abs(mydegreesshort - mydegreesmedium) < 10:
-            if abs(mydegreesmedium - mydegreeslarge) < 10:
-                output=True
-            else:
-                output=False
-    
-    return output
+        except Exception as e: print(e)      
