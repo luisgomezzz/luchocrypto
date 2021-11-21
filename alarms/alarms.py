@@ -97,11 +97,11 @@ def main() -> None:
                         df=tr.historicdf(par,timeframe=period, limit=300) ## Datos históricos para alarmas relacionadas con indicadores.
 
                         #Oversell and overbuy alert
-                        if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
-                            botlaburo.send_text(par+" Oversell "+period)
-                        else:
-                            if (tr.truncate(df.ta.rsi().iloc[-1],2))>70:
-                                botlaburo.send_text(par+" Overbuy "+period)
+                        #if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
+                        #    botlaburo.send_text(par+" Oversell "+period)
+                        #else:
+                        #    if (tr.truncate(df.ta.rsi().iloc[-1],2))>70:
+                        #        botlaburo.send_text(par+" Overbuy "+period)
 
                         #RSI crosses
                         if ta.xsignals(df.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1]!=0:
@@ -125,7 +125,7 @@ def main() -> None:
                             botlaburo.send_text(par+" The blue line crosses below the white one and then above. LONG!!"+period)                            
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
                                 botlaburo.send_text("LONG!!!")
-                                
+
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
