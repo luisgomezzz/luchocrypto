@@ -76,20 +76,20 @@ def main() -> None:
                         
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(suddendf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
-                            botamigos.send_text(mensaje)                            
-                            botamigos.send_plot(tr.dibujo(par))
+                            dibu, lista = tr.dibujo(par,0)
+                            botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
+                            botamigos.send_plot(dibu)
                             #para mi
-                            botlaburo.send_text(mensaje)
-                            botlaburo.send_plot(tr.dibujo(par))
-                            botlaburo.send_text(tr.supportresistance(par))
+                            botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
+                            botlaburo.send_plot(dibu)
                         if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
                             mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(suddendf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
-                            botamigos.send_text(mensaje)                            
-                            botamigos.send_plot(tr.dibujo(par))
+                            dibu, lista = tr.dibujo(par,0)
+                            botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
+                            botamigos.send_plot(dibu)
                             #para mi
-                            botlaburo.send_text(mensaje)
-                            botlaburo.send_plot(tr.dibujo(par))
-                            botlaburo.send_text(tr.supportresistance(par))                        
+                            botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
+                            botlaburo.send_plot(dibu)
                         sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
                         sys.stdout.flush()
 
@@ -117,11 +117,15 @@ def main() -> None:
                             botlaburo.send_text(par+" RSI crosses below 30 and then above 70. EXIT "+period)
 
                         #SMAs crosses                        
-                        if ta.xsignals(df.ta.sma(21), df.ta.sma(50), df.ta.sma(50),above=True)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" The first SMA crosses above the second SMA and then below. "+period)
-                        if ta.xsignals(df.ta.sma(21), df.ta.sma(50), df.ta.sma(50),above=False)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" The first SMA crosses below the second SMA and then above. "+period)                            
-
+                        if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" The blue line crosses above the white one and then below. "+period)
+                            if (tr.truncate(df.ta.rsi().iloc[-1],2))>70:
+                                botlaburo.send_text("SHORT!!!")
+                        if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=False)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" The blue line crosses below the white one and then above. LONG!!"+period)                            
+                            if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
+                                botlaburo.send_text("LONG!!!")
+                                
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
