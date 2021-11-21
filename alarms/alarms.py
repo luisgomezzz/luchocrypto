@@ -96,30 +96,35 @@ def main() -> None:
                         sys.stdout.flush()
 
                         #ALARMA DE SOBRECOMPRA O SOBREVENTA
-                        if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))<30:
-                            botlaburo.send_text(par+"sobreventa")
-                        else:
-                            if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))>70:
-                                botlaburo.send_text(par+"sobrecompra")
+
+                        #if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))<30:
+                        #    botlaburo.send_text(par+" Sobreventa")
+                        #else:
+                        #    if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))>70:
+                        #        botlaburo.send_text(par+" Sobrecompra")
 
                         #ALARMAS DE CRUCES
                         #cruces de RSI
                         if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1]!=0:
-                            # Returns tsignal DataFrame when RSI crosses above 30 and then below 70
-                            botlaburo.send_text(par+"RSI crosses above 30 and then below 70.")
-                            print(ta.xsignals(historicdf.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1])
+                            botlaburo.send_text(par+" RSI crosses above 30 and then below 70. ENTRY")
+
+                        if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=True)['TS_Exits'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" RSI crosses above 30 and then below 70. EXIT")
+                           
                         if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=False)['TS_Entries'].iloc[-1]!=0:
-                            # Returns tsignal DataFrame when RSI crosses below 30 and then above 70
-                            botlaburo.send_text(par+"RSI crosses below 30 and then above 70.")
-                            print(ta.xsignals(historicdf.ta.rsi(), 30, 70, above=False)['TS_Entries'].iloc[-1])
+                            botlaburo.send_text(par+" RSI crosses below 30 and then above 70. ENTRY")
+
+                        if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=False)['TS_Exits'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" RSI crosses below 30 and then above 70. EXIT")
 
                         #cruces entre 2 SMAs
-                        if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+"The first SMA crosses above the second SMA and then below.")
-                            print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1])
-                        if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+"The first SMA crosses below the second SMA and then above.")                            
-                            print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1])
+                        
+                        #if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1]!=0:
+                        #    botlaburo.send_text(par+" The first SMA crosses above the second SMA and then below.")
+                        #    print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1])
+                        #if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1]!=0:
+                        #    botlaburo.send_text(par+" The first SMA crosses below the second SMA and then above.")                            
+                        #    print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1])
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
