@@ -20,10 +20,10 @@ from os import system, name
 import ccxt
 import os
 
-def historicdf(par):
-    ## Datos para indicadores que precisan muchos días hacia atrás para su análisis.
+def historicdf(pair,timeframe,limit):
+    ## Datos para indicadores
     exchange=ccxt.binance()
-    barsindicators = exchange.fetch_ohlcv(par,timeframe='1d',limit=300)
+    barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
     dfindicators = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
     return dfindicators
 
@@ -64,18 +64,18 @@ def supportresistance(par):
     try:
         ticker = yfinance.Ticker(name)
         df = ticker.history(interval="1d",start=haceNdias, end=hoy)
-        df['time'] = pd.to_datetime(df.index)
-        df['time'] = df['time'].apply(mpl_dates.date2num)
-        df = df.loc[:,['time', 'open', 'high', 'low', 'close']]
+        df['Date'] = pd.to_datetime(df.index)
+        df['Date'] = df['Date'].apply(mpl_dates.date2num)
+        df = df.loc[:,['Date', 'Open', 'High', 'Low', 'Close']]
 
         def isSupport(df,i):
-            support = df['low'][i] < df['low'][i-1]  and df['low'][i] < df['low'][i+1] and df['low'][i+1] < df['low'][i+2] and df['low'][i-1] < df['low'][i-2]
+            support = df['Low'][i] < df['Low'][i-1]  and df['Low'][i] < df['Low'][i+1] and df['Low'][i+1] < df['Low'][i+2] and df['Low'][i-1] < df['Low'][i-2]
             return support
         def isResistance(df,i):
-            resistance = df['high'][i] > df['high'][i-1]  and df['high'][i] > df['high'][i+1] and df['high'][i+1] > df['high'][i+2] and df['high'][i-1] > df['high'][i-2]
+            resistance = df['High'][i] > df['High'][i-1]  and df['High'][i] > df['High'][i+1] and df['High'][i+1] > df['High'][i+2] and df['High'][i-1] > df['High'][i-2]
             return resistance
 
-        s =  np.mean(df['high'] - df['low'])
+        s =  np.mean(df['High'] - df['Low'])
 
         def isFarFromLevel(l):
             return np.sum([abs(l-x) < s  for x in levels]) == 0
@@ -83,11 +83,11 @@ def supportresistance(par):
         levels = []
         for i in range(2,df.shape[0]-2):
             if isSupport(df,i):
-                l = df['low'][i]
+                l = df['Low'][i]
                 if isFarFromLevel(l):
                     levels.append((i,l))
             elif isResistance(df,i):
-                l = df['high'][i]
+                l = df['High'][i]
                 if isFarFromLevel(l):
                     levels.append((i,l))
             
@@ -122,7 +122,7 @@ def createZigZagPoints(dfSeries, minSegSize=0.1, sizeInDevs=0.5):
 	return(dfRes)
 
 def dibujo(par) -> plt:
-    name = par
+    name = par.replace("USDT", "-USD")
 
     parser = ArgumentParser(description='Algorithmic Support and Resistance')
     parser.add_argument('-t', '--tickers', default='SPY500', type=str, required=False, help='Used to look up a specific tickers. Commma seperated. Example: MSFT,AAPL,AMZN default: List of S&P 500 companies')
@@ -140,43 +140,28 @@ def dibujo(par) -> plt:
     else:
         tickers = args.tickers.split(",")
 
-
-    print("aca1")
-
     connected = False
     while not connected:
         try:
-            exchange=ccxt.binance()
-            barsindicators = exchange.fetch_ohlcv(par,timeframe='1d',limit=300)
-            ticker_df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+            ticker_df = web.get_data_yahoo(tickers, period = args.period, interval = args.interval)
             ticker_df = ticker_df.reset_index()
-
-            #ticker_df = web.get_data_yahoo(tickers, period = args.period, interval = args.interval)
-            #ticker_df = ticker_df.reset_index()
             connected = True
         except Exception as e:
             print("type error: " + str(e))
             time.sleep(5)
             pass
 
-    print("aca2")
     for ticker in tickers:
         print ("\n\n" + ticker)
         try:
-            print("aca3")
             x_max = 0
             fig, ax = plt.subplots()
-            print("aca4")
             if(len(tickers)!=1):
-                print("aca5")
                 dfRes = createZigZagPoints(ticker_df.Close[ticker]).dropna()
-                candlestick2_ohlc(ax,ticker_df['open'][ticker],ticker_df['high'][ticker],ticker_df['low'][ticker],ticker_df['close'][ticker],width=0.6, colorup='g', colordown='r')
+                candlestick2_ohlc(ax,ticker_df['Open'][ticker],ticker_df['High'][ticker],ticker_df['Low'][ticker],ticker_df['Close'][ticker],width=0.6, colorup='g', colordown='r')
             else:
-                print("aca6")
                 dfRes = createZigZagPoints(ticker_df.Close).dropna()
-                print("aca7")
-                candlestick2_ohlc(ax,ticker_df['open'],ticker_df['high'],ticker_df['low'],ticker_df['close'],width=0.6, colorup='g', colordown='r')
-            
+                candlestick2_ohlc(ax,ticker_df['Open'],ticker_df['High'],ticker_df['Low'],ticker_df['Close'],width=0.6, colorup='g', colordown='r')
             
             plt.plot(dfRes['Value'])
             removed_indexes = []
