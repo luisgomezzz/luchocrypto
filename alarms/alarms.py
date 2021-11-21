@@ -9,6 +9,7 @@ from bob_telegram_tools.bot import TelegramBot
 sys.path.insert(1,'./')
 import tradeando as tr
 import ccxt
+import pandas_ta as ta
 
 chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
@@ -63,7 +64,7 @@ def main() -> None:
                         volumen24h=0
 
                     try:
-                        
+                        ## Datos para dentro de los últimos minutos para la alarma de movimientos bruscos.
                         exchange=ccxt.binance()
                         bars = exchange.fetch_ohlcv(par,timeframe='1m',limit=ventana)
                         df = pd.DataFrame(bars,columns=['time','open','high','low','close','volume'])
@@ -71,36 +72,60 @@ def main() -> None:
                         preciomayor=float(max(df['high']))
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
 
+                        ## Datos históricos para alarmas relacionadas con indicadores.
+                        historicdf=tr.historicdf(par)
+
+                        #ALARMA DE MOVIEMIENTOS BRUSCOS
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
-                            #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
-                            #input("Press Enter to continue...")
-                            mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(tr.rsi14(par),2))+". Price: "+str(precioactual)
-                            botlaburo.send_text(mensaje)
+                            mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(historicdf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
                             botamigos.send_text(mensaje)                            
-                            botlaburo.send_plot(tr.dibujo(par))
                             botamigos.send_plot(tr.dibujo(par))
+                            #####################################para mi
+                            botlaburo.send_text(mensaje)
+                            botlaburo.send_plot(tr.dibujo(par))
                             botlaburo.send_text(tr.supportresistance(par))
                         if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
-                            #os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
-                            #input("Press Enter to continue...")     
-                            mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(tr.rsi14(par),2))+". Price: "+str(precioactual)
-                            botlaburo.send_text(mensaje)
-                            botamigos.send_text(mensaje)
-                            botlaburo.send_plot(tr.dibujo(par))
+                            mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(historicdf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
+                            botamigos.send_text(mensaje)                            
                             botamigos.send_plot(tr.dibujo(par))
-                            botlaburo.send_text(tr.supportresistance(par))
-                        
-                        if tr.estrategia3emas (par) == True:
-                            botlaburo.send_text("estrategia 3 gemas")
-
+                            #####################################para mi
+                            botlaburo.send_text(mensaje)
+                            botlaburo.send_plot(tr.dibujo(par))
+                            botlaburo.send_text(tr.supportresistance(par))                        
                         sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
                         sys.stdout.flush()
-                        
+
+                        #ALARMA DE SOBRECOMPRA O SOBREVENTA
+                        if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))<30:
+                            botlaburo.send_text(par+"sobreventa")
+                        else:
+                            if (tr.truncate(historicdf.ta.rsi().iloc[-1],2))>70:
+                                botlaburo.send_text(par+"sobrecompra")
+
+                        #ALARMAS DE CRUCES
+                        #cruces de RSI
+                        if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1]!=0:
+                            # Returns tsignal DataFrame when RSI crosses above 30 and then below 70
+                            botlaburo.send_text(par+"RSI crosses above 30 and then below 70.")
+                            print(ta.xsignals(historicdf.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1])
+                        if ta.xsignals(historicdf.ta.rsi(), 30, 70, above=False)['TS_Entries'].iloc[-1]!=0:
+                            # Returns tsignal DataFrame when RSI crosses below 30 and then above 70
+                            botlaburo.send_text(par+"RSI crosses below 30 and then above 70.")
+                            print(ta.xsignals(historicdf.ta.rsi(), 30, 70, above=False)['TS_Entries'].iloc[-1])
+
+                        #cruces entre 2 SMAs
+                        if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+"The first SMA crosses above the second SMA and then below.")
+                            print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=True)['TS_Entries'].iloc[-1])
+                        if ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+"The first SMA crosses below the second SMA and then above.")                            
+                            print(ta.xsignals(historicdf.ta.sma(21), historicdf.ta.sma(50), historicdf.ta.sma(50),above=False)['TS_Entries'].iloc[-1])
+
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
-                    except:
-                        sys.stdout.write("\rFalla típica de conexión catcheada...:D\033[K")
+                    except Exception as falla:
+                        sys.stdout.write("\rFALLA:"+str(falla)+"\033[K")
                         sys.stdout.flush()
                         pass
                     
