@@ -27,6 +27,10 @@ def historicdf(pair,timeframe,limit):
     dfindicators = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
     return dfindicators
 
+def np_vwap(pair):
+    df = historicdf(pair,timeframe='1h',limit=24)
+    return np.cumsum(df.volume*(df.high+df.low+df.close)/3) / np.cumsum(df.volume)
+
 def sound():
     duration = 1000  # milliseconds
     freq = 440  # Hz
