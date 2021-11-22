@@ -13,6 +13,7 @@ import talib.abstract as tl
 import numpy as np
 import pandas_ta as ta
 from bob_telegram_tools.bot import TelegramBot
+import pandas_datareader.data as web
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -22,13 +23,9 @@ chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
 token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
 botlaburo = TelegramBot(token, chatid)
-df=tr.historicdf(par,timeframe='1m', limit=3)
-###########################################################
+df=tr.historicdf(par,timeframe='1h',limit=24)
 
-# VWAP requires the DataFrame index to be a DatetimeIndex.
-# Replace "datetime" with the appropriate column from your DataFrame
-df.set_index(pd.DatetimeIndex(df["time"]), inplace=True)
+def np_vwap(df):
+    return np.cumsum(df.volume*(df.high+df.low+df.close)/3) / np.cumsum(df.volume)
 
-print(df.ta.vwap(anchor='min'))
-
-
+print(np_vwap(df).tail())    

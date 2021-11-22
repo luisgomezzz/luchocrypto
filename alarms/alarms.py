@@ -69,8 +69,8 @@ def main() -> None:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
 
-                        ####SCALPING
-                        ################ SUDDEN ALERTS (minutes) ############################################
+####################################################SCALPING miuntos
+
                         suddendf=tr.historicdf(par,timeframe='1m',limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                         preciomenor=float(min(suddendf['low']))
                         preciomayor=float(max(suddendf['high']))
@@ -93,27 +93,25 @@ def main() -> None:
                             botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
                             botlaburo.send_plot(dibu)
 
-                        ####TRADING
-                        ########################### ALERTS (on period period) #############################
+####################################################TRADING horas
+
                         df=tr.historicdf(par,timeframe=period, limit=300) ## Datos históricos para alarmas relacionadas con indicadores.
 
-                        #RSI crosses
-                        #if ta.xsignals(df.ta.rsi(), 30, 70, above=True)['TS_Exits'].iloc[-1]!=0:
-                        #    botlaburo.send_text(par+" RSI crosses below 70. EXIT "+period)
-                           
-                        #if ta.xsignals(df.ta.rsi(), 30, 70, above=False)['TS_Exits'].iloc[-1]!=0:
-                        #    botlaburo.send_text(par+" RSI crosses above 70. EXIT "+period)
-
-                        #MACD crosses            
+                        #MACD crosses signals + RSI          
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1]!=0:
-                            #botlaburo.send_text(par+" The MACD line crosses above. "+period)
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))<=34:
-                                botlaburo.send_text(par+" LONG!!!")
+                                botlaburo.send_text(par+" - MACD crosses signals + RSI: LONG!!!")
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=False)['TS_Entries'].iloc[-1]!=0:
-                            #botlaburo.send_text(par+" The MACD line crosses below. "+period)                            
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))>=60:
-                                botlaburo.send_text(par+" SHORT!!!")
+                                botlaburo.send_text(par+" - MACD crosses signals + RSI: SHORT!!!")
 
+                        #VWAP and EMA9 signals
+                        if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=True)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" - VWAP and EMA9 signals: LONG!!!")
+                        if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=False)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" - VWAP and EMA9 signals: SHORT!!!")  
+                              
+###############################################################
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
