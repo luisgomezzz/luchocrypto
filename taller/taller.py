@@ -25,4 +25,11 @@ botlaburo = TelegramBot(token, chatid)
 df=tr.historicdf(par,timeframe='1h', limit=300)
 ###########################################################
 
-print(ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1])
+try:
+    if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
+        botlaburo.send_text(par+" LONG!!!")
+    else: 
+        print("ok")
+except:
+    print("falla")
+    pass

@@ -67,14 +67,14 @@ def main() -> None:
                         volumen24h = 0
 
                     try:
-                        
+                        ####SCALPING
                         ################ SUDDEN ALERTS (minutes) ############################################
                         suddendf=tr.historicdf(par,timeframe='1m',limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                         preciomenor=float(min(suddendf['low']))
                         preciomayor=float(max(suddendf['high']))
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
                         
-                        if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and float(volumen24h)>=float(1):
+                        if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) and (tr.truncate(suddendf.ta.rsi().iloc[-1],2))>=70 and float(volumen24h)>=float(1):
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(suddendf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
                             dibu, lista = tr.dibujo(par,0)
                             botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
@@ -82,7 +82,7 @@ def main() -> None:
                             #para mi
                             botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
                             botlaburo.send_plot(dibu)
-                        if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and float(volumen24h)>=float(1):
+                        if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor) and (tr.truncate(suddendf.ta.rsi().iloc[-1],2))<=30 and float(volumen24h)>=float(1):
                             mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. RSI: "+str(tr.truncate(suddendf.ta.rsi().iloc[-1],2))+". Price: "+str(precioactual)
                             dibu, lista = tr.dibujo(par,0)
                             botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
@@ -90,48 +90,37 @@ def main() -> None:
                             #para mi
                             botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
                             botlaburo.send_plot(dibu)
-                        sys.stdout.write("\rBuscando oportunidad. Ctrl+c para salir. Par: "+par+"\033[K")
+                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
 
+                        ####TRADING
                         ########################### ALERTS (on period period) #############################
                         df=tr.historicdf(par,timeframe=period, limit=300) ## Datos históricos para alarmas relacionadas con indicadores.
 
-                        #Oversell and overbuy alert
-                        #if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
-                        #    botlaburo.send_text(par+" Oversell "+period)
-                        #else:
-                        #    if (tr.truncate(df.ta.rsi().iloc[-1],2))>70:
-                        #        botlaburo.send_text(par+" Overbuy "+period)
-
                         #RSI crosses
-                        if ta.xsignals(df.ta.rsi(), 30, 70, above=True)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" RSI crosses above 30 and then below 70. ENTRY "+period)
-
-                        if ta.xsignals(df.ta.rsi(), 30, 70, above=True)['TS_Exits'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" RSI crosses above 30 and then below 70. EXIT "+period)
+                        #if ta.xsignals(df.ta.rsi(), 30, 70, above=True)['TS_Exits'].iloc[-1]!=0:
+                        #    botlaburo.send_text(par+" RSI crosses below 70. EXIT "+period)
                            
-                        if ta.xsignals(df.ta.rsi(), 30, 70, above=False)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" RSI crosses below 30 and then above 70. ENTRY "+period)
+                        #if ta.xsignals(df.ta.rsi(), 30, 70, above=False)['TS_Exits'].iloc[-1]!=0:
+                        #    botlaburo.send_text(par+" RSI crosses above 70. EXIT "+period)
 
-                        if ta.xsignals(df.ta.rsi(), 30, 70, above=False)['TS_Exits'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" RSI crosses below 30 and then above 70. EXIT "+period)
-
-                        #SMAs crosses                        
+                        #MACD crosses            
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" The blue line crosses above the white one and then below. "+period)
-                            if (tr.truncate(df.ta.rsi().iloc[-1],2))>70:
-                                botlaburo.send_text("SHORT!!!")
+                            #botlaburo.send_text(par+" The MACD line crosses above. "+period)
+                            if (tr.truncate(df.ta.rsi().iloc[-1],2))<=30:
+                                botlaburo.send_text(par+" LONG!!!")
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=False)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" The blue line crosses below the white one and then above. LONG!!"+period)                            
-                            if (tr.truncate(df.ta.rsi().iloc[-1],2))<30:
-                                botlaburo.send_text("LONG!!!")
+                            #botlaburo.send_text(par+" The MACD line crosses below. "+period)                            
+                            if (tr.truncate(df.ta.rsi().iloc[-1],2))>=70:
+                                botlaburo.send_text(par+" SHORT!!!")
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
                     except Exception as falla:
-                        sys.stdout.write("\rFALLA:"+str(falla)+"\033[K")
+                        sys.stdout.write("\rError1: "+str(falla)+"\033[K")
                         sys.stdout.flush()
+                        print("\n")
                         pass
                     
                 except KeyboardInterrupt:
@@ -140,6 +129,7 @@ def main() -> None:
                 except BinanceAPIException as a:
                    if a.message!="Invalid symbol.":
                       print("\rExcept 1 - Par:",par,"- Error:",a.status_code,a.message,"\033[K")
+                      print("\n")
                    pass
        
     except BinanceAPIException as a:
