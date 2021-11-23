@@ -24,7 +24,7 @@ botamigos = TelegramBot(token, idgrupo)
 def main() -> None:
 
     #procentajes de subida al cual se activa la alarma
-    porcentaje = 10
+    porcentaje = 5
 
     #mazmorra - monedas que no quiero operar en orden de castigo
     #mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
@@ -75,7 +75,13 @@ def main() -> None:
                         preciomenor=float(min(suddendf['low']))
                         preciomayor=float(max(suddendf['high']))
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
-                        
+
+                        #VWAP and EMA9 cross signals
+                        if ta.xsignals(suddendf.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=True)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: LONG!!!")
+                        if ta.xsignals(suddendf.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=False)['TS_Entries'].iloc[-1]!=0:
+                            botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: SHORT!!!") 
+
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
                             dibu, lista = tr.dibujo(par,0)
@@ -91,7 +97,7 @@ def main() -> None:
                             botamigos.send_plot(dibu)
                             #para mi
                             botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
-                            botlaburo.send_plot(dibu)
+                            botlaburo.send_plot(dibu) 
 
 ####################################################TRADING horas
 
@@ -100,17 +106,17 @@ def main() -> None:
                         #MACD crosses signals + RSI          
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1]!=0:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))<=34:
-                                botlaburo.send_text(par+" - MACD crosses signals + RSI: LONG!!!")
+                                botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: LONG!!!")
                         if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=False)['TS_Entries'].iloc[-1]!=0:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))>=60:
-                                botlaburo.send_text(par+" - MACD crosses signals + RSI: SHORT!!!")
+                                botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: SHORT!!!")
 
-                        #VWAP and EMA9 signals
+                        #VWAP and EMA9 cross signals
                         if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=True)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" - VWAP and EMA9 signals: LONG!!!")
+                            botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: LONG!!!")
                         if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=False)['TS_Entries'].iloc[-1]!=0:
-                            botlaburo.send_text(par+" - VWAP and EMA9 signals: SHORT!!!")  
-                              
+                            botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: SHORT!!!")  
+
 ###############################################################
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
