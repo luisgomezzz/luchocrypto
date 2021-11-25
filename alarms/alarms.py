@@ -72,14 +72,20 @@ def main() -> None:
 ####################################################SCALPING miuntos
 
                         suddendf=tr.historicdf(par,timeframe='1m',limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
+                        tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
                         preciomenor=float(min(suddendf['low']))
                         preciomayor=float(max(suddendf['high']))
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
 
+                        # Runs and appends all indicators to the current DataFrame by default
+                        suddendf.ta.strategy()
+                        # Prints the indicators and utility functions
+                        #suddendf.ta.indicators()
+
                         #VWAP and EMA9 cross signals
-                        if ta.xsignals(suddendf.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=True)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
                             botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: LONG!!!")
-                        if ta.xsignals(suddendf.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=False)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
                             botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: SHORT!!!") 
 
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
@@ -102,19 +108,24 @@ def main() -> None:
 ####################################################TRADING horas
 
                         df=tr.historicdf(par,timeframe=period, limit=300) ## Datos históricos para alarmas relacionadas con indicadores.
+                        tr.timeindex(df) #Formatea el campo time para luego calcular las señales
+                        # Runs and appends all indicators to the current DataFrame by default
+                        df.ta.strategy()
+                        # Prints the indicators and utility functions
+                        #df.ta.indicators()                        
 
                         #MACD crosses signals + RSI          
-                        if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=True)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))<=34:
                                 botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: LONG!!!")
-                        if ta.xsignals(ta.macd(df['close'])['MACD_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'], ta.macd(df['close'])['MACDs_12_26_9'],above=False)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))>=60:
                                 botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: SHORT!!!")
 
                         #VWAP and EMA9 cross signals
-                        if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=True)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
                             botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: LONG!!!")
-                        if ta.xsignals(df.ta.ema(9),tr.np_vwap(par),tr.np_vwap(par),above=False)['TS_Entries'].iloc[-1]!=0:
+                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
                             botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: SHORT!!!")  
 
 ###############################################################

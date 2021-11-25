@@ -14,18 +14,30 @@ import numpy as np
 import pandas_ta as ta
 from bob_telegram_tools.bot import TelegramBot
 import pandas_datareader.data as web
+import datetime
+from datetime import datetime
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='DYDXUSDT'
+par ='AXSUSDT'
 tr.clear()
 chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
 token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
 botlaburo = TelegramBot(token, chatid)
-df=tr.historicdf(par,timeframe='1h',limit=24)
 
-def np_vwap(df):
-    return np.cumsum(df.volume*(df.high+df.low+df.close)/3) / np.cumsum(df.volume)
+###############################################################################
 
-print(np_vwap(df).tail())    
+
+df = tr.historicdf(par,timeframe='1m',limit=240)
+
+tr.timeindex(df)
+
+df.ta.strategy()
+
+#print(df.ta.ema(9).iloc[-1])
+print(df.ta.vwap().iloc[-1])
+#print(df.ta.macd()['MACD_12_26_9'].iloc[-1])
+#print(df.ta.rsi().iloc[-1])
+
+print(ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True))

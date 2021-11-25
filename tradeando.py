@@ -24,12 +24,15 @@ def historicdf(pair,timeframe,limit):
     ## Datos para indicadores
     exchange=ccxt.binance()
     barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
-    dfindicators = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
-    return dfindicators
+    df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+    return df
 
-def np_vwap(pair):
-    df = historicdf(pair,timeframe='1h',limit=24)
-    return np.cumsum(df.volume*(df.high+df.low+df.close)/3) / np.cumsum(df.volume)
+def timeindex(df):
+    # if you encounter a "year is out of range" error the timestamp
+    # may be in milliseconds, try `ts /= 1000` in that case
+    df['time2']=df['time']/1000
+    df['time3']=(pd.to_datetime(df['time2'],unit='s')) 
+    df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
 def sound():
     duration = 1000  # milliseconds
@@ -159,4 +162,3 @@ def dibujo(par,watchchart=0):
         except Exception as e: 
             print(e)      
     return plt, lista
-    
