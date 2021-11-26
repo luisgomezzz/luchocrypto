@@ -84,9 +84,9 @@ def main() -> None:
 
                         #VWAP and EMA9 cross signals
                         if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
-                            botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: LONG!!!")
+                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: LONG!!!")
                         if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
-                            botlaburo.send_text(par+" - SCALPING - VWAP and EMA9 signals: SHORT!!!") 
+                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: SHORT!!!") 
 
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
@@ -117,16 +117,16 @@ def main() -> None:
                         #MACD crosses signals + RSI          
                         if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))<=34:
-                                botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: LONG!!!")
+                                botlaburo.send_text(par+" "+period+" - MACD crosses. RSI ok: LONG!!!")
                         if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1:
                             if (tr.truncate(df.ta.rsi().iloc[-1],2))>=60:
-                                botlaburo.send_text(par+" - TRADING - MACD crosses signals + RSI: SHORT!!!")
+                                botlaburo.send_text(par+" "+period+" - MACD crosses. RSI ok: SHORT!!!")
 
                         #VWAP and EMA9 cross signals
                         if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
-                            botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: LONG!!!")
+                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: LONG!!!")
                         if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
-                            botlaburo.send_text(par+" - TRADING - VWAP and EMA9 signals: SHORT!!!")  
+                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: SHORT!!!")  
 
 ###############################################################
                     except KeyboardInterrupt:

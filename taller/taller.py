@@ -19,7 +19,7 @@ from datetime import datetime
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='AXSUSDT'
+par ='HNTUSDT'
 tr.clear()
 chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
@@ -35,9 +35,8 @@ tr.timeindex(df)
 
 df.ta.strategy()
 
-#print(df.ta.ema(9).iloc[-1])
+print(df.ta.ema(9).iloc[-1])
 print(df.ta.vwap().iloc[-1])
 #print(df.ta.macd()['MACD_12_26_9'].iloc[-1])
 #print(df.ta.rsi().iloc[-1])
 
-print(ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True))
