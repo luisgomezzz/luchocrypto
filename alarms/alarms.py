@@ -70,9 +70,6 @@ def main() -> None:
                         
                             suddendf=tr.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                             tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-                            preciomenor=float(min(suddendf['low']))
-                            preciomayor=float(max(suddendf['high']))
-                            precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
                             suddendf.ta.strategy()# Runs and appends all indicators to the current DataFrame by default
 
                             #MACD crosses signals         
@@ -92,6 +89,13 @@ def main() -> None:
                                 #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: SELL!!!")  
                                 bt.binancetrader(par,'SELL',botlaburo)
 
+
+                            # MOVIMIENTOS BRUSCOS
+                            '''
+                            preciomenor=float(min(suddendf['low']))
+                            preciomayor=float(max(suddendf['high']))
+                            precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
+
                             if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
                                 mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
                                 dibu, lista = tr.dibujo(par,0)
@@ -108,7 +112,8 @@ def main() -> None:
                                 #para mi
                                 botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
                                 botlaburo.send_plot(dibu) 
-
+                            '''
+                            
                         if temporalidad =='1h':
 
                             df=tr.binancehistoricdf(par,timeframe=temporalidad, limit=300) #Datos históricos para alarmas relacionadas con indicadores.
