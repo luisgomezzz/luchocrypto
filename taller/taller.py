@@ -19,7 +19,7 @@ from datetime import datetime
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='HNTUSDT'
+par ='BTCUSDT'
 tr.clear()
 chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
@@ -28,15 +28,21 @@ botlaburo = TelegramBot(token, chatid)
 
 ###############################################################################
 
-
-df = tr.historicdf(par,timeframe='1m',limit=240)
-
-tr.timeindex(df)
-
-df.ta.strategy()
-
-print(df.ta.ema(9).iloc[-1])
-print(df.ta.vwap().iloc[-1])
+df = tr.historicdf(par,timeframe='1h',limit=200)
+#tr.timeindex(df)
+#df.ta.strategy()
+#print(df.ta.ema(9).iloc[-1])
+#print(df.ta.vwap().iloc[-1])
 #print(df.ta.macd()['MACD_12_26_9'].iloc[-1])
 #print(df.ta.rsi().iloc[-1])
 
+exchange = ccxt.binance({
+      'enableRateLimit': True,  
+      'apiKey': binance_api,
+      'secret': binance_secret,
+      'options': {  
+         'defaultType': 'future',  
+      },
+   })       
+
+print(tr.tamanioposicion(exchange,par))

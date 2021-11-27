@@ -9,17 +9,14 @@ yahoo_finance.pdr_override()
 from bob_telegram_tools.bot import TelegramBot
 sys.path.insert(1,'./')
 import tradeando as tr
-import ccxt
 import pandas_ta as ta
+import binancetrader as bt
 
 period='1h' # indicators work period
+suddendfperiod = '1m'
 
-chatid="@gofrecrypto" #canal
-idgrupo = "-704084758" #grupo de amigos
-token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
-
-botlaburo = TelegramBot(token, chatid)
-botamigos = TelegramBot(token, idgrupo)  
+botlaburo = tr.creobot('laburo')
+botamigos = tr.creobot('amigos') 
 
 def main() -> None:
 
@@ -54,7 +51,9 @@ def main() -> None:
 
           for s in lista_de_monedas:
 
-            par = s['symbol']            
+            par = s['symbol']
+
+            #par = 'DASHUSDT'            #por si solo quiero ver señales en un par
 
             if par not in mazmorra:
 
@@ -70,23 +69,19 @@ def main() -> None:
                         sys.stdout.flush()
 
 ####################################################SCALPING miuntos
-
+                        
                         suddendf=tr.historicdf(par,timeframe='1m',limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                         tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
                         preciomenor=float(min(suddendf['low']))
                         preciomayor=float(max(suddendf['high']))
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
-
-                        # Runs and appends all indicators to the current DataFrame by default
-                        suddendf.ta.strategy()
-                        # Prints the indicators and utility functions
-                        #suddendf.ta.indicators()
+                        suddendf.ta.strategy()# Runs and appends all indicators to the current DataFrame by default
 
                         #VWAP and EMA9 cross signals
-                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
-                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: LONG!!!")
-                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
-                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: SHORT!!!") 
+                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1]:
+                            botlaburo.send_text(par+" "+suddendfperiod+" - EMA9 crossing VWAP: LONG!!!")
+                        if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1]:
+                            botlaburo.send_text(par+" "+suddendfperiod+" - EMA9 crossing VWAP: SHORT!!!") 
 
                         if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
                             mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
@@ -105,30 +100,31 @@ def main() -> None:
                             botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
                             botlaburo.send_plot(dibu) 
 
-####################################################TRADING horas
+####################################################TRADING HORAS NUEVO#########################################################
 
-                        df=tr.historicdf(par,timeframe=period, limit=300) ## Datos históricos para alarmas relacionadas con indicadores.
+                        df=tr.historicdf(par,timeframe=period, limit=300) #Datos históricos para alarmas relacionadas con indicadores.
                         tr.timeindex(df) #Formatea el campo time para luego calcular las señales
-                        # Runs and appends all indicators to the current DataFrame by default
-                        df.ta.strategy()
-                        # Prints the indicators and utility functions
-                        #df.ta.indicators()                        
+                        df.ta.strategy() #Runs and appends all indicators to the current DataFrame by default
 
-                        #MACD crosses signals + RSI          
-                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1:
-                            if (tr.truncate(df.ta.rsi().iloc[-1],2))<=34:
-                                botlaburo.send_text(par+" "+period+" - MACD crosses. RSI ok: LONG!!!")
-                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1:
-                            if (tr.truncate(df.ta.rsi().iloc[-1],2))>=60:
-                                botlaburo.send_text(par+" "+period+" - MACD crosses. RSI ok: SHORT!!!")
+                        #MACD crosses signals         
+                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1 \
+                            and df.ta.ema(9).iloc[-1]>df.ta.vwap().iloc[-1]:
+                                #botlaburo.send_text(par+" "+period+" - MACD crosses: LONG!!!")
+                                bt.binancetrader(par,'LONG',botlaburo)
+                        if ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1 \
+                            and df.ta.ema(9).iloc[-1]<df.ta.vwap().iloc[-1]:
+                                #botlaburo.send_text(par+" "+period+" - MACD crosses: SHORT!!!")
+                                bt.binancetrader(par,'SHORT',botlaburo)
+                        #EMA9 crossing VWAP
+                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and df.ta.macd()['MACD_12_26_9'].iloc[-1]>df.ta.macd()['MACDs_12_26_9'].iloc[-1]:
+                            #botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: LONG!!!")
+                            bt.binancetrader(par,'LONG',botlaburo)
+                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and df.ta.macd()['MACD_12_26_9'].iloc[-1]<df.ta.macd()['MACDs_12_26_9'].iloc[-1]:
+                            #botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: SHORT!!!")  
+                            bt.binancetrader(par,'SHORT',botlaburo)
 
-                        #VWAP and EMA9 cross signals
-                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1:
-                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: LONG!!!")
-                        if ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1:
-                            botlaburo.send_text(par+" "+period+" - EMA9 crossing VWAP: SHORT!!!")  
+##########################################################################################################################
 
-###############################################################
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
                         sys.exit()
