@@ -17,8 +17,122 @@ import ccxt
 import talib.abstract as tl
 import pandas_ta as ta
 from os import system, name
-import ccxt
 import os
+from binance.exceptions import BinanceAPIException
+from bob_telegram_tools.bot import TelegramBot
+
+def creobot(tipo):
+    if tipo=='amigos':
+        chatid = "-704084758" #grupo de amigos
+    if tipo=='laburo':
+        chatid="@gofrecrypto" #canal
+    token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
+    return TelegramBot(token, chatid)
+
+def cierrotodo(client,par,exchange,lado) -> bool:
+   
+   print("FUNCION CIERROTODO")
+   cerrado = False 
+   
+   try:      
+      position = exchange.fetch_balance()['info']['positions']
+      pos = abs(round(float([p for p in position if p['symbol'] == par][0]['notional']),1))
+      print(pos)        
+      print("Intento 0")
+      client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')
+   except BinanceAPIException as a:
+      try:
+         print(a.message)
+         print("Intento 1")
+         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')               
+         cerrado = True
+      except BinanceAPIException as a:
+         try:
+            print(a.message)
+            print("Intento 2")
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000, reduceOnly='true')               
+            cerrado = True  
+         except BinanceAPIException as a:
+            try:
+               print(a.message)
+               print("Intento 3")
+               client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000)               
+               cerrado = True
+            except BinanceAPIException as a:
+               try:
+                  print(a.message)
+                  print("Intento 4")
+                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=1000)               
+                  cerrado = True  
+               except BinanceAPIException as a:
+                  try:
+                     print(a.message)
+                     print("Intento 5")
+                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')               
+                     cerrado = True           
+                  except BinanceAPIException as a:
+                     try:
+                        print(a.message)
+                        print("Intento 6")
+                        client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100)               
+                        cerrado = True  
+                     except BinanceAPIException as a:
+                        print(a.message)
+                        print("Except FUNCION CIERROTODO",a.status_code,a.message)   
+                        os.system('play -nq -t alsa synth 0.3 tri F5')
+                        time.sleep(0.5)
+                        os.system('play -nq -t alsa synth 0.3 tri F5')
+                        time.sleep(0.5)
+                        os.system('play -nq -t alsa synth 0.3 tri F5')
+                        input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
+
+   client.futures_cancel_all_open_orders(symbol=par) 
+   print("Órdenes canceladas.") 
+   return cerrado
+
+def creoposicion (par,client,size,lado) -> bool:
+         serror=True
+         i=4 #decimales
+         print("Creando posición...")
+         while i>=0:
+            try:  
+               if i==0:
+                  print("Intento con:",math.trunc(size))
+                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=str(math.trunc(size))) #cambio str
+                  i=-2
+               else:
+                  size = truncate(size,i) #cambio 
+                  print("Intento con:",size)
+                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=str(size))   
+                  i=-2
+            except BinanceAPIException as a:
+               print ("Except 6",a.status_code,a.message)
+               i=i-1
+               pass
+ 
+         if i==-2:
+            print("Posición creada correctamente.")
+         else:
+            print("Falla al crear la posición.",size) 
+            serror=False
+            pass
+         return serror
+
+def binanceexchange(binance_api,binance_secret):
+    #permite obtener el pnl y mi capital
+    exchange = ccxt.binance({
+        'enableRateLimit': True,  
+        'apiKey': binance_api,
+        'secret': binance_secret,
+        'options': {  
+            'defaultType': 'future',  
+        },
+    }) 
+    return exchange
+
+def tamanioposicion(exchange,par) -> float:
+   position = exchange.fetch_balance()['info']['positions']
+   return float([p for p in position if p['symbol'] == par][0]['notional'])
 
 def historicdf(pair,timeframe,limit):
     ## Datos para indicadores
