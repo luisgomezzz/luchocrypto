@@ -21,6 +21,86 @@ import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 
+def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio):
+   print("Creo el limit ...")
+   precio=float(client.get_symbol_ticker(symbol=par)["price"])
+   
+   if lado=='BUY':
+      precioprofit=precio-(precio*distanciaproc/100)
+   else:
+      precioprofit=precio+(precio*distanciaproc/100)
+   
+   if tamanio=='':
+      sizedesocupar=abs(math.trunc(binancetamanioposicion(exchange,par)*posicionporc/100))
+   else: 
+      sizedesocupar=math.trunc(tamanio) # esto se hace porque el tamanio puede ir variando y la idea es que se tome una porcion del valor original.
+
+   print("Limit a:", sizedesocupar)
+
+   try:
+      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,4))
+      print("Limit creado1. \033[K")            
+   except BinanceAPIException as a:
+      try:
+         print(a.message)
+         client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,3))
+         print("Limit creado2. \033[K")               
+      except BinanceAPIException as a:
+         try:
+            print(a.message)
+            client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,2))
+            print("Limit creado3. \033[K")
+         except BinanceAPIException as a:
+            try:
+               print(a.message)
+               client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,1))
+               print("Limit creado4. \033[K")
+            except BinanceAPIException as a:
+               try:
+                  print(a.message)
+                  client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=math.trunc(precioprofit))
+                  print("Limit creado5. \033[K")
+               except BinanceAPIException as a:
+                  print(a.message,"no se pudo crear el Limit.")
+                  pass   
+
+def binancestoploss (pair,client,side,stopprice)-> int:
+         i=5 # decimales
+         retorno=0 # 0: creado, 1: Order would immediately trigger, 2: Reach max stop order limit, 3: otros
+         while i>=0:
+            try:
+               if i!=0:       
+                  stopprice = truncate(stopprice,i)
+                  print("Intento con:",stopprice)
+                  client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
+                  print("Stop loss creado correctamente. Precio:",stopprice)
+                  i=-1
+               else:
+                  stopprice = math.trunc(stopprice)
+                  print("Intento con:",stopprice)
+                  client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
+                  print("Stop loss creado. Precio:",stopprice)
+                  i=-1           
+            except BinanceAPIException as a:  
+               if a.message == "Order would immediately trigger.":                 
+                  print("Se dispararía de inmediato.")
+                  i=-1 #salgo del bucle
+                  retorno = 1
+               else:   
+                  if a.message == "Reach max stop order limit.":
+                     print("Número máximo de stop loss alcanzado.")
+                     i=-1 #salgo del bucle
+                     retorno = 2
+                  else:
+                     if i==-1: #otros errors.               
+                        print("Except stoploss1")
+                        print (a.status_code,a.message,stopprice)
+                        retorno = 3
+                     else: #aca entra si la presición no era la correcta y seguir sacando decimales.
+                        i=i-1
+               pass   
+         return retorno
+
 def creobot(tipo):
     if tipo=='amigos':
         chatid = "-704084758" #grupo de amigos
@@ -29,7 +109,7 @@ def creobot(tipo):
     token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
     return TelegramBot(token, chatid)
 
-def cierrotodo(client,par,exchange,lado) -> bool:
+def binancecierrotodo(client,par,exchange,lado) -> bool:
    
    print("FUNCION CIERROTODO")
    cerrado = False 
@@ -90,7 +170,7 @@ def cierrotodo(client,par,exchange,lado) -> bool:
    print("Órdenes canceladas.") 
    return cerrado
 
-def creoposicion (par,client,size,lado) -> bool:
+def binancecreoposicion (par,client,size,lado) -> bool:
          serror=True
          i=4 #decimales
          print("Creando posición...")
@@ -130,11 +210,11 @@ def binanceexchange(binance_api,binance_secret):
     }) 
     return exchange
 
-def tamanioposicion(exchange,par) -> float:
+def binancetamanioposicion(exchange,par) -> float:
    position = exchange.fetch_balance()['info']['positions']
    return float([p for p in position if p['symbol'] == par][0]['notional'])
 
-def historicdf(pair,timeframe,limit):
+def binancehistoricdf(pair,timeframe,limit):
     ## Datos para indicadores
     exchange=ccxt.binance()
     barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
