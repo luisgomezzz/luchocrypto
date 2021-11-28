@@ -35,12 +35,12 @@ def main() -> None:
     binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
     binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
     client = Client(binance_api, binance_secret)
+    exchange=tr.binanceexchange(binance_api,binance_secret)
 
     #*****************************************************PROGRAMA PRINCIPAL *************************************************************
     tr.clear()
 
     lista_de_monedas = client.futures_exchange_info()['symbols']
-    
     botlaburo.send_text("Starting...")
    
     try:
@@ -48,8 +48,11 @@ def main() -> None:
         while True:
 
           for s in lista_de_monedas:
-
-            par = s['symbol']
+            try:  
+                position = exchange.fetch_balance()['info']['positions']
+                par=[p for p in position if p['notional'] != '0'][0]['symbol']
+            except:
+                par = s['symbol']
 
             #par = 'DASHUSDT' #por si solo quiero ver señales en un par
 
@@ -76,19 +79,22 @@ def main() -> None:
                             if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1 \
                                 and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1]:
                                     #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: BUY!!!")
+                                    print("1")
                                     bt.binancetrader(par,'BUY',botlaburo)
                             if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1 \
                                 and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1]:
                                     #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: SELL!!!")
+                                    print("2")
                                     bt.binancetrader(par,'SELL',botlaburo)
                             #EMA9 crossing VWAP
                             if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
                                 #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: BUY!!!")
+                                print("3")
                                 bt.binancetrader(par,'BUY',botlaburo)
                             if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
                                 #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: SELL!!!")  
+                                print("4")
                                 bt.binancetrader(par,'SELL',botlaburo)
-
 
                             # MOVIMIENTOS BRUSCOS
                             '''

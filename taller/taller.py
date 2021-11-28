@@ -28,7 +28,7 @@ botlaburo = TelegramBot(token, chatid)
 
 ###############################################################################
 
-df = tr.historicdf(par,timeframe='1h',limit=200)
+
 #tr.timeindex(df)
 #df.ta.strategy()
 #print(df.ta.ema(9).iloc[-1])
@@ -45,4 +45,6 @@ exchange = ccxt.binance({
       },
    })       
 
-print(tr.tamanioposicion(exchange,par))
+position = exchange.fetch_balance()['info']['positions']
+print([p for p in position if p['notional'] != '0'][0]['symbol'])
+
