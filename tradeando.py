@@ -21,7 +21,7 @@ import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 
-def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio):
+def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio) -> bool:
    print("Creo el limit ...")
    precio=float(client.get_symbol_ticker(symbol=par)["price"])
    
@@ -39,30 +39,35 @@ def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,taman
 
    try:
       client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,4))
-      print("Limit creado1. \033[K")            
+      print("Limit creado1. \033[K")   
+      return True         
    except BinanceAPIException as a:
       try:
          print(a.message)
          client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,3))
-         print("Limit creado2. \033[K")               
+         print("Limit creado2. \033[K")       
+         return True        
       except BinanceAPIException as a:
          try:
             print(a.message)
             client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,2))
             print("Limit creado3. \033[K")
+            return True
          except BinanceAPIException as a:
             try:
                print(a.message)
                client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,1))
                print("Limit creado4. \033[K")
+               return True
             except BinanceAPIException as a:
                try:
                   print(a.message)
                   client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=math.trunc(precioprofit))
                   print("Limit creado5. \033[K")
+                  return True
                except BinanceAPIException as a:
                   print(a.message,"no se pudo crear el Limit.")
-                  pass   
+                  return False
 
 def binancestoploss (pair,client,side,stopprice)-> int:
          i=5 # decimales
