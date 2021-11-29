@@ -21,15 +21,61 @@ import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 
+def binancetakeprofit(pair,client,side,porc):
+   created=True
+   valor_actual=float(client.get_symbol_ticker(symbol=pair)["price"])
+   print("Creo el TAKE_PROFIT_MARKET...")
+   if side=='BUY':
+      precioprofit=valor_actual+(valor_actual*porc/100)
+      side='SELL'         
+   else:
+      precioprofit=valor_actual-(valor_actual*porc/100)
+      side='BUY'
+   try:
+      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=precioprofit,closePosition=True)
+      print("Take profit creado1. \033[K")            
+   except BinanceAPIException as a:
+      try:
+         print(a.message)
+         client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,4),closePosition=True)
+         print("Take profit creado2. \033[K")               
+      except BinanceAPIException as a:
+         try:
+            print(a.message)
+            client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,3),closePosition=True)
+            print("Take profit creado3. \033[K")
+         except BinanceAPIException as a:
+            try:
+               print(a.message)
+               client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,2),closePosition=True)
+               print("Take profit creado3. \033[K")
+            except BinanceAPIException as a:
+               try:
+                  print(a.message)
+                  client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,1),closePosition=True)
+                  print("Take profit creado3. \033[K")
+               except BinanceAPIException as a:
+                  try:
+                     print(a.message)
+                     client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=math.trunc(precioprofit),closePosition=True)
+                     print("Take profit creado3. \033[K")
+                  except BinanceAPIException as a:
+                     print(a.message,"no se pudo crear el take profit.")
+                     created=False
+                     pass
+   return created
+
 def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio) -> bool:
    print("Creo el limit ...")
    precio=float(client.get_symbol_ticker(symbol=par)["price"])
    
    if lado=='BUY':
       precioprofit=precio-(precio*distanciaproc/100)
+      lado='SELL'
    else:
       precioprofit=precio+(precio*distanciaproc/100)
-   
+      lado='BUY'
+
    if tamanio=='':
       sizedesocupar=abs(math.trunc(binancetamanioposicion(exchange,par)*posicionporc/100))
    else: 
@@ -72,6 +118,12 @@ def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,taman
 def binancestoploss (pair,client,side,stopprice)-> int:
          i=5 # decimales
          retorno=0 # 0: creado, 1: Order would immediately trigger, 2: Reach max stop order limit, 3: otros
+         print("Stop loss")
+         if side == 'BUY':
+            side='SELL'
+         else:
+            side='BUY'
+
          while i>=0:
             try:
                if i!=0:       
