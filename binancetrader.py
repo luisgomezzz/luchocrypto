@@ -21,9 +21,9 @@ def binancetrader(pair,side,bot):
             currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
             if side =='BUY':
-                stopprice = currentprice-(currentprice*1.0/100)
+                stopprice = currentprice-(currentprice*0.2/100)
             else:
-                stopprice = currentprice+(currentprice*1.0/100)
+                stopprice = currentprice+(currentprice*0.2/100)
 
             if tr.binancestoploss (pair,client,side,stopprice)==0:
                 bot.send_text(pair+" - STOPLOSS CREADO "+ side)
@@ -35,7 +35,7 @@ def binancetrader(pair,side,bot):
             #if tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')==True:
             #    bot.send_text(pair+" - LIMIT GANANCIA CREADO "+ side)
 
-            if tr.binancetakeprofit(pair,client,side,porc=0.4)==True:
+            if tr.binancetakeprofit(pair,client,side,porc=0.38)==True:
                 bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
             if tr.binancetamanioposicion(exchange,pair) > 0.0 and side=='SELL': #cierro posicion en BUY 
