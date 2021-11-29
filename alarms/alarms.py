@@ -53,6 +53,7 @@ def main() -> None:
                 par=[p for p in position if p['notional'] != '0'][0]['symbol']
             except:
                 par = s['symbol']
+                client.futures_cancel_all_open_orders(symbol=par) 
 
             #par = 'DASHUSDT' #por si solo quiero ver señales en un par
 
@@ -77,21 +78,27 @@ def main() -> None:
 
                             #MACD crosses signals         
                             if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1 \
-                                and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1]:
+                                and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1] \
+                                and suddendf.ta.rsi().iloc[-1]<=40:
                                     #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: BUY!!!")
                                     print("1")
                                     bt.binancetrader(par,'BUY',botlaburo)
                             if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1 \
-                                and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1]:
+                                and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1] \
+                                and suddendf.ta.rsi().iloc[-1]>=60:
                                     #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: SELL!!!")
                                     print("2")
                                     bt.binancetrader(par,'SELL',botlaburo)
                             #EMA9 crossing VWAP
-                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
+                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
+                                and suddendf.ta.rsi().iloc[-1]<50 \
+                                and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
                                 #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: BUY!!!")
                                 print("3")
                                 bt.binancetrader(par,'BUY',botlaburo)
-                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
+                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
+                                and suddendf.ta.rsi().iloc[-1]>50 \
+                                and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1]:
                                 #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: SELL!!!")  
                                 print("4")
                                 bt.binancetrader(par,'SELL',botlaburo)

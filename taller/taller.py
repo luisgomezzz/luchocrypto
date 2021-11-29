@@ -19,15 +19,15 @@ from datetime import datetime
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-par ='BTCUSDT'
+par ='SUSHIUSDT'
 tr.clear()
 chatid="@gofrecrypto" #canal
 idgrupo = "-704084758" #grupo de amigos
 token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
 botlaburo = TelegramBot(token, chatid)
-
+client = Client(binance_api, binance_secret)
 ###############################################################################
-
+df=tr.binancehistoricdf(par,timeframe='1m',limit=60)
 
 #tr.timeindex(df)
 #df.ta.strategy()
@@ -45,6 +45,5 @@ exchange = ccxt.binance({
       },
    })       
 
-position = exchange.fetch_balance()['info']['positions']
-print([p for p in position if p['notional'] != '0'][0]['symbol'])
 
+print(df.ta.macd()['MACD_12_26_9'].iloc[-1])
