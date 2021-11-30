@@ -205,23 +205,47 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                   try:
                      print(a.message)
                      print("Intento 5")
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')               
+                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
                      cerrado = True           
                   except BinanceAPIException as a:
                      try:
                         print(a.message)
                         print("Intento 6")
-                        client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100)               
+                        client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100)
                         cerrado = True  
                      except BinanceAPIException as a:
-                        print(a.message)
-                        print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-                        os.system('play -nq -t alsa synth 0.3 tri F5')
-                        time.sleep(0.5)
-                        os.system('play -nq -t alsa synth 0.3 tri F5')
-                        time.sleep(0.5)
-                        os.system('play -nq -t alsa synth 0.3 tri F5')
-                        input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
+                        try:
+                           print(a.message)
+                           print("Intento 7")
+                           client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=50,reduceOnly='true')
+                           cerrado = True     
+                        except BinanceAPIException as a:
+                           try:
+                              print(a.message)
+                              print("Intento 8")
+                              client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=50)
+                              cerrado = True 
+                           except BinanceAPIException as a:
+                              try:
+                                 print(a.message)
+                                 print("Intento 9")
+                                 client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=30)
+                                 cerrado = True 
+                              except BinanceAPIException as a:
+                                 try:
+                                    print(a.message)
+                                    print("Intento 10")
+                                    client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=20)
+                                    cerrado = True    
+                                 except BinanceAPIException as a:
+                                    print(a.message)
+                                    print("Except FUNCION CIERROTODO",a.status_code,a.message)   
+                                    os.system('play -nq -t alsa synth 0.3 tri F5')
+                                    time.sleep(0.5)
+                                    os.system('play -nq -t alsa synth 0.3 tri F5')
+                                    time.sleep(0.5)
+                                    os.system('play -nq -t alsa synth 0.3 tri F5')
+                                    input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
