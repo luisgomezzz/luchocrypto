@@ -45,8 +45,11 @@ exchange = ccxt.binance({
       },
    })       
 
-print(abs(df.ta.macd()['MACDh_12_26_9'].iloc[-1]))
-print(df.ta.macd()['MACD_12_26_9'].iloc[-1])
-print(df.ta.macd()['MACDs_12_26_9'].iloc[-1])
 
-print(df.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/df.ta.macd()['MACD_12_26_9'].iloc[-1])
+position = exchange.fetch_balance()['info']['positions']
+#par=[p for p in position if p['notional'] != '0'][0]['symbol']
+
+position = exchange.fetch_balance()['info']['positions']
+lado=[p for p in position if p['symbol'] == par][0]['positionSide']
+
+print(lado)

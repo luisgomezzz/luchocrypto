@@ -35,15 +35,15 @@ def binancetrader(pair,side,bot):
                 #if tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')==True:
                 #    bot.send_text(pair+" - LIMIT GANANCIA CREADO "+ side)
 
-                if tr.binancetakeprofit(pair,client,side,porc=0.32)==True:
-                    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
+                #if tr.binancetakeprofit(pair,client,side,porc=0.32)==True:
+                #    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
             if tr.binancetamanioposicion(exchange,pair) > 0.0 and side=='SELL': #cierro posicion en BUY 
-                tr.binancecierrotodo(client,pair,exchange,'SELL') #cierro BUY
+                tr.binancecierrotodo(client,pair,exchange,side) 
                 bot.send_text(pair+" - POSICION CERRADA "+ side)
             else:
                 if tr.binancetamanioposicion(exchange,pair) < 0.0 and side=='BUY': #cierro posicion en SELL 
-                    tr.binancecierrotodo(client,pair,exchange,'BUY') #cierro SELL
+                    tr.binancecierrotodo(client,pair,exchange,side) 
                     bot.send_text(pair+" - POSICION CERRADA "+ side)
 
     except:
