@@ -9,7 +9,7 @@ client = Client(binance_api, binance_secret)
 def binancetrader(pair,side,bot):
     # Si no hay posiciones la creo. Si existe una posicion para el par analizado entonces se cierra en caso de que 
     # cambie de sentido.
-    porcentajeentrada=100
+    porcentajeentrada=200
     exchange=tr.binanceexchange(binance_api,binance_secret)
     micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
     size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
@@ -18,25 +18,25 @@ def binancetrader(pair,side,bot):
             if tr.binancecreoposicion (pair,client,size,side)==True:
                 bot.send_text(pair+" - POSICION CREADA "+ side)
 
-            currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
-            if side =='BUY':
-                stopprice = currentprice-(currentprice*0.2/100)
-            else:
-                stopprice = currentprice+(currentprice*0.2/100)
+                if side =='BUY':
+                    stopprice = currentprice-(currentprice*0.2/100)
+                else:
+                    stopprice = currentprice+(currentprice*0.2/100)
 
-            if tr.binancestoploss (pair,client,side,stopprice)==0:
-                bot.send_text(pair+" - STOPLOSS CREADO "+ side)
+                if tr.binancestoploss (pair,client,side,stopprice)==0:
+                    bot.send_text(pair+" - STOPLOSS CREADO "+ side)
 
-            #if side == 'BUY':
-            #    limitside = 'SELL'
-            #else:
-            #    limitside = 'BUY'
-            #if tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')==True:
-            #    bot.send_text(pair+" - LIMIT GANANCIA CREADO "+ side)
+                #if side == 'BUY':
+                #    limitside = 'SELL'
+                #else:
+                #    limitside = 'BUY'
+                #if tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')==True:
+                #    bot.send_text(pair+" - LIMIT GANANCIA CREADO "+ side)
 
-            if tr.binancetakeprofit(pair,client,side,porc=0.38)==True:
-                bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
+                if tr.binancetakeprofit(pair,client,side,porc=0.32)==True:
+                    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
             if tr.binancetamanioposicion(exchange,pair) > 0.0 and side=='SELL': #cierro posicion en BUY 
                 tr.binancecierrotodo(client,pair,exchange,'SELL') #cierro BUY
