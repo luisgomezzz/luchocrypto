@@ -74,35 +74,37 @@ def main() -> None:
                             tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
                             suddendf.ta.strategy()# Runs and appends all indicators to the current DataFrame by default
 
-                            #MACD crosses signals         
-                            if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==1 \
+                            #MACD crosses signals 
+                            crossmacd=(ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
+                            if  crossmacd[0]==1 and crossmacd[1]==1 and crossmacd[2]==1 and crossmacd[3]==0 \
                                 and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1] \
                                 and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                                    #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: BUY!!!")
+                                    #BUY!!!
                                     print("1")
                                     bt.binancetrader(par,'BUY',botlaburo)
-                            if ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)['TS_Trades'].iloc[-1]==-1 \
+                            if  crossmacd[0]==0 and crossmacd[1]==-1 and crossmacd[2]==0 and crossmacd[3]==1 \
                                 and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1] \
                                 and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                                    #botlaburo.send_text(par+" "+temporalidad+" - MACD crosses: SELL!!!")
+                                    #SELL!!!
                                     print("2")
                                     bt.binancetrader(par,'SELL',botlaburo)
                             #EMA9 crossing VWAP
-                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                                and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                                #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: BUY!!!")
-                                    print("3")
-                                    bt.binancetrader(par,'BUY',botlaburo)
-                            if ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)['TS_Trades'].iloc[-1]==-1 and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                                and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                                #botlaburo.send_text(par+" "+temporalidad+" - EMA9 crossing VWAP: SELL!!!")  
-                                    print("4")
-                                    bt.binancetrader(par,'SELL',botlaburo)
-
-                            # MOVIMIENTOS BRUSCOS
+                            #crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
+                            #if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 \
+                            #    and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
+                            #    and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
+                            #        #BUY!!!
+                            #        print("3")
+                            #        bt.binancetrader(par,'BUY',botlaburo)
+                            #if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1 \
+                            #    and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
+                            #    and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
+                            #        #SELL!!!
+                            #        print("4")
+                            #        bt.binancetrader(par,'SELL',botlaburo)
+                            
                             '''
+                            # MOVIMIENTOS BRUSCOS
                             preciomenor=float(min(suddendf['low']))
                             preciomayor=float(max(suddendf['high']))
                             precioactual = float(client.get_symbol_ticker(symbol=par)["price"])

@@ -45,7 +45,7 @@ exchange = ccxt.binance({
       },
    })       
 
-print(ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True))
+cross=(ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)).iloc[-1]
 
 
-print(df.ta.macd())
+print(cross)
