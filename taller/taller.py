@@ -46,10 +46,3 @@ exchange = ccxt.binance({
    })       
 
 
-position = exchange.fetch_balance()['info']['positions']
-#par=[p for p in position if p['notional'] != '0'][0]['symbol']
-
-position = exchange.fetch_balance()['info']['positions']
-lado=[p for p in position if p['symbol'] == par][0]['positionSide']
-
-print(lado)
