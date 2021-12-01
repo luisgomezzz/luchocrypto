@@ -25,8 +25,7 @@ def binancetrader(pair,side,bot):
                 else:
                     stopprice = currentprice+(currentprice*0.2/100)
 
-                if tr.binancestoploss (pair,client,side,stopprice)==0:
-                    bot.send_text(pair+" - STOPLOSS CREADO "+ side)
+                tr.binancestoploss (pair,client,side,stopprice)
 
                 #if side == 'BUY':
                 #    limitside = 'SELL'
@@ -38,13 +37,14 @@ def binancetrader(pair,side,bot):
                 #if tr.binancetakeprofit(pair,client,side,porc=0.32)==True:
                 #    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
+            
             if tr.binancetamanioposicion(exchange,pair) > 0.0 and side=='SELL': #cierro posicion en BUY 
+                print("Cierro por cambio de tendencia")
                 tr.binancecierrotodo(client,pair,exchange,side) 
-                bot.send_text(pair+" - POSICION CERRADA "+ side)
             else:
                 if tr.binancetamanioposicion(exchange,pair) < 0.0 and side=='BUY': #cierro posicion en SELL 
+                    print("Cierro por cambio de tendencia")
                     tr.binancecierrotodo(client,pair,exchange,side) 
-                    bot.send_text(pair+" - POSICION CERRADA "+ side)
 
     except:
         pass           
