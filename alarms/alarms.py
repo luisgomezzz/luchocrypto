@@ -42,6 +42,7 @@ def main() -> None:
 
     lista_de_monedas = client.futures_exchange_info()['symbols']
     botlaburo.send_text("Starting...")
+    maxhisto=0
     try:
 
         while True:
@@ -77,16 +78,16 @@ def main() -> None:
                             #MACD crosses signals 
                             crossmacd=(ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
                             if  crossmacd[0]==1 and crossmacd[1]==1 and crossmacd[2]==1 and crossmacd[3]==0 \
-                                and suddendf.ta.ema(9).iloc[-1]>suddendf.ta.vwap().iloc[-1] \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
+                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=40:
                                     #BUY!!!
-                                    print("1")
-                                    bt.binancetrader(par,'BUY',botlaburo)
+                                    print("condicion 1\n"+str(crossmacd))
+                                    print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
+                                    bt.binancetrader(par,'BUY',botlaburo,abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]))
                             if  crossmacd[0]==0 and crossmacd[1]==-1 and crossmacd[2]==0 and crossmacd[3]==1 \
-                                and suddendf.ta.ema(9).iloc[-1]<suddendf.ta.vwap().iloc[-1] \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
+                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=40:
                                     #SELL!!!
-                                    print("2")
+                                    print("condicion 2\n"+str(crossmacd))
+                                    print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
                                     bt.binancetrader(par,'SELL',botlaburo)
                             #EMA9 crossing VWAP
                             #crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
@@ -129,14 +130,18 @@ def main() -> None:
 
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
-                            # si la distancia entre macd y señal es menor al 18% cierro
-                            if abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])<=20:
+                            
+                            #si la distancia es igual o va creciendo continuo, si no, cierro
+                            if  maxhisto <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]):
+                                maxhisto = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])                            
+                            else:
                                 print("Cierro por Histogram pequeño")
                                 if tr.binancetamanioposicion(exchange,par)>0.0:
                                     tr.binancecierrotodo(client,par,exchange,'SELL') 
                                 else:
                                     tr.binancecierrotodo(client,par,exchange,'BUY')
                                 client.futures_cancel_all_open_orders(symbol=par) 
+                                maxhisto=0
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
