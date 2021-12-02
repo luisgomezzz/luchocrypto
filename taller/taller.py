@@ -45,7 +45,7 @@ exchange = ccxt.binance({
       },
    })       
 
-cross=(ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)).iloc[-1]
+crossmacd=(ta.xsignals(df.ta.macd()['MACD_12_26_9'], df.ta.macd()['MACDs_12_26_9'], df.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
+print("condicion 2 "+str(crossmacd))
+print(str(tr.truncate(abs(df.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/df.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
 
-
-print(cross)
