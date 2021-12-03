@@ -1,3 +1,4 @@
+from time import sleep
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import sys
@@ -11,10 +12,12 @@ sys.path.insert(1,'./')
 import tradeando as tr
 import pandas_ta as ta
 import binancetrader as bt
+import time
 
 botlaburo = tr.creobot('laburo')
 botamigos = tr.creobot('amigos') 
-temporalidad = '1m'
+
+temporalidad='1m'
 
 def main() -> None:
 
@@ -42,7 +45,8 @@ def main() -> None:
 
     lista_de_monedas = client.futures_exchange_info()['symbols']
     botlaburo.send_text("Starting...")
-    maxhisto=0
+    maxdist=0
+    flagestrategy = 0
     try:
 
         while True:
@@ -51,6 +55,7 @@ def main() -> None:
             try:  
                 position = exchange.fetch_balance()['info']['positions']
                 par=[p for p in position if p['notional'] != '0'][0]['symbol']
+                time.sleep(60)
             except:
                 par = s['symbol']      
 
@@ -59,89 +64,87 @@ def main() -> None:
             if par not in mazmorra:
 
                 try:
-                    try:
-                        volumen24h = client.futures_ticker(symbol=par)['quoteVolume']
-                    except:
-                        volumen24h = 0
 
                     try:
 
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
+                        sys.stdout.write("\b \r Searching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
 
-                        if temporalidad == '1m':
+                        if flagestrategy ==0 or flagestrategy ==1: #no hay posicion abierta o la estrategia es MACD
                         
                             suddendf=tr.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                             tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-                            suddendf.ta.strategy()# Runs and appends all indicators to the current DataFrame by default
+                            suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
 
                             #MACD crosses signals 
                             crossmacd=(ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
                             if  crossmacd[0]==1 and crossmacd[1]==1 and crossmacd[2]==1 and crossmacd[3]==0 \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=40:
-                                    #BUY!!!
-                                    print("condicion 1\n"+str(crossmacd))
+                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=90:
+                                    print("ESTRATEGIA MACD BUY\n"+str(crossmacd))
                                     print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
-                                    bt.binancetrader(par,'BUY',botlaburo,abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]))
+                                    bt.binancetrader(par,'BUY',botlaburo)
+                                    flagestrategy=1
+                                    botlaburo.send_text(par+"ESTRATEGIA MACD BUY")
                             if  crossmacd[0]==0 and crossmacd[1]==-1 and crossmacd[2]==0 and crossmacd[3]==1 \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=40:
-                                    #SELL!!!
-                                    print("condicion 2\n"+str(crossmacd))
+                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=90:
+                                    print("ESTRATEGIA MACD SELL\n"+str(crossmacd))
                                     print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
                                     bt.binancetrader(par,'SELL',botlaburo)
+                                    flagestrategy=1
+                                    botlaburo.send_text(par+"ESTRATEGIA MACD SELL")
+
+                        if flagestrategy ==0 or flagestrategy ==2: #no hay posicion abierta o la estrategia es VWAP
+
                             #EMA9 crossing VWAP
-                            #crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                            #if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 \
-                            #    and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]>suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                            #    and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                            #        #BUY!!!
-                            #        print("3")
-                            #        bt.binancetrader(par,'BUY',botlaburo)
-                            #if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1 \
-                            #    and suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]<suddendf.ta.macd()['MACDs_12_26_9'].iloc[-1] \
-                            #    and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=30:
-                            #        #SELL!!!
-                            #        print("4")
-                            #        bt.binancetrader(par,'SELL',botlaburo)
-                            
-                            '''
-                            # MOVIMIENTOS BRUSCOS
-                            preciomenor=float(min(suddendf['low']))
-                            preciomayor=float(max(suddendf['high']))
-                            precioactual = float(client.get_symbol_ticker(symbol=par)["price"])
-
-                            if ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
-                                mensaje=par+" up "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
-                                dibu, lista = tr.dibujo(par,0)
-                                botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
-                                botamigos.send_plot(dibu)
-                                #para mi
-                                botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
-                                botlaburo.send_plot(dibu)
-                            if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor):
-                                mensaje=par+" down "+str(round(((preciomenor - precioactual)*(100/preciomenor)),2))+"% - "+str(ventana)+" minutes. Price: "+str(precioactual)
-                                dibu, lista = tr.dibujo(par,0)
-                                botamigos.send_text(mensaje+"\nSupports and Resistances: "+str(lista))                            
-                                botamigos.send_plot(dibu)
-                                #para mi
-                                botlaburo.send_text(mensaje+"\nSupports and Resistances: "+str(lista))
-                                botlaburo.send_plot(dibu) 
-                            '''
-
+                            crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
+                            if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:# \
+                                    #and abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))>=10:
+                                    print("ESTRATEGIA VWAP BUY\n"+str(crossvwap))
+                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                                    bt.binancetrader(par,'BUY',botlaburo)
+                                    flagestrategy=2
+                                    botlaburo.send_text(par+"ESTRATEGIA VWAP BUY")
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:# \
+                                    #and abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))>=10:
+                                    print("ESTRATEGIA VWAP SELL\n"+str(crossvwap))
+                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                                    bt.binancetrader(par,'SELL',botlaburo)      
+                                    flagestrategy=2
+                                    botlaburo.send_text(par+"ESTRATEGIA VWAP SELL")
+                                    
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
+
+                            if flagestrategy==1:
                             
-                            #si la distancia es igual o va creciendo continuo, si no, cierro
-                            if  maxhisto <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]):
-                                maxhisto = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])                            
-                            else:
-                                print("Cierro por Histogram pequeño")
-                                if tr.binancetamanioposicion(exchange,par)>0.0:
-                                    tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                #si la distancia es igual o va creciendo continuo, si no, cierro
+                                if  maxdist <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]):
+                                    maxdist = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])                            
                                 else:
-                                    tr.binancecierrotodo(client,par,exchange,'BUY')
-                                client.futures_cancel_all_open_orders(symbol=par) 
-                                maxhisto=0
+                                    print("Cierro por Histogram bajando....")
+                                    print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
+                                    if tr.binancetamanioposicion(exchange,par)>0.0:
+                                        tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                    else:
+                                        tr.binancecierrotodo(client,par,exchange,'BUY')
+                                    client.futures_cancel_all_open_orders(symbol=par) 
+                                    maxdist=0
+                                    flagestrategy=0
+
+                            if flagestrategy==2:
+                                #si la distancia es igual o va creciendo continuo, si no, cierro
+                                if  maxdist <= abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)):
+                                    maxdist = abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))                            
+                                else:
+                                    print("Cierro por distancia vwap bajando....")
+                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                                    if tr.binancetamanioposicion(exchange,par)>0.0:
+                                        tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                    else:
+                                        tr.binancecierrotodo(client,par,exchange,'BUY')
+                                    client.futures_cancel_all_open_orders(symbol=par) 
+                                    maxdist=0
+                                    flagestrategy=0
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
