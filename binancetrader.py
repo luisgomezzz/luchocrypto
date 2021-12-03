@@ -16,7 +16,7 @@ def binancetrader(pair,side,bot):
     try:
         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
             if tr.binancecreoposicion (pair,client,size,side)==True:
-                bot.send_text(pair+" - POSICION CREADA "+ side)
+                #bot.send_text(pair+" - POSICION CREADA "+ side)
 
                 currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
