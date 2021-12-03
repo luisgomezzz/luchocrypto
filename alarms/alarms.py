@@ -92,25 +92,21 @@ def main() -> None:
                                     bt.binancetrader(par,'SELL',botlaburo)
                                     flagestrategy=1
                                     botlaburo.send_text(par+"ESTRATEGIA MACD SELL")
-
+                        
                         if flagestrategy ==0 or flagestrategy ==2: #no hay posicion abierta o la estrategia es VWAP
-
+                        
                             #EMA9 crossing VWAP
                             crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                            if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:# \
-                                    #and abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))>=10:
-                                    print("ESTRATEGIA VWAP BUY\n"+str(crossvwap))
-                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                            if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
+                                    print(" ESTRATEGIA VWAP BUY\n")
                                     bt.binancetrader(par,'BUY',botlaburo)
                                     flagestrategy=2
-                                    botlaburo.send_text(par+"ESTRATEGIA VWAP BUY")
-                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:# \
-                                    #and abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))>=10:
-                                    print("ESTRATEGIA VWAP SELL\n"+str(crossvwap))
-                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                                    botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
+                                    print("ESTRATEGIA VWAP SELL\n")
                                     bt.binancetrader(par,'SELL',botlaburo)      
                                     flagestrategy=2
-                                    botlaburo.send_text(par+"ESTRATEGIA VWAP SELL")
+                                    botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
@@ -132,12 +128,11 @@ def main() -> None:
                                     flagestrategy=0
 
                             if flagestrategy==2:
-                                #si la distancia es igual o va creciendo continuo, si no, cierro
-                                if  maxdist <= abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)):
-                                    maxdist = abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1))                            
+                                currentpnl = tr.truncate(float(exchange.fetch_balance()['info']['totalCrossUnPnl']),2)
+                                if  maxdist <= currentpnl:
+                                    maxdist = currentpnl
                                 else:
-                                    print("Cierro por distancia vwap bajando....")
-                                    print(str(tr.truncate(abs(100*((suddendf.ta.ema(9).iloc[-1]/suddendf.ta.vwap().iloc[-1])-1)),2))+"%")
+                                    print("Cierro porque empieza a bajar el PNL....")
                                     if tr.binancetamanioposicion(exchange,par)>0.0:
                                         tr.binancecierrotodo(client,par,exchange,'SELL') 
                                     else:
@@ -145,6 +140,9 @@ def main() -> None:
                                     client.futures_cancel_all_open_orders(symbol=par) 
                                     maxdist=0
                                     flagestrategy=0
+                        else:
+                            maxdist=0            
+                            flagestrategy=0
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
