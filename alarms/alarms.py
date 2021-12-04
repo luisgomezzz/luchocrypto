@@ -94,7 +94,7 @@ def main() -> None:
                                     flagestrategy=1
                                     botlaburo.send_text(par+" ESTRATEGIA MACD SELL")
                         
-                        if (flagestrategy ==0 or flagestrategy ==2) and dt.datetime.today().hour >=21 and dt.datetime.today().hour <=6: #no hay posicion abierta o la estrategia es VWAP
+                        if (flagestrategy ==0 or flagestrategy ==2) and (dt.datetime.today().hour >=21 or dt.datetime.today().hour <=6): #no hay posicion abierta o la estrategia es VWAP
                         
                             #EMA9 crossing VWAP
                             crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
@@ -111,35 +111,41 @@ def main() -> None:
                                     
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
-                            time.sleep(60)
-                            if flagestrategy==1:
-                            
-                                #si la distancia es igual o va creciendo continuo, si no, cierro
-                                if  maxdist <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]):
-                                    maxdist  = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1])                            
-                                else:
-                                    print("Cierro por Histogram bajando....")
-                                    if tr.binancetamanioposicion(exchange,par)>0.0:
-                                        tr.binancecierrotodo(client,par,exchange,'SELL') 
+                            time.sleep(30)                              
+                            if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                if flagestrategy==1:
+                                    suddendf.ta.strategy()
+                                    #si la distancia es igual o va creciendo continuo, si no, cierro
+                                    if  maxdist <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]):
+                                        maxdist  = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1])    
+                        
                                     else:
-                                        tr.binancecierrotodo(client,par,exchange,'BUY')
-                                    client.futures_cancel_all_open_orders(symbol=par) 
-                                    maxdist=0
-                                    flagestrategy=0
+                                        print("Cierro por Histogram bajando....")
+                                        if tr.binancetamanioposicion(exchange,par)>0.0:
+                                            tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                        else:
+                                            tr.binancecierrotodo(client,par,exchange,'BUY')
+                                        client.futures_cancel_all_open_orders(symbol=par) 
+                                        maxdist=0
+                                        flagestrategy=0
 
-                            if flagestrategy==2:
-                                currentpnl = tr.truncate(float(exchange.fetch_balance()['info']['totalCrossUnPnl']),2)
-                                if  maxdist <= currentpnl:
-                                    maxdist = currentpnl
-                                else:
-                                    print("Cierro porque empieza a bajar el PNL....")
-                                    if tr.binancetamanioposicion(exchange,par)>0.0:
-                                        tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                if flagestrategy==2:
+                                    currentpnl = tr.truncate(float(exchange.fetch_balance()['info']['totalCrossUnPnl']),2)
+                                    if  maxdist <= currentpnl:
+                                        maxdist = currentpnl
+
                                     else:
-                                        tr.binancecierrotodo(client,par,exchange,'BUY')
-                                    client.futures_cancel_all_open_orders(symbol=par) 
-                                    maxdist=0
-                                    flagestrategy=0
+                                        print("Cierro porque empieza a bajar el PNL....")
+                                        if tr.binancetamanioposicion(exchange,par)>0.0:
+                                            tr.binancecierrotodo(client,par,exchange,'SELL') 
+                                        else:
+                                            tr.binancecierrotodo(client,par,exchange,'BUY')
+                                        client.futures_cancel_all_open_orders(symbol=par) 
+                                        maxdist=0
+                                        flagestrategy=0
+                            else:
+                                maxdist=0            
+                                flagestrategy=0                            
                         else:
                             maxdist=0            
                             flagestrategy=0
