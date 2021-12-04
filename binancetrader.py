@@ -27,13 +27,12 @@ def binancetrader(pair,side,bot):
 
                 tr.binancestoploss (pair,client,side,stopprice)
 
-                #if side == 'BUY':
-                #    limitside = 'SELL'
-                #else:
-                #    limitside = 'BUY'
-                #if tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')==True:
-                #    bot.send_text(pair+" - LIMIT GANANCIA CREADO "+ side)
-
+                if side == 'BUY':
+                    limitside = 'SELL'
+                else:
+                    limitside = 'BUY'
+                tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=0.38,lado=limitside,tamanio='')
+                
                 #if tr.binancetakeprofit(pair,client,side,porc=0.32)==True:
                 #    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
