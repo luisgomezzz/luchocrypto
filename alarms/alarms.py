@@ -111,7 +111,8 @@ def main() -> None:
                                     
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
-                            time.sleep(30)                              
+                            tr.sound()
+                            time.sleep(30)                                                          
                             if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 if flagestrategy==1:
                                     suddendf.ta.strategy()
