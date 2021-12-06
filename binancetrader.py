@@ -25,7 +25,7 @@ def binancetrader(pair,side,bot):
                 else:
                     stopprice = currentprice+(currentprice*0.2/100)
 
-                tr.binancestoploss (pair,client,side,stopprice)
+                #tr.binancestoploss (pair,client,side,stopprice)
 
                 if side == 'BUY':
                     limitside = 'SELL'
