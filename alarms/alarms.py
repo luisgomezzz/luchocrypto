@@ -17,7 +17,8 @@ import datetime as dt
 
 botlaburo = tr.creobot('laburo')
 botamigos = tr.creobot('amigos') 
-
+apalancamiento = 50
+margen = 'CROSSED'
 temporalidad='1m'
 
 def main() -> None:
@@ -77,6 +78,7 @@ def main() -> None:
                             suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
                             print ("\033[A                                                                       \033[A")
 
+                            '''
                             #MACD crosses signals 
                             crossmacd=(ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
                             if  crossmacd[0]==1 and crossmacd[1]==1 and crossmacd[2]==1 and crossmacd[3]==0 \
@@ -93,26 +95,53 @@ def main() -> None:
                                     bt.binancetrader(par,'SELL',botlaburo)
                                     flagestrategy=1
                                     botlaburo.send_text(par+" ESTRATEGIA MACD SELL")
-                        
-                        if (flagestrategy ==0 or flagestrategy ==2) and (dt.datetime.today().hour >=21 or dt.datetime.today().hour <=6): #no hay posicion abierta o la estrategia es VWAP
+                            '''
+                        if (flagestrategy ==0 or flagestrategy ==2) and (dt.datetime.today().hour ==21): #no hay posicion abierta o la estrategia es VWAP
                         
                             #EMA9 crossing VWAP
                             crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
                             if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
                                     print(" ESTRATEGIA VWAP BUY\n")
+                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+
+                                    try: 
+                                        print("\rDefiniendo Cross/Isolated...")
+                                        client.futures_change_margin_type(symbol=par, marginType=margen)
+                                    except BinanceAPIException as a:
+                                        if a.message!="No need to change margin type.":
+                                            print("Except 7",a.status_code,a.message)
+                                        else:
+                                            print("Done!")   
+                                        pass  
+
                                     bt.binancetrader(par,'BUY',botlaburo)
                                     flagestrategy=2
                                     botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                             if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
                                     print("ESTRATEGIA VWAP SELL\n")
+
+                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+
+                                    try: 
+                                        print("\rDefiniendo Cross/Isolated...")
+                                        client.futures_change_margin_type(symbol=par, marginType=margen)
+                                    except BinanceAPIException as a:
+                                        if a.message!="No need to change margin type.":
+                                            print("Except 7",a.status_code,a.message)
+                                        else:
+                                            print("Done!")   
+                                        pass  
+
                                     bt.binancetrader(par,'SELL',botlaburo)      
                                     flagestrategy=2
                                     botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     
                         #Hay posicion abierta?
-                        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:   
+                        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0: 
+
                             tr.sound()
-                            time.sleep(30)                                                          
+                            #time.sleep(30)     
+                            sys.exit()                                                     
                             if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 if flagestrategy==1:
                                     suddendf.ta.strategy()
