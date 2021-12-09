@@ -9,7 +9,7 @@ client = Client(binance_api, binance_secret)
 def binancetrader(pair,side,bot):
     # Si no hay posiciones la creo. Si existe una posicion para el par analizado entonces se cierra en caso de que 
     # cambie de sentido.
-    porcentajeentrada=1000
+    porcentajeentrada=2500
     exchange=tr.binanceexchange(binance_api,binance_secret)
     micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
     size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
