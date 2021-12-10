@@ -9,7 +9,7 @@ client = Client(binance_api, binance_secret)
 def binancetrader(pair,side,bot):
     # Si no hay posiciones la creo. Si existe una posicion para el par analizado entonces se cierra en caso de que 
     # cambie de sentido.
-    porcentajeentrada=2500
+    porcentajeentrada=2200
     exchange=tr.binanceexchange(binance_api,binance_secret)
     micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
     size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
@@ -27,13 +27,7 @@ def binancetrader(pair,side,bot):
 
                 tr.binancestoploss (pair,client,side,stopprice)
 
-                if side == 'BUY':
-                    limitside = 'SELL'
-                else:
-                    limitside = 'BUY'
-                tr.binancecrearlimite(exchange,pair,client,posicionporc=90,distanciaproc=3,lado=limitside,tamanio='')
-                
-                if tr.binancetakeprofit(pair,client,side,porc=2)==True:
+                if tr.binancetakeprofit(pair,client,side,porc=0.68)==True:
                     bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
         else:
             
