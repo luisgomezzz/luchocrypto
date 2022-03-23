@@ -101,6 +101,7 @@ def main() -> None:
                             #EMA9 crossing VWAP
                             crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
                             if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
+                                    tr.sound()
                                     print(" ESTRATEGIA VWAP BUY\n")
                                     client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
@@ -118,8 +119,8 @@ def main() -> None:
                                     flagestrategy=2
                                     botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                             if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
+                                    tr.sound()
                                     print("ESTRATEGIA VWAP SELL\n")
-
                                     client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
                                     try: 
