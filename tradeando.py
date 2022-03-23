@@ -14,7 +14,7 @@ from mplfinance.original_flavor import candlestick2_ohlc
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import ccxt
-import talib.abstract as tl
+#import talib.abstract as tl
 import pandas_ta as ta
 from os import system, name
 import os
