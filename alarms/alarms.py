@@ -12,7 +12,6 @@ sys.path.insert(1,'./')
 import tradeando as tr
 import pandas_ta as ta
 import binancetrader as bt
-import time
 import datetime as dt
 
 botlaburo = tr.creobot('laburo')
@@ -23,17 +22,10 @@ temporalidad='1m'
 
 def main() -> None:
 
-    #procentajes de subida al cual se activa la alarma
-    porcentaje = 5
-
     #mazmorra - monedas que no quiero operar en orden de castigo
     #mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
     mazmorra=['NADA '] 
 
-    #alarma
-    #duration = 1000  # milliseconds
-    #freq = 440  # Hz
-   
     ventana = 240 #Ventana de búsqueda en minutos.   
 
     #login
@@ -60,126 +52,59 @@ def main() -> None:
             except:
                 par = s['symbol']      
 
-            #par = 'DASHUSDT' #por si solo quiero ver señales en un par
-
             if par not in mazmorra:
-
                 try:
-
                     try:
-
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
 
-                        if flagestrategy ==0 or flagestrategy ==1: #no hay posicion abierta o la estrategia es MACD
+                        suddendf=tr.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
+                        tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
+                        suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
+                        print ("\033[A                                                                       \033[A")
                         
-                            suddendf=tr.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
-                            tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-                            suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
-                            print ("\033[A                                                                       \033[A")
+                        #EMA9 crossing VWAP
+                        crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
+                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
+                                tr.sound()
+                                print(" ESTRATEGIA VWAP BUY\n")
+                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
-                            '''
-                            #MACD crosses signals 
-                            crossmacd=(ta.xsignals(suddendf.ta.macd()['MACD_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'], suddendf.ta.macd()['MACDs_12_26_9'],above=True)).iloc[-1]    
-                            if  crossmacd[0]==1 and crossmacd[1]==1 and crossmacd[2]==1 and crossmacd[3]==0 \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=90:
-                                    print(par+" ESTRATEGIA MACD BUY\n"+str(crossmacd))
-                                    print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
-                                    bt.binancetrader(par,'BUY',botlaburo)
-                                    flagestrategy=1
-                                    botlaburo.send_text(par+" ESTRATEGIA MACD BUY")
-                            if  crossmacd[0]==0 and crossmacd[1]==-1 and crossmacd[2]==0 and crossmacd[3]==1 \
-                                and abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1])>=90:
-                                    print(par+" ESTRATEGIA MACD SELL\n"+str(crossmacd))
-                                    print(str(tr.truncate(abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]*100/suddendf.ta.macd()['MACD_12_26_9'].iloc[-1]),2))+"%")
-                                    bt.binancetrader(par,'SELL',botlaburo)
-                                    flagestrategy=1
-                                    botlaburo.send_text(par+" ESTRATEGIA MACD SELL")
-                            '''
-                        if (flagestrategy ==0 or flagestrategy ==2) and (dt.datetime.today().hour ==21): #no hay posicion abierta o la estrategia es VWAP
-                        
-                            #EMA9 crossing VWAP
-                            crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                            if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
-                                    tr.sound()
-                                    print(" ESTRATEGIA VWAP BUY\n")
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                try: 
+                                    print("\rDefiniendo Cross/Isolated...")
+                                    client.futures_change_margin_type(symbol=par, marginType=margen)
+                                except BinanceAPIException as a:
+                                    if a.message!="No need to change margin type.":
+                                        print("Except 7",a.status_code,a.message)
+                                    else:
+                                        print("Done!")   
+                                    pass  
 
-                                    try: 
-                                        print("\rDefiniendo Cross/Isolated...")
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        else:
-                                            print("Done!")   
-                                        pass  
+                                bt.binancetrader(par,'BUY',botlaburo)
+                                flagestrategy=2
+                                botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
+                        if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
+                                tr.sound()
+                                print("ESTRATEGIA VWAP SELL\n")
+                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
-                                    bt.binancetrader(par,'BUY',botlaburo)
-                                    flagestrategy=2
-                                    botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
-                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
-                                    tr.sound()
-                                    print("ESTRATEGIA VWAP SELL\n")
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                try: 
+                                    print("\rDefiniendo Cross/Isolated...")
+                                    client.futures_change_margin_type(symbol=par, marginType=margen)
+                                except BinanceAPIException as a:
+                                    if a.message!="No need to change margin type.":
+                                        print("Except 7",a.status_code,a.message)
+                                    else:
+                                        print("Done!")   
+                                    pass  
 
-                                    try: 
-                                        print("\rDefiniendo Cross/Isolated...")
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        else:
-                                            print("Done!")   
-                                        pass  
-
-                                    bt.binancetrader(par,'SELL',botlaburo)      
-                                    flagestrategy=2
-                                    botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
+                                bt.binancetrader(par,'SELL',botlaburo)      
+                                flagestrategy=2
+                                botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     
                         #Hay posicion abierta?
                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0: 
-
-                            tr.sound()
-                            #time.sleep(30)     
                             sys.exit()                                                     
-                            if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                if flagestrategy==1:
-                                    suddendf.ta.strategy()
-                                    #si la distancia es igual o va creciendo continuo, si no, cierro
-                                    if  maxdist <= abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1]):
-                                        maxdist  = abs(suddendf.ta.macd()['MACDh_12_26_9'].iloc[-1])    
-                        
-                                    else:
-                                        print("Cierro por Histogram bajando....")
-                                        if tr.binancetamanioposicion(exchange,par)>0.0:
-                                            tr.binancecierrotodo(client,par,exchange,'SELL') 
-                                        else:
-                                            tr.binancecierrotodo(client,par,exchange,'BUY')
-                                        client.futures_cancel_all_open_orders(symbol=par) 
-                                        maxdist=0
-                                        flagestrategy=0
-
-                                if flagestrategy==2:
-                                    currentpnl = tr.truncate(float(exchange.fetch_balance()['info']['totalCrossUnPnl']),2)
-                                    if  maxdist <= currentpnl:
-                                        maxdist = currentpnl
-
-                                    else:
-                                        print("Cierro porque empieza a bajar el PNL....")
-                                        if tr.binancetamanioposicion(exchange,par)>0.0:
-                                            tr.binancecierrotodo(client,par,exchange,'SELL') 
-                                        else:
-                                            tr.binancecierrotodo(client,par,exchange,'BUY')
-                                        client.futures_cancel_all_open_orders(symbol=par) 
-                                        maxdist=0
-                                        flagestrategy=0
-                            else:
-                                maxdist=0            
-                                flagestrategy=0                            
-                        else:
-                            maxdist=0            
-                            flagestrategy=0
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
