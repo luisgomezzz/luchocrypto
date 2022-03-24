@@ -9,12 +9,13 @@ from mplfinance.original_flavor import candlestick2_ohlc
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import ccxt
-#import talib.abstract as tl
-import pandas_ta as ta
 from os import system, name
 import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
+
+binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
+binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 
 def binancetakeprofit(pair,client,side,porc):
    created=True

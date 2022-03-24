@@ -9,15 +9,41 @@ yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
 import pandas_ta as ta
-import binancetrader as bt
 
 botlaburo = ut.creobot('laburo')
 botamigos = ut.creobot('amigos') 
 apalancamiento = 50
 margen = 'CROSSED'
 temporalidad='1m'
+client = Client(ut.binance_api, ut.binance_secret)
+
+def posicionfuerte(pair,side,bot):
+    # Si no hay posiciones la creo. 
+    porcentajeentrada=2200
+    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret)
+    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
+    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
+    try:
+        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
+            if ut.binancecreoposicion (pair,client,size,side)==True:
+
+                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+
+                if side =='BUY':
+                    stopprice = currentprice-(currentprice*0.2/100)
+                else:
+                    stopprice = currentprice+(currentprice*0.2/100)
+
+                ut.binancestoploss (pair,client,side,stopprice)
+
+                if ut.binancetakeprofit(pair,client,side,porc=0.20)==True:
+                    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
+    except:
+        pass           
 
 def main() -> None:
+
+    posicioncreada = False
 
     #mazmorra - monedas que no quiero operar en orden de castigo
     #mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
@@ -26,10 +52,7 @@ def main() -> None:
     ventana = 240 #Ventana de búsqueda en minutos.   
 
     #login
-    binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
-    binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-    client = Client(binance_api, binance_secret)
-    exchange=ut.binanceexchange(binance_api,binance_secret)
+    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret)
 
     #*****************************************************PROGRAMA PRINCIPAL *************************************************************
     ut.clear()
@@ -76,9 +99,11 @@ def main() -> None:
                                         print("Done!")   
                                     pass  
 
-                                bt.binancetrader(par,'BUY',botlaburo)
+                                posicionfuerte(par,'BUY',botlaburo)
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
-                        if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
+                                posicioncreada = True
+                        else: 
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
                                 ut.sound()
                                 print("ESTRATEGIA VWAP SELL\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -93,12 +118,16 @@ def main() -> None:
                                         print("Done!")   
                                     pass  
 
-                                bt.binancetrader(par,'SELL',botlaburo)      
+                                posicionfuerte(par,'SELL',botlaburo)      
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
+                                posicioncreada = True
                                     
-                        #Hay posicion abierta?
-                        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0: 
-                            sys.exit()                                                     
+                        if posicioncreada == True:
+                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                sleep(1)
+
+                            client.futures_cancel_all_open_orders(symbol=par)
+                            posicioncreada == False
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
