@@ -3,19 +3,16 @@ from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import sys
 import pandas as pd
-from pandas.io.formats.format import DataFrameFormatter
 pd.core.common.is_list_like = pd.api.types.is_list_like
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
-from bob_telegram_tools.bot import TelegramBot
 sys.path.insert(1,'./')
-import tradeando as tr
+import utilidades as ut
 import pandas_ta as ta
 import binancetrader as bt
-import datetime as dt
 
-botlaburo = tr.creobot('laburo')
-botamigos = tr.creobot('amigos') 
+botlaburo = ut.creobot('laburo')
+botamigos = ut.creobot('amigos') 
 apalancamiento = 50
 margen = 'CROSSED'
 temporalidad='1m'
@@ -32,15 +29,14 @@ def main() -> None:
     binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
     binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
     client = Client(binance_api, binance_secret)
-    exchange=tr.binanceexchange(binance_api,binance_secret)
+    exchange=ut.binanceexchange(binance_api,binance_secret)
 
     #*****************************************************PROGRAMA PRINCIPAL *************************************************************
-    tr.clear()
+    ut.clear()
 
     lista_de_monedas = client.futures_exchange_info()['symbols']
     botlaburo.send_text("Starting...")
-    maxdist=0
-    flagestrategy = 0
+
     try:
 
         while True:
@@ -58,15 +54,15 @@ def main() -> None:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
 
-                        suddendf=tr.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
-                        tr.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
+                        suddendf=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
+                        ut.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
                         suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
                         print ("\033[A                                                                       \033[A")
                         
                         #EMA9 crossing VWAP
                         crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
                         if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
-                                tr.sound()
+                                ut.sound()
                                 print(" ESTRATEGIA VWAP BUY\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
@@ -81,10 +77,9 @@ def main() -> None:
                                     pass  
 
                                 bt.binancetrader(par,'BUY',botlaburo)
-                                flagestrategy=2
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                         if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
-                                tr.sound()
+                                ut.sound()
                                 print("ESTRATEGIA VWAP SELL\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
@@ -99,7 +94,6 @@ def main() -> None:
                                     pass  
 
                                 bt.binancetrader(par,'SELL',botlaburo)      
-                                flagestrategy=2
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     
                         #Hay posicion abierta?

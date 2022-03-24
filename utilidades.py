@@ -1,10 +1,5 @@
-from datetime import datetime
-from datetime import timedelta
 import math
-import yfinance
-import matplotlib.dates as mpl_dates
 import pandas as pd
-import numpy as np
 pd.core.common.is_list_like = pd.api.types.is_list_like
 import pandas_datareader.data as web
 import time

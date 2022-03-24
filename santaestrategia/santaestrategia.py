@@ -9,7 +9,6 @@ from binance.exceptions import BinanceAPIException
 import math
 import ccxt
 from pprint import pprint
-import datetime as dt
 
 #procentajes de subida al cual se
 porcentajedia = 5
