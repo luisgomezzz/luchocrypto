@@ -9,6 +9,7 @@ yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
 import pandas_ta as ta
+import datetime as dt
 
 botlaburo = ut.creobot('laburo')
 botamigos = ut.creobot('amigos') 
@@ -84,7 +85,7 @@ def main() -> None:
                         
                         #EMA9 crossing VWAP
                         crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0:
+                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 and (dt.datetime.today().hour ==21):
                                 ut.sound()
                                 print(" ESTRATEGIA VWAP BUY\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -103,7 +104,7 @@ def main() -> None:
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                                 posicioncreada = True
                         else: 
-                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1 and (dt.datetime.today().hour ==21):
                                 ut.sound()
                                 print("ESTRATEGIA VWAP SELL\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
