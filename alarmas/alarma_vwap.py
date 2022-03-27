@@ -129,6 +129,7 @@ def main() -> None:
 
                             client.futures_cancel_all_open_orders(symbol=par)
                             posicioncreada == False
+                            sys.exit()
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
