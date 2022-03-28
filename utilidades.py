@@ -1,10 +1,5 @@
-from datetime import datetime
-from datetime import timedelta
 import math
-import yfinance
-import matplotlib.dates as mpl_dates
 import pandas as pd
-import numpy as np
 pd.core.common.is_list_like = pd.api.types.is_list_like
 import pandas_datareader.data as web
 import time
@@ -14,12 +9,13 @@ from mplfinance.original_flavor import candlestick2_ohlc
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import ccxt
-import talib.abstract as tl
-import pandas_ta as ta
 from os import system, name
 import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
+
+binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
+binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 
 def binancetakeprofit(pair,client,side,porc):
    created=True
@@ -232,20 +228,14 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=30)
                                  cerrado = True 
                               except BinanceAPIException as a:
-                                 try:
-                                    print(a.message)
-                                    print("Intento 10")
-                                    client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=20)
-                                    cerrado = True    
-                                 except BinanceAPIException as a:
-                                    print(a.message)
-                                    print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-                                    os.system('play -nq -t alsa synth 0.3 tri F5')
-                                    time.sleep(0.5)
-                                    os.system('play -nq -t alsa synth 0.3 tri F5')
-                                    time.sleep(0.5)
-                                    os.system('play -nq -t alsa synth 0.3 tri F5')
-                                    input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
+                                 print(a.message)
+                                 print("Except FUNCION CIERROTODO",a.status_code,a.message)   
+                                 os.system('play -nq -t alsa synth 0.3 tri F5')
+                                 time.sleep(0.5)
+                                 os.system('play -nq -t alsa synth 0.3 tri F5')
+                                 time.sleep(0.5)
+                                 os.system('play -nq -t alsa synth 0.3 tri F5')
+                                 input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
