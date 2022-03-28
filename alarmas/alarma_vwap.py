@@ -86,7 +86,6 @@ def main() -> None:
                         #EMA9 crossing VWAP
                         crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
                         if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0: #and (dt.datetime.today().hour ==21):
-                                ut.sound()
                                 print(par+" ESTRATEGIA VWAP BUY\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
@@ -101,14 +100,14 @@ def main() -> None:
                                     pass  
 
                                 posicionfuerte(par,'BUY',botlaburo)
+                                ut.sound()
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                                 posicioncreada = True
                         else: 
                             if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:# and (dt.datetime.today().hour ==21):
-                                ut.sound()
+                                
                                 print(par+" ESTRATEGIA VWAP SELL\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-
                                 try: 
                                     print("\rDefiniendo Cross/Isolated...")
                                     client.futures_change_margin_type(symbol=par, marginType=margen)
@@ -120,6 +119,7 @@ def main() -> None:
                                     pass  
 
                                 posicionfuerte(par,'SELL',botlaburo)      
+                                ut.sound()
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                 posicioncreada = True
                                     
