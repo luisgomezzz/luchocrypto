@@ -80,14 +80,14 @@ def main() -> None:
 
                         suddendf=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
                         ut.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-                        suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
+                        suddendf.ta.study() # Runs and appends all indicators to the current DataFrame by default
                         print ("\033[A                                                                       \033[A")
                         
                         #EMA9 crossing VWAP
                         crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 and (dt.datetime.today().hour ==21):
+                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0: #and (dt.datetime.today().hour ==21):
                                 ut.sound()
-                                print(" ESTRATEGIA VWAP BUY\n")
+                                print(par+" ESTRATEGIA VWAP BUY\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
                                 try: 
@@ -104,9 +104,9 @@ def main() -> None:
                                 botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                                 posicioncreada = True
                         else: 
-                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1 and (dt.datetime.today().hour ==21):
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:# and (dt.datetime.today().hour ==21):
                                 ut.sound()
-                                print("ESTRATEGIA VWAP SELL\n")
+                                print(par+" ESTRATEGIA VWAP SELL\n")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
 
                                 try: 
@@ -129,7 +129,7 @@ def main() -> None:
 
                             client.futures_cancel_all_open_orders(symbol=par)
                             posicioncreada == False
-                            sys.exit()
+                            #sys.exit()
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
