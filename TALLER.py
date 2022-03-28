@@ -28,4 +28,4 @@ print(suddendf)
 
 suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
 
-print(suddendf)
+print(client.futures_ticker(symbol=par)['quoteVolume'])
