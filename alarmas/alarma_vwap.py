@@ -19,7 +19,7 @@ temporalidad='1m'
 client = Client(ut.binance_api, ut.binance_secret)
 
 def posicionfuerte(pair,side,bot):
-    # Si no hay posiciones la creo. 
+
     porcentajeentrada=2200
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret)
     micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
@@ -44,27 +44,17 @@ def posicionfuerte(pair,side,bot):
 
 def main() -> None:
 
-    posicioncreada = False
-
-    #mazmorra - monedas que no quiero operar en orden de castigo
-    #mazmorra=['GTCUSDT','TLMUSDT','KEEPUSDT','SFPUSDT','ALICEUSDT','SANDUSDT','STORJUSDT','RUNEUSDT','FTMUSDT','HBARUSDT','CVCUSDT','LRCUSDT','LINAUSDT','CELRUSDT','SKLUSDT','CTKUSDT','SNXUSDT','SRMUSDT','1INCHUSDT','ANKRUSDT'] 
-    mazmorra=['NADA '] 
-
+    posicioncreada = False    
+    mazmorra=['NADA '] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
+    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
+    lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
 
-    #login
-    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret)
-
-    #*****************************************************PROGRAMA PRINCIPAL *************************************************************
-    ut.clear()
-
-    lista_de_monedas = client.futures_exchange_info()['symbols']
-    botlaburo.send_text("Starting...")
+    botlaburo.send_text("Starting...") #mensaje de arranque telegram
+    ut.clear() #limpia terminal
 
     try:
-
         while True:
-
           for s in lista_de_monedas:
             try:  
                 position = exchange.fetch_balance()['info']['positions']
@@ -77,51 +67,63 @@ def main() -> None:
                     try:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
-
-                        suddendf=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
-                        ut.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-                        suddendf.ta.study() # Runs and appends all indicators to the current DataFrame by default
+                        df=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
+                        ut.timeindex(df) #Formatea el campo time para luego calcular las señales
+                        df.ta.study() # Runs and appends all indicators to the current DataFrame by default
                         print ("\033[A                                                                       \033[A")
                         
                         #EMA9 crossing VWAP
-                        crossvwap=(ta.xsignals(suddendf.ta.ema(9),suddendf.ta.vwap(),suddendf.ta.vwap(),above=True)).iloc[-1]
-                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 and client.futures_ticker(symbol=par)['quoteVolume']>=float(100000000): #and (dt.datetime.today().hour ==21):
-                                print(par+" ESTRATEGIA VWAP BUY\n")
-                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-
-                                try: 
-                                    print("\rDefiniendo Cross/Isolated...")
-                                    client.futures_change_margin_type(symbol=par, marginType=margen)
-                                except BinanceAPIException as a:
-                                    if a.message!="No need to change margin type.":
-                                        print("Except 7",a.status_code,a.message)
-                                    else:
-                                        print("Done!")   
-                                    pass  
-
-                                posicionfuerte(par,'BUY',botlaburo)
-                                ut.sound()
-                                botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
-                                posicioncreada = True
-                        else: 
-                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1 and client.futures_ticker(symbol=par)['quoteVolume']>=float(100000000):# and (dt.datetime.today().hour ==21):
+                        crossvwap=(ta.xsignals(df.ta.ema(9),df.ta.vwap(),df.ta.vwap(),above=True)).iloc[-1]
+                        if  crossvwap[0]==1 and crossvwap[1]==1 and crossvwap[2]==1 and crossvwap[3]==0 : #and (dt.datetime.today().hour ==21):
                                 
-                                print(par+" ESTRATEGIA VWAP SELL\n")
-                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-                                try: 
-                                    print("\rDefiniendo Cross/Isolated...")
-                                    client.futures_change_margin_type(symbol=par, marginType=margen)
-                                except BinanceAPIException as a:
-                                    if a.message!="No need to change margin type.":
-                                        print("Except 7",a.status_code,a.message)
-                                    else:
-                                        print("Done!")   
-                                    pass  
+                                try:
+                                    volumen24h=client.futures_ticker(symbol=par)['quoteVolume']
+                                except:
+                                    volumen24h=0
 
-                                posicionfuerte(par,'SELL',botlaburo)      
-                                ut.sound()
-                                botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
-                                posicioncreada = True
+                                if float(volumen24h)>=float(100000000):    
+                                    print(par+" ESTRATEGIA VWAP BUY\n")
+                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+
+                                    try: 
+                                        print("\rDefiniendo Cross/Isolated...")
+                                        client.futures_change_margin_type(symbol=par, marginType=margen)
+                                    except BinanceAPIException as a:
+                                        if a.message!="No need to change margin type.":
+                                            print("Except 7",a.status_code,a.message)
+                                        else:
+                                            print("Done!")   
+                                        pass  
+
+                                    posicionfuerte(par,'BUY',botlaburo)
+                                    ut.sound()
+                                    #botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
+                                    posicioncreada = True
+                        else: 
+                            if  crossvwap[0]==0 and crossvwap[1]==-1 and crossvwap[2]==0 and crossvwap[3]==1:# and (dt.datetime.today().hour ==21):
+                                
+                                try:
+                                    volumen24h=client.futures_ticker(symbol=par)['quoteVolume']
+                                except:
+                                    volumen24h=0
+
+                                if float(volumen24h)>=float(100000000):    
+                                    print(par+" ESTRATEGIA VWAP SELL\n")
+                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                    try: 
+                                        print("\rDefiniendo Cross/Isolated...")
+                                        client.futures_change_margin_type(symbol=par, marginType=margen)
+                                    except BinanceAPIException as a:
+                                        if a.message!="No need to change margin type.":
+                                            print("Except 7",a.status_code,a.message)
+                                        else:
+                                            print("Done!")   
+                                        pass  
+
+                                    posicionfuerte(par,'SELL',botlaburo)      
+                                    ut.sound()
+                                    #botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
+                                    posicioncreada = True
                                     
                         if posicioncreada == True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
@@ -142,7 +144,6 @@ def main() -> None:
                     except Exception as falla:
                         sys.stdout.write("\rError1: "+str(falla)+"\033[K")
                         sys.stdout.flush()
-                        print("\n")
                         pass
                     
                 except KeyboardInterrupt:
