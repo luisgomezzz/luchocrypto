@@ -13,6 +13,8 @@ from os import system, name
 import os
 from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
+from typing import Tuple
+import numpy as np
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -427,3 +429,56 @@ def dibujo(par,watchchart=0):
         except Exception as e: 
             print(e)      
     return plt, lista
+
+def posicionfuerte(pair,side,client):
+
+    porcentajeentrada=2200
+    exchange=binanceexchange(binance_api,binance_secret)
+    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
+    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
+    try:
+        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
+            if binancecreoposicion (pair,client,size,side)==True:
+
+                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+
+                if side =='BUY':
+                    stopprice = currentprice-(currentprice*0.2/100)
+                else:
+                    stopprice = currentprice+(currentprice*0.2/100)
+
+                binancestoploss (pair,client,side,stopprice)
+
+                binancetakeprofit(pair,client,side,porc=0.20)
+    except:
+        pass      
+
+def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
+    """Indicate bearish and bullish fractal patterns using rolling windows.
+    :param df: OHLC data
+    :param period: number of lower (or higher) points on each side of a high (or low)
+    :return: tuple of boolean Series (bearish, bullish) where True marks a fractal pattern
+    """
+
+    window = 2 * period + 1 # default 5
+
+    bears = df['high'].rolling(window, center=True).apply(lambda x: x[period] == max(x), raw=True)
+    bulls = df['low'].rolling(window, center=True).apply(lambda x: x[period] == min(x), raw=True)
+
+    return bears, bulls
+
+def will_frac(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
+    """Indicate bearish and bullish fractal patterns using shifted Series.
+    :param df: OHLC data
+    :param period: number of lower (or higher) points on each side of a high (or low)
+    :return: tuple of boolean Series (bearish, bullish) where True marks a fractal pattern
+    """
+    periods = [p for p in range(-period, period + 1) if p != 0] # default [-2, -1, 1, 2]
+
+    highs = [df['high'] > df['high'].shift(p) for p in periods]
+    bears = pd.Series(np.logical_and.reduce(highs), index=df.index)
+
+    lows = [df['low'] < df['low'].shift(p) for p in periods]
+    bulls = pd.Series(np.logical_and.reduce(lows), index=df.index)
+
+    return bears, bulls      

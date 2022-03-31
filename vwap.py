@@ -12,35 +12,10 @@ import pandas_ta as ta
 import datetime as dt
 
 botlaburo = ut.creobot('laburo')
-botamigos = ut.creobot('amigos') 
 apalancamiento = 50
 margen = 'CROSSED'
 temporalidad='1m'
 client = Client(ut.binance_api, ut.binance_secret)
-
-def posicionfuerte(pair,side,bot):
-
-    porcentajeentrada=2200
-    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret)
-    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
-    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
-    try:
-        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
-            if ut.binancecreoposicion (pair,client,size,side)==True:
-
-                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
-
-                if side =='BUY':
-                    stopprice = currentprice-(currentprice*0.2/100)
-                else:
-                    stopprice = currentprice+(currentprice*0.2/100)
-
-                ut.binancestoploss (pair,client,side,stopprice)
-
-                if ut.binancetakeprofit(pair,client,side,porc=0.20)==True:
-                    bot.send_text(pair+" - TAKE_PROFIT_MARKET created "+ side)
-    except:
-        pass           
 
 def main() -> None:
 
@@ -95,7 +70,7 @@ def main() -> None:
                                             print("Done!")   
                                         pass  
 
-                                    posicionfuerte(par,'BUY',botlaburo)
+                                    ut.posicionfuerte(par,'BUY',botlaburo)
                                     ut.sound()
                                     #botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                                     posicioncreada = True
@@ -120,7 +95,7 @@ def main() -> None:
                                             print("Done!")   
                                         pass  
 
-                                    posicionfuerte(par,'SELL',botlaburo)      
+                                    ut.posicionfuerte(par,'SELL',botlaburo)      
                                     ut.sound()
                                     #botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     posicioncreada = True

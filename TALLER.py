@@ -11,21 +11,44 @@ import utilidades as ut
 import pandas_ta as ta
 import datetime as dt
 
+ut.clear()
+
 botlaburo = ut.creobot('laburo')
 botamigos = ut.creobot('amigos') 
 apalancamiento = 50
 margen = 'CROSSED'
-temporalidad='1m'
+temporalidad='5m'
 client = Client(ut.binance_api, ut.binance_secret)
-par = 'IOTAUSDT'
+par = 'LINKUSDT'
 ventana = 240 #Ventana de búsqueda en minutos.  
+posicion=[0,'NADA']
 
-suddendf=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # Buscar valores mínimos y máximos N (ventana) minutos para atrás.
-ut.timeindex(suddendf) #Formatea el campo time para luego calcular las señales
-suddendf.ta.study() # Runs and appends all indicators to the current DataFrame by default
 
-print(suddendf)
+df=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
 
-suddendf.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
+if ut.will_frac(df)[0].iloc[-1]==True:
+    posicion=[-1,'BEARS']
+else:
+    if ut.will_frac(df)[1].iloc[-1]==True:
+        posicion=[-1,'BULLS']
+    else:
+        if ut.will_frac(df)[0].iloc[-2]==True:
+            posicion=[-2,'BEARS']
+        else:
+            if ut.will_frac(df)[1].iloc[-2]==True:
+                posicion=[-2,'BULLS']
+            else:
+                if ut.will_frac(df)[0].iloc[-3]==True:
+                    posicion=[-3,'BEARS']
+                else:
+                    if ut.will_frac(df)[1].iloc[-3]==True:
+                        posicion=[-3,'BULLS']
+                    else:
+                        if ut.will_frac(df)[0].iloc[-4]==True:
+                            posicion=[-4,'BEARS']
+                        else:
+                            if ut.will_frac(df)[1].iloc[-4]==True:
+                                posicion=[-4,'BULLS']        
 
-print(client.futures_ticker(symbol=par)['quoteVolume'])
+print(posicion)
+
