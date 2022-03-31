@@ -58,19 +58,7 @@ def main() -> None:
 
                                 if float(volumen24h)>=float(100000000):    
                                     print(par+" ESTRATEGIA VWAP BUY\n")
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-
-                                    try: 
-                                        print("\rDefiniendo Cross/Isolated...")
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        else:
-                                            print("Done!")   
-                                        pass  
-
-                                    ut.posicionfuerte(par,'BUY',botlaburo)
+                                    ut.posicionfuerte(par,'BUY',client)
                                     ut.sound()
                                     #botlaburo.send_text(par+" ESTRATEGIA VWAP BUY ")
                                     posicioncreada = True
@@ -84,18 +72,7 @@ def main() -> None:
 
                                 if float(volumen24h)>=float(100000000):    
                                     print(par+" ESTRATEGIA VWAP SELL\n")
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-                                    try: 
-                                        print("\rDefiniendo Cross/Isolated...")
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        else:
-                                            print("Done!")   
-                                        pass  
-
-                                    ut.posicionfuerte(par,'SELL',botlaburo)      
+                                    ut.posicionfuerte(par,'SELL',client)      
                                     ut.sound()
                                     #botlaburo.send_text(par+" ESTRATEGIA VWAP SELL ")
                                     posicioncreada = True

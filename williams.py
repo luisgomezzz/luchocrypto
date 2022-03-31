@@ -11,8 +11,6 @@ import utilidades as ut
 import pandas_ta as ta
 
 botlaburo = ut.creobot('laburo')
-apalancamiento = 50
-margen = 'CROSSED'
 temporalidad='5m'
 client = Client(ut.binance_api, ut.binance_secret)         
 
@@ -78,17 +76,31 @@ def main() -> None:
                             
                             if posicion[1]=='BULLS':
                                 factral = df2.low.iloc[posicion[0]]
+                                lado='BUY'
+                                if ema20<ema50:
+                                    stopprice=ema20
+                                else:
+                                    stopprice=ema50
                             else:
                                 factral = df2.high.iloc[posicion[0]]
-                            
+                                lado='SELL'
+                                if ema20<ema50:
+                                    stopprice=ema50
+                                else:
+                                    stopprice=ema20
+
                             if ema20<ema50:
                                 if ema20<factral<ema50:
                                     print('-1-'+par+'-'+posicion[1])
+                                    ut.posicionfuerte(par,lado,client,stopprice)
                                     ut.sound()
+                                    sys.exit()
                             else:
                                 if ema20>factral>ema50:
                                     print('-2-'+par+'-'+posicion[1])
+                                    ut.posicionfuerte(par,lado,client,stopprice)
                                     ut.sound()
+                                    sys.exit()
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
