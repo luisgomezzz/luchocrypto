@@ -458,13 +458,13 @@ def posicionfuerte(pair,side,client,stopprice=0):
 
                if stopprice == 0:
                   if side =='BUY':
-                     stopprice = currentprice-(currentprice*0.26/100)
+                     stopprice = currentprice-(currentprice*0.4/100)
                   else:
-                     stopprice = currentprice+(currentprice*0.26/100)
+                     stopprice = currentprice+(currentprice*0.4/100)
 
                binancestoploss (pair,client,side,stopprice)
 
-               binancetakeprofit(pair,client,side,porc=0.20)
+               binancetakeprofit(pair,client,side,porc=0.18)
    except:
        pass      
 
