@@ -22,6 +22,7 @@ def main() -> None:
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicion=[0,'NADA']
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
+    posicioncreada = False
 
     ut.clear() #limpia terminal
 
@@ -81,24 +82,28 @@ def main() -> None:
                                 factral = df2.high.iloc[posicion[0]]
                                 lado='SELL'
 
-
                             if ema20>factral>ema50 and lado=='BUY':
                                     print('-1-'+par+'-'+posicion[1])
                                     ut.posicionfuerte(par,lado,client,ema50)
                                     ut.sound()
+                                    posicioncreada=True
                             else:
                                 if ema20<factral<ema50 and lado=='SELL':
                                     print('-2-'+par+'-'+posicion[1])
                                     ut.posicionfuerte(par,lado,client,ema50)
                                     ut.sound()
+                                    posicioncreada=True
 
-                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                sleep(1)
+                            if posicioncreada==True:
+                                while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                    sleep(1)
 
-                            client.futures_cancel_all_open_orders(symbol=par) 
-                            print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
-                            print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
-                            print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
+                                posicioncreada=False
+                                client.futures_cancel_all_open_orders(symbol=par) 
+                                
+                                print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
+                                print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
+                                print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
