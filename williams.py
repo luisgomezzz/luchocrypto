@@ -23,6 +23,7 @@ def main() -> None:
     posicion=[0,'NADA']
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
+    ratio=1.5 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
 
@@ -82,15 +83,27 @@ def main() -> None:
                                 factral = df2.high.iloc[posicion[0]]
                                 lado='SELL'
 
+
+                            currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+
+
                             if ema20>factral>ema50 and lado=='BUY':
                                     print('-1-'+par+'-'+posicion[1])
-                                    ut.posicionfuerte(par,lado,client,ema50)
+
+                                    porc_perdida=(1-(ema50/currentprice))*100
+                                    porc_beneficio=ratio*porc_perdida
+
+                                    ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)
                                     ut.sound()
                                     posicioncreada=True
                             else:
                                 if ema20<factral<ema50 and lado=='SELL':
                                     print('-2-'+par+'-'+posicion[1])
-                                    ut.posicionfuerte(par,lado,client,ema50)
+
+                                    porc_perdida=((ema50/currentprice)-1)*100
+                                    porc_beneficio=ratio*porc_perdida
+
+                                    ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)
                                     ut.sound()
                                     posicioncreada=True
 

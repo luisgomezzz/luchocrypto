@@ -430,11 +430,11 @@ def dibujo(par,watchchart=0):
             print(e)      
     return plt, lista
 
-def posicionfuerte(pair,side,client,stopprice=0):
+def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
 
    apalancamiento=50
    margen = 'CROSSED'
-   porcentajeentrada=2200
+   porcentajeentrada=3000
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
@@ -456,15 +456,19 @@ def posicionfuerte(pair,side,client,stopprice=0):
 
                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
+               #valores de stop y profit standard
                if stopprice == 0:
                   if side =='BUY':
                      stopprice = currentprice-(currentprice*0.4/100)
                   else:
                      stopprice = currentprice+(currentprice*0.4/100)
 
+               if porcprofit == 0:
+                  porcprofit = 0.18
+
                binancestoploss (pair,client,side,stopprice)
 
-               binancetakeprofit(pair,client,side,porc=0.18)
+               binancetakeprofit(pair,client,side,porcprofit)
    except:
        pass      
 
