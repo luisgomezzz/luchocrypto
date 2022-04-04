@@ -432,14 +432,17 @@ def dibujo(par,watchchart=0):
 
 def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
 
-   apalancamiento=50
+   apalancamiento=10
    margen = 'CROSSED'
-   porcentajeentrada=3000
+   porcentajeentrada=35
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
 
-   client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
+   if apalancamiento>80:
+      client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
+
+   '''
    try: 
        print("\rDefiniendo Cross/Isolated...")
        client.futures_change_margin_type(symbol=pair, marginType=margen)
@@ -449,6 +452,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
        else:
            print("Done!")   
        pass  
+   '''
 
    try:
        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
