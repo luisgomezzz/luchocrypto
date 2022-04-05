@@ -434,7 +434,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
 
    apalancamiento=10
    margen = 'CROSSED'
-   porcentajeentrada=35
+   porcentajeentrada=100
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))

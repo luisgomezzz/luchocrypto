@@ -83,11 +83,14 @@ def main() -> None:
                                 factral = df2.high.iloc[posicion[0]]
                                 lado='SELL'
 
+                            try:
+                                volumen24h=client.futures_ticker(symbol=par)['quoteVolume']
+                            except:
+                                volumen24h=0
 
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
 
-
-                            if ema20>factral>ema50 and lado=='BUY':
+                            if ema20>factral>ema50 and lado=='BUY' and float(volumen24h)>=float(100000000):
                                     print('-1-'+par+'-'+posicion[1])
 
                                     porc_perdida=(1-(ema50/currentprice))*100
@@ -97,7 +100,7 @@ def main() -> None:
                                     ut.sound()
                                     posicioncreada=True
                             else:
-                                if ema20<factral<ema50 and lado=='SELL':
+                                if ema20<factral<ema50 and lado=='SELL' and float(volumen24h)>=float(100000000):
                                     print('-2-'+par+'-'+posicion[1])
 
                                     porc_perdida=((ema50/currentprice)-1)*100
