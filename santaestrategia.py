@@ -147,9 +147,9 @@ class luchocripto():
    porcentajegananciadiario = 50 #porcentaje de ganancia de mi capital para el cual salgo.
    ventana = 40 #Ventana de búsqueda en minutos.   
    segundos_asedio = 1000000 #Segundos de asedio
-   apalancamiento = 10
+   apalancamiento = 10 #siempre en 10 segun la estrategia de santi
    margen = 'CROSSED'
-   porcentajeentrada = 80 #porcentaje de mi capital que coloco en entrada. poner en 10---dro
+   porcentajeentrada = 10 #porcentaje de mi capital que coloco en entrada. poner en 10 segun estrategia de santi
    porcentajeperdida = 10 #porcentaje de mi capital que asumo de pérdida.
 
    #login

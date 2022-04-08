@@ -430,28 +430,51 @@ def dibujo(par,watchchart=0):
             print(e)      
     return plt, lista
 
-def posicionfuerte(pair,side,client):
+def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
 
-    porcentajeentrada=2200
-    exchange=binanceexchange(binance_api,binance_secret)
-    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
-    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
-    try:
-        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
-            if binancecreoposicion (pair,client,size,side)==True:
+   apalancamiento=10
+   margen = 'CROSSED'
+   porcentajeentrada=100
+   exchange=binanceexchange(binance_api,binance_secret)
+   micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
+   size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
 
-                currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+   if apalancamiento>80:
+      client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
 
-                if side =='BUY':
-                    stopprice = currentprice-(currentprice*0.2/100)
-                else:
-                    stopprice = currentprice+(currentprice*0.2/100)
+   '''
+   try: 
+       print("\rDefiniendo Cross/Isolated...")
+       client.futures_change_margin_type(symbol=pair, marginType=margen)
+   except BinanceAPIException as a:
+       if a.message!="No need to change margin type.":
+           print("Except 7",a.status_code,a.message)
+       else:
+           print("Done!")   
+       pass  
+   '''
 
-                binancestoploss (pair,client,side,stopprice)
+   try:
+       if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
+           if binancecreoposicion (pair,client,size,side)==True:
 
-                binancetakeprofit(pair,client,side,porc=0.20)
-    except:
-        pass      
+               currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+
+               #valores de stop y profit standard
+               if stopprice == 0:
+                  if side =='BUY':
+                     stopprice = currentprice-(currentprice*0.4/100)
+                  else:
+                     stopprice = currentprice+(currentprice*0.4/100)
+
+               if porcprofit == 0:
+                  porcprofit = 0.18
+
+               binancestoploss (pair,client,side,stopprice)
+
+               binancetakeprofit(pair,client,side,porcprofit)
+   except:
+       pass      
 
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.

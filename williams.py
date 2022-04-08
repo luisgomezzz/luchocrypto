@@ -11,19 +11,19 @@ import utilidades as ut
 import pandas_ta as ta
 
 botlaburo = ut.creobot('laburo')
-apalancamiento = 50
-margen = 'CROSSED'
 temporalidad='5m'
 client = Client(ut.binance_api, ut.binance_secret)         
 
 def main() -> None:
 
-    posicioncreada = False    
     mazmorra=['NADA '] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicion=[0,'NADA']
+    saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
+    posicioncreada = False
+    ratio=0.75 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
 
@@ -78,17 +78,48 @@ def main() -> None:
                             
                             if posicion[1]=='BULLS':
                                 factral = df2.low.iloc[posicion[0]]
+                                lado='BUY'
                             else:
                                 factral = df2.high.iloc[posicion[0]]
-                            
-                            if ema20<ema50:
-                                if ema20<factral<ema50:
+                                lado='SELL'
+
+                            try:
+                                volumen24h=client.futures_ticker(symbol=par)['quoteVolume']
+                            except:
+                                volumen24h=0
+
+                            currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+
+                            if ema20>factral>ema50 and lado=='BUY' and float(volumen24h)>=float(100000000):
                                     print('-1-'+par+'-'+posicion[1])
+
+                                    porc_perdida=(1-(ema50/currentprice))*100
+                                    porc_beneficio=ratio*porc_perdida
+
+                                    ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)
                                     ut.sound()
+                                    posicioncreada=True
                             else:
-                                if ema20>factral>ema50:
+                                if ema20<factral<ema50 and lado=='SELL' and float(volumen24h)>=float(100000000):
                                     print('-2-'+par+'-'+posicion[1])
+
+                                    porc_perdida=((ema50/currentprice)-1)*100
+                                    porc_beneficio=ratio*porc_perdida
+
+                                    ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)
                                     ut.sound()
+                                    posicioncreada=True
+
+                            if posicioncreada==True:
+                                while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                    sleep(1)
+
+                                posicioncreada=False
+                                client.futures_cancel_all_open_orders(symbol=par) 
+                                
+                                print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
+                                print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
+                                print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
