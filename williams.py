@@ -23,7 +23,7 @@ def main() -> None:
     posicion=[0,'NADA']
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    ratio=1.5 #relación riesgo/beneficio 
+    ratio=0.75 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
 
