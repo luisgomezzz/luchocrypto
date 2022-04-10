@@ -121,7 +121,7 @@ def main() -> None:
                                 print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
                                 print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
 
-                                sys.exit()
+                                #sys.exit()
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")
