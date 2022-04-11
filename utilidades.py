@@ -468,7 +468,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = currentprice+(currentprice*0.4/100)
 
                if porcprofit == 0:
-                  porcprofit = 0.18
+                  porcprofit = 0.4
 
                binancestoploss (pair,client,side,stopprice)
 

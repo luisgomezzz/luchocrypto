@@ -20,8 +20,8 @@ apalancamiento = 50
 margen = 'CROSSED'
 temporalidad='3m'
 client = Client(ut.binance_api, ut.binance_secret)
-par = 'ADAUSDT'
-ventana = 240 #Ventana de búsqueda en minutos.  
+par = 'APEUSDT'
+ventana = 250 #Ventana de búsqueda en minutos.  
 posicion=[0,'NADA']
 exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
 
@@ -55,4 +55,5 @@ df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close
 
 df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
 
-print(df['signal'])
+#print(df['signal'])
+print(df.ta.ema(200).iloc[-1])

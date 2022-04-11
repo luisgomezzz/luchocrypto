@@ -47,8 +47,7 @@ def main() -> None:
                         df.ta.study() # Runs and appends all indicators to the current DataFrame by default
 
                         cross=(ta.xsignals(df.ta.cci(40),100,-100,above=True)).iloc[-1]
-                        if  cross[0]==1 and cross[1]==1 and cross[2]==1 and cross[3]==0: 
-                            print(par+" ESTRATEGIA psar BUY\n")
+                        if  cross[0]==1 and cross[1]==1 and cross[2]==1 and cross[3]==0:                             
 
                             high_9 = df.high.rolling(9).max()
                             low_9 = df.low.rolling(9).min()
@@ -69,13 +68,16 @@ def main() -> None:
                             df['signal'] = 0
                             df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
                             df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
-                            #ut.posicionfuerte(par,'BUY',client)
-                            ut.sound()
-                            print(df['signal'])
+                            
+                            currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+                            if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1) and currentprice>df.ta.ema(50).iloc[-1] and currentprice>df.ta.ema(200).iloc[-1]:
+                                print("- "+par+" ESTRATEGIA psar BUY\n")
+                                ut.posicionfuerte(par,'BUY',client)                                
+                                posicioncreada=True
+                                ut.sound()
                         else: 
                             if cross[0]==0 and cross[1]==-1 and cross[2]==0 and cross[3]==1:
-                                print(par+" ESTRATEGIA psar SELL\n")
-                                      
+                                                                      
                                 high_9 = df.high.rolling(9).max()
                                 low_9 = df.low.rolling(9).min()
                                 df['tenkan_sen_line'] = (high_9 + low_9) /2
@@ -95,9 +97,14 @@ def main() -> None:
                                 df['signal'] = 0
                                 df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
                                 df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
-                                #ut.posicionfuerte(par,'SELL',client)
-                                ut.sound()
-                                print(df['signal'])
+                                
+                                currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+                                if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1) and currentprice<df.ta.ema(50).iloc[-1] and currentprice<df.ta.ema(200).iloc[-1]:
+                                    print("- "+par+" ESTRATEGIA psar SELL\n")
+                                    ut.posicionfuerte(par,'SELL',client)
+                                    posicioncreada=True
+                                    ut.sound()
+
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
