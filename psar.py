@@ -23,6 +23,7 @@ def main() -> None:
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
     ratio=0.75 #relación riesgo/beneficio 
+    minvolumen24h=float(100000000)
 
     ut.clear() #limpia terminal
 
@@ -71,7 +72,7 @@ def main() -> None:
                             df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                            if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1) and currentprice>df.ta.ema(50).iloc[-1] and currentprice>df.ta.ema(200).iloc[-1]:
+                            if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1) and currentprice>df.ta.ema(50).iloc[-1] and currentprice>df.ta.ema(200).iloc[-1] and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
                                 print("- "+par+" ESTRATEGIA psar BUY\n")
                                 ut.posicionfuerte(par,'BUY',client)                                
                                 posicioncreada=True
@@ -100,7 +101,7 @@ def main() -> None:
                                 df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                                if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1) and currentprice<df.ta.ema(50).iloc[-1] and currentprice<df.ta.ema(200).iloc[-1]:
+                                if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1) and currentprice<df.ta.ema(50).iloc[-1] and currentprice<df.ta.ema(200).iloc[-1] and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
                                     print("- "+par+" ESTRATEGIA psar SELL\n")
                                     ut.posicionfuerte(par,'SELL',client)
                                     posicioncreada=True
