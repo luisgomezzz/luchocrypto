@@ -57,3 +57,5 @@ df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close
 
 #print(df['signal'])
 print(df.ta.ema(200).iloc[-1])
+
+help(ta.tsignals)

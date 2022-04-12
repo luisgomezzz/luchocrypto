@@ -46,8 +46,9 @@ def main() -> None:
                         ut.timeindex(df) #Formatea el campo time para luego calcular las señales
                         df.ta.study() # Runs and appends all indicators to the current DataFrame by default
 
-                        cross=(ta.xsignals(df.ta.cci(40),100,-100,above=True)).iloc[-1]
-                        if  cross[0]==1 and cross[1]==1 and cross[2]==1 and cross[3]==0:                             
+                        crosshigh=(ta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
+                        crosslow=(ta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
+                        if  (crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0):                             
 
                             high_9 = df.high.rolling(9).max()
                             low_9 = df.low.rolling(9).min()
@@ -76,7 +77,7 @@ def main() -> None:
                                 posicioncreada=True
                                 ut.sound()
                         else: 
-                            if cross[0]==0 and cross[1]==-1 and cross[2]==0 and cross[3]==1:
+                            if (crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1):
                                                                       
                                 high_9 = df.high.rolling(9).max()
                                 low_9 = df.low.rolling(9).min()
