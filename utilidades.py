@@ -510,7 +510,10 @@ def will_frac(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
 def closeallopenorders (client,pair):
    while client.futures_get_open_orders(symbol=pair) !=[]:
       print("Cerrado órdenes abiertas...")
-      client.futures_cancel_all_open_orders(symbol=pair)
+      try:
+         client.futures_cancel_all_open_orders(symbol=pair)
+      except:
+         pass
 
 def komucloud (df):
    high_9 = df.high.rolling(9).max()
