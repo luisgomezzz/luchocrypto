@@ -15,6 +15,7 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
+import talib
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -505,3 +506,30 @@ def will_frac(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     bulls = pd.Series(np.logical_and.reduce(lows), index=df.index)
 
     return bears, bulls      
+
+def closeallopenorders (client,pair):
+   while client.futures_get_open_orders(symbol=pair) !=[]:
+      print("Cerrado órdenes abiertas...")
+      client.futures_cancel_all_open_orders(symbol=pair)
+
+def komucloud (df):
+   high_9 = df.high.rolling(9).max()
+   low_9 = df.low.rolling(9).min()
+   df['tenkan_sen_line'] = (high_9 + low_9) /2
+   # Calculate Kijun-sen
+   high_26 = df.high.rolling(26).max()
+   low_26 = df.low.rolling(26).min()
+   df['kijun_sen_line'] = (high_26 + low_26) / 2
+   # Calculate Senkou Span A
+   df['senkou_spna_A'] = ((df.tenkan_sen_line + df.kijun_sen_line) / 2).shift(26)
+   # Calculate Senkou Span B
+   high_52 = df.high.rolling(52).max()
+   low_52 = df.high.rolling(52).min()
+   df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
+   # Calculate Chikou Span B
+   df['chikou_span'] = df.close.shift(-26)
+   df['SAR'] = talib.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
+   df['signal'] = 0
+   df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
+   df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
+      

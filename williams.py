@@ -116,7 +116,8 @@ def main() -> None:
                                     sleep(1)
 
                                 posicioncreada=False
-                                client.futures_cancel_all_open_orders(symbol=par) 
+                                
+                                ut.closeallopenorders(client,par)
                                 
                                 print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
                                 print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
