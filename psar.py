@@ -49,7 +49,8 @@ def main() -> None:
 
                         crosshigh=(ta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(ta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
-                        if  (crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0):                             
+                        if  ((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
+                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0)):
 
                             high_9 = df.high.rolling(9).max()
                             low_9 = df.low.rolling(9).min()
@@ -72,13 +73,20 @@ def main() -> None:
                             df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                            if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1) and currentprice>df.ta.ema(50).iloc[-1] and currentprice>df.ta.ema(200).iloc[-1] and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
+                            if (df['signal'].iloc[-1]==1 
+                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1
+                                or df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)
+                                and currentprice>df.ta.ema(50).iloc[-1] 
+                                and currentprice>df.ta.ema(200).iloc[-1] 
+                                and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+
                                 print("- "+par+" ESTRATEGIA psar BUY\n")
                                 ut.posicionfuerte(par,'BUY',client)                                
                                 posicioncreada=True
                                 ut.sound()
                         else: 
-                            if (crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1):
+                            if ((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
+                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)):
                                                                       
                                 high_9 = df.high.rolling(9).max()
                                 low_9 = df.low.rolling(9).min()
@@ -101,7 +109,13 @@ def main() -> None:
                                 df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                                if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1) and currentprice<df.ta.ema(50).iloc[-1] and currentprice<df.ta.ema(200).iloc[-1] and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
+                                if (df['signal'].iloc[-1]==-1 
+                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1
+                                    or df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1) 
+                                    and currentprice<df.ta.ema(50).iloc[-1] 
+                                    and currentprice<df.ta.ema(200).iloc[-1] 
+                                    and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+
                                     print("- "+par+" ESTRATEGIA psar SELL\n")
                                     ut.posicionfuerte(par,'SELL',client)
                                     posicioncreada=True
