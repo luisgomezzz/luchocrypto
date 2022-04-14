@@ -34,4 +34,5 @@ df.ta.study() # Runs and appends all indicators to the current DataFrame by defa
 
 ut.komucloud (df)
 
-print(df)
+
+print(df.ta.cci(40))

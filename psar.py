@@ -10,7 +10,6 @@ sys.path.insert(1,'./')
 import utilidades as ut
 import pandas_ta as ta
 
-
 temporalidad='3m'
 client = Client(ut.binance_api, ut.binance_secret)         
 
@@ -40,11 +39,8 @@ def main() -> None:
                     try:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
-                        df=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
-                 
-                        ###CODIGO
-                        ut.timeindex(df) #Formatea el campo time para luego calcular las señales
-                        df.ta.study() # Runs and appends all indicators to the current DataFrame by default
+                        
+                        df=ut.calculardf (par,temporalidad,ventana)
 
                         crosshigh=(ta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(ta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
@@ -62,6 +58,7 @@ def main() -> None:
                                 print("- "+par+" ESTRATEGIA psar BUY\n")
                                 ut.posicionfuerte(par,'BUY',client)                                
                                 posicioncreada=True
+                                lado='BUY'
                                 ut.sound()
                         else: 
                             if ((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
@@ -78,11 +75,28 @@ def main() -> None:
                                     print("- "+par+" ESTRATEGIA psar SELL\n")
                                     ut.posicionfuerte(par,'SELL',client)
                                     posicioncreada=True
+                                    lado='SELL'
                                     ut.sound()
 
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
+                                df=ut.calculardf (par,temporalidad,ventana)
+                                print(df.ta.cci(40).iloc[-1])
+                                if lado=='BUY':
+                                    if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
+                                        if df.ta.cci(40).iloc[-1] <=85:    
+                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                    else:
+                                        if df.ta.cci(40).iloc[-1] <=-115:    
+                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                else:
+                                    if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
+                                        if df.ta.cci(40).iloc[-1] >=115:    
+                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                    else:
+                                        if df.ta.cci(40).iloc[-1] >=-85:    
+                                            ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
 

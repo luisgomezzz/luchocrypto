@@ -539,3 +539,10 @@ def komucloud (df):
    df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
    df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
       
+def calculardf (par,temporalidad,ventana):
+   
+   df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
+   timeindex(df) #Formatea el campo time para luego calcular las señales
+   df.ta.study() # Runs and appends all indicators to the current DataFrame by default
+
+   return df
