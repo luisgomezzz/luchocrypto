@@ -82,20 +82,20 @@ def main() -> None:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
                                 df=ut.calculardf (par,temporalidad,ventana)
-                                print(df.ta.cci(40).iloc[-1])
+
                                 if lado=='BUY':
                                     if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=85:    
+                                        if df.ta.cci(40).iloc[-1] <=95:    
                                             ut.binancecierrotodo(client,par,exchange,'SELL')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] <=-115:    
+                                        if df.ta.cci(40).iloc[-1] <=-105:    
                                             ut.binancecierrotodo(client,par,exchange,'SELL')
                                 else:
                                     if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=115:    
+                                        if df.ta.cci(40).iloc[-1] >=105:    
                                             ut.binancecierrotodo(client,par,exchange,'BUY')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] >=-85:    
+                                        if df.ta.cci(40).iloc[-1] >=-95:    
                                             ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
