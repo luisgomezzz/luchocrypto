@@ -1,6 +1,5 @@
 import math
 import pandas as pd
-pd.core.common.is_list_like = pd.api.types.is_list_like
 import pandas_datareader.data as web
 import time
 import yfinance as yahoo_finance
@@ -15,7 +14,7 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
-import talib as tb
+import talib as tl
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -394,10 +393,10 @@ def dibujo(par,watchchart=0):
             for index, row in dfRes.iterrows():
                 if (not(index in removed_indexes)):
                     dropindexes = []
-                    dropindexes.append(index)
+                    dropindexes.pd.concat(index)
                     counter = 0
                     values = []
-                    values.append(row.Value)
+                    values.pd.concat(row.Value)
                     startx = index
                     endx = index
                     dir = row.Dir
@@ -405,8 +404,8 @@ def dibujo(par,watchchart=0):
                         if (not(index2 in removed_indexes)):
                             if (index!=index2 and abs(index2-index)<args.time and row2.Dir==dir):
                                 if (abs((row.Value/row2.Value)-1)<(args.dif/100)):
-                                        dropindexes.append(index2)
-                                        values.append(row2.Value)
+                                        dropindexes.pd.concat(index2)
+                                        values.pd.concat(row2.Value)
                                         if (index2<startx):
                                             startx = index2
                                         elif (index2>endx):
@@ -420,7 +419,7 @@ def dibujo(par,watchchart=0):
                         if (endx>x_max):
                            x_max=endx
                         plt.hlines(y=sum/len(values), xmin=startx, xmax=endx, linewidth=1, color='r')
-                        lista.append(sum/len(values))
+                        lista.pd.concat(sum/len(values))
 
             if (x_max>args.min):
                 plt.title(ticker)
@@ -471,7 +470,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = stoppricedefault
 
                if porcprofit == 0:
-                  porcprofit = 0.4
+                  porcprofit = 1.5
 
                if binancestoploss (pair,client,side,stopprice)==1:
                   binancestoploss (pair,client,side,stoppricedefault)
@@ -534,7 +533,7 @@ def komucloud (df):
    df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
    # Calculate Chikou Span B
    df['chikou_span'] = df.close.shift(-26)
-   df['SAR'] = tb.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
+   df['SAR'] = tl.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
    df['signal'] = 0
    df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
    df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
@@ -543,6 +542,6 @@ def calculardf (par,temporalidad,ventana):
    
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
-   df.ta.study() # Runs and appends all indicators to the current DataFrame by default
+   df.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
 
    return df
