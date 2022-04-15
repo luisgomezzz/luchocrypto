@@ -15,7 +15,7 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
-import talib
+import talib as tb
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -534,7 +534,7 @@ def komucloud (df):
    df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
    # Calculate Chikou Span B
    df['chikou_span'] = df.close.shift(-26)
-   df['SAR'] = talib.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
+   df['SAR'] = tb.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
    df['signal'] = 0
    df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
    df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
