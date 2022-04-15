@@ -1,3 +1,7 @@
+# 
+# Interpreter: Python 3.10.4
+#
+
 import math
 import pandas as pd
 import pandas_datareader.data as web
@@ -470,7 +474,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = stoppricedefault
 
                if porcprofit == 0:
-                  porcprofit = 1.5
+                  porcprofit = 0.5
 
                if binancestoploss (pair,client,side,stopprice)==1:
                   binancestoploss (pair,client,side,stoppricedefault)

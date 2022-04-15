@@ -8,7 +8,7 @@ import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
-import pandas_ta as ta
+import pandas_ta as pdta
 
 temporalidad='3m'
 client = Client(ut.binance_api, ut.binance_secret)         
@@ -42,8 +42,8 @@ def main() -> None:
                         
                         df=ut.calculardf (par,temporalidad,ventana)
 
-                        crosshigh=(ta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
-                        crosslow=(ta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
+                        crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
+                        crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
                         if  ((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
                             or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0)):
 
