@@ -369,7 +369,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = stoppricedefault
 
                if porcprofit == 0:
-                  porcprofit = 0.4
+                  porcprofit = 1
 
                if binancestoploss (pair,client,side,stopprice)==1:
                   binancestoploss (pair,client,side,stoppricedefault)
