@@ -21,7 +21,7 @@ def main() -> None:
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
-    posicioncreada = False
+    posicioncreada = bool
     minvolumen24h=float(100000000)
 
     ut.clear() #limpia terminal
@@ -43,41 +43,30 @@ def main() -> None:
                         
                         df=ut.calculardf (par,temporalidad,ventana)
 
-                        crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
-                        crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
-                        if  ((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
-                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0)):
+                        crosshigh=(pdta.xsignals(df.ta.ema(18),df.ta.ema(200),df.ta.ema(200),above=True)).iloc[-1]
+                        if  (crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0 and 40<df.ta.rsi(14).iloc[-1]<60):
 
                             ut.komucloud (df)
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                            if (df['signal'].iloc[-1]==1 
-                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
-                                and currentprice>df.ta.ema(50).iloc[-1] 
-                                and currentprice>df.ta.ema(200).iloc[-1] 
-                                and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+                            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
 
                                 print("\rHORA: ",dt.datetime.today())
-                                print("- "+par+" ESTRATEGIA psar BUY\n")                                
+                                print("- "+par+" ESTRATEGIA cruce 18 200 BUY\n")                                
                                 ut.posicionfuerte(par,'BUY',client)                                
                                 posicioncreada=True
                                 lado='BUY'
                                 ut.sound()
                         else: 
-                            if ((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
-                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)):
+                            if (crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1):
                                                                       
                                 ut.komucloud (df)
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                                if (df['signal'].iloc[-1]==-1 
-                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
-                                    and currentprice<df.ta.ema(50).iloc[-1] 
-                                    and currentprice<df.ta.ema(200).iloc[-1] 
-                                    and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+                                if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
 
                                     print("\rHORA: ",dt.datetime.today())
-                                    print("- "+par+" ESTRATEGIA psar SELL\n")                                    
+                                    print("- "+par+" ESTRATEGIA cruce 18 200 SELL\n")                                    
                                     ut.posicionfuerte(par,'SELL',client)
                                     posicioncreada=True
                                     lado='SELL'
@@ -86,23 +75,7 @@ def main() -> None:
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
-                                df=ut.calculardf (par,temporalidad,ventana)
-
-                                if lado=='BUY':
-                                    if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=95:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
-                                    else:
-                                        if df.ta.cci(40).iloc[-1] <=-105:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
-                                else:
-                                    if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=105:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
-                                    else:
-                                        if df.ta.cci(40).iloc[-1] >=-95:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
-
+                                
                             posicioncreada=False
 
                             ut.closeallopenorders(client,par)

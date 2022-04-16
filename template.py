@@ -8,9 +8,10 @@ import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
-import pandas_ta as ta
+import pandas_ta as pdta
+import datetime as dt
 
-temporalidad='5m'
+temporalidad='3m'
 client = Client(ut.binance_api, ut.binance_secret)         
 
 def main() -> None:
@@ -19,10 +20,9 @@ def main() -> None:
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
-    posicion=[0,'NADA']
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    ratio=0.75 #relación riesgo/beneficio 
+    minvolumen24h=float(100000000)
 
     ut.clear() #limpia terminal
 
@@ -40,20 +40,49 @@ def main() -> None:
                     try:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
                         sys.stdout.flush()
-                        df=ut.binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
-                 
-                        ###codigo
+                        
+                        df=ut.calculardf (par,temporalidad,ventana)
+
+                        crosshigh=(pdta.xsignals(df.ta.ema(18),df.ta.ema(200),df.ta.ema(200),above=True)).iloc[-1]
+                        if  (crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0):
+
+                            ut.komucloud (df)
+                            
+                            currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+                            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+
+                                print("\rHORA: ",dt.datetime.today())
+                                print("- "+par+" ESTRATEGIA cruce 18 200 BUY\n")                                
+                                #ut.posicionfuerte(par,'BUY',client)                                
+                                #posicioncreada=True
+                                lado='BUY'
+                                ut.sound()
+                        else: 
+                            if (crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1):
+                                                                      
+                                ut.komucloud (df)
+                                
+                                currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
+                                if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+
+                                    print("\rHORA: ",dt.datetime.today())
+                                    print("- "+par+" ESTRATEGIA cruce 18 200 SELL\n")                                    
+                                    #ut.posicionfuerte(par,'SELL',client)
+                                    #posicioncreada=True
+                                    lado='SELL'
+                                    ut.sound()
 
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
-
+                                
                             posicioncreada=False
-                            client.futures_cancel_all_open_orders(symbol=par) 
-                            
-                            print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
-                            print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
-                            print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
+
+                            ut.closeallopenorders(client,par)
+                            print("\rHORA: ",dt.datetime.today())
+                            print("GANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
+                            print("BALANCE TOTAL USDT: ",ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3),"USDT")
+                            print("BALANCE TOTAL BNB: ",ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3),"USDT")       
 
                             #sys.exit()
 
