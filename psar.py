@@ -51,6 +51,7 @@ def main() -> None:
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                             if (df['signal'].iloc[-1]==1 
+                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
                                 and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
@@ -68,6 +69,7 @@ def main() -> None:
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                                 if (df['signal'].iloc[-1]==-1 
+                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
                                     and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):

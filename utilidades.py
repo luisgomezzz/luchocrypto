@@ -1,5 +1,5 @@
-# 
-# Interpreter: Python 3.10.4
+# Toda la info
+# https://github.com/twopirllc/pandas-ta
 #
 
 import math
@@ -19,6 +19,7 @@ from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
 import talib as tl
+import pandas_ta as ta
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -474,7 +475,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = stoppricedefault
 
                if porcprofit == 0:
-                  porcprofit = 0.5
+                  porcprofit = 0.4
 
                if binancestoploss (pair,client,side,stopprice)==1:
                   binancestoploss (pair,client,side,stoppricedefault)
@@ -546,6 +547,6 @@ def calculardf (par,temporalidad,ventana):
    
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
-   df.ta.strategy() # Runs and appends all indicators to the current DataFrame by default
+   df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
 
    return df
