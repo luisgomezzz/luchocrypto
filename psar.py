@@ -45,8 +45,11 @@ def main() -> None:
 
                         crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
-                        if  ((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
-                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0)):
+                        
+                        if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
+                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
+                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<50):
 
                             ut.komucloud (df)
                             
@@ -64,8 +67,10 @@ def main() -> None:
                                 lado='BUY'
                                 ut.sound()
                         else: 
-                            if ((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
-                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)):
+                            if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
+                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)
+                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>50)):
                                                                       
                                 ut.komucloud (df)
                                 
@@ -90,17 +95,17 @@ def main() -> None:
 
                                 if lado=='BUY':
                                     if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=95:    
+                                        if df.ta.cci(40).iloc[-1] <=95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                             ut.binancecierrotodo(client,par,exchange,'SELL')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] <=-105:    
+                                        if df.ta.cci(40).iloc[-1] <=-105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                             ut.binancecierrotodo(client,par,exchange,'SELL')
                                 else:
                                     if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=105:    
+                                        if df.ta.cci(40).iloc[-1] >=105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                             ut.binancecierrotodo(client,par,exchange,'BUY')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] >=-95:    
+                                        if df.ta.cci(40).iloc[-1] >=-95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                             ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
