@@ -10,6 +10,7 @@ sys.path.insert(1,'./')
 import utilidades as ut
 import pandas_ta as pdta
 import datetime as dt
+from datetime import datetime
 
 temporalidad='3m'
 client = Client(ut.binance_api, ut.binance_secret)         
@@ -23,6 +24,8 @@ def main() -> None:
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
     minvolumen24h=float(100000000)
+    primerpar=str('')
+    minutes_diff=0
 
     ut.clear() #limpia terminal
 
@@ -36,9 +39,19 @@ def main() -> None:
                 par = s['symbol']      
 
             if par not in mazmorra:
+
+                if primerpar=='':
+                    primerpar=par
+                    datetime_start = datetime.today()
+                else:
+                    if primerpar==par:
+                        datetime_end = datetime.today()
+                        minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
+                        primerpar=''
+
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+"\033[K")
+                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(minutes_diff)+" min\033[K")
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
