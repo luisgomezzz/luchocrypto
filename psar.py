@@ -26,17 +26,23 @@ def main() -> None:
     minvolumen24h=float(100000000)
     primerpar=str('')
     minutes_diff=0
+    lista_monedas_filtradas=[]
 
     ut.clear() #limpia terminal
 
+    for s in lista_de_monedas:
+        try:  
+            par = s['symbol']
+            if float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
+                lista_monedas_filtradas.append(par)
+        except:
+            pass
+
     try:
+
         while True:
-          for s in lista_de_monedas:
-            try:  
-                position = exchange.fetch_balance()['info']['positions']
-                par=[p for p in position if p['notional'] != '0'][0]['symbol']
-            except:
-                par = s['symbol']      
+
+          for par in lista_monedas_filtradas:
 
             if par not in mazmorra:
 
@@ -71,7 +77,7 @@ def main() -> None:
                                 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
-                                and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+                                ):
 
                                 print("\rHORA: ",dt.datetime.today())
                                 print("- "+par+" ESTRATEGIA psar BUY\n")                                
@@ -92,7 +98,7 @@ def main() -> None:
                                     and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
-                                    and float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h):
+                                    ):
 
                                     print("\rHORA: ",dt.datetime.today())
                                     print("- "+par+" ESTRATEGIA psar SELL\n")                                    
