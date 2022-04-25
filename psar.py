@@ -33,6 +33,8 @@ def main() -> None:
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
+            sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
+            sys.stdout.flush()
             if float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
                 lista_monedas_filtradas.append(par)
         except:
@@ -57,7 +59,7 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(minutes_diff)+" min\033[K")
+                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K")
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
