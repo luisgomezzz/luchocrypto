@@ -173,6 +173,8 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
    
    print("FUNCION CIERROTODO")
    cerrado = False 
+   botlaburo = creobot('laburo')
+   mensaje=''
    
    try:      
       position = exchange.fetch_balance()['info']['positions']
@@ -242,7 +244,9 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                                  os.system('play -nq -t alsa synth 0.3 tri F5')
                                  time.sleep(0.5)
                                  os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
+                                 mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+                                 botlaburo.send_text(mensaje)
+                                 input(mensaje)            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
