@@ -183,33 +183,33 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
    except BinanceAPIException as a:
       try:
          print(a.message)
-         print("Intento 1")
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')               
-         cerrado = True
+         print("Intento 5")
+         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
+         cerrado = True      
       except BinanceAPIException as a:
          try:
             print(a.message)
-            print("Intento 2")
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000, reduceOnly='true')               
-            cerrado = True  
+            print("Intento 1")
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')               
+            cerrado = True
          except BinanceAPIException as a:
             try:
                print(a.message)
-               print("Intento 3")
-               client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000)               
-               cerrado = True
+               print("Intento 2")
+               client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000, reduceOnly='true')               
+               cerrado = True  
             except BinanceAPIException as a:
                try:
                   print(a.message)
-                  print("Intento 4")
-                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=1000)               
-                  cerrado = True  
+                  print("Intento 3")
+                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000)               
+                  cerrado = True
                except BinanceAPIException as a:
                   try:
                      print(a.message)
-                     print("Intento 5")
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
-                     cerrado = True           
+                     print("Intento 4")
+                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=1000)               
+                     cerrado = True  
                   except BinanceAPIException as a:
                      try:
                         print(a.message)
@@ -369,7 +369,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
                      stopprice = stoppricedefault
 
                if porcprofit == 0:
-                  porcprofit = 1
+                  porcprofit = 3
 
                if binancestoploss (pair,client,side,stopprice)==1:
                   binancestoploss (pair,client,side,stoppricedefault)

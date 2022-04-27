@@ -13,7 +13,8 @@ import datetime as dt
 from datetime import datetime
 
 temporalidad='3m'
-client = Client(ut.binance_api, ut.binance_secret)         
+client = Client(ut.binance_api, ut.binance_secret)   
+botlaburo = ut.creobot('laburo')      
 
 def main() -> None:
 
@@ -132,11 +133,17 @@ def main() -> None:
                             posicioncreada=False
 
                             ut.closeallopenorders(client,par)
-                            print("\rHORA: ",dt.datetime.today())
-                            print("GANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
-                            print("BALANCE TOTAL USDT: ",ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3),"USDT")
-                            print("BALANCE TOTAL BNB: ",ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3),"USDT")       
 
+                            try:
+                                mensaje=par+"\nHORA: "+str(dt.datetime.today())
+                                mensaje=mensaje+"\nGANANCIA ACUMULADA: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
+                                mensaje=mensaje+"\nBALANCE TOTAL USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
+                                mensaje=mensaje+"\nBALANCE TOTAL BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
+                                botlaburo.send_text(mensaje)
+                            except:
+                                pass
+
+                            print(mensaje)
                             #sys.exit()
 
                     except KeyboardInterrupt:
