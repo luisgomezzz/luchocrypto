@@ -28,6 +28,7 @@ def main() -> None:
     primerpar=str('')
     minutes_diff=0
     lista_monedas_filtradas=[]
+    mensaje=''
 
     ut.clear() #limpia terminal
 
@@ -36,7 +37,7 @@ def main() -> None:
             par = s['symbol']
             sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
             sys.stdout.flush()
-            if float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h:
+            if float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par:
                 lista_monedas_filtradas.append(par)
         except:
             pass
@@ -86,8 +87,8 @@ def main() -> None:
                                 print("- "+par+" ESTRATEGIA psar BUY\n")                                
                                 ut.posicionfuerte(par,'BUY',client)                                
                                 posicioncreada=True
-                                lado='BUY'
-                                ut.sound()
+                                lado='BUY'                                
+                                mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
                         else: 
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
                                 or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)
@@ -108,7 +109,7 @@ def main() -> None:
                                     ut.posicionfuerte(par,'SELL',client)
                                     posicioncreada=True
                                     lado='SELL'
-                                    ut.sound()
+                                    mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
 
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
@@ -135,10 +136,11 @@ def main() -> None:
                             ut.closeallopenorders(client,par)
 
                             try:
-                                mensaje=par+"\nHORA: "+str(dt.datetime.today())
-                                mensaje=mensaje+"\nGANANCIA ACUMULADA: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
-                                mensaje=mensaje+"\nBALANCE TOTAL USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
-                                mensaje=mensaje+"\nBALANCE TOTAL BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
+                                mensaje=mensaje+"\nHora cierre: "+str(dt.datetime.today())
+                                mensaje=mensaje+"\nGanancia acumulada: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
+                                mensaje=mensaje+"\nBalance USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
+                                mensaje=mensaje+"\nBalance BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
+                                mensaje=mensaje+"\nVolumen: "+str(client.futures_ticker(symbol=par)['quoteVolume'])
                                 botlaburo.send_text(mensaje)
                             except:
                                 pass
