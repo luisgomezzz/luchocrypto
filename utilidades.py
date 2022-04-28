@@ -172,8 +172,7 @@ def creobot(tipo):
 def binancecierrotodo(client,par,exchange,lado) -> bool:
    
    print("FUNCION CIERROTODO")
-   cerrado = False 
-   botlaburo = creobot('laburo')
+   cerrado = False    
    mensaje=''
    
    try:      
@@ -185,33 +184,33 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
    except BinanceAPIException as a:
       try:
          print(a.message)
-         print("Intento 5")
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
-         cerrado = True      
+         print("Intento 1")
+         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')               
+         cerrado = True
       except BinanceAPIException as a:
          try:
             print(a.message)
-            print("Intento 1")
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100000, reduceOnly='true')               
-            cerrado = True
+            print("Intento 2")
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000, reduceOnly='true')               
+            cerrado = True  
          except BinanceAPIException as a:
             try:
                print(a.message)
-               print("Intento 2")
-               client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000, reduceOnly='true')               
-               cerrado = True  
+               print("Intento 3")
+               client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000)               
+               cerrado = True
             except BinanceAPIException as a:
                try:
                   print(a.message)
-                  print("Intento 3")
-                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=10000)               
-                  cerrado = True
+                  print("Intento 4")
+                  client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=1000)               
+                  cerrado = True  
                except BinanceAPIException as a:
                   try:
                      print(a.message)
-                     print("Intento 4")
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=1000)               
-                     cerrado = True  
+                     print("Intento 5")
+                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
+                     cerrado = True         
                   except BinanceAPIException as a:
                      try:
                         print(a.message)
@@ -239,11 +238,7 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                               except BinanceAPIException as a:
                                  print(a.message)
                                  print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 time.sleep(0.5)
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 time.sleep(0.5)
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
+                                 botlaburo = creobot('laburo')
                                  mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
                                  botlaburo.send_text(mensaje)
                                  input(mensaje)            
@@ -333,8 +328,9 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
-
+def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
+   
+   serror = True
    apalancamiento=10
    margen = 'CROSSED'
    porcentajeentrada=100
@@ -358,29 +354,34 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
    '''
 
    try:
-       if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
-           if binancecreoposicion (pair,client,size,side)==True:
+      if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
+         if binancecreoposicion (pair,client,size,side)==True:
 
-               currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+            currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
-               #valores de stop y profit standard
-               if stopprice == 0:
-                  if side =='BUY':
-                     stoppricedefault = currentprice-(currentprice*0.4/100)
-                     stopprice = stoppricedefault
-                  else:
-                     stoppricedefault = currentprice+(currentprice*0.4/100)
-                     stopprice = stoppricedefault
+            #valores de stop y profit standard
+            if stopprice == 0:
+               if side =='BUY':
+                  stoppricedefault = currentprice-(currentprice*0.4/100)
+                  stopprice = stoppricedefault
+               else:
+                  stoppricedefault = currentprice+(currentprice*0.4/100)
+                  stopprice = stoppricedefault
 
-               if porcprofit == 0:
-                  porcprofit = 3
+            if porcprofit == 0:
+               porcprofit = 3
 
-               if binancestoploss (pair,client,side,stopprice)==1:
-                  binancestoploss (pair,client,side,stoppricedefault)
+            if binancestoploss (pair,client,side,stopprice)==1:
+               binancestoploss (pair,client,side,stoppricedefault)
 
-               binancetakeprofit(pair,client,side,porcprofit)
+            binancetakeprofit(pair,client,side,porcprofit)
+         else:
+            serror=False
    except:
-       pass      
+      serror=False
+      pass    
+
+   return serror        
 
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.
