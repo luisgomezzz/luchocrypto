@@ -88,7 +88,7 @@ def main() -> None:
                                 print("- "+par+" ESTRATEGIA psar BUY\n")                                
                                 posicioncreada=ut.posicionfuerte(par,'BUY',client)                                                                
                                 lado='BUY'                                
-                                mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
+                                mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
                         else: 
                             #CRUCE HACIA ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
@@ -109,7 +109,7 @@ def main() -> None:
                                     print("- "+par+" ESTRATEGIA psar SELL\n")                                    
                                     posicioncreada=ut.posicionfuerte(par,'SELL',client)
                                     lado='SELL'
-                                    mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
+                                    mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
 
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
