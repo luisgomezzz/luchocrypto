@@ -70,8 +70,8 @@ def main() -> None:
                         crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
                         
                         #CRUCE HACIA ARRIBA
-                        if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0 and df.ta.cci(40).iloc[-1]>=115) 
-                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0 and df.ta.cci(40).iloc[-1]>=-85))
+                        if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
+                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
                             and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                             and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<50):
 
@@ -91,10 +91,10 @@ def main() -> None:
                                 mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
                         else: 
                             #CRUCE HACIA ABAJO
-                            if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1 and df.ta.cci(40).iloc[-1]<=85) 
-                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1 and df.ta.cci(40).iloc[-1]<=-115)
+                            if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
+                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1))
                                 and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>50)):
+                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>50):
                                                                       
                                 ut.komucloud (df)
                                 
