@@ -23,7 +23,8 @@ def main() -> None:
     posicion=[0,'NADA']
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    ratio=0.75 #relación riesgo/beneficio 
+    ratio=1.5 #relación riesgo/beneficio 
+    minvolumen24h=float(200000000)
 
     ut.clear() #limpia terminal
 
@@ -90,7 +91,7 @@ def main() -> None:
 
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
 
-                            if ema20>factral>ema50 and lado=='BUY' and float(volumen24h)>=float(100000000):
+                            if ema20>factral>ema50 and lado=='BUY' and float(volumen24h)>=minvolumen24h:
                                     print('-1-'+par+'-'+posicion[1])
 
                                     porc_perdida=(1-(ema50/currentprice))*100
@@ -100,7 +101,7 @@ def main() -> None:
                                     ut.sound()
                                     posicioncreada=True
                             else:
-                                if ema20<factral<ema50 and lado=='SELL' and float(volumen24h)>=float(100000000):
+                                if ema20<factral<ema50 and lado=='SELL' and float(volumen24h)>=minvolumen24h:
                                     print('-2-'+par+'-'+posicion[1])
 
                                     porc_perdida=((ema50/currentprice)-1)*100
@@ -115,11 +116,14 @@ def main() -> None:
                                     sleep(1)
 
                                 posicioncreada=False
-                                client.futures_cancel_all_open_orders(symbol=par) 
+                                
+                                ut.closeallopenorders(client,par)
                                 
                                 print("\rGANANCIA ACUMULADA: ",ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3),"%\033[K", ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2),"USDT")
                                 print("BALANCE TOTAL USDT: ",float(exchange.fetch_balance()['info']['totalWalletBalance']))
                                 print("BALANCE TOTAL BNB: ",float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])))       
+
+                                #sys.exit()
 
                     except KeyboardInterrupt:
                         print("\rSalida solicitada.\033[K")

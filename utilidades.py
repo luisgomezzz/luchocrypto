@@ -1,6 +1,9 @@
+# Toda la info
+# https://github.com/twopirllc/pandas-ta
+#
+
 import math
 import pandas as pd
-pd.core.common.is_list_like = pd.api.types.is_list_like
 import pandas_datareader.data as web
 import time
 import yfinance as yahoo_finance
@@ -15,6 +18,8 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
+import talib as tl
+import pandas_ta as ta
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -167,7 +172,8 @@ def creobot(tipo):
 def binancecierrotodo(client,par,exchange,lado) -> bool:
    
    print("FUNCION CIERROTODO")
-   cerrado = False 
+   cerrado = False    
+   mensaje=''
    
    try:      
       position = exchange.fetch_balance()['info']['positions']
@@ -204,7 +210,7 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                      print(a.message)
                      print("Intento 5")
                      client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=100,reduceOnly='true')
-                     cerrado = True           
+                     cerrado = True         
                   except BinanceAPIException as a:
                      try:
                         print(a.message)
@@ -232,12 +238,10 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
                               except BinanceAPIException as a:
                                  print(a.message)
                                  print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 time.sleep(0.5)
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 time.sleep(0.5)
-                                 os.system('play -nq -t alsa synth 0.3 tri F5')
-                                 input("QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO...")            
+                                 botlaburo = creobot('laburo')
+                                 mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+                                 botlaburo.send_text(mensaje)
+                                 input(mensaje)            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
@@ -324,114 +328,9 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def createZigZagPoints(dfSeries, minSegSize=0.1, sizeInDevs=0.5):
-
-	minRetrace = minSegSize
-	
-	curVal = dfSeries[0]
-	curPos = dfSeries.index[0]
-	curDir = 1
-	dfRes = pd.DataFrame(index=dfSeries.index, columns=["Dir", "Value"])
-	for ln in dfSeries.index:
-		if((dfSeries[ln] - curVal)*curDir >= 0):
-			curVal = dfSeries[ln]
-			curPos = ln
-		else:	   
-			retracePrc = abs((dfSeries[ln]-curVal)/curVal*100)
-			if(retracePrc >= minRetrace):
-				dfRes.loc[curPos, 'Value'] = curVal
-				dfRes.loc[curPos, 'Dir'] = curDir
-				curVal = dfSeries[ln]
-				curPos = ln
-				curDir = -1*curDir
-	dfRes[['Value']] = dfRes[['Value']].astype(float)
-	return(dfRes)
-
-def dibujo(par,watchchart=0):
-    name = par.replace("USDT", "-USD")
-    lista=[]
-
-    parser = ArgumentParser(description='Algorithmic Support and Resistance')
-    parser.add_argument('-t', '--tickers', default='SPY500', type=str, required=False, help='Used to look up a specific tickers. Commma seperated. Example: MSFT,AAPL,AMZN default: List of S&P 500 companies')
-    parser.add_argument('-p', '--period', default='3mo', type=str, required=False, help='Period to look back. valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max. default: 1d')
-    parser.add_argument('-i', '--interval', default='1h', type=str, required=False, help='Interval of each bar. valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo. default: 1m')
-    parser.add_argument('-d', '--dif', default='0.05', type=float, required=False, help='Max %% difference between two points to group them together. Default: 0.05')
-    parser.add_argument('--time', default='150', type=int, required=False, help='Max time measured in number of bars between two points to be grouped together. Default: 150')
-    parser.add_argument('-n', '--number', default='3', type=int, required=False, help='Min number of points in price range to draw a support/resistance line. Default: 3')
-    parser.add_argument('-m', '--min', default='150', type=int, required=False, help='Min number of bars from the start the support/resistance line has to be at to display chart. Default: 150')
-    args = parser.parse_args()
-
-    if (args.tickers=="SPY500"):
-        tickers = [name]
-    else:
-        tickers = args.tickers.split(",")
-
-    connected = False
-    while not connected:
-        try:
-            ticker_df = web.get_data_yahoo(tickers, period = args.period, interval = args.interval)
-            ticker_df = ticker_df.reset_index()
-            connected = True
-        except Exception as e:
-            print("type error: " + str(e))
-            time.sleep(5)
-            pass
-
-    for ticker in tickers:
-        try:
-            x_max = 0
-            fig, ax = plt.subplots()
-            if(len(tickers)!=1):
-                dfRes = createZigZagPoints(ticker_df.Close[ticker]).dropna()
-                candlestick2_ohlc(ax,ticker_df['Open'][ticker],ticker_df['High'][ticker],ticker_df['Low'][ticker],ticker_df['Close'][ticker],width=0.6, colorup='g', colordown='r')
-            else:
-                dfRes = createZigZagPoints(ticker_df.Close).dropna()
-                candlestick2_ohlc(ax,ticker_df['Open'],ticker_df['High'],ticker_df['Low'],ticker_df['Close'],width=0.6, colorup='g', colordown='r')
-            
-            plt.plot(dfRes['Value'])
-            removed_indexes = []
-            for index, row in dfRes.iterrows():
-                if (not(index in removed_indexes)):
-                    dropindexes = []
-                    dropindexes.append(index)
-                    counter = 0
-                    values = []
-                    values.append(row.Value)
-                    startx = index
-                    endx = index
-                    dir = row.Dir
-                    for index2, row2 in dfRes.iterrows():
-                        if (not(index2 in removed_indexes)):
-                            if (index!=index2 and abs(index2-index)<args.time and row2.Dir==dir):
-                                if (abs((row.Value/row2.Value)-1)<(args.dif/100)):
-                                        dropindexes.append(index2)
-                                        values.append(row2.Value)
-                                        if (index2<startx):
-                                            startx = index2
-                                        elif (index2>endx):
-                                            endx = index2
-                                        counter=counter+1
-                    if (counter>args.number):
-                        sum = 0
-                        removed_indexes.extend(dropindexes)
-                        for value in values:
-                            sum = sum + value
-                        if (endx>x_max):
-                           x_max=endx
-                        plt.hlines(y=sum/len(values), xmin=startx, xmax=endx, linewidth=1, color='r')
-                        lista.append(sum/len(values))
-
-            if (x_max>args.min):
-                plt.title(ticker)
-                if watchchart==1:
-                    plt.show()
-                return plt, lista    
-        except Exception as e: 
-            print(e)      
-    return plt, lista
-
-def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
-
+def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
+   
+   serror = True
    apalancamiento=10
    margen = 'CROSSED'
    porcentajeentrada=100
@@ -455,26 +354,34 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0):
    '''
 
    try:
-       if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
-           if binancecreoposicion (pair,client,size,side)==True:
+      if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
+         if binancecreoposicion (pair,client,size,side)==True:
 
-               currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
+            currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
 
-               #valores de stop y profit standard
-               if stopprice == 0:
-                  if side =='BUY':
-                     stopprice = currentprice-(currentprice*0.4/100)
-                  else:
-                     stopprice = currentprice+(currentprice*0.4/100)
+            #valores de stop y profit standard
+            if stopprice == 0:
+               if side =='BUY':
+                  stoppricedefault = currentprice-(currentprice*1/100)
+                  stopprice = stoppricedefault
+               else:
+                  stoppricedefault = currentprice+(currentprice*1/100)
+                  stopprice = stoppricedefault
 
-               if porcprofit == 0:
-                  porcprofit = 0.18
+            if porcprofit == 0:
+               porcprofit = 3
 
-               binancestoploss (pair,client,side,stopprice)
+            if binancestoploss (pair,client,side,stopprice)==1:
+               binancestoploss (pair,client,side,stoppricedefault)
 
-               binancetakeprofit(pair,client,side,porcprofit)
+            binancetakeprofit(pair,client,side,porcprofit)
+         else:
+            serror=False
    except:
-       pass      
+      serror=False
+      pass    
+
+   return serror        
 
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.
@@ -505,3 +412,40 @@ def will_frac(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     bulls = pd.Series(np.logical_and.reduce(lows), index=df.index)
 
     return bears, bulls      
+
+def closeallopenorders (client,pair):
+   while client.futures_get_open_orders(symbol=pair) !=[]:
+      print("Cerrado órdenes abiertas...")
+      try:
+         client.futures_cancel_all_open_orders(symbol=pair)
+      except:
+         pass
+
+def komucloud (df):
+   high_9 = df.high.rolling(9).max()
+   low_9 = df.low.rolling(9).min()
+   df['tenkan_sen_line'] = (high_9 + low_9) /2
+   # Calculate Kijun-sen
+   high_26 = df.high.rolling(26).max()
+   low_26 = df.low.rolling(26).min()
+   df['kijun_sen_line'] = (high_26 + low_26) / 2
+   # Calculate Senkou Span A
+   df['senkou_spna_A'] = ((df.tenkan_sen_line + df.kijun_sen_line) / 2).shift(26)
+   # Calculate Senkou Span B
+   high_52 = df.high.rolling(52).max()
+   low_52 = df.high.rolling(52).min()
+   df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
+   # Calculate Chikou Span B
+   df['chikou_span'] = df.close.shift(-26)
+   df['SAR'] = tl.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
+   df['signal'] = 0
+   df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
+   df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
+      
+def calculardf (par,temporalidad,ventana):
+   
+   df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
+   timeindex(df) #Formatea el campo time para luego calcular las señales
+   df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
+
+   return df
