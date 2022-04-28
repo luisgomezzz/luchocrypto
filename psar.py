@@ -117,13 +117,11 @@ def main() -> None:
                                 df=ut.calculardf (par,temporalidad,ventana)
 
                                 if lado=='BUY':
-                                    if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                    if df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        ut.binancecierrotodo(client,par,exchange,'SELL')
                                 else:
-                                    if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                    if df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
 
