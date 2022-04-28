@@ -85,8 +85,7 @@ def main() -> None:
 
                                 print("\rHORA: ",dt.datetime.today())
                                 print("- "+par+" ESTRATEGIA psar BUY\n")                                
-                                ut.posicionfuerte(par,'BUY',client)                                
-                                posicioncreada=True
+                                posicioncreada=ut.posicionfuerte(par,'BUY',client)                                                                
                                 lado='BUY'                                
                                 mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
                         else: 
@@ -106,8 +105,7 @@ def main() -> None:
 
                                     print("\rHORA: ",dt.datetime.today())
                                     print("- "+par+" ESTRATEGIA psar SELL\n")                                    
-                                    ut.posicionfuerte(par,'SELL',client)
-                                    posicioncreada=True
+                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
                                     lado='SELL'
                                     mensaje=par+" - Hora comienzo: "+str(dt.datetime.today())
 
