@@ -81,8 +81,10 @@ def main() -> None:
                             if (1==1
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
-                                and (df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
-                                or (df['signal'].iloc[-1]==1 and df['signal'].iloc[-2]==1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)))
+                                and 
+                                ((df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1))
+                                or 
+                                (df['signal'].iloc[-1]==1 and df['signal'].iloc[-2]==1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)))
                                 ):
 
                                 print("\rHORA: ",dt.datetime.today())
@@ -103,8 +105,10 @@ def main() -> None:
                                 if (1==1
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
-                                    and (df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
-                                    or (df['signal'].iloc[-1]==-1 and df['signal'].iloc[-2]==-1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1)))
+                                    and 
+                                    ((df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1))
+                                    or 
+                                    (df['signal'].iloc[-1]==-1 and df['signal'].iloc[-2]==-1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1)))
                                     ):
 
                                     print("\rHORA: ",dt.datetime.today())
