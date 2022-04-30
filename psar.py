@@ -78,10 +78,11 @@ def main() -> None:
                             ut.komucloud (df)
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                            if (df['signal'].iloc[-1]==1 
-                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
+                            if (1==1
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
+                                and df['signal'].iloc[-1]==1 
+                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
                                 ):
 
                                 print("\rHORA: ",dt.datetime.today())
@@ -99,10 +100,11 @@ def main() -> None:
                                 ut.komucloud (df)
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                                if (df['signal'].iloc[-1]==-1 
-                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
+                                if (1==1
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
+                                    and df['signal'].iloc[-1]==-1 
+                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
                                     ):
 
                                     print("\rHORA: ",dt.datetime.today())
@@ -112,8 +114,9 @@ def main() -> None:
                                     mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
 
                         if posicioncreada==True:
+                            ut.sound()
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                #sleep(1)
+                                sleep(1)
                                 df=ut.calculardf (par,temporalidad,ventana)
 
                                 if lado=='BUY':

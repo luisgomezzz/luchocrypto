@@ -331,9 +331,9 @@ def truncate(number, digits) -> float:
 def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
    
    serror = True
-   apalancamiento=10
+   apalancamiento=20
    margen = 'CROSSED'
-   porcentajeentrada=100
+   porcentajeentrada=300
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
