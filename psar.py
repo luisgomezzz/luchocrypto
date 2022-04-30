@@ -24,7 +24,7 @@ def main() -> None:
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    minvolumen24h=float(100000000)
+    minvolumen24h=float(0) #100000000
     primerpar=str('')
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -81,13 +81,13 @@ def main() -> None:
                             if (1==1
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
-                                and df['signal'].iloc[-1]==1 
-                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
+                                and (df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
+                                or (df['signal'].iloc[-1]==1 and df['signal'].iloc[-2]==1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)))
                                 ):
 
                                 print("\rHORA: ",dt.datetime.today())
                                 print("- "+par+" ESTRATEGIA psar BUY\n")                                
-                                posicioncreada=ut.posicionfuerte(par,'BUY',client)                                                                
+                                posicioncreada=ut.posicionfuerte(par,'BUY',client,df.ta.ema(50).iloc[-1],3)                                                                
                                 lado='BUY'                                
                                 mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
                         else: 
@@ -103,36 +103,39 @@ def main() -> None:
                                 if (1==1
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
-                                    and df['signal'].iloc[-1]==-1 
-                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
+                                    and (df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
+                                    or (df['signal'].iloc[-1]==-1 and df['signal'].iloc[-2]==-1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1)))
                                     ):
 
                                     print("\rHORA: ",dt.datetime.today())
                                     print("- "+par+" ESTRATEGIA psar SELL\n")                                    
-                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                    posicioncreada=ut.posicionfuerte(par,'SELL',client,df.ta.ema(50).iloc[-1],3)
                                     lado='SELL'
                                     mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
 
                         if posicioncreada==True:
+                            precioposicion = currentprice
                             ut.sound()
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
                                 df=ut.calculardf (par,temporalidad,ventana)
 
                                 if lado=='BUY':
-                                    if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
-                                    else:
-                                        if df.ta.cci(40).iloc[-1] <=-120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                    if float(client.get_symbol_ticker(symbol=par)["price"]) > precioposicion:
+                                        if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
+                                            if df.ta.cci(40).iloc[-1] <=80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                ut.binancecierrotodo(client,par,exchange,'SELL')
+                                        else:
+                                            if df.ta.cci(40).iloc[-1] <=-120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                ut.binancecierrotodo(client,par,exchange,'SELL')
                                 else:
-                                    if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
-                                    else:
-                                        if df.ta.cci(40).iloc[-1] >=-80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                    if float(client.get_symbol_ticker(symbol=par)["price"]) < precioposicion:
+                                        if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
+                                            if df.ta.cci(40).iloc[-1] >=120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                ut.binancecierrotodo(client,par,exchange,'BUY')
+                                        else:
+                                            if df.ta.cci(40).iloc[-1] >=-80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
 
