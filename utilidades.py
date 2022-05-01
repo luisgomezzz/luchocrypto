@@ -25,47 +25,26 @@ binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 
 def binancetakeprofit(pair,client,side,porc):
+   print("Creo el TAKE_PROFIT_MARKET...")
+
    created=True
    valor_actual=float(client.get_symbol_ticker(symbol=pair)["price"])
-   print("Creo el TAKE_PROFIT_MARKET...")
+
    if side=='BUY':
       precioprofit=valor_actual+(valor_actual*porc/100)
       side='SELL'         
    else:
       precioprofit=valor_actual-(valor_actual*porc/100)
       side='BUY'
+
    try:
       client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=truncate(precioprofit,get_priceprecision(client,pair)),closePosition=True)
-      print("Take profit creado1. \033[K")            
+      print("Take profit creado. \033[K")            
    except BinanceAPIException as a:
-      try:
-         print(a.message)
-         client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,4),closePosition=True)
-         print("Take profit creado2. \033[K")               
-      except BinanceAPIException as a:
-         try:
-            print(a.message)
-            client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,3),closePosition=True)
-            print("Take profit creado3. \033[K")
-         except BinanceAPIException as a:
-            try:
-               print(a.message)
-               client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,2),closePosition=True)
-               print("Take profit creado4. \033[K")
-            except BinanceAPIException as a:
-               try:
-                  print(a.message)
-                  client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=round(precioprofit,1),closePosition=True)
-                  print("Take profit creado5. \033[K")
-               except BinanceAPIException as a:
-                  try:
-                     print(a.message)
-                     client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=math.trunc(precioprofit),closePosition=True)
-                     print("Take profit creado6. \033[K")
-                  except BinanceAPIException as a:
-                     print(a.message,"no se pudo crear el take profit.")
-                     created=False
-                     pass
+      print(a.message,"no se pudo crear el take profit.")
+      created=False
+      pass
+
    return created
 
 def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio) -> bool:
@@ -80,7 +59,7 @@ def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,taman
       lado='BUY'
 
    if tamanio=='':
-      sizedesocupar=abs(math.trunc(binancetamanioposicion(exchange,par)*posicionporc/100))
+      sizedesocupar=abs(math.trunc(get_positionnotional(exchange,par)*posicionporc/100))
    else: 
       sizedesocupar=math.trunc(tamanio) # esto se hace porque el tamanio puede ir variando y la idea es que se tome una porcion del valor original.
 
@@ -119,51 +98,23 @@ def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,taman
                   return False
 
 def binancestoploss (pair,client,side,stopprice)-> int:
-         i=5 # decimales
-         retorno=0 # 0: creado, 1: Order would immediately trigger, 2: Reach max stop order limit, 3: otros
-         print("Stop loss")
-         if side == 'BUY':
-            side='SELL'
-         else:
-            side='BUY'
+   print("Stop loss")      
+   retorno=0 # 0: creado, 1: problema
+   
+   if side == 'BUY':
+      side='SELL'
+   else:
+      side='BUY'
 
-         try:
-            client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=truncate(stopprice,get_priceprecision(client,pair)))
-            print("Stop loss creado Nueva version.")
-         except:   
-            while i>=0:
-               try:
-                  if i!=0:       
-                     stopprice = truncate(stopprice,i)
-                     print("Intento con:",stopprice)
-                     client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
-                     print("Stop loss creado correctamente. Precio:",stopprice)
-                     i=-1
-                  else:
-                     stopprice = math.trunc(stopprice)
-                     print("Intento con:",stopprice)
-                     client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
-                     print("Stop loss creado. Precio:",stopprice)
-                     i=-1           
-               except BinanceAPIException as a:  
-                  if a.message == "Order would immediately trigger.":                 
-                     print("Se dispararía de inmediato.")
-                     i=-1 #salgo del bucle
-                     retorno = 1
-                  else:   
-                     if a.message == "Reach max stop order limit.":
-                        print("Número máximo de stop loss alcanzado.")
-                        i=-1 #salgo del bucle
-                        retorno = 2
-                     else:
-                        if i==-1: #otros errors.               
-                           print("Except stoploss1")
-                           print (a.status_code,a.message,stopprice)
-                           retorno = 3
-                        else: #aca entra si la presición no era la correcta y seguir sacando decimales.
-                           i=i-1
-                  pass   
-         return retorno
+   try:
+      client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=truncate(stopprice,get_priceprecision(client,pair)))
+      print("Stop loss creado Nueva version.")
+   except BinanceAPIException as a:
+      print(a.message,"no se pudo crear el take profit.")
+      retorno=1
+      pass
+
+   return retorno
 
 def creobot(tipo):
     if tipo=='amigos':
@@ -173,10 +124,13 @@ def creobot(tipo):
     token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
     return TelegramBot(token, chatid)
 
-def get_position_size(exchange,par):
+def get_positionamt(exchange,par) -> float:
    position = exchange.fetch_balance()['info']['positions']
-   pos = float([p for p in position if p['symbol'] == par][0]['positionAmt'])
-   return pos   
+   return float([p for p in position if p['symbol'] == par][0]['positionAmt'])
+
+def get_positionnotional(exchange,par) -> float:
+   position = exchange.fetch_balance()['info']['positions']
+   return float([p for p in position if p['symbol'] == par][0]['notional'])   
 
 def get_quantityprecision(client,par):
    info = client.futures_exchange_info()
@@ -190,101 +144,42 @@ def get_priceprecision(client,par):
       if x['symbol'] == par:
          return x['pricePrecision']                
 
-def binancecierrotodo(client,par,exchange,lado) -> bool:
-   
+def binancecierrotodo(client,par,exchange,lado) -> bool:   
    print("FUNCION CIERROTODO")
    cerrado = False    
    mensaje=''
    
    try:            
-      pos = abs(get_position_size(exchange,par))
+      pos = abs(get_positionamt(exchange,par))
       print(pos)
-      print("Intento 0")
       client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos, reduceOnly='true')
       cerrado = True
+      print("Posición cerrada.")
    except BinanceAPIException as a:
-      try:
-         print(a.message)
-         print("Intento 1")
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,5), reduceOnly='true')
-         cerrado = True
-      except BinanceAPIException as a:
-         try:
-            print(a.message)
-            print("Intento 1")
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,4), reduceOnly='true')
-            cerrado = True
-         except BinanceAPIException as a:
-            try:
-               print(a.message)
-               print("Intento 2")
-               client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,3), reduceOnly='true')
-               cerrado = True  
-            except BinanceAPIException as a:
-               try:
-                  print(a.message)
-                  print("Intento 3")
-                  client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,2), reduceOnly='true')
-                  cerrado = True
-               except BinanceAPIException as a:
-                  try:
-                     print(a.message)
-                     print("Intento 4")
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,1), reduceOnly='true')
-                     cerrado = True  
-                  except BinanceAPIException as a:
-                     try:
-                        print(a.message)
-                        print("Intento 5")
-                        client.futures_create_order(symbol=par, side=lado, type='MARKET', amount=truncate(pos,0), reduceOnly='true')
-                        cerrado = True         
-                     except BinanceAPIException as a:
-                        print(a.message)
-                        print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-                        botlaburo = creobot('laburo')
-                        mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-                        botlaburo.send_text(mensaje)
-                        input(mensaje)            
+      print(a.message)
+      print("Except FUNCION CIERROTODO",a.status_code,a.message)   
+      botlaburo = creobot('laburo')
+      mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+      botlaburo.send_text(mensaje)
+      input(mensaje)            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
    return cerrado
 
-def binancecreoposicion (par,client,size,lado) -> bool:
-         serror=True
+def binancecreoposicion (par,client,size,lado) -> bool:         
+   print("Creando posición NUEVA versión...")
+   serror=True
+            
+   try:            
+      client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=truncate(size,get_quantityprecision(client,par)))
+      print("Posición creada correctamente.")
+   except:
+      print("Falla al crear la posición.",size) 
+      serror=False
+      pass
 
-         try:
-            print("Creando posición NUEVA versión...")
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=truncate(size,get_quantityprecision(client,par)))
-            print("Posición creada correctamente.")
-         except:
-
-            i=4 #decimales
-            print("Creando posición vieja versión...")
-            while i>=0:
-               try:  
-                  if i==0:
-                     print("Intento con:",math.trunc(size))
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=str(math.trunc(size))) #cambio str
-                     i=-2
-                  else:
-                     size = truncate(size,i) #cambio 
-                     print("Intento con:",size)
-                     client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=str(size))   
-                     i=-2
-               except BinanceAPIException as a:
-                  print ("Except 6",a.status_code,a.message)
-                  i=i-1
-                  pass
-   
-            if i==-2:
-               print("Posición creada correctamente.")
-            else:
-               print("Falla al crear la posición.",size) 
-               serror=False
-               pass
-
-         return serror
+   return serror
 
 def binanceexchange(binance_api,binance_secret):
     #permite obtener el pnl y mi capital
@@ -297,10 +192,6 @@ def binanceexchange(binance_api,binance_secret):
         },
     }) 
     return exchange
-
-def binancetamanioposicion(exchange,par) -> float:
-   position = exchange.fetch_balance()['info']['positions']
-   return float([p for p in position if p['symbol'] == par][0]['notional'])
 
 def binancehistoricdf(pair,timeframe,limit):
     ## Datos para indicadores
@@ -342,9 +233,9 @@ def truncate(number, digits) -> float:
 def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
    
    serror = True
-   apalancamiento=20
+   apalancamiento=10
    margen = 'CROSSED'
-   porcentajeentrada=300
+   porcentajeentrada=100
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
