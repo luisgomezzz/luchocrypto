@@ -120,27 +120,35 @@ def main() -> None:
                         if posicioncreada==True:
                             ut.sound()
                             while posicioncreada==True:
-                            
-                                sleep(0.5)
-                                df=ut.calculardf (par,temporalidad,ventana)
 
-                                if lado=='BUY':
-                                        if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                            if df.ta.cci(40).iloc[-1] <=80 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                ut.binancecierrotodo(client,par,exchange,'SELL')
-                                        else:
-                                            if df.ta.cci(40).iloc[-1] <=-120 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                ut.binancecierrotodo(client,par,exchange,'SELL')
-                                else:
-                                        if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                            if df.ta.cci(40).iloc[-1] >=120 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                ut.binancecierrotodo(client,par,exchange,'BUY')
-                                        else:
-                                            if df.ta.cci(40).iloc[-1] >=-80 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                ut.binancecierrotodo(client,par,exchange,'BUY')                              
+                                ut.waiting()
+
+                                try:
+                                    df=ut.calculardf (par,temporalidad,ventana)
+
+                                    if lado=='BUY':
+                                            if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
+                                                if df.ta.cci(40).iloc[-1] <=80 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                    ut.binancecierrotodo(client,par,exchange,'SELL')
+                                                    posicioncreada=False
+                                            else:
+                                                if df.ta.cci(40).iloc[-1] <=-120 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                    ut.binancecierrotodo(client,par,exchange,'SELL')
+                                                    posicioncreada=False
+                                    else:
+                                            if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
+                                                if df.ta.cci(40).iloc[-1] >=120 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                    ut.binancecierrotodo(client,par,exchange,'BUY')
+                                                    posicioncreada=False
+                                            else:
+                                                if df.ta.cci(40).iloc[-1] >=-80 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                    ut.binancecierrotodo(client,par,exchange,'BUY')
+                                                    posicioncreada=False
+                                except:
+                                    pass
                                 
                                 leo = False
-                                while leo == False:
+                                while leo == False and posicioncreada==True:
                                     try:
                                         if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                             posicioncreada=True
