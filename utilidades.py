@@ -35,7 +35,7 @@ def binancetakeprofit(pair,client,side,porc):
       precioprofit=valor_actual-(valor_actual*porc/100)
       side='BUY'
    try:
-      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=precioprofit,closePosition=True)
+      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=truncate(precioprofit,get_priceprecision(client,pair)),closePosition=True)
       print("Take profit creado1. \033[K")            
    except BinanceAPIException as a:
       try:
@@ -127,38 +127,42 @@ def binancestoploss (pair,client,side,stopprice)-> int:
          else:
             side='BUY'
 
-         while i>=0:
-            try:
-               if i!=0:       
-                  stopprice = truncate(stopprice,i)
-                  print("Intento con:",stopprice)
-                  client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
-                  print("Stop loss creado correctamente. Precio:",stopprice)
-                  i=-1
-               else:
-                  stopprice = math.trunc(stopprice)
-                  print("Intento con:",stopprice)
-                  client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
-                  print("Stop loss creado. Precio:",stopprice)
-                  i=-1           
-            except BinanceAPIException as a:  
-               if a.message == "Order would immediately trigger.":                 
-                  print("Se dispararía de inmediato.")
-                  i=-1 #salgo del bucle
-                  retorno = 1
-               else:   
-                  if a.message == "Reach max stop order limit.":
-                     print("Número máximo de stop loss alcanzado.")
-                     i=-1 #salgo del bucle
-                     retorno = 2
+         try:
+            client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=truncate(stopprice,get_priceprecision(client,pair)))
+            print("Stop loss creado Nueva version.")
+         except:   
+            while i>=0:
+               try:
+                  if i!=0:       
+                     stopprice = truncate(stopprice,i)
+                     print("Intento con:",stopprice)
+                     client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
+                     print("Stop loss creado correctamente. Precio:",stopprice)
+                     i=-1
                   else:
-                     if i==-1: #otros errors.               
-                        print("Except stoploss1")
-                        print (a.status_code,a.message,stopprice)
-                        retorno = 3
-                     else: #aca entra si la presición no era la correcta y seguir sacando decimales.
-                        i=i-1
-               pass   
+                     stopprice = math.trunc(stopprice)
+                     print("Intento con:",stopprice)
+                     client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=stopprice)
+                     print("Stop loss creado. Precio:",stopprice)
+                     i=-1           
+               except BinanceAPIException as a:  
+                  if a.message == "Order would immediately trigger.":                 
+                     print("Se dispararía de inmediato.")
+                     i=-1 #salgo del bucle
+                     retorno = 1
+                  else:   
+                     if a.message == "Reach max stop order limit.":
+                        print("Número máximo de stop loss alcanzado.")
+                        i=-1 #salgo del bucle
+                        retorno = 2
+                     else:
+                        if i==-1: #otros errors.               
+                           print("Except stoploss1")
+                           print (a.status_code,a.message,stopprice)
+                           retorno = 3
+                        else: #aca entra si la presición no era la correcta y seguir sacando decimales.
+                           i=i-1
+                  pass   
          return retorno
 
 def creobot(tipo):
@@ -168,6 +172,23 @@ def creobot(tipo):
         chatid="@gofrecrypto" #canal
     token = "2108740619:AAHcUBakZLdoHYnvUvkBp6oq7SoS63erb2g"
     return TelegramBot(token, chatid)
+
+def get_position_size(exchange,par):
+   position = exchange.fetch_balance()['info']['positions']
+   pos = float([p for p in position if p['symbol'] == par][0]['positionAmt'])
+   return pos   
+
+def get_quantityprecision(client,par):
+   info = client.futures_exchange_info()
+   for x in info['symbols']:
+      if x['symbol'] == par:
+         return x['quantityPrecision']  
+
+def get_priceprecision(client,par):
+   info = client.futures_exchange_info()
+   for x in info['symbols']:
+      if x['symbol'] == par:
+         return x['pricePrecision']                
 
 def binancecierrotodo(client,par,exchange,lado) -> bool:
    
@@ -234,7 +255,7 @@ def binancecreoposicion (par,client,size,lado) -> bool:
 
          try:
             print("Creando posición NUEVA versión...")
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=truncate(size,get_precision(client,par)))
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=truncate(size,get_quantityprecision(client,par)))
             print("Posición creada correctamente.")
          except:
 
@@ -460,13 +481,3 @@ def waiting():
    print(bar[bar_i % len(bar)], end="\r")      
    bar_i += 1
    
-def get_position_size(exchange,par):
-   position = exchange.fetch_balance()['info']['positions']
-   pos = [p for p in position if p['symbol'] == par][0]['positionAmt']
-   return pos   
-
-def get_precision(client,par):
-   info = client.futures_exchange_info()
-   for x in info['symbols']:
-      if x['symbol'] == par:
-         return x['quantityPrecision']   

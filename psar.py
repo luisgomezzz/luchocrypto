@@ -144,8 +144,10 @@ def main() -> None:
                                                 if df.ta.cci(40).iloc[-1] >=-80 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
-                                except:
-                                    pass
+                                except BinanceAPIException as a:
+                                    print(a.message)
+                                    print("\nSALGO\n")
+                                    sys.exit()
                                 
                                 leo = False
                                 while leo == False and posicioncreada==True:
