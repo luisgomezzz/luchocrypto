@@ -143,6 +143,10 @@ def main() -> None:
                                                     or df['signal'].iloc[-1]==-1):  
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
+                                        else:
+                                            if df['signal'].iloc[-1]==-1:    
+                                                ut.binancecierrotodo(client,par,exchange,'SELL')
+                                                posicioncreada=False
                                     else:
                                         if float(client.get_symbol_ticker(symbol=par)["price"]) < precioposicion:
                                             if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
@@ -157,14 +161,18 @@ def main() -> None:
                                                     or df['signal'].iloc[-1]==1):
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
+                                        else:
+                                            if df['signal'].iloc[-1]==1:    
+                                                ut.binancecierrotodo(client,par,exchange,'SELL')
+                                                posicioncreada=False            
                                 except BinanceAPIException as a:
-                                    print(a.message)
-                                    print("\nSALGO\n")
-                                    sys.exit()
-                                except Exception as b:
-                                    sys.stdout.write("\rError1: "+str(b)+"\033[K")
+                                    sys.stdout.write("\rError1: "+str(a)+"\033[K")
                                     sys.stdout.flush()
-                                    sys.exit()
+                                    pass
+                                except Exception as b:
+                                    sys.stdout.write("\rError2: "+str(b)+"\033[K")
+                                    sys.stdout.flush()
+                                    pass
                                 
                                 leo = False
                                 while leo == False and posicioncreada==True:
