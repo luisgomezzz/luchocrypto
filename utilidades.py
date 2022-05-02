@@ -47,55 +47,28 @@ def binancetakeprofit(pair,client,side,porc):
 
    return created
 
-def binancecrearlimite(exchange,par,client,posicionporc,distanciaproc,lado,tamanio) -> bool:
+def binancecrearlimite(exchange,par,client,posicionporc,distanciaporc,lado) -> bool:
    print("Creo el limit ...")
    precio=float(client.get_symbol_ticker(symbol=par)["price"])
    
    if lado=='BUY':
-      precioprofit=precio-(precio*distanciaproc/100)
+      precioprofit=precio-(precio*distanciaporc/100)
       lado='SELL'
    else:
-      precioprofit=precio+(precio*distanciaproc/100)
+      precioprofit=precio+(precio*distanciaporc/100)
       lado='BUY'
 
-   if tamanio=='':
-      sizedesocupar=abs(math.trunc(get_positionnotional(exchange,par)*posicionporc/100))
-   else: 
-      sizedesocupar=math.trunc(tamanio) # esto se hace porque el tamanio puede ir variando y la idea es que se tome una porcion del valor original.
+   sizedesocupar=abs(truncate((get_positionamt(exchange,par)*posicionporc/100),get_quantityprecision(client,par)))
 
    print("Limit a:", sizedesocupar)
 
    try:
-      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,4))
-      print("Limit creado1. \033[K")   
+      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,get_priceprecision(client,par)))
+      print("Limit creado. \033[K")   
       return True         
    except BinanceAPIException as a:
-      try:
-         print(a.message)
-         client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,3))
-         print("Limit creado2. \033[K")       
-         return True        
-      except BinanceAPIException as a:
-         try:
-            print(a.message)
-            client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,2))
-            print("Limit creado3. \033[K")
-            return True
-         except BinanceAPIException as a:
-            try:
-               print(a.message)
-               client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=truncate(precioprofit,1))
-               print("Limit creado4. \033[K")
-               return True
-            except BinanceAPIException as a:
-               try:
-                  print(a.message)
-                  client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=math.trunc(precioprofit))
-                  print("Limit creado5. \033[K")
-                  return True
-               except BinanceAPIException as a:
-                  print(a.message,"no se pudo crear el Limit.")
-                  return False
+      print(a.message,"no se pudo crear el Limit.")
+      return False      
 
 def binancestoploss (pair,client,side,stopprice)-> int:
    print("Stop loss")      
@@ -239,6 +212,8 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
    exchange=binanceexchange(binance_api,binance_secret)
    micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
+   posicionporc = 50
+   distanciaporc = 1
 
    if apalancamiento>80:
       client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
@@ -265,6 +240,9 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
                binancestoploss (pair,client,side,stoppricedefault)
 
             binancetakeprofit(pair,client,side,porcprofit)
+
+            binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
+
          else:
             serror=False
    except:

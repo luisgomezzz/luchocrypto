@@ -122,34 +122,37 @@ def main() -> None:
                             precioposicion = currentprice
                             while posicioncreada==True:
 
-                                ut.waiting()
-
                                 try:
+                                    ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
 
                                     if lado=='BUY':
                                         if float(client.get_symbol_ticker(symbol=par)["price"]) > precioposicion:
                                             if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                                if df.ta.cci(40).iloc[-1] <=80 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                if df.ta.cci(40).iloc[-1] <=80 or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                             else:
-                                                if df.ta.cci(40).iloc[-1] <=-120 or 70<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                if df.ta.cci(40).iloc[-1] <=-120 or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                     else:
                                         if float(client.get_symbol_ticker(symbol=par)["price"]) < precioposicion:
                                             if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                                if df.ta.cci(40).iloc[-1] >=120 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                if df.ta.cci(40).iloc[-1] >=120 or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                             else:
-                                                if df.ta.cci(40).iloc[-1] >=-80 or 30>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                if df.ta.cci(40).iloc[-1] >=-80 or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                 except BinanceAPIException as a:
                                     print(a.message)
                                     print("\nSALGO\n")
+                                    sys.exit()
+                                except Exception as b:
+                                    sys.stdout.write("\rError1: "+str(b)+"\033[K")
+                                    sys.stdout.flush()
                                     sys.exit()
                                 
                                 leo = False
