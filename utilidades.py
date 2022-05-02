@@ -243,18 +243,6 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
    if apalancamiento>80:
       client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
 
-   '''
-   try: 
-       print("\rDefiniendo Cross/Isolated...")
-       client.futures_change_margin_type(symbol=pair, marginType=margen)
-   except BinanceAPIException as a:
-       if a.message!="No need to change margin type.":
-           print("Except 7",a.status_code,a.message)
-       else:
-           print("Done!")   
-       pass  
-   '''
-
    try:
       if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])==0.0: #si no hay posiciones abiertas creo la alertada.
          if binancecreoposicion (pair,client,size,side)==True:
@@ -271,7 +259,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
                   stopprice = stoppricedefault
 
             if porcprofit == 0:
-               porcprofit = 1
+               porcprofit = 2
 
             if binancestoploss (pair,client,side,stopprice)==1:
                binancestoploss (pair,client,side,stoppricedefault)
