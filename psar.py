@@ -159,6 +159,7 @@ def main() -> None:
                                         leo = True
                                     except:
                                         leo=False
+                                        pass
 
                             ut.closeallopenorders(client,par)
 
