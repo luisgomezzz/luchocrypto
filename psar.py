@@ -18,6 +18,7 @@ botlaburo = ut.creobot('laburo')
 
 def main() -> None:
 
+    ratio=1.5 #relación riesgo/beneficio 
     mazmorra=['NADA '] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
@@ -76,10 +77,10 @@ def main() -> None:
                             ):
 
                             ut.komucloud (df)
-                            
+                            ema50=df.ta.ema(50).iloc[-1]
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                             if (1==1
-                                and currentprice >df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
+                                and currentprice >ema50> df.ta.ema(200).iloc[-1] 
                                 and df['signal'].iloc[-1]==1
                                 #and 
                                 #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1))
@@ -90,7 +91,9 @@ def main() -> None:
                                 lado='BUY'                                
                                 mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
                                 print(mensaje)
-                                posicioncreada=ut.posicionfuerte(par,'BUY',client)     
+                                porc_perdida=(1-(ema50/currentprice))*100
+                                porc_beneficio=ratio*porc_perdida
+                                posicioncreada=ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)   
                         else: 
                             #CRUCE HACIA ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
@@ -99,10 +102,10 @@ def main() -> None:
                                 ):
                                                                       
                                 ut.komucloud (df)
-                                
+                                ema50=df.ta.ema(50).iloc[-1]
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                                 if (1==1
-                                    and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1] 
+                                    and currentprice < ema50 < df.ta.ema(200).iloc[-1] 
                                     and df['signal'].iloc[-1]==-1
                                     #and 
                                     #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1))
@@ -113,7 +116,9 @@ def main() -> None:
                                     lado='SELL'
                                     mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
                                     print(mensaje)
-                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                    porc_perdida=((ema50/currentprice)-1)*100
+                                    porc_beneficio=ratio*porc_perdida
+                                    posicioncreada=ut.posicionfuerte(par,lado,client,ema50,porc_beneficio)
 
                         if posicioncreada==True:
                             ut.sound()
