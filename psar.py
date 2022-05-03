@@ -72,14 +72,14 @@ def main() -> None:
                         #CRUCE HACIA ARRIBA
                         if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
                             or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
-                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<40):
+                            and 40>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                            ):
 
                             ut.komucloud (df)
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                             if (1==1
-                                and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
+                                and currentprice >df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
                                 and df['signal'].iloc[-1]==1
                                 #and 
                                 #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1))
@@ -95,8 +95,8 @@ def main() -> None:
                             #CRUCE HACIA ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
                                 or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1))
-                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>60):
+                                and 60<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                ):
                                                                       
                                 ut.komucloud (df)
                                 
@@ -140,7 +140,7 @@ def main() -> None:
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==-1:    
+                                            if df['signal'].iloc[-1]==-1 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                 ut.binancecierrotodo(client,par,exchange,'SELL')
                                                 posicioncreada=False
                                     else:
@@ -158,7 +158,7 @@ def main() -> None:
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==1:    
+                                            if df['signal'].iloc[-1]==1 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                 ut.binancecierrotodo(client,par,exchange,'SELL')
                                                 posicioncreada=False            
                                 except BinanceAPIException as a:

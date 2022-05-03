@@ -273,7 +273,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
 
             binancetakeprofit(pair,client,side,porcprofit)
 
-            binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
+            #binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
 
          else:
             print ("No se pudo crear la posición. ")
