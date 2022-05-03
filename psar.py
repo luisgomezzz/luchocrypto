@@ -79,8 +79,7 @@ def main() -> None:
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                             if (1==1
-                                and currentprice>df.ta.ema(50).iloc[-1] 
-                                and currentprice>df.ta.ema(200).iloc[-1] 
+                                and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
                                 and df['signal'].iloc[-1]==1
                                 #and 
                                 #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1))
@@ -103,8 +102,7 @@ def main() -> None:
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                                 if (1==1
-                                    and currentprice<df.ta.ema(50).iloc[-1] 
-                                    and currentprice<df.ta.ema(200).iloc[-1] 
+                                    and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1] 
                                     and df['signal'].iloc[-1]==-1
                                     #and 
                                     #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1))
