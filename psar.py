@@ -24,7 +24,7 @@ def main() -> None:
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    minvolumen24h=float(0) #100000000
+    minvolumen24h=float(30000000) #100000000
     primerpar=str('')
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -87,12 +87,11 @@ def main() -> None:
                                 #or 
                                 #(df['signal'].iloc[-2]==1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)))
                                 ):
-
-                                print("\rHORA: ",dt.datetime.today())
-                                print("- "+par+" ESTRATEGIA psar BUY\n")                                
-                                posicioncreada=ut.posicionfuerte(par,'BUY',client)                                                                
+                                                                                           
                                 lado='BUY'                                
                                 mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                print(mensaje)
+                                posicioncreada=ut.posicionfuerte(par,'BUY',client)     
                         else: 
                             #CRUCE HACIA ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
@@ -112,12 +111,11 @@ def main() -> None:
                                     #or 
                                     #(df['signal'].iloc[-2]==-1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1)))
                                     ):
-
-                                    print("\rHORA: ",dt.datetime.today())
-                                    print("- "+par+" ESTRATEGIA psar SELL\n")                                    
-                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                    
                                     lado='SELL'
                                     mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                    print(mensaje)
+                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
 
                         if posicioncreada==True:
                             ut.sound()
@@ -166,25 +164,14 @@ def main() -> None:
                                                 ut.binancecierrotodo(client,par,exchange,'SELL')
                                                 posicioncreada=False            
                                 except BinanceAPIException as a:
-                                    sys.stdout.write("\rError1: "+str(a)+"\033[K")
-                                    sys.stdout.flush()
+                                    if e.message!="Invalid symbol.":
+                                        print("Error1: "+str(a))
                                     pass
                                 except Exception as b:
-                                    sys.stdout.write("\rError2: "+str(b)+"\033[K")
-                                    sys.stdout.flush()
+                                    print("Error2: "+str(b))
                                     pass
                                 
-                                leo = False
-                                while leo == False and posicioncreada==True:
-                                    try:
-                                        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                            posicioncreada=True
-                                        else:
-                                            posicioncreada=False    
-                                        leo = True
-                                    except:
-                                        leo=False
-                                        pass
+                                posicioncreada=ut.posicionesabiertas(exchange)
 
                             ut.closeallopenorders(client,par)
 
@@ -202,29 +189,26 @@ def main() -> None:
                             #sys.exit()
 
                     except KeyboardInterrupt:
-                        print("\rSalida solicitada.\033[K")
+                        print("Salida solicitada. ")
                         sys.exit()
                     except BinanceAPIException as e:
                         if e.message!="Invalid symbol.":
-                            print("\rExcept 1 - Par:",par,"- Error:",e.status_code,e.message,"\033[K")
-                            print("\n")
+                            print("Error3 - Par:",par,"-",e.status_code,e.message)                            
                         pass
                     except Exception as falla:
-                        sys.stdout.write("\rError1: "+str(falla)+"\033[K")
-                        sys.stdout.flush()
+                        print("Error4: "+str(falla))
                         pass
                     
                 except KeyboardInterrupt:
-                   print("\rSalida solicitada.\033[K")
-                   sys.exit()            
+                    print("Salida solicitada.")
+                    sys.exit()            
                 except BinanceAPIException as a:
-                   if a.message!="Invalid symbol.":
-                      print("\rExcept 1 - Par:",par,"- Error:",a.status_code,a.message,"\033[K")
-                      print("\n")
-                   pass
+                    if a.message!="Invalid symbol.":
+                        print("Error5 - Par:",par,"-",a.status_code,a.message)
+                    pass
        
     except BinanceAPIException as a:
-       print("\rExcept 2 - Par:",par,"- Error:",a.status_code,a.message,"\033[K")
+       print("Error6 - Par:",par,"-",a.status_code,a.message)
        pass
 
 if __name__ == '__main__':
