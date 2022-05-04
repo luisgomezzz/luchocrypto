@@ -160,13 +160,16 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
          cerrado = True
          print("Posición cerrada.")
    except BinanceAPIException as a:
-      print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-      client.futures_cancel_all_open_orders(symbol=par) 
-      print("Órdenes canceladas.") 
-      botlaburo = creobot('laburo')
-      mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-      botlaburo.send_text(mensaje)
-      input(mensaje)            
+      try:        
+         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
+         cerrado = True
+         print("Posición cerrada sin reduceonly.")
+      except BinanceAPIException as a:
+         print("Except FUNCION CIERROTODO",a.status_code,a.message)   
+         botlaburo = creobot('laburo')
+         mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+         botlaburo.send_text(mensaje)
+         input(mensaje)            
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
@@ -321,7 +324,7 @@ def closeallopenorders (client,pair):
       
       try:
          client.futures_cancel_all_open_orders(symbol=pair)
-         print("Órdenes abiertas cerradas. ")
+         print("Órdenes cerradas. ")
          leido=True
       except:
          pass

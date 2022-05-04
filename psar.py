@@ -145,7 +145,9 @@ def main() -> None:
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==-1 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            if df['signal'].iloc[-1]==-1:
+                                                #or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                                print ("Cierre de buy en ganancia negativa por cambio de parabolic")
                                                 ut.binancecierrotodo(client,par,exchange,'SELL')
                                                 posicioncreada=False
                                     else:
@@ -163,8 +165,10 @@ def main() -> None:
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==1 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                ut.binancecierrotodo(client,par,exchange,'SELL')
+                                            if df['signal'].iloc[-1]==1:
+                                                #or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                                print ("Cierre de sell en ganancia negativa por cambio de parabolic")
+                                                ut.binancecierrotodo(client,par,exchange,'BUY')
                                                 posicioncreada=False            
                                 except BinanceAPIException as a:
                                     if e.message!="Invalid symbol.":
