@@ -133,41 +133,33 @@ def main() -> None:
                                     if lado=='BUY':
                                         if float(client.get_symbol_ticker(symbol=par)["price"]) > precioposicion:
                                             if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                                if  (df.ta.cci(40).iloc[-1] <=80
-                                                    or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                                if  (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                                                     or df['signal'].iloc[-1]==-1):    
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                             else:
-                                                if  (df.ta.cci(40).iloc[-1] <=-120 
-                                                    or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                                if  (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                                                     or df['signal'].iloc[-1]==-1):  
                                                     ut.binancecierrotodo(client,par,exchange,'SELL')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==-1:
-                                                #or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                                print ("Cierre de buy en ganancia negativa por cambio de parabolic")
+                                            if  df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
                                                 ut.binancecierrotodo(client,par,exchange,'SELL')
                                                 posicioncreada=False
                                     else:
                                         if float(client.get_symbol_ticker(symbol=par)["price"]) < precioposicion:
                                             if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                                if (df.ta.cci(40).iloc[-1] >=120 
-                                                    or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]    
+                                                if (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]    
                                                     or df['signal'].iloc[-1]==1):
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                             else:
-                                                if (df.ta.cci(40).iloc[-1] >=-80 
-                                                    or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                                if (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                                                     or df['signal'].iloc[-1]==1):
                                                     ut.binancecierrotodo(client,par,exchange,'BUY')
                                                     posicioncreada=False
                                         else:
-                                            if df['signal'].iloc[-1]==1:
-                                                #or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                                print ("Cierre de sell en ganancia negativa por cambio de parabolic")
+                                            if  df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:
                                                 ut.binancecierrotodo(client,par,exchange,'BUY')
                                                 posicioncreada=False            
                                 except BinanceAPIException as a:
@@ -203,9 +195,10 @@ def main() -> None:
                             print("Error3 - Par:",par,"-",e.status_code,e.message)                            
                         pass
                     except Exception as falla:
-                        print("Error4: "+str(falla))
+                        if str(falla)!="binance does not have market symbol "+par:
+                            print("Error4: "+str(falla))
                         pass
-                    
+
                 except KeyboardInterrupt:
                     print("Salida solicitada.")
                     sys.exit()            
