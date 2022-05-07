@@ -1,0 +1,24 @@
+Instalar talib:
+
+wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz #download
+
+tar -xvf ta-lib-0.4.0-src.tar.gz # Descomprimir
+
+cd ta-lib # ingrese al directorio
+
+./configure --prefix=/usr
+
+make
+
+make install
+
+cp /usr/lib/libta_lib* ~/py3/lib
+
+apt-get install python3-dev
+
+apt-get update && apt-get install git # hay que actualizar
+
+git clone https://github.com/mrjbq7/ta-lib.git
+
+cd ta-lib
+python setup.py install

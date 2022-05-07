@@ -18,13 +18,14 @@ botlaburo = ut.creobot('laburo')
 
 def main() -> None:
 
+    ratio=1.5 #relación riesgo/beneficio 
     mazmorra=['NADA '] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
     posicioncreada = False
-    minvolumen24h=float(0) #100000000
+    minvolumen24h=float(100000000)
     primerpar=str('')
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -69,122 +70,69 @@ def main() -> None:
                         crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
                         
-                        #CRUCE HACIA ARRIBA
                         if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
                             or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
                             and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<40):
+                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<50):
 
                             ut.komucloud (df)
                             
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                            if (1==1
+                            if (df['signal'].iloc[-1]==1 
+                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
                                 and currentprice>df.ta.ema(50).iloc[-1] 
                                 and currentprice>df.ta.ema(200).iloc[-1] 
-                                and df['signal'].iloc[-1]==1
-                                #and 
-                                #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1))
-                                #or 
-                                #(df['signal'].iloc[-2]==1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==-1)))
                                 ):
 
-                                print("\rHORA: ",dt.datetime.today())
-                                print("- "+par+" ESTRATEGIA psar BUY\n")                                
-                                posicioncreada=ut.posicionfuerte(par,'BUY',client)                                                                
-                                lado='BUY'                                
+                                ut.posicionfuerte(par,'BUY',client)                                
+                                posicioncreada=True
+                                lado='BUY'
+                                ut.sound()
                                 mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                print(mensaje)
                         else: 
-                            #CRUCE HACIA ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
-                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1))
+                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)
                                 and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>60):
+                                and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>50)):
                                                                       
                                 ut.komucloud (df)
                                 
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
-                                if (1==1
+                                if (df['signal'].iloc[-1]==-1 
+                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
                                     and currentprice<df.ta.ema(50).iloc[-1] 
                                     and currentprice<df.ta.ema(200).iloc[-1] 
-                                    and df['signal'].iloc[-1]==-1
-                                    #and 
-                                    #(((df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1))
-                                    #or 
-                                    #(df['signal'].iloc[-2]==-1 and (df['signal'].iloc[-3]==0 or df['signal'].iloc[-3]==1)))
                                     ):
-
-                                    print("\rHORA: ",dt.datetime.today())
-                                    print("- "+par+" ESTRATEGIA psar SELL\n")                                    
-                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                
+                                    ut.posicionfuerte(par,'SELL',client)
+                                    posicioncreada=True
                                     lado='SELL'
+                                    ut.sound()
                                     mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                    print(mensaje)
 
                         if posicioncreada==True:
-                            ut.sound()
-                            precioposicion = currentprice
-                            while posicioncreada==True:
+                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                sleep(1)
+                                df=ut.calculardf (par,temporalidad,ventana)
 
-                                try:
-                                    ut.waiting()
-                                    df=ut.calculardf (par,temporalidad,ventana)
-                                    ut.komucloud (df)
-
-                                    if lado=='BUY':
-                                        if float(client.get_symbol_ticker(symbol=par)["price"]) > precioposicion:
-                                            if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                                if  (df.ta.cci(40).iloc[-1] <=80
-                                                    or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                                    or df['signal'].iloc[-1]==-1):    
-                                                    ut.binancecierrotodo(client,par,exchange,'SELL')
-                                                    posicioncreada=False
-                                            else:
-                                                if  (df.ta.cci(40).iloc[-1] <=-120 
-                                                    or 55<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                                    or df['signal'].iloc[-1]==-1):  
-                                                    ut.binancecierrotodo(client,par,exchange,'SELL')
-                                                    posicioncreada=False
-                                        else:
-                                            if df['signal'].iloc[-1]==-1:    
-                                                ut.binancecierrotodo(client,par,exchange,'SELL')
-                                                posicioncreada=False
+                                if lado=='BUY':
+                                    if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
+                                        if df.ta.cci(40).iloc[-1] <=95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(client,par,exchange,'SELL')
                                     else:
-                                        if float(client.get_symbol_ticker(symbol=par)["price"]) < precioposicion:
-                                            if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                                if (df.ta.cci(40).iloc[-1] >=120 
-                                                    or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]    
-                                                    or df['signal'].iloc[-1]==1):
-                                                    ut.binancecierrotodo(client,par,exchange,'BUY')
-                                                    posicioncreada=False
-                                            else:
-                                                if (df.ta.cci(40).iloc[-1] >=-80 
-                                                    or 45>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                                                    or df['signal'].iloc[-1]==1):
-                                                    ut.binancecierrotodo(client,par,exchange,'BUY')
-                                                    posicioncreada=False
-                                        else:
-                                            if df['signal'].iloc[-1]==1:    
-                                                ut.binancecierrotodo(client,par,exchange,'SELL')
-                                                posicioncreada=False            
-                                except BinanceAPIException as a:
-                                    sys.stdout.write("\rError1: "+str(a)+"\033[K")
-                                    sys.stdout.flush()
-                                    pass
-                                except Exception as b:
-                                    sys.stdout.write("\rError2: "+str(b)+"\033[K")
-                                    sys.stdout.flush()
-                                    pass
-                                
-                                leo = False
-                                while leo == False and posicioncreada==True:
-                                    try:
-                                        if float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                            posicioncreada=True
-                                        else:
-                                            posicioncreada=False    
-                                        leo = True
-                                    except:
-                                        leo=False
-                                        pass
+                                        if df.ta.cci(40).iloc[-1] <=-105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                else:
+                                    if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
+                                        if df.ta.cci(40).iloc[-1] >=105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                    else:
+                                        if df.ta.cci(40).iloc[-1] >=-95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+
+                            posicioncreada=False
 
                             ut.closeallopenorders(client,par)
 
@@ -202,29 +150,27 @@ def main() -> None:
                             #sys.exit()
 
                     except KeyboardInterrupt:
-                        print("\rSalida solicitada.\033[K")
+                        print("Salida solicitada. ")
                         sys.exit()
                     except BinanceAPIException as e:
                         if e.message!="Invalid symbol.":
-                            print("\rExcept 1 - Par:",par,"- Error:",e.status_code,e.message,"\033[K")
-                            print("\n")
+                            print("Error3 - Par:",par,"-",e.status_code,e.message)                            
                         pass
                     except Exception as falla:
-                        sys.stdout.write("\rError1: "+str(falla)+"\033[K")
-                        sys.stdout.flush()
+                        if str(falla)!="binance does not have market symbol "+par:
+                            print("Error4: "+str(falla))
                         pass
-                    
+
                 except KeyboardInterrupt:
-                   print("\rSalida solicitada.\033[K")
-                   sys.exit()            
+                    print("Salida solicitada.")
+                    sys.exit()            
                 except BinanceAPIException as a:
-                   if a.message!="Invalid symbol.":
-                      print("\rExcept 1 - Par:",par,"- Error:",a.status_code,a.message,"\033[K")
-                      print("\n")
-                   pass
+                    if a.message!="Invalid symbol.":
+                        print("Error5 - Par:",par,"-",a.status_code,a.message)
+                    pass
        
     except BinanceAPIException as a:
-       print("\rExcept 2 - Par:",par,"- Error:",a.status_code,a.message,"\033[K")
+       print("Error6 - Par:",par,"-",a.status_code,a.message)
        pass
 
 if __name__ == '__main__':
