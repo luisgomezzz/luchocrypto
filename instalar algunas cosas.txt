@@ -21,4 +21,12 @@ apt-get update && apt-get install git # hay que actualizar
 git clone https://github.com/mrjbq7/ta-lib.git
 
 cd ta-lib
+
 python setup.py install
+
+
+##################
+
+Sonidos
+
+sudo apt-get install sox
