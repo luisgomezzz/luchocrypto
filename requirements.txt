@@ -1,0 +1,12 @@
+binance==0.3
+bob_telegram_tools==1.1.0
+ccxt==1.81.54
+matplotlib==3.5.2
+mplfinance==0.12.8b9
+numpy==1.22.3
+pandas==1.4.2
+pandas_datareader==0.10.0
+pandas_ta==0.3.14b0
+PyYAML==6.0
+TA_Lib==0.4.24
+yfinance==0.1.70
