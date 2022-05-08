@@ -83,12 +83,12 @@ def main() -> None:
                                 and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
                                 ):
 
-                                ut.posicionfuerte(par,'BUY',client)                                
-                                posicioncreada=True
-                                lado='BUY'
-                                ut.sound()
-                                mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
-                                print(mensaje)
+                                posicioncreada=ut.posicionfuerte(par,'BUY',client)                                
+                                if posicioncreada==True:
+                                    lado='BUY'
+                                    ut.sound()
+                                    mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                    print(mensaje)
                         else: 
                             #CRUCE ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
@@ -104,12 +104,12 @@ def main() -> None:
                                     and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]
                                     ):
                                 
-                                    ut.posicionfuerte(par,'SELL',client)
-                                    posicioncreada=True
-                                    lado='SELL'
-                                    ut.sound()
-                                    mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
-                                    print(mensaje)
+                                    posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                    if posicioncreada==True:
+                                        lado='SELL'
+                                        ut.sound()
+                                        mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
+                                        print(mensaje)
 
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
@@ -141,7 +141,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nGanancia acumulada: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
                                 mensaje=mensaje+"\nBalance USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
                                 mensaje=mensaje+"\nBalance BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
-                                mensaje=mensaje+"\nVolumen: "+str(client.futures_ticker(symbol=par)['quoteVolume'])
+                                mensaje=mensaje+"\nVolumen: "+str(ut.truncate(client.futures_ticker(symbol=par)['quoteVolume']/1000000,2))+"M"
                                 botlaburo.send_text(mensaje)
                             except:
                                 pass
