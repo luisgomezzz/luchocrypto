@@ -69,7 +69,7 @@ def main() -> None:
 
                         crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
-                        
+                        #CRUCE ARRIBA
                         if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
                             or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
                             and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
@@ -80,8 +80,7 @@ def main() -> None:
                             currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                             if (df['signal'].iloc[-1]==1 
                                 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
-                                and currentprice>df.ta.ema(50).iloc[-1] 
-                                and currentprice>df.ta.ema(200).iloc[-1] 
+                                and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1] 
                                 ):
 
                                 ut.posicionfuerte(par,'BUY',client)                                
@@ -91,6 +90,7 @@ def main() -> None:
                                 mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
                                 print(mensaje)
                         else: 
+                            #CRUCE ABAJO
                             if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
                                 or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)
                                 and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
@@ -101,8 +101,7 @@ def main() -> None:
                                 currentprice = float(client.get_symbol_ticker(symbol=par)["price"])
                                 if (df['signal'].iloc[-1]==-1 
                                     and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
-                                    and currentprice<df.ta.ema(50).iloc[-1] 
-                                    and currentprice<df.ta.ema(200).iloc[-1] 
+                                    and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]
                                     ):
                                 
                                     ut.posicionfuerte(par,'SELL',client)
