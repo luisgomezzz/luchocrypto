@@ -114,6 +114,7 @@ def main() -> None:
                         if posicioncreada==True:
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
                                 sleep(1)
+                                ut.waiting()
                                 df=ut.calculardf (par,temporalidad,ventana)
 
                                 if lado=='BUY':
