@@ -159,24 +159,28 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
    cerrado = False    
    mensaje=''
    
-   try:        
-      if posicionesabiertas(exchange) ==True:    
-         pos = abs(get_positionamt(exchange,par))
-         print(pos)
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos, reduceOnly='true')
-         cerrado = True
-         print("Posición cerrada.")
-   except BinanceAPIException as a:
+   while cerrado == False:
       try:        
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
-         cerrado = True
-         print("Posición cerrada sin reduceonly.")
+         if posicionesabiertas(exchange) ==True:    
+            pos = abs(get_positionamt(exchange,par))
+            print(pos)
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos, reduceOnly='true')
+            cerrado = True
+            print("Posición cerrada.")
       except BinanceAPIException as a:
-         print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-         botlaburo = creobot('laburo')
-         mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-         botlaburo.send_text(mensaje)
-         input(mensaje)            
+         try:        
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
+            cerrado = True
+            print("Posición cerrada sin reduceonly.")
+         except BinanceAPIException as a:
+            print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
+            botlaburo = creobot('laburo')
+            mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+            botlaburo.send_text(mensaje)
+            input(mensaje)          
+      except Exception as falla:
+         print("Error2 FUNCION CIERROTODO: "+str(falla))
+         pass     
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
@@ -269,10 +273,10 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
             #valores de stop y profit standard
             if stopprice == 0:
                if side =='BUY':
-                  stoppricedefault = currentprice-(currentprice*1/100)
+                  stoppricedefault = currentprice-(currentprice*3/100)
                   stopprice = stoppricedefault
                else:
-                  stoppricedefault = currentprice+(currentprice*1/100)
+                  stoppricedefault = currentprice+(currentprice*3/100)
                   stopprice = stoppricedefault
 
             if porcprofit == 0:
@@ -281,7 +285,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
             if binancestoploss (pair,client,side,stopprice)==1:
                binancestoploss (pair,client,side,stoppricedefault)
 
-            binancetakeprofit(pair,client,side,porcprofit)
+            #binancetakeprofit(pair,client,side,porcprofit)
 
             #binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
 
