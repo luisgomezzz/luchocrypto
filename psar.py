@@ -30,6 +30,7 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
+    balanceobjetivo = 23.00
 
     ut.clear() #limpia terminal
 
@@ -130,10 +131,11 @@ def main() -> None:
 
                             try:
                                 mensaje=mensaje+"\nHora cierre: "+str(dt.datetime.today())
-                                mensaje=mensaje+"\nGanancia acumulada: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
-                                mensaje=mensaje+"\nBalance USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
-                                mensaje=mensaje+"\nBalance BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
-                                mensaje=mensaje+"\nVolumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,2))+"M"
+                                mensaje=mensaje+"\nGanancia acumulada sesión: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
+                                mensaje=mensaje+"\nBal USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
+                                mensaje=mensaje+"\nBal BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
+                                mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,2))+"M"
+                                mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
                                 botlaburo.send_text(mensaje)
                             except Exception as a:
                                 print("Error2: "+str(a))
