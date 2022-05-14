@@ -285,7 +285,8 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
             if binancestoploss (pair,client,side,stopprice)==1:
                binancestoploss (pair,client,side,stoppricedefault)
 
-            #binancetakeprofit(pair,client,side,porcprofit)
+            if side =='BUY':
+               binancetakeprofit(pair,client,side,porcprofit)
 
             #binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
 

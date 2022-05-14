@@ -23,14 +23,14 @@ def main() -> None:
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
-    saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])
+    saldo_inicial=float(exchange.fetch_balance()['info']['totalWalletBalance'])+float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"]))
     posicioncreada = False
     minvolumen24h=float(100000000)
     primerpar=str('')
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 23.00
+    balanceobjetivo = 24.00
 
     ut.clear() #limpia terminal
 
@@ -80,12 +80,14 @@ def main() -> None:
                                 ut.komucloud (df)
                                 
                                 if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1):
+                                    print("\n*********************************************************************************************")
+                                    mensaje="Trade - "+par+" - BUY"
+                                    mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                    print(mensaje)
                                     posicioncreada=ut.posicionfuerte(par,'BUY',client)                                
                                     if posicioncreada==True:
                                         lado='BUY'
-                                        ut.sound()
-                                        mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
-                                        print(mensaje)
+
                         else: 
                             #CRUCE ABAJO
                             if float(client.get_symbol_ticker(symbol=par)["price"]) < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]:
@@ -97,16 +99,20 @@ def main() -> None:
                                     ut.komucloud (df)
                                     
                                     if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1):                                    
+                                        print("\n*********************************************************************************************")
+                                        mensaje="Trade - "+par+" - SELL"
+                                        mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                        print(mensaje)
                                         posicioncreada=ut.posicionfuerte(par,'SELL',client)
                                         if posicioncreada==True:
                                             lado='SELL'
-                                            ut.sound()
-                                            mensaje=par+" - "+lado+" - Hora comienzo: "+str(dt.datetime.today())
-                                            print(mensaje)
 
                         if posicioncreada==True:
-                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                sleep(1)
+                            
+                            ut.sound()
+
+                            while ut.posicionesabiertas(exchange)==True:
+                                #sleep(1)
                                 ut.waiting()
                                 df=ut.calculardf (par,temporalidad,ventana)
 
@@ -128,20 +134,21 @@ def main() -> None:
                             posicioncreada=False
 
                             ut.closeallopenorders(client,par)
-
+                            print("\nResumen: ")
+                            balancetotal=float(exchange.fetch_balance()['info']['totalWalletBalance'])+float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"]))
                             try:
-                                mensaje=mensaje+"\nHora cierre: "+str(dt.datetime.today())
-                                mensaje=mensaje+"\nGanancia acumulada sesión: "+str(ut.truncate(((float(exchange.fetch_balance()['info']['totalWalletBalance'])/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance'])-saldo_inicial,2))+" USDT"
-                                mensaje=mensaje+"\nBal USDT: "+str(ut.truncate(float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
-                                mensaje=mensaje+"\nBal BNB: "+str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT"
-                                mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,2))+"M"
-                                mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-float(exchange.fetch_balance()['info']['totalWalletBalance']),3))+" USDT"
+                                mensaje=mensaje+"\nCierre: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,1))+"M"
+                                mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
+                                mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
+                                mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
                                 botlaburo.send_text(mensaje)
                             except Exception as a:
                                 print("Error2: "+str(a))
                                 pass
 
                             print(mensaje)
+                            print("\n*********************************************************************************************")
                             #sys.exit()
 
                     except KeyboardInterrupt:
