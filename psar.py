@@ -65,8 +65,16 @@ def main() -> None:
                     try:
                         sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K")
                         sys.stdout.flush()
-                        
+
                         df=ut.calculardf (par,temporalidad,ventana)
+
+                        if  ((df['low'].iloc[-1] > (df.ta.ema(5).iloc[-1])*(1+0.16/100)) and (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])
+                            and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])):
+                            ut.sound()
+                            print("Ver Oliver - "+par)
+
+                        df=ut.calculardf (par,temporalidad,ventana)    
+
                         crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
                         crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
 
