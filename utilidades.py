@@ -11,13 +11,9 @@
 
 import math
 import pandas as pd
-import pandas_datareader.data as web
-import time
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 from mplfinance.original_flavor import candlestick2_ohlc
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
 import ccxt
 from os import system, name
 import os
@@ -213,11 +209,17 @@ def binanceexchange(binance_api,binance_secret):
     return exchange
 
 def binancehistoricdf(pair,timeframe,limit):
-    ## Datos para indicadores
-    exchange=ccxt.binance()
-    barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
-    df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
-    return df
+   ## Datos para indicadores
+   leido = False
+   while leido == False:
+      try:
+         exchange=ccxt.binance()
+         barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
+         df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+         leido = True
+      except:
+         pass
+   return df
 
 def timeindex(df):
     # if you encounter a "year is out of range" error the timestamp
@@ -255,8 +257,8 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
    apalancamiento=10
    margen = 'CROSSED'
    porcentajeentrada=100
-   exchange=binanceexchange(binance_api,binance_secret)
-   micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
+   exchange= binanceexchange(binance_api,binance_secret)
+   micapital = balancetotal(exchange,client)
    size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
    posicionporc = 100
    distanciaporc = 1
@@ -363,11 +365,15 @@ def komucloud (df):
    df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
       
 def calculardf (par,temporalidad,ventana):
-   
-   df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
-   timeindex(df) #Formatea el campo time para luego calcular las señales
-   df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
-
+   leido = False
+   while leido == False:
+      try:
+         df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
+         timeindex(df) #Formatea el campo time para luego calcular las señales
+         df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
+         leido = True
+      except:
+         pass
    return df
 
 bar = [
@@ -403,3 +409,16 @@ def posicionesabiertas(exchange):
       except:
          pass
    return posicionabierta
+
+def balancetotal(exchange,client):
+   leido = False
+   while leido == False:
+      try:
+         balance=float(exchange.fetch_balance()['info']['totalWalletBalance'])+float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"]))
+         leido = True
+      except:
+         pass
+   return balance
+
+
+   
