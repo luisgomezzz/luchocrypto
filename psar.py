@@ -43,7 +43,6 @@ def main() -> None:
         except:
             pass
 
-    v_wheremaI = 1
     try:
 
         while True:
@@ -68,6 +67,7 @@ def main() -> None:
 
                         df=ut.calculardf (par,temporalidad,ventana)
 
+                        #Para analizar posible estrategia
                         if  (
                             (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(1/100))) 
                             and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
@@ -164,6 +164,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
                                 mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
                                 mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
+                                #para analizar si conviene agregar MACD a la estrategia
                                 mensaje=mensaje+"\nMACD: "+str(dfmacd.ta.macd()["MACD_12_26_9"].iloc[-2])+" - Señal: "+str(dfmacd.ta.macd()["MACDs_12_26_9"].iloc[-2])
                                 botlaburo.send_text(mensaje)
                             except Exception as a:
