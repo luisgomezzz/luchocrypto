@@ -78,21 +78,18 @@ def main() -> None:
                                 or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
                                 and 50>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]                            
                                 ):
-
-                                dfmacd=ut.calculardf (par,'1h',ventana)
-                                if (dfmacd.ta.macd()["MACD_12_26_9"].iloc[-1]>dfmacd.ta.macd()["MACDs_12_26_9"].iloc[-1]):
-                                    
-                                    ut.komucloud (df)
-                                    
-                                    if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1):
-                                        print("\n*********************************************************************************************")
-                                        mensaje="Trade - "+par+" - BUY"
-                                        mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                        print(mensaje)
-                                        posicioncreada=ut.posicionfuerte(par,'BUY',client)                                
-                                        if posicioncreada==True:
-                                            lado='BUY'
-
+                        
+                                ut.komucloud (df)
+                                
+                                if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1):
+                                    print("\n*********************************************************************************************")
+                                    mensaje="Trade - "+par+" - BUY"
+                                    mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                    print(mensaje)
+                                    posicioncreada=ut.posicionfuerte(par,'BUY',client)                                
+                                    if posicioncreada==True:
+                                        lado='BUY'
+                        
                         else: 
                             #CRUCE ABAJO
                             if float(client.get_symbol_ticker(symbol=par)["price"]) < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]:
@@ -101,19 +98,16 @@ def main() -> None:
                                     and 50<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]                                
                                     ):
 
-                                    dfmacd=ut.calculardf (par,'1h',ventana)
-                                    if (dfmacd.ta.macd()["MACD_12_26_9"].iloc[-1]<dfmacd.ta.macd()["MACDs_12_26_9"].iloc[-1]):
-                                                                        
-                                        ut.komucloud (df)
+                                    ut.komucloud (df)
                                         
-                                        if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1):                                    
-                                            print("\n*********************************************************************************************")
-                                            mensaje="Trade - "+par+" - SELL"
-                                            mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                            print(mensaje)
-                                            posicioncreada=ut.posicionfuerte(par,'SELL',client)
-                                            if posicioncreada==True:
-                                                lado='SELL'
+                                    if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1):                                    
+                                        print("\n*********************************************************************************************")
+                                        mensaje="Trade - "+par+" - SELL"
+                                        mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                        print(mensaje)
+                                        posicioncreada=ut.posicionfuerte(par,'SELL',client)
+                                        if posicioncreada==True:
+                                            lado='SELL'
 
                         if posicioncreada==True:
                             
@@ -166,17 +160,6 @@ def main() -> None:
                             print("\n*********************************************************************************************")
                             #sys.exit()
 
-                        #Para analizar posible estrategia Oliver
-                        if  (
-                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(1/100))) 
-                            and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
-                            and (df.ta.macd()["MACD_12_26_9"].iloc[-2]>df.ta.macd()["MACDs_12_26_9"].iloc[-2])
-                            and df['low'].iloc[-1] <= (df.ta.ema(5).iloc[-1]) 
-                            and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
-                            ):
-                            ut.sound()
-                            print("\nVer Oliver - "+par+" - "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
                         sys.exit()
@@ -191,7 +174,7 @@ def main() -> None:
                         pass
 
                 except KeyboardInterrupt:
-                    print("Salida solicitada.")
+                    print("\nSalida solicitada.")
                     sys.exit()            
                 except BinanceAPIException as a:
                     if a.message!="Invalid symbol.":

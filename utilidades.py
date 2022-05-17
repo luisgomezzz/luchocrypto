@@ -23,6 +23,7 @@ from typing import Tuple
 import numpy as np
 import talib as tl
 import pandas_ta as ta
+import sys
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -217,6 +218,9 @@ def binancehistoricdf(pair,timeframe,limit):
          barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
          df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
          leido = True
+      except KeyboardInterrupt:
+         print("\nSalida solicitada.")
+         sys.exit()  
       except:
          pass
    return df
@@ -282,7 +286,7 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
                   stopprice = stoppricedefault
 
             if porcprofit == 0:
-               porcprofit = 0.4
+               porcprofit = 0.15
 
             if binancestoploss (pair,client,side,stopprice)==1:
                binancestoploss (pair,client,side,stoppricedefault)
