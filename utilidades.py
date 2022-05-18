@@ -279,14 +279,14 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
             #valores de stop y profit standard
             if stopprice == 0:
                if side =='BUY':
-                  stoppricedefault = currentprice-(currentprice*0.5/100)
+                  stoppricedefault = currentprice-(currentprice*2/100)
                   stopprice = stoppricedefault
                else:
-                  stoppricedefault = currentprice+(currentprice*0.5/100)
+                  stoppricedefault = currentprice+(currentprice*2/100)
                   stopprice = stoppricedefault
 
             if porcprofit == 0:
-               porcprofit = 0.5
+               porcprofit = 3
 
             if binancestoploss (pair,client,side,stopprice)==1:
                binancestoploss (pair,client,side,stoppricedefault)

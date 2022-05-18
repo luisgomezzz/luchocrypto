@@ -77,23 +77,36 @@ def main() -> None:
                             and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
                             ):
 
-                            ut.sound()
-                            print("\nVer Oliver - "+par+" - "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                            #valorpico=df['high'].iloc[-2]
+
                             balancegame=ut.balancetotal(exchange,client)
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - SELL"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)
-                            posicioncreada=ut.posicionfuerte(par,'SELL',client)                                
+                            try:
+                                currentprice = float(client.get_symbol_ticker(symbol=par)["price"]) 
+                            except:
+                                pass
+                            posicioncreada=ut.posicionfuerte(par,'SELL',client,0,(((currentprice/df.ta.ema(20).iloc[-1])-1))*100)                                
                         
                         if posicioncreada==True:
                             
                             ut.sound()
 
                             while ut.posicionesabiertas(exchange)==True:
-                                #sleep(1)
+
                                 ut.waiting()
-                                #se espera a que cierre por alcanzar profit o stop
+
+                                df=ut.calculardf (par,temporalidad,ventana)
+
+                                try:
+                                    currentprice = float(client.get_symbol_ticker(symbol=par)["price"]) 
+                                except:
+                                    pass
+
+                                if currentprice <= df.ta.ema(20).iloc[-1]:    
+                                    ut.binancecierrotodo(client,par,exchange,'BUY')
 
                             posicioncreada=False
 
