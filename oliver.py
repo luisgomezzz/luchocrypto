@@ -72,28 +72,24 @@ def main() -> None:
                         if  (
                             (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(0.16/100))) 
                             and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
-                            #and (df.ta.macd()["MACD_12_26_9"].iloc[-2]>df.ta.macd()["MACDs_12_26_9"].iloc[-2])
                             and df['low'].iloc[-1] <= (df.ta.ema(5).iloc[-1]) 
                             and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
+                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                             ):
-
-                            #valorpico=df['high'].iloc[-2]
 
                             balancegame=ut.balancetotal(exchange,client)
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - SELL"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)
-                            try:
-                                currentprice = float(client.get_symbol_ticker(symbol=par)["price"]) 
-                            except:
-                                pass
-                            posicioncreada=ut.posicionfuerte(par,'SELL',client,0,(((currentprice/df.ta.ema(20).iloc[-1])-1))*100)                                
+                            
+                            posicioncreada=ut.posicionfuerte(par,'SELL',client)                                
                         
                         if posicioncreada==True:
                             
                             ut.sound()
 
+                            ###############################################################################
                             while ut.posicionesabiertas(exchange)==True:
 
                                 ut.waiting()
@@ -105,9 +101,9 @@ def main() -> None:
                                 except:
                                     pass
 
-                                if currentprice <= df.ta.ema(20).iloc[-1]:    
+                                if (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]):                                    
                                     ut.binancecierrotodo(client,par,exchange,'BUY')
-
+                            ###############################################################################3
                             posicioncreada=False
 
                             ut.closeallopenorders(client,par)
