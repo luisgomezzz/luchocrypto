@@ -17,7 +17,6 @@ botlaburo = ut.creobot('laburo')
 
 def main() -> None:
 
-    ratio=1.5 #relación riesgo/beneficio 
     mazmorra=['1000SHIBUSDT'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
