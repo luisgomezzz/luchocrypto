@@ -69,21 +69,23 @@ def main() -> None:
 
                         #Para analizar posible estrategia Oliver
                         if  (
-                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(0.16/100))) 
+                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(0.30/100))) 
                             and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
                             and df['low'].iloc[-1] <= (df.ta.ema(5).iloc[-1]) 
                             and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
                             and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                            and df.ta.bop().iloc[-1] < 0
                             ):
 
-                            balancegame=ut.balancetotal(exchange,client)
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - SELL"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)
-                            
                             posicioncreada=ut.posicionfuerte(par,'SELL',client)                                
-                        
+
+                            porcentajesubida=((df['low'].iloc[-2]/df.ta.ema(5).iloc[-2])-1)*100
+                            balancegame=ut.balancetotal(exchange,client)
+
                         if posicioncreada==True:
                             
                             ut.sound()
@@ -121,6 +123,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
                                 mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
                                 mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
+                                mensaje=mensaje+"\nPorcentaje de subida: "+str(ut.truncate(porcentajesubida,2))
                                 botlaburo.send_text(mensaje)
                             except Exception as a:
                                 print("Error2: "+str(a))
