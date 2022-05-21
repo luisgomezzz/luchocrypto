@@ -30,7 +30,7 @@ def main() -> None:
     mensaje=''
     porcentajevariacion = 0.30
     balanceobjetivo = 24.00
-    diccio = {'NADA': 0.0}
+    diccio = {'NADA': [0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
     ratio=1.5 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
@@ -65,7 +65,7 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+". En la mira:"+str(diccio))
+                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+". En la mira:"+str(diccio)+"\033[K")
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
@@ -79,13 +79,13 @@ def main() -> None:
                             ):
                             
                             #se detectó la señal y se guarda el valor pico
-                            diccio[par] = df['high'].iloc[-2]
+                            diccio[par] = [df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
 
                         if par in diccio:
                             #si ya hubo señal se ve si es momento de crear la posición
                             currentprice= ut.currentprice(client,par)
                             ema20=df.ta.ema(20).iloc[-1]
-                            if currentprice > diccio[par]:
+                            if currentprice > diccio[par][0]:
                                 #si el precio actual supera el pico de la señal crear posición buy
                                 lado='BUY'
                                 print("\n*********************************************************************************************")
