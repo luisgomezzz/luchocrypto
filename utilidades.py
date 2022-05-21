@@ -53,7 +53,7 @@ def binancetakeprofit(pair,client,side,porc):
 
 def binancecrearlimite(exchange,par,client,posicionporc,distanciaporc,lado) -> bool:
    salida= True
-   precio=float(client.get_symbol_ticker(symbol=par)["price"])
+   precio=currentprice(client,par)
    
    if lado=='BUY':
       precioprofit=precio-(precio*distanciaporc/100)
@@ -420,5 +420,14 @@ def balancetotal(exchange,client):
          pass
    return balance
 
+def currentprice(client,par):
+   leido = False
+   while leido == False:
+      try:
+         currentprice=float(client.get_symbol_ticker(symbol=par)["price"])
+         leido = True
+      except:
+         pass
+   return currentprice
 
    

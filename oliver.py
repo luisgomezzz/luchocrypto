@@ -1,3 +1,4 @@
+from time import sleep
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import sys, os
@@ -7,7 +8,6 @@ import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
-import pandas_ta as pdta
 import datetime as dt
 from datetime import datetime
 
@@ -28,7 +28,10 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
+    porcentajevariacion = 0.30
     balanceobjetivo = 24.00
+    diccio = {'NADA': 0.0}
+    ratio=1.5 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
 
@@ -62,53 +65,53 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas)))
+                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+". En la mira:"+str(diccio))
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
 
-                        #Para analizar posible estrategia Oliver
+                        #SEÑAL BUY
                         if  (
-                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(0.30/100))) 
+                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(porcentajevariacion/100))) 
                             and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
                             and df['low'].iloc[-1] <= (df.ta.ema(5).iloc[-1]) 
                             and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
-                            and df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
-                            and df.ta.bop().iloc[-1] < 0
                             ):
+                            
+                            #se detectó la señal y se guarda el valor pico
+                            diccio[par] = df['high'].iloc[-2]
 
-                            print("\n*********************************************************************************************")
-                            mensaje="Trade - "+par+" - SELL"
-                            mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                            print(mensaje)
-                            posicioncreada=ut.posicionfuerte(par,'SELL',client)                                
+                        if par in diccio:
+                            #si ya hubo señal se ve si es momento de crear la posición
+                            currentprice= ut.currentprice(client,par)
+                            ema20=df.ta.ema(20).iloc[-1]
+                            if currentprice > diccio[par]:
+                                #si el precio actual supera el pico de la señal crear posición buy
+                                lado='BUY'
+                                print("\n*********************************************************************************************")
+                                mensaje="Trade - "+par+" - "+lado
+                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                print(mensaje)
 
-                            porcentajesubida=((df['low'].iloc[-2]/df.ta.ema(5).iloc[-2])-1)*100
-                            balancegame=ut.balancetotal(exchange,client)
-
+                                porc_perdida=(1-(ema20/currentprice))*100
+                                porc_beneficio=ratio*porc_perdida
+                                posicioncreada=ut.posicionfuerte(par,lado,client,ema20,porc_beneficio) 
+                                balancegame=ut.balancetotal(exchange,client)
+                        
                         if posicioncreada==True:
                             
                             ut.sound()
 
                             ###############################################################################
                             while ut.posicionesabiertas(exchange)==True:
-
+                                sleep(0.5)
                                 ut.waiting()
-
-                                df=ut.calculardf (par,temporalidad,ventana)
-
-                                try:
-                                    currentprice = float(client.get_symbol_ticker(symbol=par)["price"]) 
-                                except:
-                                    pass
-
-                                if (df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]):                                    
-                                    ut.binancecierrotodo(client,par,exchange,'BUY')
-                            ###############################################################################3
-                            posicioncreada=False
-
+                            ###############################################################################
                             ut.closeallopenorders(client,par)
+                            posicioncreada=False
+                            diccio.pop(par, None)                            
                             balancetotal=ut.balancetotal(exchange,client)
+
                             print("\nResumen: ")
                             if balancetotal>balancegame:
                                 mensaje="\nWIN :) "+mensaje
@@ -123,7 +126,6 @@ def main() -> None:
                                 mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
                                 mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
                                 mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
-                                mensaje=mensaje+"\nPorcentaje de subida: "+str(ut.truncate(porcentajesubida,2))
                                 botlaburo.send_text(mensaje)
                             except Exception as a:
                                 print("Error2: "+str(a))
