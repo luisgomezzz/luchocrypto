@@ -28,6 +28,16 @@ import sys
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 
+def currentprice(client,par):
+   leido = False
+   while leido == False:
+      try:
+         current=float(client.get_symbol_ticker(symbol=par)["price"])
+         leido = True
+      except:
+         pass
+   return current
+
 def binancetakeprofit(pair,client,side,porc):
 
    created=True
@@ -274,15 +284,15 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.
          if binancecreoposicion (pair,client,size,side)==True:
 
-            currentprice = currentprice(client,pair) 
+            precioactual = currentprice(client,pair) 
             
             #valores de stop y profit standard
             if side =='BUY':
-               stoppricedefault = currentprice-(currentprice*1.5/100)
+               stoppricedefault = precioactual-(precioactual*1.5/100)
                if stopprice == 0:
                   stopprice = stoppricedefault
             else:
-               stoppricedefault = currentprice+(currentprice*1.5/100)
+               stoppricedefault = precioactual+(precioactual*1.5/100)
                if stopprice == 0:
                   stopprice = stoppricedefault
 
@@ -421,12 +431,3 @@ def balancetotal(exchange,client):
          pass
    return balance
 
-def currentprice(client,par):
-   leido = False
-   while leido == False:
-      try:
-         current=float(client.get_symbol_ticker(symbol=par)["price"])
-         leido = True
-      except:
-         pass
-   return current
