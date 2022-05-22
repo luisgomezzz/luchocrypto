@@ -34,7 +34,7 @@ def main() -> None:
     ratio=1.5 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
-
+    diccio.pop('NADA', None)
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
@@ -65,7 +65,7 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+". En la mira:"+str(diccio)+"\033[K")
+                        sys.stdout.write("\Buscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - En la mira: "+str(diccio)+"\033[K")
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
@@ -81,59 +81,61 @@ def main() -> None:
                             #se detectó la señal y se guarda el valor pico
                             diccio[par] = [df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
 
-                        if par in diccio:
-                            #si ya hubo señal se ve si es momento de crear la posición
-                            currentprice= ut.currentprice(client,par)
-                            ema20=df.ta.ema(20).iloc[-1]
-                            if currentprice > diccio[par][0]:
-                                #si el precio actual supera el pico de la señal crear posición buy
-                                lado='BUY'
-                                print("\n*********************************************************************************************")
-                                mensaje="Trade - "+par+" - "+lado
-                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                print(mensaje)
+                        if len(diccio)>0:
+                            for par2 in diccio:
 
-                                porc_perdida=(1-(ema20/currentprice))*100
-                                porc_beneficio=ratio*porc_perdida
-                                posicioncreada=ut.posicionfuerte(par,lado,client,ema20,porc_beneficio) 
-                                balancegame=ut.balancetotal(exchange,client)
+                                #si ya hubo señal se ve si es momento de crear la posición
+                                currentprice= ut.currentprice(client,par2)
+                                ema20=df.ta.ema(20).iloc[-1]
+                                if currentprice > diccio[par2][0]:
+                                    #si el precio actual supera el pico de la señal crear posición buy
+                                    lado='BUY'
+                                    print("\n*********************************************************************************************")
+                                    mensaje="Trade - "+par2+" - "+lado
+                                    mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                    print(mensaje)
+
+                                    porc_perdida=(1-(ema20/currentprice))*100
+                                    porc_beneficio=ratio*porc_perdida
+                                    posicioncreada=ut.posicionfuerte(par2,lado,client,ema20,porc_beneficio) 
+                                    balancegame=ut.balancetotal(exchange,client)
                         
-                        if posicioncreada==True:
-                            
-                            ut.sound()
+                                if posicioncreada==True:
+                                    
+                                    ut.sound()
 
-                            ###############################################################################
-                            while ut.posicionesabiertas(exchange)==True:
-                                sleep(0.5)
-                                ut.waiting()
-                            ###############################################################################
-                            ut.closeallopenorders(client,par)
-                            posicioncreada=False
-                            diccio.pop(par, None)                            
-                            balancetotal=ut.balancetotal(exchange,client)
+                                    ###############################################################################
+                                    while ut.posicionesabiertas(exchange)==True:
+                                        sleep(0.5)
+                                        ut.waiting()
+                                    ###############################################################################
+                                    ut.closeallopenorders(client,par2)
+                                    posicioncreada=False
+                                    diccio.pop(par2, None)                            
+                                    balancetotal=ut.balancetotal(exchange,client)
 
-                            print("\nResumen: ")
-                            if balancetotal>balancegame:
-                                mensaje="\nWIN :) "+mensaje
-                            else:
-                                if balancetotal<balancegame:
-                                    mensaje="\nLOSE :( "+mensaje
-                                else:
-                                    mensaje="\nNADA :| "+mensaje
-                            try:
-                                mensaje=mensaje+"\nCierre: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,1))+"M"
-                                mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
-                                mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
-                                mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
-                                botlaburo.send_text(mensaje)
-                            except Exception as a:
-                                print("Error2: "+str(a))
-                                pass
+                                    print("\nResumen: ")
+                                    if balancetotal>balancegame:
+                                        mensaje="\nWIN :) "+mensaje
+                                    else:
+                                        if balancetotal<balancegame:
+                                            mensaje="\nLOSE :( "+mensaje
+                                        else:
+                                            mensaje="\nNADA :| "+mensaje
+                                    try:
+                                        mensaje=mensaje+"\nCierre: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                        mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par2)['quoteVolume'])/1000000,1))+"M"
+                                        mensaje=mensaje+"\nGanancia sesión: "+str(ut.truncate(((balancetotal/saldo_inicial)-1)*100,3))+"% "+str(ut.truncate(balancetotal-saldo_inicial,2))+" USDT"
+                                        mensaje=mensaje+"\nBal TOTAL: "+str(ut.truncate(balancetotal,3))+" USDT - (BNB: " +str(ut.truncate(float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"])),3))+" USDT)"
+                                        mensaje=mensaje+"\nObjetivo a: "+str(ut.truncate(balanceobjetivo-balancetotal,3))+" USDT"
+                                        botlaburo.send_text(mensaje)
+                                    except Exception as a:
+                                        print("Error2: "+str(a))
+                                        pass
 
-                            print(mensaje)
-                            print("\n*********************************************************************************************")
-                            #sys.exit()
+                                    print(mensaje)
+                                    print("\n*********************************************************************************************")
+                                    #sys.exit()
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
