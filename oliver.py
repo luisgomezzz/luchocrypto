@@ -30,8 +30,8 @@ def main() -> None:
     mensaje=''
     porcentajevariacion = 0.30
     balanceobjetivo = 24.00
-    diccio = {'NADA': [0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
-    ratio=1.5 #relación riesgo/beneficio 
+    diccio = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
+    ratio=3 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
     diccio.pop('NADA', None)
@@ -78,18 +78,22 @@ def main() -> None:
                             and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
                             ):
                             
-                            #se detectó la señal y se guarda el valor pico
-                            diccio[par] = [df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
+                            #se detectó la señal y se guarda el valor pico y low para crear posicion y stop respectivamente.
+                            diccio[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
 
                         if len(diccio)>0:
                             for par2 in diccio:
                                 sys.stdout.write("\rApuntando. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(diccio)+"\033[K")
                                 sys.stdout.flush()
 
+                                df=ut.calculardf (par2,temporalidad,ventana)
+
                                 #si ya hubo señal se ve si es momento de crear la posición
                                 currentprice= ut.currentprice(client,par2)
+                                ema5=df.ta.ema(5).iloc[-1]
                                 ema20=df.ta.ema(20).iloc[-1]
-                                if currentprice > diccio[par2][0]:
+                                
+                                if currentprice > diccio[par2][0] and ema5>ema20:
                                     #si el precio actual supera el pico de la señal crear posición buy
                                     lado='BUY'
                                     print("\n*********************************************************************************************")
@@ -97,9 +101,9 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    porc_perdida=(1-(ema20/currentprice))*100
+                                    porc_perdida=(1-(diccio[par2][1]/currentprice))*100
                                     porc_beneficio=ratio*porc_perdida
-                                    posicioncreada=ut.posicionfuerte(par2,lado,client,ema20,porc_beneficio) 
+                                    posicioncreada=ut.posicionfuerte(par2,lado,client,diccio[par2][1],porc_beneficio) 
                                     balancegame=ut.balancetotal(exchange,client)
                         
                                 if posicioncreada==True:
@@ -108,8 +112,11 @@ def main() -> None:
 
                                     ###############################################################################
                                     while ut.posicionesabiertas(exchange)==True:
-                                        sleep(0.5)
+                                        #sleep(0.5)
                                         ut.waiting()
+                                        df=ut.calculardf (par2,temporalidad,ventana)
+                                        if df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]:
+                                            ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
                                     ut.closeallopenorders(client,par2)
                                     posicioncreada=False
