@@ -65,7 +65,7 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\Buscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - En la mira: "+str(diccio)+"\033[K")
+                        sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - En la mira: "+str(diccio)+"\033[K")
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
@@ -83,6 +83,8 @@ def main() -> None:
 
                         if len(diccio)>0:
                             for par2 in diccio:
+                                sys.stdout.write("\rApuntando. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(diccio)+"\033[K")
+                                sys.stdout.flush()
 
                                 #si ya hubo señal se ve si es momento de crear la posición
                                 currentprice= ut.currentprice(client,par2)
