@@ -281,15 +281,15 @@ def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:
 
             if stopprice == 0:
                profitprice = profitdefaultporc
-               if binancestoploss (pair,client,side,stoppricedefault)==1:                  
+               if binancestoploss (pair,client,side,stoppricedefault)==0:                  
                   binancetakeprofit(pair,client,side,profitpricedefault)
             else:
                if profitprice == 0:
                   profitprice = profitdefaultporc
-                  if binancestoploss (pair,client,side,stopprice)==1:                  
+                  if binancestoploss (pair,client,side,stopprice)==0:                  
                      binancetakeprofit(pair,client,side,profitpricedefault)
                else:
-                  if binancestoploss (pair,client,side,stopprice)==1:                  
+                  if binancestoploss (pair,client,side,stopprice)==0:                  
                      binancetakeprofit(pair,client,side,profitprice)
 
          else:
