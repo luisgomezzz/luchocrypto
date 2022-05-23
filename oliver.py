@@ -31,7 +31,7 @@ def main() -> None:
     porcentajevariacion = 0.30
     balanceobjetivo = 24.00
     diccio = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
-    ratio=3 #relación riesgo/beneficio 
+    ratio = 2 #relación riesgo/beneficio 
 
     ut.clear() #limpia terminal
     diccio.pop('NADA', None)
@@ -101,9 +101,11 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    porc_perdida=(1-(diccio[par2][1]/precioactual))*100
-                                    porc_beneficio=ratio*porc_perdida
-                                    posicioncreada=ut.posicionfuerte(par2,lado,client,diccio[par2][1],porc_beneficio) 
+                                    stopprice = diccio[par2][1]
+                                    profitprice = ((precioactual-stopprice)/ratio)+precioactual
+
+                                    posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
+
                                     balancegame=ut.balancetotal(exchange,client)
                         
                                 if posicioncreada==True:
@@ -118,6 +120,7 @@ def main() -> None:
                                         if df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]:
                                             ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
+
                                     ut.closeallopenorders(client,par2)
                                     posicioncreada=False
                                     diccio.pop(par2, None)                            

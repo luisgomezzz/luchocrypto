@@ -38,22 +38,13 @@ def currentprice(client,par):
          pass
    return current
 
-def binancetakeprofit(pair,client,side,porc):
+def binancetakeprofit(pair,client,side,profitprice):
 
    created=True
-   valor_actual=currentprice(client,pair)
-
-   if side=='BUY':
-      precioprofit=valor_actual+(valor_actual*porc/100)
-      side='SELL'         
-   else:
-      precioprofit=valor_actual-(valor_actual*porc/100)
-      side='BUY'
-
    try:
-      precioprofit=truncate(precioprofit,get_priceprecision(client,pair))
-      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=precioprofit,closePosition=True)
-      print("Take profit creado. ",precioprofit)            
+      profitprice=truncate(profitprice,get_priceprecision(client,pair))
+      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=profitprice,closePosition=True)
+      print("Take profit creado. ",profitprice)            
    except BinanceAPIException as a:
       print(a.message,"no se pudo crear el take profit.")
       created=False
@@ -265,20 +256,14 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
-   
+def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:   
    serror = True
-   apalancamiento=10
-   margen = 'CROSSED'
    porcentajeentrada=100
    exchange= binanceexchange(binance_api,binance_secret)
    micapital = balancetotal(exchange,client)
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
-   posicionporc = 100
-   distanciaporc = 1
-
-   if apalancamiento>80:
-      client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
+   stopdefaultporc = 1
+   profitdefaultporc = 2
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.
@@ -288,24 +273,24 @@ def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
             
             #valores de stop y profit standard
             if side =='BUY':
-               stoppricedefault = precioactual-(precioactual*1/100)
-               if stopprice == 0:
-                  stopprice = stoppricedefault
+               stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
+               profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
             else:
-               stoppricedefault = precioactual+(precioactual*1/100)
-               if stopprice == 0:
-                  stopprice = stoppricedefault
+               stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
+               profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
 
-            if porcprofit == 0:
-               porcprofit = 2
-
-            if binancestoploss (pair,client,side,stopprice)==1:
-               print("Stop loss con valores default.")
-               binancestoploss (pair,client,side,stoppricedefault)
-               
-            binancetakeprofit(pair,client,side,porcprofit)
-
-            #binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
+            if stopprice == 0:
+               profitprice = profitdefaultporc
+               if binancestoploss (pair,client,side,stoppricedefault)==1:                  
+                  binancetakeprofit(pair,client,side,profitpricedefault)
+            else:
+               if profitprice == 0:
+                  profitprice = profitdefaultporc
+                  if binancestoploss (pair,client,side,stopprice)==1:                  
+                     binancetakeprofit(pair,client,side,profitpricedefault)
+               else:
+                  if binancestoploss (pair,client,side,stopprice)==1:                  
+                     binancetakeprofit(pair,client,side,profitprice)
 
          else:
             print ("No se pudo crear la posición. ")
