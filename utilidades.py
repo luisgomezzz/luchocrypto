@@ -264,6 +264,7 @@ def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
    stopdefaultporc = 1
    profitdefaultporc = 2
+   print("valores recibidos en la función posicioncompleta - stopprice: "+str(stopprice)+" profitprice: "+str(profitprice))
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.

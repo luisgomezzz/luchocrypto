@@ -73,7 +73,7 @@ def main() -> None:
 
                 try:
                     try:
-                        sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - En la mira: "+str(dicciobuy)+"\033[K")
+                        sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
@@ -102,7 +102,7 @@ def main() -> None:
 
                         if len(dicciobuy)>0:
                             for par2 in dicciobuy:
-                                sys.stdout.write("\rApuntando. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(dicciobuy)+"\033[K")
+                                sys.stdout.write("\rApuntando BUY. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(dicciobuy)+"\033[K")
                                 sys.stdout.flush()
 
                                 df=ut.calculardf (par2,temporalidad,ventana)
@@ -121,7 +121,7 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = dicciobuy[par2][1]
+                                    stopprice = ema20
                                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
 
                                     posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
@@ -171,7 +171,7 @@ def main() -> None:
 ######################################################################################################################################################3
                         if len(dicciosell)>0:
                             for par2 in dicciosell:
-                                sys.stdout.write("\rApuntando. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(dicciosell)+"\033[K")
+                                sys.stdout.write("\rApuntando SELL. Ctrl+c para salir. Par: "+par2+" - En la mira: "+str(dicciosell)+"\033[K")
                                 sys.stdout.flush()
 
                                 df=ut.calculardf (par2,temporalidad,ventana)
@@ -190,7 +190,7 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = dicciosell[par2][1]
+                                    stopprice = ema20
                                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
 
                                     posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
