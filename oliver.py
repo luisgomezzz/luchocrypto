@@ -32,7 +32,7 @@ def main() -> None:
     balanceobjetivo = 24.00
     dicciobuy = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
     dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
-    ratio = 2 #relación riesgo/beneficio 
+    ratio = 0.5 #Risk/Reward Ratio
     temporalidad='3m'
     ##DATOS GUARDADOS##########################################################################################
     #dicciobuy = {'RSRUSDT': [0.00619, 0.0059, '23/May/2022 14:38:39']}
@@ -122,6 +122,7 @@ def main() -> None:
                                     print(mensaje)
 
                                     stopprice = ema20
+                                    
                                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
 
                                     posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
@@ -191,7 +192,8 @@ def main() -> None:
                                     print(mensaje)
 
                                     stopprice = ema20
-                                    profitprice = ((precioactual-stopprice)/ratio)+precioactual
+
+                                    profitprice = precioactual-((stopprice-precioactual)/ratio)
 
                                     posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
 
