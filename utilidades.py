@@ -290,7 +290,8 @@ def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:
                      binancetakeprofit(pair,client,side,profitpricedefault)
                else:
                   if binancestoploss (pair,client,side,stopprice)==0:                  
-                     binancetakeprofit(pair,client,side,profitprice)
+                     if binancetakeprofit(pair,client,side,profitprice)==False:
+                        binancetakeprofit(pair,client,side,profitpricedefault)
 
          else:
             print ("No se pudo crear la posición. ")
