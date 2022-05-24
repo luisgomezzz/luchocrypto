@@ -144,7 +144,14 @@ def main() -> None:
 
                                     ut.closeallopenorders(client,par2)
                                     posicioncreada=False                                    
-                                    dicciobuy.clear()                     
+                                    
+                                    ### limpieza. si se cumplió la condicion mientras estaba tradeando entonces se borra porque se ingresaría tarde.
+                                    for par2 in dicciobuy:
+                                        precioactual= ut.currentprice(client,par2)
+                                        if precioactual > dicciobuy[par2][0]:
+                                            dicciobuy.pop(par2, None)
+                                    ###
+
                                     balancetotal=ut.balancetotal(exchange,client)
 
                                     print("\nResumen: ")
@@ -215,7 +222,14 @@ def main() -> None:
 
                                     ut.closeallopenorders(client,par2)
                                     posicioncreada=False
-                                    dicciosell.clear()                          
+                                    
+                                    ### limpieza. si se cumplió la condicion mientras estaba tradeando entonces se borra porque se ingresaría tarde.
+                                    for par2 in dicciosell:
+                                        precioactual= ut.currentprice(client,par2)
+                                        if precioactual < dicciosell[par2][0]:
+                                            dicciosell.pop(par2, None)
+                                    ###                          
+                                    
                                     balancetotal=ut.balancetotal(exchange,client)
 
                                     print("\nResumen: ")
