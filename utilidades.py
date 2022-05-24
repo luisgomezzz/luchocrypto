@@ -41,6 +41,12 @@ def currentprice(client,par):
 def binancetakeprofit(pair,client,side,profitprice):
 
    created=True
+   
+   if side=='BUY':
+      side='SELL'         
+   else:
+      side='BUY'
+
    try:
       profitprice=truncate(profitprice,get_priceprecision(client,pair))
       client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=profitprice,closePosition=True)
