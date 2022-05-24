@@ -32,16 +32,15 @@ def main() -> None:
     balanceobjetivo = 24.00
     dicciobuy = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
     dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
+    dicciobuy.clear()
+    dicciosell.clear()
     ratio = 0.5 #Risk/Reward Ratio
     temporalidad='3m'
     ##DATOS GUARDADOS##########################################################################################
     #dicciobuy = {'RSRUSDT': [0.00619, 0.0059, '23/May/2022 14:38:39']}
     ###########################################################################################################
 
-
     ut.clear() #limpia terminal
-    dicciobuy.pop('NADA', None)
-    dicciosell.pop('NADA', None)
 
     for s in lista_de_monedas:
         try:  
@@ -114,7 +113,7 @@ def main() -> None:
                                 ema200=df.ta.ema(200).iloc[-1]
                                 ema13=df.ta.ema(13).iloc[-1]
                                 
-                                if precioactual > dicciobuy[par2][0] and ema5>ema20>ema200 and df.ta.cci(40).iloc[-1] > 100:
+                                if precioactual > dicciobuy[par2][0] and ema5>ema20>ema200 and df.ta.cci(20).iloc[-1] > 100:
                                     #si el precio actual supera el pico de la señal crear posición buy
                                     lado='BUY'
                                     print("\n*********************************************************************************************")
@@ -139,13 +138,13 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if df.ta.cci(40).iloc[-1] < 100 or ut.currentprice(client,par2) <= df.ta.ema(13).iloc[-1]:
+                                        if df.ta.cci(20).iloc[-1] < 100 or ut.currentprice(client,par2) <= df.ta.ema(13).iloc[-1]:
                                             ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
 
                                     ut.closeallopenorders(client,par2)
-                                    posicioncreada=False
-                                    dicciobuy.pop(par2, None)                            
+                                    posicioncreada=False                                    
+                                    dicciobuy.clear()                     
                                     balancetotal=ut.balancetotal(exchange,client)
 
                                     print("\nResumen: ")
@@ -185,7 +184,7 @@ def main() -> None:
                                 ema200=df.ta.ema(200).iloc[-1]
                                 ema13=df.ta.ema(13).iloc[-1]
                                 
-                                if precioactual < dicciosell[par2][0] and ema5<ema20<ema200 and df.ta.cci(40).iloc[-1] < -100:
+                                if precioactual < dicciosell[par2][0] and ema5<ema20<ema200 and df.ta.cci(20).iloc[-1] < -100:
                                     #si el precio actual menor el low de la señal crear posición sell
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
@@ -210,13 +209,13 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if df.ta.cci(40).iloc[-1] > -100 or ut.currentprice(client,par2) >= df.ta.ema(13).iloc[-1]:
+                                        if df.ta.cci(20).iloc[-1] > -100 or ut.currentprice(client,par2) >= df.ta.ema(13).iloc[-1]:
                                             ut.binancecierrotodo(client,par2,exchange,'BUY')
                                     ###############################################################################
 
                                     ut.closeallopenorders(client,par2)
                                     posicioncreada=False
-                                    dicciosell.pop(par2, None)                            
+                                    dicciosell.clear()                          
                                     balancetotal=ut.balancetotal(exchange,client)
 
                                     print("\nResumen: ")
