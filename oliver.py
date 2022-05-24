@@ -122,7 +122,7 @@ def main() -> None:
                                     print(mensaje)
 
                                     stopprice = ema20
-                                    
+
                                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
 
                                     posicioncreada=ut.posicioncompleta(par2,lado,client,stopprice,profitprice) 
@@ -138,7 +138,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] < 0:
+                                        if (df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] < 0 or (ut.currentprice(client,par2) <= df.ta.ema(20).iloc[-1]):
                                             ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
 
@@ -208,7 +208,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] > 0:
+                                        if (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] > 0 or (ut.currentprice(client,par2) >= df.ta.ema(20).iloc[-1]):
                                             ut.binancecierrotodo(client,par2,exchange,'BUY')
                                     ###############################################################################
 
