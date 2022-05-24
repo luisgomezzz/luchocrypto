@@ -114,7 +114,7 @@ def main() -> None:
                                 ema200=df.ta.ema(200).iloc[-1]
                                 ema13=df.ta.ema(13).iloc[-1]
                                 
-                                if precioactual > dicciobuy[par2][0] and ema5>ema20>ema200:
+                                if precioactual > dicciobuy[par2][0] and ema5>ema20>ema200 and df.ta.cci(40).iloc[-1] > 100:
                                     #si el precio actual supera el pico de la señal crear posición buy
                                     lado='BUY'
                                     print("\n*********************************************************************************************")
@@ -139,7 +139,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] < 0 or (ut.currentprice(client,par2) <= df.ta.ema(13).iloc[-1]):
+                                        if df.ta.cci(40).iloc[-1] < 100 or ut.currentprice(client,par2) <= df.ta.ema(13).iloc[-1]:
                                             ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
 
@@ -185,7 +185,7 @@ def main() -> None:
                                 ema200=df.ta.ema(200).iloc[-1]
                                 ema13=df.ta.ema(13).iloc[-1]
                                 
-                                if precioactual < dicciosell[par2][0] and ema5<ema20<ema200:
+                                if precioactual < dicciosell[par2][0] and ema5<ema20<ema200 and df.ta.cci(40).iloc[-1] < -100:
                                     #si el precio actual menor el low de la señal crear posición sell
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
@@ -210,7 +210,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] > 0 or (ut.currentprice(client,par2) >= df.ta.ema(13).iloc[-1]):
+                                        if df.ta.cci(40).iloc[-1] > -100 or ut.currentprice(client,par2) >= df.ta.ema(13).iloc[-1]:
                                             ut.binancecierrotodo(client,par2,exchange,'BUY')
                                     ###############################################################################
 
