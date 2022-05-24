@@ -112,6 +112,7 @@ def main() -> None:
                                 ema5=df.ta.ema(5).iloc[-1]
                                 ema20=df.ta.ema(20).iloc[-1]
                                 ema200=df.ta.ema(200).iloc[-1]
+                                ema13=df.ta.ema(13).iloc[-1]
                                 
                                 if precioactual > dicciobuy[par2][0] and ema5>ema20>ema200:
                                     #si el precio actual supera el pico de la señal crear posición buy
@@ -121,7 +122,7 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = ema20
+                                    stopprice = ema13
 
                                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
 
@@ -138,7 +139,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] < 0 or (ut.currentprice(client,par2) <= df.ta.ema(20).iloc[-1]):
+                                        if (df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] < 0 or (ut.currentprice(client,par2) <= df.ta.ema(13).iloc[-1]):
                                             ut.binancecierrotodo(client,par2,exchange,'SELL')
                                     ###############################################################################
 
@@ -182,6 +183,7 @@ def main() -> None:
                                 ema5=df.ta.ema(5).iloc[-1]
                                 ema20=df.ta.ema(20).iloc[-1]
                                 ema200=df.ta.ema(200).iloc[-1]
+                                ema13=df.ta.ema(13).iloc[-1]
                                 
                                 if precioactual < dicciosell[par2][0] and ema5<ema20<ema200:
                                     #si el precio actual menor el low de la señal crear posición sell
@@ -191,7 +193,7 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = ema20
+                                    stopprice = ema13
 
                                     profitprice = precioactual-((stopprice-precioactual)/ratio)
 
@@ -208,7 +210,7 @@ def main() -> None:
                                         #sleep(0.5)
                                         ut.waiting()
                                         df=ut.calculardf (par2,temporalidad,ventana)
-                                        if (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] > 0 or (ut.currentprice(client,par2) >= df.ta.ema(20).iloc[-1]):
+                                        if (df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]) or df.ta.cci(40).iloc[-1] > 0 or (ut.currentprice(client,par2) >= df.ta.ema(13).iloc[-1]):
                                             ut.binancecierrotodo(client,par2,exchange,'BUY')
                                     ###############################################################################
 
