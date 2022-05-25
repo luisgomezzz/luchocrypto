@@ -77,6 +77,8 @@ def main() -> None:
         sys.stdout.flush()
         print(dicciobuy)
 
+    ##############START
+
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
@@ -98,7 +100,7 @@ def main() -> None:
         while True:
 
             for par in lista_monedas_filtradas:
-
+                # para calcular tiempo de vuelta completa
                 if primerpar=='':
                     primerpar=par
                     datetime_start = datetime.today()
@@ -110,7 +112,7 @@ def main() -> None:
 
                 try:
                     try:
-                        if par not in dicciobuy:
+                        if par not in dicciobuy: #voy moneda por moneda buscando mientras no esté en el dicciobuy ya que si está la analiza dentro del próximo bucle
 
                             sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                             sys.stdout.flush()
@@ -144,7 +146,7 @@ def main() -> None:
                                     print("\nNueva deteccion sell ")
                                     print(dicciosell)
 
-                            if len(dicciobuy)>0: #entro si hay señales de BUY guardadas
+                            if len(dicciobuy)>0: #entro si hay señales de BUY guardadas para analizar si es momento de entrar
                                 for par2 in list(dicciobuy):
                                     
                                     sys.stdout.write("\rEn la mira Buy. Ctrl+c para salir. Par: "+par2+"\033[K")
@@ -158,12 +160,12 @@ def main() -> None:
                                     ema200=df.ta.ema(200).iloc[-1]
                                     ema13=df.ta.ema(13).iloc[-1]
                                     
-                                    if (
+                                    if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
                                         precioactual*(1+porcentajevariacion/100) > dicciobuy[par2][0] 
                                         and ema5>ema20>ema200 
                                         and df.ta.cci(20).iloc[-1] > 100
                                         ):
-                                        #si ya hubo señal se ve si se dan las condiciones para que crear la posicion
+                                        
                                         lado='BUY'
                                         print("\n*********************************************************************************************")
                                         mensaje="Trade - "+par2+" - "+lado
