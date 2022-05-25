@@ -17,7 +17,7 @@ botlaburo = ut.creobot('laburo')
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','DODOUSDT'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -36,8 +36,9 @@ def main() -> None:
     dicciosell.clear()
     ratio = 0.5 #Risk/Reward Ratio
     temporalidad='3m'
+    
     ##DATOS GUARDADOS##########################################################################################
-    #dicciobuy = {'RSRUSDT': [0.00619, 0.0059, '23/May/2022 14:38:39']}
+    dicciobuy = {'AKROUSDT': [0.0055, 0.00522, '24/May/2022 17:31:52'],'ATAUSDT': [0.1894, 0.1855, '24/May/2022 17:42:06'],'RSRUSDT': [0.0068, 0.00671, '24/May/2022 21:17:44']}
     ###########################################################################################################
 
     ut.clear() #limpia terminal
