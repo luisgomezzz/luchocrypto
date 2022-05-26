@@ -15,6 +15,37 @@ import numpy as np
 client = Client(ut.binance_api, ut.binance_secret)   
 botlaburo = ut.creobot('laburo')      
 
+def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,dicciosell):
+    ventana=480
+    for par in lista_monedas_filtradas:
+        sys.stdout.write("\rBuscando señales para tener en la mira: "+par+"\033[K")
+        sys.stdout.flush()
+        df=ut.calculardf (par,temporalidad,ventana)
+        df['ema5']=df.ta.ema(5)
+        df['ema5up']=df['ema5']*(1+(porcentajevariacion/100))
+        df['ema5down']=df['ema5']*(1-(porcentajevariacion/100))
+        df['ema20']=df.ta.ema(20)
+        df['ema200']=df.ta.ema(200)
+        # create a new column and use np.select to assign values to it using our lists as arguments
+        df['matchup'] = np.where((df.low.shift(periods=1) > df.ema5up.shift(periods=1))
+                        & (df.ema5.shift(periods=1) > df.ema20.shift(periods=1))
+                        & (df.ema20.shift(periods=1) > df.ema200.shift(periods=1))
+                        & (df.low <= df.ema5)
+                        & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
+                        , True,False)
+        for i in df.index: 
+            if df.matchup[i]==True:
+                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
+        # Limpieza. Si se cumplió la condición en alguna moneda mientras 
+        # se estaba tradeando entonces se borra porque se ingresaría tarde.
+        for par in list(dicciobuy):
+            precioactual= ut.currentprice(client,par)
+            if precioactual > dicciobuy[par][0]:
+                dicciobuy.pop(par, None)               
+    sys.stdout.write("\rEn la mira BUY \033[K")
+    sys.stdout.flush()
+    print(dicciobuy)
+
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
@@ -36,48 +67,11 @@ def main() -> None:
     dicciobuy.clear()
     dicciosell.clear()
     ratio = 0.5 #Risk/Reward Ratio
-    temporalidad='3m'
+    temporalidad='3m'   
     
-    ut.clear() #limpia terminal
-
-    def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,dicciosell):
-        ventana=480
-        for par in lista_monedas_filtradas:
-
-            sys.stdout.write("\rBuscando señales para tener en la mira: "+par+"\033[K")
-            sys.stdout.flush()
-
-            df=ut.calculardf (par,temporalidad,ventana)
-            df['ema5']=df.ta.ema(5)
-            df['ema5up']=df['ema5']*(1+(porcentajevariacion/100))
-            df['ema5down']=df['ema5']*(1-(porcentajevariacion/100))
-            df['ema20']=df.ta.ema(20)
-            df['ema200']=df.ta.ema(200)
-
-            # create a new column and use np.select to assign values to it using our lists as arguments
-            df['matchup'] = np.where((df.low.shift(periods=1) > df.ema5up.shift(periods=1))
-                            & (df.ema5.shift(periods=1) > df.ema20.shift(periods=1))
-                            & (df.ema20.shift(periods=1) > df.ema200.shift(periods=1))
-                            & (df.low <= df.ema5)
-                            & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
-                            , True,False)
-
-            for i in df.index: 
-                if df.matchup[i]==True:
-                    dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
-
-            # Limpieza. Si se cumplió la condición en alguna moneda mientras 
-            # se estaba tradeando entonces se borra porque se ingresaría tarde.
-            for par in list(dicciobuy):
-                precioactual= ut.currentprice(client,par)
-                if precioactual > dicciobuy[par][0]:
-                    dicciobuy.pop(par, None)               
-
-        sys.stdout.write("\rEn la mira BUY \033[K")
-        sys.stdout.flush()
-        print(dicciobuy)
-
     ##############START
+
+    ut.clear() #limpia terminal
 
     for s in lista_de_monedas:
         try:  
@@ -200,7 +194,10 @@ def main() -> None:
                                         for par3 in list(dicciobuy):
                                             precioactual= ut.currentprice(client,par3)
                                             if precioactual > dicciobuy[par3][0]:
-                                                dicciobuy.pop(par3, None)    
+                                                dicciobuy.pop(par3, None)   
+
+                                        #se analiza nuevamente el par por si aun es valido y se inserta nuevamente en el df
+                                        enlamira([par2],porcentajevariacion,temporalidad,dicciobuy,dicciosell) 
 
                                         print("\nResumen: ")
 
