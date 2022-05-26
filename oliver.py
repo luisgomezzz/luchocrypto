@@ -76,7 +76,7 @@ def main() -> None:
     saldo_inicial=ut.balancetotal(exchange,client)
     posicioncreada = False
     minvolumen24h=float(100000000)
-    primerpar=str('')
+    vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
@@ -86,9 +86,9 @@ def main() -> None:
     dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
     dicciobuy.clear()
     dicciosell.clear()
-    ratio = 0.5 #Risk/Reward Ratio
+    ratio = 0.58 #Risk/Reward Ratio
     temporalidad='3m'   
-    
+        
     ##############START
 
     ut.clear() #limpia terminal
@@ -107,28 +107,40 @@ def main() -> None:
             sys.exit()
 
     #se obtiene el historial de todas las monedas
-    enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,dicciosell)
+    enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,dicciosell) 
+    #prints
+    print(dicciobuy)   
+    print(dicciosell)
+    #auxiliares para ver diferencias
+    dicciobuybkup=dicciobuy
+    dicciosellbkup=dicciosell
 
     try:
 
         while True:
 
             for par in lista_monedas_filtradas:
-                # para calcular tiempo de vuelta completa
-                if primerpar=='':
-                    primerpar=par
+                # para calcular tiempo de vuelta completa                
+                if vueltas==0:
                     datetime_start = datetime.today()
                 else:
-                    if primerpar==par:
+                    if vueltas == len(lista_monedas_filtradas):
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
-                        primerpar=''
+                        vueltas==0
+
+                if dicciobuy!=dicciobuybkup:
+                    print("Actualizacion de dicciobuy: "+str(dicciobuy))
+                    dicciobuybkup=dicciobuy
+                if dicciosell!=dicciosellbkup:
+                    print("Actualizacion de dicciosell: "+str(dicciosell))
+                    dicciosellbkup=dicciosell                    
 
                 try:
                     try:
                         if par not in dicciobuy or par not in dicciosell: #voy moneda por moneda buscando mientras no esté en el dicciobuy ya que si está la analiza dentro del próximo bucle
                             ########PRINTS          
-                            sys.stdout.write("\rEn la mira BUY "+str(dicciobuy)+" - En la mira SELL "+str(dicciosell)+" - Buscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
+                            sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                             sys.stdout.flush()
 
                             enlamira([par],porcentajevariacion,temporalidad,dicciobuy,dicciosell)
@@ -301,7 +313,7 @@ def main() -> None:
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                         print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
                         pass
-
+                
                 except KeyboardInterrupt:
                     print("\nSalida solicitada.")
                     sys.exit()            
@@ -309,7 +321,9 @@ def main() -> None:
                     if a.message!="Invalid symbol.":
                         print("Error5 - Par:",par,"-",a.status_code,a.message)
                     pass
-       
+                
+                vueltas=vueltas+1
+
     except BinanceAPIException as a:
        print("Error6 - Par:",par,"-",a.status_code,a.message)
        pass
