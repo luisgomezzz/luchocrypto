@@ -33,6 +33,15 @@ def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,
                         & (df.low <= df.ema5)
                         & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
                         , True,False)
+
+        df['matchdown'] = np.where((df.high.shift(periods=1) < df.ema5down.shift(periods=1))
+                        & (df.ema5.shift(periods=1) < df.ema20.shift(periods=1))
+                        & (df.ema20.shift(periods=1) < df.ema200.shift(periods=1))
+                        & (df.high >= df.ema5)
+                        & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
+                        , True,False)
+
+#########buy
         for i in df.index: 
             if df.matchup[i]==True:
                 dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
@@ -42,10 +51,27 @@ def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,
             precioactual= ut.currentprice(client,par)
             if precioactual > dicciobuy[par][0]:
                 dicciobuy.pop(par, None)       
+
+#########sell
+        for i in df.index: 
+            if df.matchdown[i]==True:
+                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i)]
+        # Limpieza. Si se cumplió la condición en alguna moneda mientras 
+        # se estaba tradeando entonces se borra porque se ingresaría tarde.
+        for par in list(dicciosell):
+            precioactual= ut.currentprice(client,par)
+            if precioactual < dicciosell[par][0]:
+                dicciosell.pop(par, None)    
+
+#############prints                
                         
     sys.stdout.write("\rEn la mira BUY \033[K")
     sys.stdout.flush()
     print(dicciobuy)
+
+    sys.stdout.write("\rEn la mira SELL \033[K")
+    sys.stdout.flush()
+    print(dicciosell)
 
 def main() -> None:
 
