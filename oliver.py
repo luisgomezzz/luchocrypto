@@ -18,7 +18,7 @@ botlaburo = ut.creobot('laburo')
 def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,dicciosell):
     ventana=480
     for par in lista_monedas_filtradas:
-        sys.stdout.write("\rBuscando señales para tener en la mira: "+par+"\033[K")
+        sys.stdout.write("\rBuscando señales para tener en la mira: "+str(par)+"\033[K")
         sys.stdout.flush()
         df=ut.calculardf (par,temporalidad,ventana)
         df['ema5']=df.ta.ema(5)
@@ -41,7 +41,8 @@ def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,dicciobuy,
         for par in list(dicciobuy):
             precioactual= ut.currentprice(client,par)
             if precioactual > dicciobuy[par][0]:
-                dicciobuy.pop(par, None)               
+                dicciobuy.pop(par, None)       
+                        
     sys.stdout.write("\rEn la mira BUY \033[K")
     sys.stdout.flush()
     print(dicciobuy)
@@ -155,7 +156,7 @@ def main() -> None:
                                     ema13=df.ta.ema(13).iloc[-1]
                                     
                                     if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
-                                        precioactual > (dicciobuy[par2][0])*(1+porcentajevariacion/100) 
+                                        precioactual > (dicciobuy[par2][0])*(1+(porcentajevariacion*2/100))
                                         and ema5>ema20>ema200 
                                         and df.ta.cci(20).iloc[-1] > 100
                                         ):
