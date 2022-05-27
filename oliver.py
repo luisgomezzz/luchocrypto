@@ -182,7 +182,7 @@ def main() -> None:
 
                         if par in dicciobuy:
                             if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
-                                precioactual > (dicciobuy[par][0])*(1+(porcentajevariacion*2/100))
+                                precioactual > (dicciobuy[par][0])
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
                                 ):
@@ -203,7 +203,7 @@ def main() -> None:
                         else:
                             if par in dicciosell:
                                 if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
-                                    precioactual < (dicciosell[par][0])*(1-(porcentajevariacion*2/100))
+                                    precioactual < (dicciosell[par][0])
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
                                     ):
