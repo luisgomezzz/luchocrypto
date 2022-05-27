@@ -57,20 +57,14 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
                         & (df.high >= df.ema5)
                         & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
                         & (df.low.shift(periods=1) < ut.currentprice(client,par))
-                        , True,False)
-        
-        ###me quedo con las ultimas señales de buy y sell
-        try:
-            signalup=(df.loc[(df['matchup'] == True), ['high','low','time3']].iloc[-1])
-            dicciobuy[par]=(signalup.high,signalup.low,str(signalup.time3))
-        except:
-            pass
-
-        try:
-            signaldown=(df.loc[(df['matchdown'] == True), ['low','high','time3']].iloc[-1])
-            dicciosell[par]=(signaldown.low,signaldown.high,str(signaldown.time3))
-        except:
-            pass                
+                        , True,False)        
+###me quedo con las ultimas señales de buy y sell
+        for i in df.index: 
+            if df.matchup[i]==True:
+                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
+        for i in df.index: 
+            if df.matchdown[i]==True:
+                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i)]            
 
 
 def main() -> None:
