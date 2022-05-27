@@ -29,10 +29,12 @@ def limpiezaenlamira(client,dicciobuy,dicciosell):
             dicciosell.pop(par, None)    
 
 
-def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell):
+def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell):
     ventana=480
+    dicciobuy.clear()
+    dicciosell.clear()
     for par in lista_monedas_filtradas:
-        sys.stdout.write("\rBuscando señales para tener en la mira: "+str(par)+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+"\033[K")
+        sys.stdout.write("\rBuscando HISTORIAL de señales para tener en la mira: "+str(par)+"\033[K")
         sys.stdout.flush()
         df=ut.calculardf (par,temporalidad,ventana)
         df['ema5']=df.ta.ema(5)
@@ -46,6 +48,7 @@ def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_di
                         & (df.ema20.shift(periods=1) > df.ema200.shift(periods=1))
                         & (df.low <= df.ema5)
                         & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
+                        & (df.high.shift(periods=1) < ut.currentprice(client,par))
                         , True,False)
 
         df['matchdown'] = np.where((df.high.shift(periods=1) < df.ema5down.shift(periods=1))
@@ -53,18 +56,21 @@ def enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_di
                         & (df.ema20.shift(periods=1) < df.ema200.shift(periods=1))
                         & (df.high >= df.ema5)
                         & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
+                        & (df.low.shift(periods=1) < ut.currentprice(client,par))
                         , True,False)
-########BUY
-###me quedo con las ultimas señales de buy y sell
-        for i in df.index: 
-            if df.matchup[i]==True:
-                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
-########SELL
-        for i in df.index: 
-            if df.matchdown[i]==True:
-                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i)]
-########LIMPIEZA
-    limpiezaenlamira(client,dicciobuy,dicciosell)
+        
+        ###me quedo con las ultimas señales de buy y sell
+        try:
+            signalup=(df.loc[(df['matchup'] == True), ['high','low','time3']].iloc[-1])
+            dicciobuy[par]=(signalup.high,signalup.low,str(signalup.time3))
+        except:
+            pass
+
+        try:
+            signaldown=(df.loc[(df['matchdown'] == True), ['low','high','time3']].iloc[-1])
+            dicciosell[par]=(signaldown.low,signaldown.high,str(signaldown.time3))
+        except:
+            pass                
 
 
 def main() -> None:
@@ -108,7 +114,7 @@ def main() -> None:
             sys.exit()
 
     #se obtiene el historial de todas las monedas
-    enlamira(lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell) 
+    enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell) 
     #prints
 
     sys.stdout.write("\rMonedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
@@ -146,10 +152,34 @@ def main() -> None:
                         sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
 
-                        enlamira([par],porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
+                        df=ut.calculardf (par,temporalidad,ventana)    
+
+                        #SEÑAL BUY
+                        if  (
+                            (df['low'].iloc[-2] > (df.ta.ema(5).iloc[-2])*(1+(porcentajevariacion/100))) 
+                            and (df.ta.ema(5).iloc[-2] > df.ta.ema(20).iloc[-2] > df.ta.ema(200).iloc[-2])                            
+                            and df['low'].iloc[-1] <= (df.ta.ema(5).iloc[-1]) 
+                            and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
+                            ):
+                            
+                            #se detectó la señal y se guarda el valor pico para crear posicion cuando sea superado.
+                            dicciobuy[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
+                            print("\nNueva deteccion BUY\n")
+
+                        else:
+                            #SEÑAL SELL
+                            if  (
+                                (df['high'].iloc[-2] < (df.ta.ema(5).iloc[-2])*(1-(porcentajevariacion/100))) 
+                                and (df.ta.ema(5).iloc[-2] < df.ta.ema(20).iloc[-2] < df.ta.ema(200).iloc[-2])                            
+                                and df['high'].iloc[-1] >= (df.ta.ema(5).iloc[-1]) 
+                                and df['high'].iloc[-2]-df['low'].iloc[-2]>df['high'].iloc[-1]-df['low'].iloc[-1]
+                                ):
+                            
+                                #se detectó la señal y se guarda el low para crear posicion cuando sea superado.
+                                dicciosell[par] = [df['low'].iloc[-2],df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
+                                print("\nNueva deteccion SELL\n")
 
                         if par in dicciobuy or par in dicciosell:
-                            df=ut.calculardf (par,temporalidad,ventana)
                             precioactual= ut.currentprice(client,par)
                             ema5=df.ta.ema(5).iloc[-1]
                             ema20=df.ta.ema(20).iloc[-1]
@@ -221,7 +251,9 @@ def main() -> None:
 
                             ut.closeallopenorders(client,par)
                             posicioncreada=False                                                                
-                            limpiezaenlamira(client,dicciobuy,dicciosell)
+                            #Reinicio
+                            print("\nREINICIO...\n")
+                            enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
 
                             print("\nResumen: ")
                             balancetotal=ut.balancetotal(exchange,client)
