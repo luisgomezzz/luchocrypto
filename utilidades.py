@@ -11,13 +11,9 @@
 
 import math
 import pandas as pd
-import pandas_datareader.data as web
-import time
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 from mplfinance.original_flavor import candlestick2_ohlc
-from argparse import ArgumentParser
-import matplotlib.pyplot as plt
 import ccxt
 from os import system, name
 import os
@@ -27,26 +23,34 @@ from typing import Tuple
 import numpy as np
 import talib as tl
 import pandas_ta as ta
+import sys
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 
-def binancetakeprofit(pair,client,side,porc):
+def currentprice(client,par):
+   leido = False
+   while leido == False:
+      try:
+         current=float(client.get_symbol_ticker(symbol=par)["price"])
+         leido = True
+      except:
+         pass
+   return current
+
+def binancetakeprofit(pair,client,side,profitprice):
 
    created=True
-   valor_actual=float(client.get_symbol_ticker(symbol=pair)["price"])
-
+   
    if side=='BUY':
-      precioprofit=valor_actual+(valor_actual*porc/100)
       side='SELL'         
    else:
-      precioprofit=valor_actual-(valor_actual*porc/100)
       side='BUY'
 
    try:
-      precioprofit=truncate(precioprofit,get_priceprecision(client,pair))
-      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=precioprofit,closePosition=True)
-      print("Take profit creado. ",precioprofit)            
+      profitprice=truncate(profitprice,get_priceprecision(client,pair))
+      client.futures_create_order(symbol=pair, side=side, type='TAKE_PROFIT_MARKET', timeInForce='GTC', stopPrice=profitprice,closePosition=True)
+      print("Take profit creado. ",profitprice)            
    except BinanceAPIException as a:
       print(a.message,"no se pudo crear el take profit.")
       created=False
@@ -56,7 +60,7 @@ def binancetakeprofit(pair,client,side,porc):
 
 def binancecrearlimite(exchange,par,client,posicionporc,distanciaporc,lado) -> bool:
    salida= True
-   precio=float(client.get_symbol_ticker(symbol=par)["price"])
+   precio=currentprice(client,par)
    
    if lado=='BUY':
       precioprofit=precio-(precio*distanciaporc/100)
@@ -94,7 +98,7 @@ def binancestoploss (pair,client,side,stopprice)-> int:
       client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
       print("Stop loss creado. ",preciostop)
    except BinanceAPIException as a:
-      print(a.message,"no se pudo crear el take profit.")
+      print(a.message,"no se pudo crear el stop loss.")
       retorno=1
       pass
 
@@ -159,24 +163,28 @@ def binancecierrotodo(client,par,exchange,lado) -> bool:
    cerrado = False    
    mensaje=''
    
-   try:        
-      if posicionesabiertas(exchange) ==True:    
-         pos = abs(get_positionamt(exchange,par))
-         print(pos)
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos, reduceOnly='true')
-         cerrado = True
-         print("Posición cerrada.")
-   except BinanceAPIException as a:
+   while cerrado == False:
       try:        
-         client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
-         cerrado = True
-         print("Posición cerrada sin reduceonly.")
+         if posicionesabiertas(exchange) ==True:    
+            pos = abs(get_positionamt(exchange,par))
+            print(pos)
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos, reduceOnly='true')
+            cerrado = True
+            print("Posición cerrada.")
       except BinanceAPIException as a:
-         print("Except FUNCION CIERROTODO",a.status_code,a.message)   
-         botlaburo = creobot('laburo')
-         mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-         botlaburo.send_text(mensaje)
-         input(mensaje)            
+         try:        
+            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
+            cerrado = True
+            print("Posición cerrada sin reduceonly.")
+         except BinanceAPIException as a:
+            print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
+            botlaburo = creobot('laburo')
+            mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
+            botlaburo.send_text(mensaje)
+            input(mensaje)          
+      except Exception as falla:
+         print("Error2 FUNCION CIERROTODO: "+str(falla))
+         pass     
 
    client.futures_cancel_all_open_orders(symbol=par) 
    print("Órdenes canceladas.") 
@@ -209,11 +217,20 @@ def binanceexchange(binance_api,binance_secret):
     return exchange
 
 def binancehistoricdf(pair,timeframe,limit):
-    ## Datos para indicadores
-    exchange=ccxt.binance()
-    barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
-    df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
-    return df
+   ## Datos para indicadores
+   leido = False
+   while leido == False:
+      try:
+         exchange=ccxt.binance()
+         barsindicators = exchange.fetch_ohlcv(pair,timeframe=timeframe,limit=limit)
+         df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+         leido = True
+      except KeyboardInterrupt:
+         print("\nSalida solicitada.")
+         sys.exit()  
+      except:
+         pass
+   return df
 
 def timeindex(df):
     # if you encounter a "year is out of range" error the timestamp
@@ -245,45 +262,43 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicionfuerte(pair,side,client,stopprice=0,porcprofit=0) -> bool:
-   
+def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:   
    serror = True
-   apalancamiento=10
-   margen = 'CROSSED'
    porcentajeentrada=100
-   exchange=binanceexchange(binance_api,binance_secret)
-   micapital = float(exchange.fetch_balance()['info']['totalWalletBalance'])
-   size = (micapital*porcentajeentrada/100)/(float(client.get_symbol_ticker(symbol=pair)["price"]))
-   posicionporc = 100
-   distanciaporc = 1
-
-   if apalancamiento>80:
-      client.futures_change_leverage(symbol=pair, leverage=apalancamiento)
+   exchange= binanceexchange(binance_api,binance_secret)
+   micapital = balancetotal(exchange,client)
+   size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
+   stopdefaultporc = 1
+   profitdefaultporc = 2
+   print("valores recibidos en la función posicioncompleta - stopprice: "+str(stopprice)+" profitprice: "+str(profitprice))
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.
          if binancecreoposicion (pair,client,size,side)==True:
 
-            currentprice = float(client.get_symbol_ticker(symbol=pair)["price"]) 
-
+            precioactual = currentprice(client,pair) 
+            
             #valores de stop y profit standard
+            if side =='BUY':
+               stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
+               profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
+            else:
+               stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
+               profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
+
             if stopprice == 0:
-               if side =='BUY':
-                  stoppricedefault = currentprice-(currentprice*1/100)
-                  stopprice = stoppricedefault
+               profitprice = profitdefaultporc
+               if binancestoploss (pair,client,side,stoppricedefault)==0:                  
+                  binancetakeprofit(pair,client,side,profitpricedefault)
+            else:
+               if profitprice == 0:
+                  profitprice = profitdefaultporc
+                  if binancestoploss (pair,client,side,stopprice)==0:                  
+                     binancetakeprofit(pair,client,side,profitpricedefault)
                else:
-                  stoppricedefault = currentprice+(currentprice*1/100)
-                  stopprice = stoppricedefault
-
-            if porcprofit == 0:
-               porcprofit = 2
-
-            if binancestoploss (pair,client,side,stopprice)==1:
-               binancestoploss (pair,client,side,stoppricedefault)
-
-            binancetakeprofit(pair,client,side,porcprofit)
-
-            #binancecrearlimite(exchange,pair,client,posicionporc,distanciaporc,side)
+                  if binancestoploss (pair,client,side,stopprice)==0:                  
+                     if binancetakeprofit(pair,client,side,profitprice)==False:
+                        binancetakeprofit(pair,client,side,profitpricedefault)
 
          else:
             print ("No se pudo crear la posición. ")
@@ -358,12 +373,12 @@ def komucloud (df):
    df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
       
 def calculardf (par,temporalidad,ventana):
-   
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
    df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
 
    return df
+
 
 bar = [
       " [=     ]",
@@ -398,3 +413,14 @@ def posicionesabiertas(exchange):
       except:
          pass
    return posicionabierta
+
+def balancetotal(exchange,client):
+   leido = False
+   while leido == False:
+      try:
+         balance=float(exchange.fetch_balance()['info']['totalWalletBalance'])+float((exchange.fetch_balance()['BNB']['total'])*float(client.get_symbol_ticker(symbol='BNBUSDT')["price"]))
+         leido = True
+      except:
+         pass
+   return balance
+
