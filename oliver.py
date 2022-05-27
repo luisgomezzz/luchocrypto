@@ -48,7 +48,7 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
                         & (df.ema20.shift(periods=1) > df.ema200.shift(periods=1))
                         & (df.low <= df.ema5)
                         & ((df.high.shift(periods=1)-df.low.shift(periods=1))>(df.high-df.low))
-                        & (df.high.shift(periods=1) < ut.currentprice(client,par))
+                        & (df.high.shift(periods=1) > ut.currentprice(client,par))
                         , True,False)
 
         df['matchdown'] = np.where((df.high.shift(periods=1) < df.ema5down.shift(periods=1))
