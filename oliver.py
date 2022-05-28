@@ -9,7 +9,7 @@ yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
 import datetime as dt
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 
 client = Client(ut.binance_api, ut.binance_secret)   
@@ -61,10 +61,10 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
 ###me quedo con las ultimas señales de buy y sell
         for i in df.index: 
             if df.matchup[i]==True:
-                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
+                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i-timedelta(hours=3))]
         for i in df.index: 
             if df.matchdown[i]==True:
-                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i)]            
+                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i-timedelta(hours=3))]            
 
 
 def main() -> None:
@@ -158,7 +158,8 @@ def main() -> None:
                             
                             #se detectó la señal y se guarda el valor pico para crear posicion cuando sea superado.
                             dicciobuy[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
-                            print("\nNueva deteccion BUY\n")
+                            sys.stdout.write("\rActualización en la mira BUY: "+str(dicciobuy)+"\033[K")
+                            sys.stdout.flush()
 
                         else:
                             #SEÑAL SELL
@@ -171,7 +172,8 @@ def main() -> None:
                             
                                 #se detectó la señal y se guarda el low para crear posicion cuando sea superado.
                                 dicciosell[par] = [df['low'].iloc[-2],df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
-                                print("\nNueva deteccion SELL\n")
+                                sys.stdout.write("\rActualización en la mira SELL: "+str(dicciosell)+"\033[K")
+                                sys.stdout.flush()
 
                         if par in dicciobuy or par in dicciosell:
                             precioactual= ut.currentprice(client,par)
@@ -185,6 +187,7 @@ def main() -> None:
                                 precioactual > (dicciobuy[par][0])
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
+                                and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                 ):
                                 ############################
                                 ########POSICION BUY########
@@ -206,6 +209,7 @@ def main() -> None:
                                     precioactual < (dicciosell[par][0])
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
+                                    and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                     ):
                                     ############################
                                     ####### POSICION SELL ######
@@ -245,10 +249,6 @@ def main() -> None:
 
                             ut.closeallopenorders(client,par)
                             posicioncreada=False                                                                
-                            #Reinicio
-                            print("\nREINICIO...\n")
-                            enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
-
                             print("\nResumen: ")
                             balancetotal=ut.balancetotal(exchange,client)
                             if balancetotal>balancegame:
@@ -271,6 +271,10 @@ def main() -> None:
 
                             print(mensaje)
                             print("\n*********************************************************************************************")
+
+                            #Reinicio
+                            print("\nREINICIO...\n")
+                            enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
