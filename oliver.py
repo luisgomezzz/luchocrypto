@@ -272,6 +272,12 @@ def main() -> None:
                             print(mensaje)
                             print("\n*********************************************************************************************")
 
+                            #escribo file
+                            f = open("log_oliver.txt", "a")
+                            f.write(mensaje)
+                            f.write("\n*********************************************************************************************\n")
+                            f.close()
+
                             #Reinicio
                             print("\nREINICIO...\n")
                             enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
