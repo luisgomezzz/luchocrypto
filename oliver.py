@@ -11,6 +11,7 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime, timedelta
 import numpy as np
+import pandas_ta as pta
 
 client = Client(ut.binance_api, ut.binance_secret)   
 botlaburo = ut.creobot('laburo')      
@@ -160,6 +161,7 @@ def main() -> None:
                             dicciobuy[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
                             sys.stdout.write("\rActualización en la mira BUY: "+str(dicciobuy)+"\033[K")
                             sys.stdout.flush()
+                            print('\n')
 
                         else:
                             #SEÑAL SELL
@@ -174,6 +176,7 @@ def main() -> None:
                                 dicciosell[par] = [df['low'].iloc[-2],df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
                                 sys.stdout.write("\rActualización en la mira SELL: "+str(dicciosell)+"\033[K")
                                 sys.stdout.flush()
+                                print('\n')
 
                         if par in dicciobuy or par in dicciosell:
                             precioactual= ut.currentprice(client,par)
@@ -181,6 +184,7 @@ def main() -> None:
                             ema20=df.ta.ema(20).iloc[-1]
                             ema200=df.ta.ema(200).iloc[-1]
                             ema13=df.ta.ema(13).iloc[-1]
+                            sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
 
                         if par in dicciobuy:
                             if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
@@ -188,6 +192,8 @@ def main() -> None:
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
                                 and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                and sti['SUPERT_7_3.0'].iloc[-1]>sti['SUPERT_7_3.0'].iloc[-2] > ema200
+                                and sti['SUPERTd_7_3.0'].iloc[-1] == 1
                                 ):
                                 ############################
                                 ########POSICION BUY########
@@ -196,7 +202,7 @@ def main() -> None:
                                 lado='BUY'
                                 print("\n*********************************************************************************************")
                                 mensaje="Trade - "+par+" - "+lado
-                                mensaje="\nSeñal "+dicciobuy[par]
+                                mensaje="\nSeñal "+str(dicciobuy[par])
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
 
@@ -211,6 +217,8 @@ def main() -> None:
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
                                     and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                    and sti['SUPERT_7_3.0'].iloc[-1]<sti['SUPERT_7_3.0'].iloc[-2] < ema200
+                                    and sti['SUPERTd_7_3.0'].iloc[-1] == -1
                                     ):
                                     ############################
                                     ####### POSICION SELL ######
@@ -219,7 +227,7 @@ def main() -> None:
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
-                                    mensaje="\nSeñal "+dicciosell[par]
+                                    mensaje="\nSeñal "+str(dicciosell[par])
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
@@ -237,7 +245,8 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if df.ta.cci(20).iloc[-1] < 100 or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]:
+                                    if (df.ta.cci(20).iloc[-1] < 100 
+                                        or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')
                                 ###############################################################################
                             else:
@@ -245,7 +254,8 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if df.ta.cci(20).iloc[-1] > -100 or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]:
+                                    if (df.ta.cci(20).iloc[-1] > -100 
+                                        or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################
 
