@@ -196,6 +196,7 @@ def main() -> None:
                                 lado='BUY'
                                 print("\n*********************************************************************************************")
                                 mensaje="Trade - "+par+" - "+lado
+                                mensaje="\nSeñal "+dicciobuy[par]
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
 
@@ -218,6 +219,7 @@ def main() -> None:
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
+                                    mensaje="\nSeñal "+dicciosell[par]
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
