@@ -71,7 +71,7 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','DODOUSDT'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','DODOUSDT','BELUSDT'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -191,7 +191,7 @@ def main() -> None:
                                 precioactual > (dicciobuy[par][0])
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
-                                and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                #and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                 and sti['SUPERT_7_3.0'].iloc[-1]>sti['SUPERT_7_3.0'].iloc[-2] > ema200
                                 and sti['SUPERTd_7_3.0'].iloc[-1] == 1
                                 ):
@@ -202,7 +202,7 @@ def main() -> None:
                                 lado='BUY'
                                 print("\n*********************************************************************************************")
                                 mensaje="Trade - "+par+" - "+lado
-                                mensaje="\nSeñal "+str(dicciobuy[par])
+                                mensaje=mensaje+"\nSeñal "+str(dicciobuy[par])
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
 
@@ -216,7 +216,7 @@ def main() -> None:
                                     precioactual < (dicciosell[par][0])
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
-                                    and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                    #and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                     and sti['SUPERT_7_3.0'].iloc[-1]<sti['SUPERT_7_3.0'].iloc[-2] < ema200
                                     and sti['SUPERTd_7_3.0'].iloc[-1] == -1
                                     ):
@@ -227,7 +227,7 @@ def main() -> None:
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
-                                    mensaje="\nSeñal "+str(dicciosell[par])
+                                    mensaje=mensaje+"\nSeñal "+str(dicciosell[par])
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
@@ -245,8 +245,12 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if (df.ta.cci(20).iloc[-1] < 100 
-                                        or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]):
+                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    if (
+                                        sti['SUPERTd_7_3.0'].iloc[-1] == -1 
+                                        #or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]                                        
+                                        or df.ta.cci(20).iloc[-1] < 100
+                                        ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')
                                 ###############################################################################
                             else:
@@ -254,8 +258,11 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if (df.ta.cci(20).iloc[-1] > -100 
-                                        or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]):
+                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    if (sti['SUPERTd_7_3.0'].iloc[-1] == 1                                        
+                                        #or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]
+                                        or df.ta.cci(20).iloc[-1] > -100  
+                                        ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################
 

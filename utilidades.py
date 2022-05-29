@@ -195,9 +195,8 @@ def binancecreoposicion (par,client,size,lado) -> bool:
             
    try:            
       tamanio=truncate(size,get_quantityprecision(client,par))
-      salida=client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=tamanio)
+      client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=tamanio)
       print("Posición creada. ",tamanio)
-      print("\nSalida: ",salida)
    except BinanceAPIException as a:
       print("Falla al crear la posición.",tamanio, ". Error: ",a.message) 
       serror=False
