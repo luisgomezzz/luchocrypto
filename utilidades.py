@@ -262,15 +262,14 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,client,stopprice=0) -> bool:   
+def posicioncompleta(pair,side,client,ratio,stopprice=0) -> bool:   
    serror = True
    porcentajeentrada=100
    exchange= binanceexchange(binance_api,binance_secret)
    micapital = balancetotal(exchange,client)
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
    stopdefaultporc = 1
-   profitdefaultporc = 1
-   ratio = 1/1.36 #Risk/Reward Ratio
+   profitdefaultporc = 1   
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.

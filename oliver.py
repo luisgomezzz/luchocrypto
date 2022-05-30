@@ -89,6 +89,7 @@ def main() -> None:
     dicciobuy.clear()
     dicciosell.clear()
     temporalidad='3m'   
+    ratio = 1/1.36 #Risk/Reward Ratio
         
     ##############START
 
@@ -189,7 +190,7 @@ def main() -> None:
                                 precioactual > (dicciobuy[par][0])
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
-                                #and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                 and sti['SUPERT_7_3.0'].iloc[-1]>sti['SUPERT_7_3.0'].iloc[-2] > ema200
                                 and sti['SUPERTd_7_3.0'].iloc[-1] == 1
                                 ):
@@ -203,9 +204,17 @@ def main() -> None:
                                 mensaje=mensaje+"\nSeñal "+str(dicciobuy[par])
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
+                                
+                                if (df.ta.macd()["MACDh_12_26_9"].iloc[-4]>0):
+                                    print("\nsubida rapida")
+                                    stopprice = df.low.iloc[-2]
+                                    ratio = 1/0.5
+                                else:
+                                    print("\nsubida comun")                                    
+                                    stopprice = ema20         
+                                    ratio = 1/1.36               
 
-                                stopprice = ema20
-                                posicioncreada=ut.posicioncompleta(par,lado,client,stopprice) 
+                                posicioncreada=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
                                 balancegame=ut.balancetotal(exchange,client)
                         else:
                             if par in dicciosell:
@@ -213,7 +222,7 @@ def main() -> None:
                                     precioactual < (dicciosell[par][0])
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
-                                    #and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                    and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
                                     and sti['SUPERT_7_3.0'].iloc[-1]<sti['SUPERT_7_3.0'].iloc[-2] < ema200
                                     and sti['SUPERTd_7_3.0'].iloc[-1] == -1
                                     ):
@@ -228,8 +237,17 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = ema20                                   
-                                    posicioncreada=ut.posicioncompleta(par,lado,client,stopprice) 
+                                    #investigar si en las bajadas/subidas rapidas poner el ratio a 0.5 y el stop al low de la anterior vela
+                                    if (df.ta.macd()["MACDh_12_26_9"].iloc[-4]<0):
+                                        print("\bajada rapida...")
+                                        stopprice = df.high.iloc[-2]
+                                        ratio = 1/0.5
+                                    else:
+                                        print("\bajada comun")    
+                                        stopprice = ema20
+                                        ratio = 1/1.36
+                                                                       
+                                    posicioncreada=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
                                     balancegame=ut.balancetotal(exchange,client)
                     
                         if posicioncreada==True:
