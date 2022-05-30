@@ -262,43 +262,41 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,client,stopprice=0,profitprice=0) -> bool:   
+def posicioncompleta(pair,side,client,stopprice=0) -> bool:   
    serror = True
    porcentajeentrada=100
    exchange= binanceexchange(binance_api,binance_secret)
    micapital = balancetotal(exchange,client)
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
    stopdefaultporc = 1
-   profitdefaultporc = 2
-   print("valores recibidos en la función posicioncompleta - stopprice: "+str(stopprice)+" profitprice: "+str(profitprice))
+   profitdefaultporc = 1
+   ratio = 1/1.36 #Risk/Reward Ratio
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.
          if binancecreoposicion (pair,client,size,side)==True:
 
-            precioactual = currentprice(client,pair) 
-            
+            precioactual = getentryprice(exchange,pair)
+
             #valores de stop y profit standard
             if side =='BUY':
                stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
                profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
+               profitprice = ((precioactual-stopprice)/ratio)+precioactual
             else:
                stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
                profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
+               profitprice = precioactual-((stopprice-precioactual)/ratio)
 
             if stopprice == 0:
-               profitprice = profitdefaultporc
                if binancestoploss (pair,client,side,stoppricedefault)==0:                  
                   binancetakeprofit(pair,client,side,profitpricedefault)
             else:
-               if profitprice == 0:
-                  profitprice = profitdefaultporc
-                  if binancestoploss (pair,client,side,stopprice)==0:                  
+               if binancestoploss (pair,client,side,stopprice)==0:                  
+                  if binancetakeprofit(pair,client,side,profitprice)==False:
                      binancetakeprofit(pair,client,side,profitpricedefault)
-               else:
-                  if binancestoploss (pair,client,side,stopprice)==0:                  
-                     if binancetakeprofit(pair,client,side,profitprice)==False:
-                        binancetakeprofit(pair,client,side,profitpricedefault)
+
+            print("Función posicioncompleta - stopprice: "+str(stopprice)+" - profitprice: "+str(profitprice)+" - Precio de entrada: "+str(precioactual))
 
          else:
             print ("No se pudo crear la posición. ")
@@ -424,3 +422,13 @@ def balancetotal(exchange,client):
          pass
    return balance
 
+def getentryprice(exchange,par):
+   leido = False
+   while leido == False:
+      try:
+         all_positions = exchange.fetch_balance()['info']['positions']
+         current_positions = [position for position in all_positions if (position['symbol']) == par]
+         leido = True
+      except:
+         pass
+   return float(current_positions[0]['entryPrice'])

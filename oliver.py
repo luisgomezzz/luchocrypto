@@ -71,7 +71,7 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','DODOUSDT','BELUSDT'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','DODOUSDT','BELUSDT','ARPAUSDT'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -88,7 +88,6 @@ def main() -> None:
     dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
     dicciobuy.clear()
     dicciosell.clear()
-    ratio = 0.58 #Risk/Reward Ratio
     temporalidad='3m'   
         
     ##############START
@@ -183,7 +182,6 @@ def main() -> None:
                             ema5=df.ta.ema(5).iloc[-1]
                             ema20=df.ta.ema(20).iloc[-1]
                             ema200=df.ta.ema(200).iloc[-1]
-                            ema13=df.ta.ema(13).iloc[-1]
                             sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
 
                         if par in dicciobuy:
@@ -206,9 +204,8 @@ def main() -> None:
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
 
-                                stopprice = ema13
-                                profitprice = ((precioactual-stopprice)/ratio)+precioactual
-                                posicioncreada=ut.posicioncompleta(par,lado,client,stopprice,profitprice) 
+                                stopprice = ema20
+                                posicioncreada=ut.posicioncompleta(par,lado,client,stopprice) 
                                 balancegame=ut.balancetotal(exchange,client)
                         else:
                             if par in dicciosell:
@@ -231,9 +228,8 @@ def main() -> None:
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = ema13
-                                    profitprice = precioactual-((stopprice-precioactual)/ratio)
-                                    posicioncreada=ut.posicioncompleta(par,lado,client,stopprice,profitprice) 
+                                    stopprice = ema20                                   
+                                    posicioncreada=ut.posicioncompleta(par,lado,client,stopprice) 
                                     balancegame=ut.balancetotal(exchange,client)
                     
                         if posicioncreada==True:
