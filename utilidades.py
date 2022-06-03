@@ -262,7 +262,7 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,client,ratio,stopprice=0) -> bool:   
+def posicioncompleta(pair,side,client,ratio,stopprice=0):   
    serror = True
    porcentajeentrada=100
    exchange= binanceexchange(binance_api,binance_secret)
@@ -270,6 +270,7 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0) -> bool:
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
    stopdefaultporc = 1
    profitdefaultporc = 1   
+   mensaje=''
 
    try:
       if posicionesabiertas(exchange)==False: #si no hay posiciones abiertas creo la alertada.
@@ -295,17 +296,26 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0) -> bool:
                   if binancetakeprofit(pair,client,side,profitprice)==False:
                      binancetakeprofit(pair,client,side,profitpricedefault)
 
-            print("Función posicioncompleta - stopprice: "+str(stopprice)+" - profitprice: "+str(profitprice)+" - Precio de entrada: "+str(precioactual))
+            if stopprice>precioactual:
+               mensaje=mensaje+"\nStopprice: "+str(stopprice)
+               mensaje=mensaje+"\nEntryPrice: "+str(precioactual)
+               mensaje=mensaje+"\nProfitprice: "+str(profitprice)
+            else:
+               mensaje=mensaje+"\nProfitprice: "+str(profitprice)         
+               mensaje=mensaje+"\nEntryPrice: "+str(precioactual)
+               mensaje=mensaje+"\nStopprice: "+str(stopprice)
 
          else:
-            print ("No se pudo crear la posición. ")
+            mensaje="No se pudo crear la posición. "
+            print(mensaje)
             serror=False
    except:
-      print ("No se pudo crear la posición. Se detectaron posiciones abiertas. ")
+      mensaje="No se pudo crear la posición. Se detectaron posiciones abiertas. "
+      print(mensaje)
       serror=False
       pass    
 
-   return serror        
+   return serror, mensaje       
 
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.
