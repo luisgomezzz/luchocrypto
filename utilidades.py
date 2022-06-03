@@ -297,13 +297,13 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
                      binancetakeprofit(pair,client,side,profitpricedefault)
 
             if stopprice>precioactual:
-               mensaje=mensaje+"\nStopprice: "+str(stopprice)
-               mensaje=mensaje+"\nEntryPrice: "+str(precioactual)
-               mensaje=mensaje+"\nProfitprice: "+str(profitprice)
+               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice),4)
+               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual),4)
+               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice),4)
             else:
-               mensaje=mensaje+"\nProfitprice: "+str(profitprice)         
-               mensaje=mensaje+"\nEntryPrice: "+str(precioactual)
-               mensaje=mensaje+"\nStopprice: "+str(stopprice)
+               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice),4)
+               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual),4)
+               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice),4)
 
          else:
             mensaje="No se pudo crear la posición. "
