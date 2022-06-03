@@ -73,14 +73,14 @@ def main() -> None:
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)    
-                        sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                        sti = df.ta.supertrend(length=10, multiplier=3.0)
 
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])                            
-                            and ut.currentprice(client,par) > sti['SUPERT_7_3.0'].iloc[-1]
-                            and sti['SUPERTd_7_3.0'].iloc[-1] == 1 
-                            and sti['SUPERTd_7_3.0'].iloc[-2] == 1
-                            and sti['SUPERTd_7_3.0'].iloc[-3] == -1
+                            and ut.currentprice(client,par) > sti['SUPERT_10_3.0'].iloc[-1]
+                            and sti['SUPERTd_10_3.0'].iloc[-1] == 1 
+                            and sti['SUPERTd_10_3.0'].iloc[-2] == 1
+                            and sti['SUPERTd_10_3.0'].iloc[-3] == -1
                             ):                            
                             ############################
                             ########POSICION BUY########
@@ -90,7 +90,7 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = sti['SUPERT_7_3.0'].iloc[-1]         
+                            stopprice = sti['SUPERT_10_3.0'].iloc[-1]         
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
@@ -98,10 +98,10 @@ def main() -> None:
                         else:
                             #SEÑAL SELL
                             if ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])                            
-                                and ut.currentprice(client,par) < sti['SUPERT_7_3.0'].iloc[-1]
-                                and sti['SUPERTd_7_3.0'].iloc[-1] == -1 
-                                and sti['SUPERTd_7_3.0'].iloc[-2] == -1
-                                and sti['SUPERTd_7_3.0'].iloc[-3] == 1
+                                and ut.currentprice(client,par) < sti['SUPERT_10_3.0'].iloc[-1]
+                                and sti['SUPERTd_10_3.0'].iloc[-1] == -1 
+                                and sti['SUPERTd_10_3.0'].iloc[-2] == -1
+                                and sti['SUPERTd_10_3.0'].iloc[-3] == 1
                                 ):                              
                                 ############################
                                 ####### POSICION SELL ######
@@ -111,7 +111,7 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
-                                stopprice = sti['SUPERT_7_3.0'].iloc[-1]                                                                       
+                                stopprice = sti['SUPERT_10_3.0'].iloc[-1]                                                                       
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
@@ -126,10 +126,10 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    sti = df.ta.supertrend(length=10, multiplier=3.0)
                                     if (
-                                        sti['SUPERTd_7_3.0'].iloc[-1] == -1
-                                        and sti['SUPERTd_7_3.0'].iloc[-2] == -1
+                                        sti['SUPERTd_10_3.0'].iloc[-1] == -1
+                                        and sti['SUPERTd_10_3.0'].iloc[-2] == -1
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')
                                 ###############################################################################
@@ -138,10 +138,10 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    sti = df.ta.supertrend(length=10, multiplier=3.0)
                                     if (
-                                        sti['SUPERTd_7_3.0'].iloc[-1] == 1
-                                        and sti['SUPERTd_7_3.0'].iloc[-2] == 1  
+                                        sti['SUPERTd_10_3.0'].iloc[-1] == 1
+                                        and sti['SUPERTd_10_3.0'].iloc[-2] == 1  
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################
