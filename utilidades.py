@@ -297,13 +297,13 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
                      binancetakeprofit(pair,client,side,profitpricedefault)
 
             if stopprice>precioactual:
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice),4)
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual),4)
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice),4)
+               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
+               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
+               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
             else:
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice),4)
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual),4)
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice),4)
+               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
+               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
+               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
 
          else:
             mensaje="No se pudo crear la posición. "
@@ -441,3 +441,204 @@ def getentryprice(exchange,par):
       except:
          pass
    return float(current_positions[0]['entryPrice'])
+
+def Supertrend(df, atr_period, multiplier):
+    
+    high = df['high']
+    low = df['low']
+    close = df['close']
+    
+    # calculate ATR
+    price_diffs = [high - low, 
+                   high - close.shift(), 
+                   close.shift() - low]
+    true_range = pd.concat(price_diffs, axis=1)
+    true_range = true_range.abs().max(axis=1)
+    # default ATR calculation in supertrend indicator
+    atr = true_range.ewm(alpha=1/atr_period,min_periods=atr_period).mean() 
+    # df['atr'] = df['tr'].rolling(atr_period).mean()
+    
+    # HL2 is simply the average of high and low prices
+    hl2 = (high + low) / 2
+    # upperband and lowerband calculation
+    # notice that final bands are set to be equal to the respective bands
+    final_upperband = upperband = hl2 + (multiplier * atr)
+    final_lowerband = lowerband = hl2 - (multiplier * atr)
+    
+    # initialize Supertrend column to True
+    supertrend = [True] * len(df)
+    
+    for i in range(1, len(df.index)):
+        curr, prev = i, i-1
+        
+        # if current close price crosses above upperband
+        if close[curr] > final_upperband[prev]:
+            supertrend[curr] = True
+        # if current close price crosses below lowerband
+        elif close[curr] < final_lowerband[prev]:
+            supertrend[curr] = False
+        # else, the trend continues
+        else:
+            supertrend[curr] = supertrend[prev]
+            
+            # adjustment to the final bands
+            if supertrend[curr] == True and final_lowerband[curr] < final_lowerband[prev]:
+                final_lowerband[curr] = final_lowerband[prev]
+            if supertrend[curr] == False and final_upperband[curr] > final_upperband[prev]:
+                final_upperband[curr] = final_upperband[prev]
+
+        # to remove bands according to the trend direction
+        if supertrend[curr] == True:
+            final_upperband[curr] = np.nan
+        else:
+            final_lowerband[curr] = np.nan
+    
+    return pd.DataFrame({
+        'Supertrend': supertrend,
+        'Final Lowerband': final_lowerband,
+        'Final Upperband': final_upperband
+    }, index=df.index)
+
+def get_adx(high, low, close, lookback):
+      plus_dm = high.diff()
+      minus_dm = low.diff()
+      plus_dm[plus_dm < 0] = 0
+      minus_dm[minus_dm > 0] = 0
+      
+      tr1 = pd.DataFrame(high - low)
+      tr2 = pd.DataFrame(abs(high - close.shift(1)))
+      tr3 = pd.DataFrame(abs(low - close.shift(1)))
+      frames = [tr1, tr2, tr3]
+      tr = pd.concat(frames, axis = 1, join = 'inner').max(axis = 1)
+      atr = tr.rolling(lookback).mean()
+      
+      plus_di = 100 * (plus_dm.ewm(alpha = 1/lookback).mean() / atr)
+      minus_di = abs(100 * (minus_dm.ewm(alpha = 1/lookback).mean() / atr))
+      dx = (abs(plus_di - minus_di) / abs(plus_di + minus_di)) * 100
+      adx = ((dx.shift(1) * (lookback - 1)) + dx) / lookback
+      adx_smooth = adx.ewm(alpha = 1/lookback).mean()
+      return plus_di, minus_di, adx_smooth
+
+def implement_adx_strategy(prices, pdi, ndi, adx):
+      buy_price = []
+      sell_price = []
+      adx_signal = []
+      signal = 0
+      
+      for i in range(len(prices)):
+         if adx[i-1] < 23 and adx[i] > 23 and pdi[i] > ndi[i]:
+               if signal != 1:
+                  buy_price.append(prices[i])
+                  sell_price.append(np.nan)
+                  signal = 1
+                  adx_signal.append(signal)
+               else:
+                  buy_price.append(np.nan)
+                  sell_price.append(np.nan)
+                  adx_signal.append(0)
+         elif adx[i-1] < 23 and adx[i] > 23 and ndi[i] > pdi[i]:
+               if signal != -1:
+                  buy_price.append(np.nan)
+                  sell_price.append(prices[i])
+                  signal = -1
+                  adx_signal.append(signal)
+               else:
+                  buy_price.append(np.nan)
+                  sell_price.append(np.nan)
+                  adx_signal.append(0)
+         else:
+               buy_price.append(np.nan)
+               sell_price.append(np.nan)
+               adx_signal.append(0)
+               
+      return buy_price, sell_price, adx_signal
+
+def osovago(df):
+   # parameter setup
+   length = 20
+   mult = 2
+   length_KC = 20
+   mult_KC = 1.5
+
+   # calculate BB
+   m_avg = df['close'].rolling(window=length).mean()
+   m_std = df['close'].rolling(window=length).std(ddof=0)
+   df['upper_BB'] = m_avg + mult * m_std
+   df['lower_BB'] = m_avg - mult * m_std
+
+   # calculate true range
+   df['tr0'] = abs(df["high"] - df["low"])
+   df['tr1'] = abs(df["high"] - df["close"].shift())
+   df['tr2'] = abs(df["low"] - df["close"].shift())
+   df['tr'] = df[['tr0', 'tr1', 'tr2']].max(axis=1)
+
+   # calculate KC
+   range_ma = df['tr'].rolling(window=length_KC).mean()
+   df['upper_KC'] = m_avg + range_ma * mult_KC
+   df['lower_KC'] = m_avg - range_ma * mult_KC
+
+   # calculate bar value
+   highest = df['high'].rolling(window = length_KC).max()
+   lowest = df['low'].rolling(window = length_KC).min()
+   m1 = (highest + lowest)/2
+   df['value'] = (df['close'] - (m1 + m_avg)/2)
+   fit_y = np.array(range(0,length_KC))
+   df['value'] = df['value'].rolling(window = length_KC).apply(lambda x: 
+                              np.polyfit(fit_y, x, 1)[0] * (length_KC-1) + 
+                              np.polyfit(fit_y, x, 1)[1], raw=True)
+
+   # check for 'squeeze'
+   df['squeeze_on'] = (df['lower_BB'] > df['lower_KC']) & (df['upper_BB'] < df['upper_KC'])
+   df['squeeze_off'] = (df['lower_BB'] < df['lower_KC']) & (df['upper_BB'] > df['upper_KC'])
+
+   # buying window for long position:
+   # 1. black cross becomes gray (the squeeze is released)
+   long_cond1 = (df['squeeze_off'][-2] == False) & (df['squeeze_off'][-1] == True) 
+   # 2. bar value is positive => the bar is light green k
+   long_cond2 = df['value'][-1] > 0
+   enter_long = long_cond1 and long_cond2
+
+   # buying window for short position:
+   # 1. black cross becomes gray (the squeeze is released)
+   short_cond1 = (df['squeeze_off'][-2] == False) & (df['squeeze_off'][-1] == True) 
+   # 2. bar value is negative => the bar is light red 
+   short_cond2 = df['value'][-1] < 0
+   enter_short = short_cond1 and short_cond2
+
+   return enter_long,enter_short
+
+
+def adxvago(df):
+   df['plus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[0]).rename(columns = {0:'plus_di'})
+   df['minus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[1]).rename(columns = {0:'minus_di'})
+   df['adx'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[2]).rename(columns = {0:'adx'})
+   df = df.dropna()
+   df.tail()
+
+   buy_price, sell_price, adx_signal = implement_adx_strategy(df['close'], df['plus_di'], df['minus_di'], df['adx'])
+
+   position = []
+   for i in range(len(adx_signal)):
+      if adx_signal[i] > 1:
+         position.append(0)
+      else:
+         position.append(1)
+         
+   for i in range(len(df['close'])):
+      if adx_signal[i] == 1:
+         position[i] = 1
+      elif adx_signal[i] == -1:
+         position[i] = 0
+      else:
+         position[i] = position[i-1]
+         
+   close_price = df['close']
+   plus_di = df['plus_di']
+   minus_di = df['minus_di']
+   adx = df['adx']
+   adx_signal = pd.DataFrame(adx_signal).rename(columns = {0:'adx_signal'}).set_index(df.index)
+   position = pd.DataFrame(position).rename(columns = {0:'adx_position'}).set_index(df.index)
+   frames = [close_price, plus_di, minus_di, adx, adx_signal, position]
+   strategy = pd.concat(frames, join = 'inner', axis = 1)
+   
+   return strategy

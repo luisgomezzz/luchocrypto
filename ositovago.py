@@ -72,17 +72,15 @@ def main() -> None:
                         sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
 
-                        df=ut.calculardf (par,temporalidad,ventana)    
-                        df=df.join(ut.Supertrend(df, 10, 3.0))
+                        df=ut.calculardf (par,temporalidad,ventana)                            
+                        adx_signal=ut.adxvago(df)['adx_signal'].iloc[-1]
 
                         #SEÑAL BUY
-                        if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])                            
-                            and ut.currentprice(client,par) > df["Final Lowerband"].iloc[-1]
-                            and df.ta.cci(20).iloc[-1] > 100
-                            and df['Supertrend'].iloc[-1] == True 
-                            and df['Supertrend'].iloc[-2] == False
-                            and df['Supertrend'].iloc[-3] == False
-                            ):                            
+                        if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
+                            and adx_signal == 1               
+                            ):    
+                            long,short=ut.osovago(df)   
+                            print(long,short)#para probar el osovago                     
                             ############################
                             ########POSICION BUY########
                             ############################                            
@@ -91,33 +89,30 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = df["Final Lowerband"].iloc[-1]         
+                            stopprice = df.ta.ema(20).iloc[-1] 
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal(exchange,client)
-                        else:
-                            #SEÑAL SELL
-                            if ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])                            
-                                and ut.currentprice(client,par) < df["Final Upperband"].iloc[-1]
-                                and df.ta.cci(20).iloc[-1] < -100
-                                and df['Supertrend'].iloc[-1] == False 
-                                and df['Supertrend'].iloc[-2] == True
-                                and df['Supertrend'].iloc[-3] == True
-                                ):                              
-                                ############################
-                                ####### POSICION SELL ######
-                                ############################
-                                lado='SELL'
-                                print("*********************************************************************************************")
-                                mensaje="Trade - "+par+" - "+lado
-                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                print(mensaje)
-                                stopprice = df["Final Upperband"].iloc[-1]                                                                       
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
-                                print(mensajeposicioncompleta)
-                                mensaje=mensaje+mensajeposicioncompleta
-                                balancegame=ut.balancetotal(exchange,client)
+                        #SEÑAL SELL
+                        elif ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])
+                            and adx_signal == -1
+                            ):           
+                            long,short=ut.osovago(df)
+                            print(long,short)#para probar el osovago                         
+                            ############################
+                            ####### POSICION SELL ######
+                            ############################
+                            lado='SELL'
+                            print("*********************************************************************************************")
+                            mensaje="Trade - "+par+" - "+lado
+                            mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                            print(mensaje)
+                            stopprice = df.ta.ema(20).iloc[-1]                                                                
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
+                            print(mensajeposicioncompleta)
+                            mensaje=mensaje+mensajeposicioncompleta
+                            balancegame=ut.balancetotal(exchange,client)
                     
                         if posicioncreada==True:
                             
@@ -130,9 +125,7 @@ def main() -> None:
                                     df=ut.calculardf (par,temporalidad,ventana)    
                                     df=df.join(ut.Supertrend(df, 10, 3.0))
                                     if (
-                                        (df['Supertrend'].iloc[-1] == False
-                                        and df['Supertrend'].iloc[-2] == True)
-                                        or df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]
+                                        df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')                                
                             else:                                
@@ -141,9 +134,7 @@ def main() -> None:
                                     df=ut.calculardf (par,temporalidad,ventana)    
                                     df=df.join(ut.Supertrend(df, 10, 3.0))
                                     if (
-                                        (df['Supertrend'].iloc[-1] == True
-                                        and df['Supertrend'].iloc[-2] == False)
-                                        or df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]
+                                        df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################
@@ -174,7 +165,7 @@ def main() -> None:
                             print("\n*********************************************************************************************")
 
                             #escribo file
-                            f = open("log_supertrend.txt", "a")
+                            f = open("log_ositovago.txt", "a")
                             f.write(mensaje)
                             f.write("\n*********************************************************************************************\n")
                             f.close()
