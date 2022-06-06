@@ -24,6 +24,7 @@ import numpy as np
 import talib as tl
 import pandas_ta as ta
 import sys
+from time import sleep
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -382,7 +383,7 @@ def komucloud (df):
 def calculardf (par,temporalidad,ventana):
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
-   df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
+   #df.ta.strategy(ta.CommonStrategy) # Runs and appends all indicators to the current DataFrame by default
 
    return df
 
@@ -402,10 +403,13 @@ bar = [
 
 bar_i = 0
 
-def waiting():
+def waiting(segundossleep=0.0):
    global bar_i   
    print(bar[bar_i % len(bar)], end="\r")      
    bar_i += 1
+   if segundossleep>0.0:
+      sleep(segundossleep)
+
    
 def posicionesabiertas(exchange):
    #devuelve True si hay posiciones abiertas, sino, devuelve False.
@@ -640,9 +644,11 @@ def osovago(df):
    short_cond2 = df['value'].iloc[-1] < 0
    enter_short = short_cond1 and short_cond2
 
+   '''
    df['enter_long'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) > 0)
    df['enter_short'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) < 0)
 
    print(df)
-
+   '''
+   
    return enter_long,enter_short   

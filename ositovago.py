@@ -1,4 +1,3 @@
-from time import sleep
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 import sys, os
@@ -72,15 +71,15 @@ def main() -> None:
                         sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
 
-                        df=ut.calculardf (par,temporalidad,ventana)                            
-                        adx_signal=ut.adx(df)['adx_signal'].iloc[-1]
-
+                        df=ut.calculardf (par,temporalidad,ventana)  
+                        long,short=ut.osovago(df)
+                        df2=ut.adx(df)
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
-                            and adx_signal == 1               
+                            and long == True   
+                            and df2['adx'].iloc[-1]>23
+                            and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
                             ):    
-                            long,short=ut.osovago(df)   
-                            print(long,short)#para probar el osovago                     
                             ############################
                             ########POSICION BUY########
                             ############################                            
@@ -96,10 +95,10 @@ def main() -> None:
                             balancegame=ut.balancetotal(exchange,client)
                         #SEÑAL SELL
                         elif ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])
-                            and adx_signal == -1
+                            and short == True   
+                            and df2['adx'].iloc[-1]>23
+                            and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
                             ):           
-                            long,short=ut.osovago(df)
-                            print(long,short)#para probar el osovago                         
                             ############################
                             ####### POSICION SELL ######
                             ############################
@@ -121,22 +120,22 @@ def main() -> None:
                             if lado=='BUY':
                                 ###############################################################################
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    df=df.join(ut.Supertrend(df, 10, 3.0))
+                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
                                     if (
-                                        df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1]
+                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]<df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')                                
+                                    ut.waiting(30)    
                             else:                                
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    df=df.join(ut.Supertrend(df, 10, 3.0))
+                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
                                     if (
-                                        df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1]
+                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]>df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
+                                    ut.waiting(30)    
                                 ###############################################################################
 
                             ut.closeallopenorders(client,par)
