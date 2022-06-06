@@ -73,7 +73,7 @@ def main() -> None:
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)                            
-                        adx_signal=ut.adxvago(df)['adx_signal'].iloc[-1]
+                        adx_signal=ut.adx(df)['adx_signal'].iloc[-1]
 
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  

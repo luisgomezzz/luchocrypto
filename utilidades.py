@@ -553,6 +553,41 @@ def implement_adx_strategy(prices, pdi, ndi, adx):
                
       return buy_price, sell_price, adx_signal
 
+def adx(df): #me quedo con este ya que devuelve el momento de entrar (adx_signal) aunque se puede con df.ta.adx() y pta.adx(df['high'], df['low'], df['close'])
+   df['plus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[0]).rename(columns = {0:'plus_di'})
+   df['minus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[1]).rename(columns = {0:'minus_di'})
+   df['adx'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[2]).rename(columns = {0:'adx'})
+   df = df.dropna()
+   df.tail()
+
+   buy_price, sell_price, adx_signal = implement_adx_strategy(df['close'], df['plus_di'], df['minus_di'], df['adx'])
+
+   position = []
+   for i in range(len(adx_signal)):
+      if adx_signal[i] > 1:
+         position.append(0)
+      else:
+         position.append(1)
+         
+   for i in range(len(df['close'])):
+      if adx_signal[i] == 1:
+         position[i] = 1
+      elif adx_signal[i] == -1:
+         position[i] = 0
+      else:
+         position[i] = position[i-1]
+         
+   close_price = df['close']
+   plus_di = df['plus_di']
+   minus_di = df['minus_di']
+   adx = df['adx']
+   adx_signal = pd.DataFrame(adx_signal).rename(columns = {0:'adx_signal'}).set_index(df.index)
+   position = pd.DataFrame(position).rename(columns = {0:'adx_position'}).set_index(df.index)
+   frames = [close_price, plus_di, minus_di, adx, adx_signal, position]
+   strategy = pd.concat(frames, join = 'inner', axis = 1)
+   
+   return strategy
+
 def osovago(df):
    # parameter setup
    length = 20
@@ -593,52 +628,21 @@ def osovago(df):
 
    # buying window for long position:
    # 1. black cross becomes gray (the squeeze is released)
-   long_cond1 = (df['squeeze_off'][-2] == False) & (df['squeeze_off'][-1] == True) 
+   long_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
    # 2. bar value is positive => the bar is light green k
-   long_cond2 = df['value'][-1] > 0
+   long_cond2 = df['value'].iloc[-1] > 0
    enter_long = long_cond1 and long_cond2
 
    # buying window for short position:
    # 1. black cross becomes gray (the squeeze is released)
-   short_cond1 = (df['squeeze_off'][-2] == False) & (df['squeeze_off'][-1] == True) 
+   short_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
    # 2. bar value is negative => the bar is light red 
-   short_cond2 = df['value'][-1] < 0
+   short_cond2 = df['value'].iloc[-1] < 0
    enter_short = short_cond1 and short_cond2
 
-   return enter_long,enter_short
+   df['enter_long'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) > 0)
+   df['enter_short'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) < 0)
 
+   print(df)
 
-def adxvago(df):
-   df['plus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[0]).rename(columns = {0:'plus_di'})
-   df['minus_di'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[1]).rename(columns = {0:'minus_di'})
-   df['adx'] = pd.DataFrame(get_adx(df['high'], df['low'], df['close'], 14)[2]).rename(columns = {0:'adx'})
-   df = df.dropna()
-   df.tail()
-
-   buy_price, sell_price, adx_signal = implement_adx_strategy(df['close'], df['plus_di'], df['minus_di'], df['adx'])
-
-   position = []
-   for i in range(len(adx_signal)):
-      if adx_signal[i] > 1:
-         position.append(0)
-      else:
-         position.append(1)
-         
-   for i in range(len(df['close'])):
-      if adx_signal[i] == 1:
-         position[i] = 1
-      elif adx_signal[i] == -1:
-         position[i] = 0
-      else:
-         position[i] = position[i-1]
-         
-   close_price = df['close']
-   plus_di = df['plus_di']
-   minus_di = df['minus_di']
-   adx = df['adx']
-   adx_signal = pd.DataFrame(adx_signal).rename(columns = {0:'adx_signal'}).set_index(df.index)
-   position = pd.DataFrame(position).rename(columns = {0:'adx_position'}).set_index(df.index)
-   frames = [close_price, plus_di, minus_di, adx, adx_signal, position]
-   strategy = pd.concat(frames, join = 'inner', axis = 1)
-   
-   return strategy
+   return enter_long,enter_short   
