@@ -59,31 +59,32 @@ def binancetakeprofit(pair,client,side,profitprice):
 
    return created
 
-def binancecrearlimite(exchange,par,client,posicionporc,distanciaporc,lado) -> bool:
-   salida= True
-   precio=currentprice(client,par)
+def binancecrearlimite(exchange,par,client,fraccionlimit,profitprice,posicionporc,lado):
+   retorno = True
+
+   precioactual = getentryprice(exchange,par)
    
    if lado=='BUY':
-      precioprofit=precio-(precio*distanciaporc/100)
+      preciolimit = precioactual+fraccionlimit*(profitprice-precioactual)
       lado='SELL'
    else:
-      precioprofit=precio+(precio*distanciaporc/100)
+      preciolimit = profitprice + fraccionlimit*(precioactual-profitprice)
       lado='BUY'
 
    sizedesocupar=abs(truncate((get_positionamt(exchange,par)*posicionporc/100),get_quantityprecision(client,par)))
 
    try:
-      limitprice=truncate(precioprofit,get_priceprecision(client,par))
+      limitprice=truncate(preciolimit,get_priceprecision(client,par))
       print("Limit. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
       client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
       print("Limit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
-      salida= True         
+      retorno= True         
    except BinanceAPIException as a:
       print(a.message,"No se pudo crear el Limit.")
-      salida= False      
+      retorno= False      
       pass
 
-   return salida
+   return retorno
 
 def binancestoploss (pair,client,side,stopprice)-> int:
    
@@ -296,6 +297,18 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
                if binancestoploss (pair,client,side,stopprice)==0:                  
                   if binancetakeprofit(pair,client,side,profitprice)==False:
                      binancetakeprofit(pair,client,side,profitpricedefault)
+            
+            fraccionlimit=1/2
+            posicionporc=50
+            if side=='BUY':
+               lado='SELL'         
+            else:
+               lado='BUY'
+
+            if binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,lado)==True:
+               print("se creo limite!!!")
+            else:
+               print("no se creo el limite HDP...")
 
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
@@ -631,24 +644,29 @@ def osovago(df):
    df['squeeze_off'] = (df['lower_BB'] < df['lower_KC']) & (df['upper_BB'] > df['upper_KC'])
 
    df['noSqz'] = ~df['squeeze_on'] & ~df['squeeze_off']   
-   df['gray']= (~df['noSqz']) & (~df['squeeze_on'])
+   
 
    # buying window for long position:
    # 1. black cross becomes gray (the squeeze is released)
-   long_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
+   #df['long_cond1'] = (df.squeeze_off.shift(periods=1) == False) & (df.squeeze_off == True) 
    # 2. bar value is positive => the bar is light green k
-   long_cond2 = df['value'].iloc[-1] > 0
-   long_cond3 = df['value'].iloc[-1] > df['value'].iloc[-2]
-   enter_long = long_cond2 and long_cond3 #and long_cond1 
+   df['long_cond2'] = df.value > 0
+   df['long_cond3'] = df.value > df.value.shift(periods=1)
 
    # buying window for short position:
    # 1. black cross becomes gray (the squeeze is released)
-   short_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
+   #df['short_cond1'] = (df.squeeze_off.shift(periods=1) == False) & (df.squeeze_off == True) 
    # 2. bar value is negative => the bar is light red 
-   short_cond2 = df['value'].iloc[-1] < 0
-   short_cond3 = df['value'].iloc[-1] < df['value'].iloc[-2]
-   enter_short = short_cond2 and short_cond3 #and short_cond1 
-
-   gray = df['gray'].iloc[-1]
+   df['short_cond2'] = df.value < 0
+   df['short_cond3'] = df.value < df.value.shift(periods=1)
+   
+   df['enter_long'] = df.long_cond2 & df.long_cond3 #and long_cond1 
+   df['enter_short'] = df.short_cond2 & df.short_cond3 #and short_cond1 
+   df['gray']= ~df.noSqz & ~df.squeeze_on 
+   df['gray']= df['gray'] & (df.gray.shift(periods=1)==False)
+   
+   enter_long=df['enter_long'].iloc[-1]
+   enter_short=df['enter_short'].iloc[-1]
+   gray=df['gray'].iloc[-1]
 
    return enter_long,enter_short,gray

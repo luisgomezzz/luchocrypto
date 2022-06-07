@@ -18,7 +18,7 @@ botlaburo = ut.creobot('laburo')
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','DODOUSDT','BELUSDT','ARPAUSDT'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -29,9 +29,9 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00
+    balanceobjetivo = 24.00+24.88
     temporalidad='3m'   
-    ratio = 1/1.5 #Risk/Reward Ratio
+    ratio = 1/1.0 #Risk/Reward Ratio
     mensajeposicioncompleta=''
         
     ##############START
@@ -76,7 +76,7 @@ def main() -> None:
                         df2=ut.adx(df)
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
-                            and long == True   
+                            #and long == True   
                             and df2['adx'].iloc[-1]>23
                             and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
                             and gray == True
@@ -96,7 +96,7 @@ def main() -> None:
                             balancegame=ut.balancetotal(exchange,client)
                         #SEÑAL SELL
                         elif ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])
-                            and short == True   
+                            #and short == True   
                             and df2['adx'].iloc[-1]>23
                             and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
                             and gray == True
@@ -105,7 +105,7 @@ def main() -> None:
                             ####### POSICION SELL ######
                             ############################
                             lado='SELL'
-                            print("*********************************************************************************************")
+                            print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)
@@ -122,22 +122,24 @@ def main() -> None:
                             if lado=='BUY':
                                 ###############################################################################
                                 while ut.posicionesabiertas(exchange)==True:
+                                    ut.waiting(30)
                                     df=ut.calculardf (par,temporalidad,ventana)    
                                     df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
                                     if (
                                         df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]<df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        and ut.posicionesabiertas(exchange)==True
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')                                
-                                    ut.waiting(30)    
                             else:                                
                                 while ut.posicionesabiertas(exchange)==True:
+                                    ut.waiting(30)
                                     df=ut.calculardf (par,temporalidad,ventana)    
                                     df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
                                     if (
                                         df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]>df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        and ut.posicionesabiertas(exchange)==True
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
-                                    ut.waiting(30)    
                                 ###############################################################################
 
                             ut.closeallopenorders(client,par)
