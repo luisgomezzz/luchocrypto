@@ -72,13 +72,14 @@ def main() -> None:
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)  
-                        long,short=ut.osovago(df)
+                        long,short,gray=ut.osovago(df)
                         df2=ut.adx(df)
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
                             and long == True   
                             and df2['adx'].iloc[-1]>23
                             and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
+                            and gray == True
                             ):    
                             ############################
                             ########POSICION BUY########
@@ -98,6 +99,7 @@ def main() -> None:
                             and short == True   
                             and df2['adx'].iloc[-1]>23
                             and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
+                            and gray == True
                             ):           
                             ############################
                             ####### POSICION SELL ######

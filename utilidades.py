@@ -630,25 +630,25 @@ def osovago(df):
    df['squeeze_on'] = (df['lower_BB'] > df['lower_KC']) & (df['upper_BB'] < df['upper_KC'])
    df['squeeze_off'] = (df['lower_BB'] < df['lower_KC']) & (df['upper_BB'] > df['upper_KC'])
 
+   df['noSqz'] = ~df['squeeze_on'] & ~df['squeeze_off']   
+   df['gray']= (~df['noSqz']) & (~df['squeeze_on'])
+
    # buying window for long position:
    # 1. black cross becomes gray (the squeeze is released)
    long_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
    # 2. bar value is positive => the bar is light green k
    long_cond2 = df['value'].iloc[-1] > 0
-   enter_long = long_cond1 and long_cond2
+   long_cond3 = df['value'].iloc[-1] > df['value'].iloc[-2]
+   enter_long = long_cond2 and long_cond3 #and long_cond1 
 
    # buying window for short position:
    # 1. black cross becomes gray (the squeeze is released)
    short_cond1 = (df['squeeze_off'].iloc[-2] == False) & (df['squeeze_off'].iloc[-1] == True) 
    # 2. bar value is negative => the bar is light red 
    short_cond2 = df['value'].iloc[-1] < 0
-   enter_short = short_cond1 and short_cond2
+   short_cond3 = df['value'].iloc[-1] < df['value'].iloc[-2]
+   enter_short = short_cond2 and short_cond3 #and short_cond1 
 
-   '''
-   df['enter_long'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) > 0)
-   df['enter_short'] =(df['squeeze_off'].shift(periods=2) == False) & (df['squeeze_off'].shift(periods=1) == True) & (df['value'].shift(periods=1) < 0)
+   gray = df['gray'].iloc[-1]
 
-   print(df)
-   '''
-   
-   return enter_long,enter_short   
+   return enter_long,enter_short,gray
