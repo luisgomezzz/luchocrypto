@@ -77,7 +77,7 @@ def main() -> None:
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
                             #and long == True   
-                            and df2['adx'].iloc[-1]>23
+                            and df2['adx'].iloc[-1]>25
                             and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
                             and gray == True
                             ):    
@@ -97,7 +97,7 @@ def main() -> None:
                         #SEÑAL SELL
                         elif ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])
                             #and short == True   
-                            and df2['adx'].iloc[-1]>23
+                            and df2['adx'].iloc[-1]>25
                             and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
                             and gray == True
                             ):           

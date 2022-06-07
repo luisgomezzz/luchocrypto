@@ -300,12 +300,8 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
             
             fraccionlimit=1/2
             posicionporc=50
-            if side=='BUY':
-               lado='SELL'         
-            else:
-               lado='BUY'
 
-            if binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,lado)==True:
+            if binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,side)==True:
                print("se creo limite!!!")
             else:
                print("no se creo el limite HDP...")
