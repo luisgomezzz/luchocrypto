@@ -33,6 +33,7 @@ def main() -> None:
     temporalidad='3m'   
     ratio = 1/1.0 #Risk/Reward Ratio
     mensajeposicioncompleta=''
+    porcentajelejosdeema5=0.80
         
     ##############START
 
@@ -72,7 +73,7 @@ def main() -> None:
                         sys.stdout.flush()
 
                         df=ut.calculardf (par,temporalidad,ventana)  
-                        long,short,gray=ut.osovago(df)
+                        long,short,gray,value=ut.osovago(df)
                         df2=ut.adx(df)
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
@@ -80,6 +81,8 @@ def main() -> None:
                             and df2['adx'].iloc[-1]>25
                             and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
                             and gray == True
+                            and value > 0
+                            and ut.currentprice(client,par) <= df.ta.ema(5).iloc[-1]*(1+porcentajelejosdeema5/100)
                             ):    
                             ############################
                             ########POSICION BUY########
@@ -100,6 +103,8 @@ def main() -> None:
                             and df2['adx'].iloc[-1]>25
                             and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
                             and gray == True
+                            and value < 0
+                            and ut.currentprice(client,par) >= df.ta.ema(5).iloc[-1]*(1-porcentajelejosdeema5/100)
                             ):           
                             ############################
                             ####### POSICION SELL ######

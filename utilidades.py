@@ -660,9 +660,12 @@ def osovago(df):
    df['enter_short'] = df.short_cond2 & df.short_cond3 #and short_cond1 
    df['gray']= ~df.noSqz & ~df.squeeze_on 
    df['gray']= df['gray'] & (df.gray.shift(periods=1)==False)
+
+   print(df['value'])
    
    enter_long=df['enter_long'].iloc[-1]
    enter_short=df['enter_short'].iloc[-1]
    gray=df['gray'].iloc[-1]
+   value=df['value'].iloc[-1]
 
-   return enter_long,enter_short,gray
+   return enter_long,enter_short,gray,value
