@@ -77,11 +77,11 @@ def main() -> None:
                         df2=ut.adx(df)
                         #SEÑAL BUY
                         if  ((df.ta.ema(5).iloc[-1] > df.ta.ema(20).iloc[-1] > df.ta.ema(200).iloc[-1])  
-                            #and long == True   
-                            and df2['adx'].iloc[-1]>25
-                            and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
+                            and long == True   
                             and gray == True
-                            and value > 0
+                            and df2['adx'].iloc[-1]>25
+                            and df2['plus_di'].iloc[-1]>30
+                            and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
                             and ut.currentprice(client,par) <= df.ta.ema(5).iloc[-1]*(1+porcentajelejosdeema5/100)
                             ):    
                             ############################
@@ -99,11 +99,11 @@ def main() -> None:
                             balancegame=ut.balancetotal(exchange,client)
                         #SEÑAL SELL
                         elif ((df.ta.ema(5).iloc[-1] < df.ta.ema(20).iloc[-1] < df.ta.ema(200).iloc[-1])
-                            #and short == True   
-                            and df2['adx'].iloc[-1]>25
-                            and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
+                            and short == True   
                             and gray == True
-                            and value < 0
+                            and df2['adx'].iloc[-1]>25
+                            and df2['minus_di'].iloc[-1]>30
+                            and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
                             and ut.currentprice(client,par) >= df.ta.ema(5).iloc[-1]*(1-porcentajelejosdeema5/100)
                             ):           
                             ############################
@@ -127,21 +127,25 @@ def main() -> None:
                             if lado=='BUY':
                                 ###############################################################################
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting(30)
+                                    ut.waiting(15)
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    #df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    df2=ut.adx(df)
                                     if (
-                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]<df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        #df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]<df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        df2['minus_di'].iloc[-1] > df2['minus_di'].iloc[-2]
                                         and ut.posicionesabiertas(exchange)==True
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')                                
                             else:                                
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting(30)
+                                    ut.waiting(15)
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    #df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    df2=ut.adx(df)
                                     if (
-                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]>df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        #df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]>df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
+                                        df2['plus_di'].iloc[-1] > df2['plus_di'].iloc[-2]
                                         and ut.posicionesabiertas(exchange)==True
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')

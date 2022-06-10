@@ -25,9 +25,24 @@ import talib as tl
 import pandas_ta as ta
 import sys
 from time import sleep
+from binance.helpers import round_step_size
+from binance.client import Client
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
+client = Client(binance_api, binance_secret) 
+
+def get_tick_size(symbol: str) -> float:
+    info = client.futures_exchange_info()
+
+    for symbol_info in info['symbols']:
+        if symbol_info['symbol'] == symbol:
+            for symbol_filter in symbol_info['filters']:
+                if symbol_filter['filterType'] == 'PRICE_FILTER':
+                    return float(symbol_filter['tickSize'])
+
+def get_rounded_price(symbol: str, price: float) -> float:
+    return round_step_size(price, get_tick_size(symbol))
 
 def currentprice(client,par):
    leido = False
@@ -60,7 +75,7 @@ def binancetakeprofit(pair,client,side,profitprice):
    return created
 
 def binancecrearlimite(exchange,par,client,fraccionlimit,profitprice,posicionporc,lado):
-   retorno = True
+   retorno = True   
 
    precioactual = getentryprice(exchange,par)
    
@@ -72,6 +87,8 @@ def binancecrearlimite(exchange,par,client,fraccionlimit,profitprice,posicionpor
       lado='BUY'
 
    sizedesocupar=abs(truncate((get_positionamt(exchange,par)*posicionporc/100),get_quantityprecision(client,par)))
+
+   preciolimit = get_rounded_price(par, preciolimit)  
 
    try:
       limitprice=truncate(preciolimit,get_priceprecision(client,par))
@@ -299,12 +316,9 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
                      binancetakeprofit(pair,client,side,profitpricedefault)
             
             fraccionlimit=1/2
-            posicionporc=50
+            posicionporc=80
 
-            if binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,side)==True:
-               print("se creo limite!!!")
-            else:
-               print("no se creo el limite HDP...")
+            binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,side)
 
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
@@ -539,7 +553,7 @@ def implement_adx_strategy(prices, pdi, ndi, adx):
       signal = 0
       
       for i in range(len(prices)):
-         if adx[i-1] < 23 and adx[i] > 23 and pdi[i] > ndi[i]:
+         if adx[i-1] < 25 and adx[i] > 25 and pdi[i] > ndi[i]:
                if signal != 1:
                   buy_price.append(prices[i])
                   sell_price.append(np.nan)
@@ -549,7 +563,7 @@ def implement_adx_strategy(prices, pdi, ndi, adx):
                   buy_price.append(np.nan)
                   sell_price.append(np.nan)
                   adx_signal.append(0)
-         elif adx[i-1] < 23 and adx[i] > 23 and ndi[i] > pdi[i]:
+         elif adx[i-1] < 25 and adx[i] > 25 and ndi[i] > pdi[i]:
                if signal != -1:
                   buy_price.append(np.nan)
                   sell_price.append(prices[i])
@@ -660,8 +674,10 @@ def osovago(df):
    df['enter_short'] = df.short_cond2 & df.short_cond3 #and short_cond1 
    df['gray']= ~df.noSqz & ~df.squeeze_on 
    df['gray']= df['gray'] & (df.gray.shift(periods=1)==False)
+   df = df.dropna()
+   df.tail()
 
-   #print(df['value'])
+   #print(df)
    
    enter_long=df['enter_long'].iloc[-1]
    enter_short=df['enter_short'].iloc[-1]
