@@ -9,8 +9,9 @@ yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
 import datetime as dt
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
+import pandas_ta as pta
 
 client = Client(ut.binance_api, ut.binance_secret)   
 botlaburo = ut.creobot('laburo')      
@@ -61,16 +62,16 @@ def enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,min
 ###me quedo con las ultimas señales de buy y sell
         for i in df.index: 
             if df.matchup[i]==True:
-                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i)]
+                dicciobuy[par]=[df.high.shift(periods=1)[i],df.low.shift(periods=1)[i],str(i-timedelta(hours=3)),df.volume.shift(periods=1)[i]]
         for i in df.index: 
             if df.matchdown[i]==True:
-                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i)]            
+                dicciosell[par]=[df.low.shift(periods=1)[i],df.high.shift(periods=1)[i],str(i-timedelta(hours=3)),df.volume.shift(periods=1)[i]]            
 
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','DODOUSDT'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','DODOUSDT','BELUSDT','ARPAUSDT'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -83,12 +84,13 @@ def main() -> None:
     mensaje=''
     porcentajevariacion = 0.30
     balanceobjetivo = 24.00
-    dicciobuy = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
-    dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
+    dicciobuy = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')),0.0]} #high, low, time, volume
+    dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')),0.0]} #low, high, time, volume
     dicciobuy.clear()
     dicciosell.clear()
-    ratio = 0.58 #Risk/Reward Ratio
     temporalidad='3m'   
+    ratio = 1/1.0 #Risk/Reward Ratio
+    mensajeposicioncompleta=''
         
     ##############START
 
@@ -115,9 +117,6 @@ def main() -> None:
     sys.stdout.flush()
     print("\nEn la mira BUY: "+str(dicciobuy))   
     print("\nEn la mira SELL: "+str(dicciosell)+"\n")
-    #auxiliares para ver diferencias
-    dicciobuybkup=dicciobuy
-    dicciosellbkup=dicciosell
 
     try:
 
@@ -132,13 +131,6 @@ def main() -> None:
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
                         vueltas==0
-
-                if dicciobuy!=dicciobuybkup:
-                    print("\nActualizacion de dicciobuy: "+str(dicciobuy))
-                    dicciobuybkup=dicciobuy
-                if dicciosell!=dicciosellbkup:
-                    print("\nActualizacion de dicciosell: "+str(dicciosell)+"\n")
-                    dicciosellbkup=dicciosell                    
 
                 try:
                     try:
@@ -157,8 +149,10 @@ def main() -> None:
                             ):
                             
                             #se detectó la señal y se guarda el valor pico para crear posicion cuando sea superado.
-                            dicciobuy[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
-                            print("\nNueva deteccion BUY\n")
+                            dicciobuy[par] = [df['high'].iloc[-2],df['low'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')),df['volume'].iloc[-2]]
+                            sys.stdout.write("\rActualización en la mira BUY: "+str(dicciobuy)+"\033[K")
+                            sys.stdout.flush()
+                            print('\n')
 
                         else:
                             #SEÑAL SELL
@@ -170,21 +164,26 @@ def main() -> None:
                                 ):
                             
                                 #se detectó la señal y se guarda el low para crear posicion cuando sea superado.
-                                dicciosell[par] = [df['low'].iloc[-2],df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]
-                                print("\nNueva deteccion SELL\n")
+                                dicciosell[par] = [df['low'].iloc[-2],df['high'].iloc[-2],str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')),df['volume'].iloc[-2]]
+                                sys.stdout.write("\rActualización en la mira SELL: "+str(dicciosell)+"\033[K")
+                                sys.stdout.flush()
+                                print('\n')
 
                         if par in dicciobuy or par in dicciosell:
                             precioactual= ut.currentprice(client,par)
                             ema5=df.ta.ema(5).iloc[-1]
                             ema20=df.ta.ema(20).iloc[-1]
                             ema200=df.ta.ema(200).iloc[-1]
-                            ema13=df.ta.ema(13).iloc[-1]
+                            sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
 
                         if par in dicciobuy:
                             if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
-                                precioactual > (dicciobuy[par][0])*(1+(porcentajevariacion*2/100))
+                                precioactual > (dicciobuy[par][0])
                                 and ema5>ema20>ema200 
                                 and df.ta.cci(20).iloc[-1] > 100
+                                and (df.ta.macd()["MACD_12_26_9"].iloc[-1]>df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                and sti['SUPERT_7_3.0'].iloc[-1]>sti['SUPERT_7_3.0'].iloc[-2] > ema200
+                                and sti['SUPERTd_7_3.0'].iloc[-1] == 1
                                 ):
                                 ############################
                                 ########POSICION BUY########
@@ -193,19 +192,24 @@ def main() -> None:
                                 lado='BUY'
                                 print("\n*********************************************************************************************")
                                 mensaje="Trade - "+par+" - "+lado
+                                mensaje=mensaje+"\nSeñal "+str(dicciobuy[par])
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
-
-                                stopprice = ema13
-                                profitprice = ((precioactual-stopprice)/ratio)+precioactual
-                                posicioncreada=ut.posicioncompleta(par,lado,client,stopprice,profitprice) 
+                                
+                                stopprice = sti['SUPERT_7_3.0'].iloc[-1]         
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice)
+                                print(mensajeposicioncompleta)
+                                mensaje=mensaje+mensajeposicioncompleta 
                                 balancegame=ut.balancetotal(exchange,client)
                         else:
                             if par in dicciosell:
                                 if (#si ya hubo señal se ve si se dan las condiciones para que crear la posicion
-                                    precioactual < (dicciosell[par][0])*(1-(porcentajevariacion*2/100))
+                                    precioactual < (dicciosell[par][0])
                                     and ema5<ema20<ema200 
                                     and df.ta.cci(20).iloc[-1] < -100
+                                    and (df.ta.macd()["MACD_12_26_9"].iloc[-1]<df.ta.macd()["MACDs_12_26_9"].iloc[-1])
+                                    and sti['SUPERT_7_3.0'].iloc[-1]<sti['SUPERT_7_3.0'].iloc[-2] < ema200
+                                    and sti['SUPERTd_7_3.0'].iloc[-1] == -1
                                     ):
                                     ############################
                                     ####### POSICION SELL ######
@@ -214,12 +218,14 @@ def main() -> None:
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
+                                    mensaje=mensaje+"\nSeñal "+str(dicciosell[par])
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
 
-                                    stopprice = ema13
-                                    profitprice = precioactual-((stopprice-precioactual)/ratio)
-                                    posicioncreada=ut.posicioncompleta(par,lado,client,stopprice,profitprice) 
+                                    stopprice = sti['SUPERT_7_3.0'].iloc[-1]                                                                       
+                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,client,ratio,stopprice) 
+                                    print(mensajeposicioncompleta)
+                                    mensaje=mensaje+mensajeposicioncompleta
                                     balancegame=ut.balancetotal(exchange,client)
                     
                         if posicioncreada==True:
@@ -231,7 +237,12 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if df.ta.cci(20).iloc[-1] < 100 or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]:
+                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    if (
+                                        sti['SUPERTd_7_3.0'].iloc[-1] == -1 
+                                        #or ut.currentprice(client,par) <= df.ta.ema(13).iloc[-1]                                        
+                                        #or df.ta.cci(20).iloc[-1] < 100
+                                        ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')
                                 ###############################################################################
                             else:
@@ -239,16 +250,16 @@ def main() -> None:
                                 while ut.posicionesabiertas(exchange)==True:
                                     ut.waiting()
                                     df=ut.calculardf (par,temporalidad,ventana)
-                                    if df.ta.cci(20).iloc[-1] > -100 or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]:
+                                    sti = pta.supertrend(df['high'], df['low'], df['close'], 7, 3)
+                                    if (sti['SUPERTd_7_3.0'].iloc[-1] == 1                                        
+                                        #or ut.currentprice(client,par) >= df.ta.ema(13).iloc[-1]
+                                        #or df.ta.cci(20).iloc[-1] > -100  
+                                        ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################
 
                             ut.closeallopenorders(client,par)
                             posicioncreada=False                                                                
-                            #Reinicio
-                            print("\nREINICIO...\n")
-                            enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
-
                             print("\nResumen: ")
                             balancetotal=ut.balancetotal(exchange,client)
                             if balancetotal>balancegame:
@@ -271,6 +282,16 @@ def main() -> None:
 
                             print(mensaje)
                             print("\n*********************************************************************************************")
+
+                            #escribo file
+                            f = open("log_oliver.txt", "a")
+                            f.write(mensaje)
+                            f.write("\n*********************************************************************************************\n")
+                            f.close()
+
+                            #Reinicio
+                            print("\nREINICIO...\n")
+                            enlamira(client,lista_monedas_filtradas,porcentajevariacion,temporalidad,minutes_diff,dicciobuy,dicciosell)
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
