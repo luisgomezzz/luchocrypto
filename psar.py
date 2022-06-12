@@ -1,4 +1,8 @@
-from binance.client import Client
+#****************************************************************************************
+# Psar version 2.0
+#
+#****************************************************************************************
+
 from binance.exceptions import BinanceAPIException
 import sys, os
 import pandas as pd
@@ -7,32 +11,38 @@ import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
-import pandas_ta as pdta
 import datetime as dt
 from datetime import datetime
+import pandas_ta as pta
+from time import sleep
 
-temporalidad='3m'
-client = Client(ut.binance_api, ut.binance_secret)   
+##CONFIG########################
+client = ut.client
+exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
+nombrelog = "log_psar2.txt"
 
 def main() -> None:
 
-    ratio=1.5 #relación riesgo/beneficio 
-    mazmorra=['1000SHIBUSDT'] #Monedas que no quiero operar en orden de castigo
+    ##PARAMETROS##########################################################################################
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
-    exchange=ut.binanceexchange(ut.binance_api,ut.binance_secret) #login
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
-    saldo_inicial=ut.balancetotal(exchange,client)
+    saldo_inicial = ut.balancetotal()
     posicioncreada = False
     minvolumen24h=float(100000000)
-    primerpar=str('')
+    vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00
-
+    balanceobjetivo = 24.00+24.88
+    temporalidad='3m'   
+    ratio = 1/2.0 #Risk/Reward Ratio
+    mensajeposicioncompleta=''
+    porcentajelejosdeema5=0.80
+        
+    ##############START
     ut.clear() #limpia terminal
-
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
@@ -51,100 +61,111 @@ def main() -> None:
         while True:
 
             for par in lista_monedas_filtradas:
-
-                if primerpar=='':
-                    primerpar=par
+                # para calcular tiempo de vuelta completa                
+                if vueltas==0:
                     datetime_start = datetime.today()
                 else:
-                    if primerpar==par:
+                    if vueltas == len(lista_monedas_filtradas):
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
-                        primerpar=''
+                        vueltas==0
 
                 try:
                     try:
-                        sys.stdout.write("\rSearching. Ctrl+c to exit. Pair: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min\033[K"+" - Monedas analizadas: "+ str(len(lista_monedas_filtradas)))
+                                                          
+                        sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
-
-                        df=ut.calculardf (par,temporalidad,ventana)    
-
-                        crosshigh=(pdta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
-                        crosslow=(pdta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
-
-                        balancegame=ut.balancetotal(exchange,client)
-                        #CRUCE ARRIBA
-                        if float(client.get_symbol_ticker(symbol=par)["price"]) > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]:
-                            if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
-                                or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
-                                and 50>df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]                            
-                                ):
                         
-                                ut.komucloud (df)
-                                
-                                if df['signal'].iloc[-1]==1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1):
+                        df=ut.calculardf (par,temporalidad,ventana)
+
+                        crosshigh=(pta.xsignals(df.ta.cci(40),100,100,above=True)).iloc[-1]
+                        crosslow=(pta.xsignals(df.ta.cci(40),-100,-100,above=True)).iloc[-1]
+                        
+                        if  (((crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0) 
+                            or (crosslow[0]==1 and crosslow[1]==1 and crosslow[2]==1 and crosslow[3]==0))
+                            and 50 > df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1] > df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                            ):
+
+                            ut.komucloud (df)                            
+                            currentprice = ut.currentprice(par)
+                            
+                            if (df['signal'].iloc[-1]==1 
+                                and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
+                                and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]
+                                and currentprice <= df.ta.ema(5).iloc[-1]*(1+porcentajelejosdeema5/100)):
+                                ############################
+                                ########POSICION BUY########
+                                ############################                            
+                                lado='BUY'
+                                print("\n*********************************************************************************************")
+                                mensaje="Trade - "+par+" - "+lado
+                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                print(mensaje)                            
+                                stopprice = df.ta.ema(20).iloc[-1] 
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice)
+                                print(mensajeposicioncompleta)
+                                mensaje=mensaje+mensajeposicioncompleta 
+                                balancegame=ut.balancetotal()
+                        else: 
+                            if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
+                                or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1)
+                                and 50 < df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1] < df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                )):
+                                                                      
+                                ut.komucloud (df)                                
+                                currentprice = ut.currentprice(par)
+
+                                if (df['signal'].iloc[-1]==-1 
+                                    and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
+                                    and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1] 
+                                    and currentprice >= df.ta.ema(5).iloc[-1]*(1-porcentajelejosdeema5/100)):
+                                    ############################
+                                    ####### POSICION SELL ######
+                                    ############################
+                                    lado='SELL'
                                     print("\n*********************************************************************************************")
-                                    mensaje="Trade - "+par+" - BUY"
+                                    mensaje="Trade - "+par+" - "+lado
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)
-                                    posicioncreada=ut.posicionfuerte(par,'BUY',client)                                
-                                    if posicioncreada==True:
-                                        lado='BUY'
-                        
-                        else: 
-                            #CRUCE ABAJO
-                            if float(client.get_symbol_ticker(symbol=par)["price"]) < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]:
-                                if (((crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1) 
-                                    or (crosslow[0]==0 and crosslow[1]==-1 and crosslow[2]==0 and crosslow[3]==1))
-                                    and 50<df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]                                
-                                    ):
-
-                                    ut.komucloud (df)
-                                        
-                                    if df['signal'].iloc[-1]==-1 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1):                                    
-                                        print("\n*********************************************************************************************")
-                                        mensaje="Trade - "+par+" - SELL"
-                                        mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                        print(mensaje)
-                                        posicioncreada=ut.posicionfuerte(par,'SELL',client)
-                                        if posicioncreada==True:
-                                            lado='SELL'
+                                    stopprice = df.ta.ema(20).iloc[-1]                                                                
+                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice) 
+                                    print(mensajeposicioncompleta)
+                                    mensaje=mensaje+mensajeposicioncompleta
+                                    balancegame=ut.balancetotal()
 
                         if posicioncreada==True:
-                            
                             ut.sound()
-
-                            while ut.posicionesabiertas(exchange)==True:
-                                #sleep(1)
-                                ut.waiting()
+                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                                sleep(1)
+                                
                                 df=ut.calculardf (par,temporalidad,ventana)
 
                                 if lado=='BUY':
                                     if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                        if df.ta.cci(40).iloc[-1] <=95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(par,'SELL')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] <=-120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'SELL')
+                                        if df.ta.cci(40).iloc[-1] <=-105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(par,'SELL')
                                 else:
                                     if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=120 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                        if df.ta.cci(40).iloc[-1] >=105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(par,'BUY')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] >=-80 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
-                                            ut.binancecierrotodo(client,par,exchange,'BUY')
+                                        if df.ta.cci(40).iloc[-1] >=-95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                            ut.binancecierrotodo(par,'BUY')                                
 
-                            posicioncreada=False
-
-                            ut.closeallopenorders(client,par)
-                            balancetotal=ut.balancetotal(exchange,client)
+                            ut.closeallopenorders(par)
+                            posicioncreada=False                                                                
                             print("\nResumen: ")
+                            balancetotal=ut.balancetotal()
                             if balancetotal>balancegame:
-                                mensaje="\nWIN :) "+mensaje
+                                mensaje="WIN :) "+mensaje
                             else:
                                 if balancetotal<balancegame:
-                                    mensaje="\nLOSE :( "+mensaje
+                                    mensaje="LOSE :( "+mensaje
                                 else:
-                                    mensaje="\nNADA :| "+mensaje
+                                    mensaje="NADA :| "+mensaje
                             try:
                                 mensaje=mensaje+"\nCierre: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 mensaje=mensaje+"\n24h Volumen: "+str(ut.truncate(float(client.futures_ticker(symbol=par)['quoteVolume'])/1000000,1))+"M"
@@ -158,7 +179,12 @@ def main() -> None:
 
                             print(mensaje)
                             print("\n*********************************************************************************************")
-                            #sys.exit()
+
+                            #escribo file
+                            f = open(nombrelog, "a")
+                            f.write(mensaje)
+                            f.write("\n*********************************************************************************************\n")
+                            f.close()
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
@@ -180,7 +206,9 @@ def main() -> None:
                     if a.message!="Invalid symbol.":
                         print("Error5 - Par:",par,"-",a.status_code,a.message)
                     pass
-       
+            
+                vueltas=vueltas+1
+
     except BinanceAPIException as a:
        print("Error6 - Par:",par,"-",a.status_code,a.message)
        pass
