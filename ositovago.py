@@ -31,7 +31,7 @@ def main() -> None:
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='3m'   
-    ratio = 1/1.0 #Risk/Reward Ratio
+    ratio = 1/2.0 #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=0.80
         
@@ -123,30 +123,33 @@ def main() -> None:
                         if posicioncreada==True:
                             
                             ut.sound()
+                            entryprice = ut.getentryprice(exchange,par)
 
                             if lado=='BUY':
                                 ###############################################################################
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting(15)
+                                    ut.waiting(30)
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    #df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
-                                    df2=ut.adx(df)
+                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    #df2=ut.adx(df)
                                     if (
-                                        #df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]<df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
-                                        df2['minus_di'].iloc[-1] > df2['minus_di'].iloc[-2]
+                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-2] > df['SQZ_20_2.0_20_1.5_LB'].iloc[-1] 
+                                        #df2['minus_di'].iloc[-1] > df2['minus_di'].iloc[-2]
                                         and ut.posicionesabiertas(exchange)==True
+                                        and ut.currentprice(client,par) > entryprice #cierro por squeeze solo cuando estoy en ganancias, si estoy en perdida que cierre por stop
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'SELL')                                
                             else:                                
                                 while ut.posicionesabiertas(exchange)==True:
-                                    ut.waiting(15)
+                                    ut.waiting(30)
                                     df=ut.calculardf (par,temporalidad,ventana)    
-                                    #df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
-                                    df2=ut.adx(df)
+                                    df.ta.squeeze(bb_length=20, bb_std=2.0, kc_length=20, kc_scalar=1.5, lazybear=True, use_tr=True, append=True)
+                                    #df2=ut.adx(df)
                                     if (
-                                        #df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]>df['SQZ_20_2.0_20_1.5_LB'].iloc[-2]
-                                        df2['plus_di'].iloc[-1] > df2['plus_di'].iloc[-2]
+                                        df['SQZ_20_2.0_20_1.5_LB'].iloc[-2] < df['SQZ_20_2.0_20_1.5_LB'].iloc[-1]
+                                        #df2['plus_di'].iloc[-1] > df2['plus_di'].iloc[-2]
                                         and ut.posicionesabiertas(exchange)==True
+                                        and ut.currentprice(client,par) < entryprice #cierro por squeeze solo cuando estoy en ganancias, si estoy en perdida que cierre por stop
                                         ):
                                         ut.binancecierrotodo(client,par,exchange,'BUY')
                                 ###############################################################################

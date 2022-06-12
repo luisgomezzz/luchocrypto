@@ -31,6 +31,14 @@ from binance.client import Client
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
 client = Client(binance_api, binance_secret) 
+exchange = ccxt.binance({
+         'enableRateLimit': True,  
+         'apiKey': binance_api,
+         'secret': binance_secret,
+         'options': {  
+         'defaultType': 'future',  
+         },
+         }) 
 
 def get_tick_size(symbol: str) -> float:
     info = client.futures_exchange_info()
@@ -74,7 +82,7 @@ def binancetakeprofit(pair,client,side,profitprice):
 
    return created
 
-def binancecrearlimite(exchange,par,client,fraccionlimit,profitprice,posicionporc,lado):
+def binancecrearlimite(par,fraccionlimit,profitprice,posicionporc,lado):
    retorno = True   
 
    precioactual = getentryprice(exchange,par)
@@ -284,7 +292,6 @@ def truncate(number, digits) -> float:
 def posicioncompleta(pair,side,client,ratio,stopprice=0):   
    serror = True
    porcentajeentrada=100
-   exchange= binanceexchange(binance_api,binance_secret)
    micapital = balancetotal(exchange,client)
    size = (micapital*porcentajeentrada/100)/(currentprice(client,pair))
    stopdefaultporc = 1
@@ -315,10 +322,19 @@ def posicioncompleta(pair,side,client,ratio,stopprice=0):
                   if binancetakeprofit(pair,client,side,profitprice)==False:
                      binancetakeprofit(pair,client,side,profitpricedefault)
             
-            fraccionlimit=1/2
-            posicionporc=80
+            if side =='BUY':
+               fraccionlimit=1/4
+               posicionporc=70
+            else:
+               fraccionlimit=3/4
+               posicionporc=70
 
-            binancecrearlimite(exchange,pair,client,fraccionlimit,profitprice,posicionporc,side)
+            binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)
+
+            fraccionlimit=1/2
+            posicionporc=20
+
+            binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)            
 
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
