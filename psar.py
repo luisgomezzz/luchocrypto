@@ -20,12 +20,12 @@ from time import sleep
 client = ut.client
 exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
-nombrelog = "log_psar2.txt"
+nombrelog = "log_psar.txt"
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624'] #Monedas que no quiero operar en orden de castigo
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624'] #Monedas que no quiero operar en orden de castigo
     ventana = 240 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial = ut.balancetotal()
@@ -37,9 +37,9 @@ def main() -> None:
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='3m'   
-    ratio = 1/2.0 #Risk/Reward Ratio
+    ratio = 1/1.5 #Risk/Reward Ratio
     mensajeposicioncompleta=''
-    porcentajelejosdeema5=0.80
+    porcentajelejosdeema5=1.00
         
     ##############START
     ut.clear() #limpia terminal
@@ -87,12 +87,17 @@ def main() -> None:
                             ):
 
                             ut.komucloud (df)                            
-                            currentprice = ut.currentprice(par)
-                            
+                            df2=ut.adx(df)
+                            currentprice = ut.currentprice(par)                            
+
                             if (df['signal'].iloc[-1]==1 
                                 and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==-1)
                                 and currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]
-                                and currentprice <= df.ta.ema(5).iloc[-1]*(1+porcentajelejosdeema5/100)):
+                                and currentprice <= df.ta.ema(5).iloc[-1]*(1+porcentajelejosdeema5/100)
+                                and df2['adx'].iloc[-1]>23
+                                #and df2['plus_di'].iloc[-1]>23
+                                and df2['plus_di'].iloc[-1]>df2['minus_di'].iloc[-1]
+                                ):
                                 ############################
                                 ########POSICION BUY########
                                 ############################                            
@@ -112,13 +117,18 @@ def main() -> None:
                                 and 50 < df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1] < df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
                                 )):
                                                                       
-                                ut.komucloud (df)                                
+                                ut.komucloud (df)                  
+                                df2=ut.adx(df)              
                                 currentprice = ut.currentprice(par)
 
                                 if (df['signal'].iloc[-1]==-1 
                                     and (df['signal'].iloc[-2]==0 or df['signal'].iloc[-2]==1)
                                     and currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1] 
-                                    and currentprice >= df.ta.ema(5).iloc[-1]*(1-porcentajelejosdeema5/100)):
+                                    and currentprice >= df.ta.ema(5).iloc[-1]*(1-porcentajelejosdeema5/100)
+                                    and df2['adx'].iloc[-1]>23
+                                    #and df2['minus_di'].iloc[-1]>23
+                                    and df2['plus_di'].iloc[-1]<df2['minus_di'].iloc[-1]
+                                    ):
                                     ############################
                                     ####### POSICION SELL ######
                                     ############################
@@ -136,23 +146,36 @@ def main() -> None:
                         if posicioncreada==True:
                             ut.sound()
                             while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
-                                sleep(1)
+                                ut.waiting(1)
                                 
                                 df=ut.calculardf (par,temporalidad,ventana)
+                                df2=ut.adx(df)
 
                                 if lado=='BUY':
                                     if crosshigh[0]==1 and crosshigh[1]==1 and crosshigh[2]==1 and crosshigh[3]==0:
-                                        if df.ta.cci(40).iloc[-1] <=95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        if  (df.ta.cci(40).iloc[-1] <=95 
+                                            or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                            or df2['adx'].iloc[-1] < 23
+                                            ):    
                                             ut.binancecierrotodo(par,'SELL')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] <=-105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        if  (df.ta.cci(40).iloc[-1] <=-105 
+                                            or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]<df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                            or df2['adx'].iloc[-1] < 23
+                                            ):    
                                             ut.binancecierrotodo(par,'SELL')
                                 else:
                                     if crosshigh[0]==0 and crosshigh[1]==-1 and crosshigh[2]==0 and crosshigh[3]==1:
-                                        if df.ta.cci(40).iloc[-1] >=105 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        if  (df.ta.cci(40).iloc[-1] >=105 
+                                            or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                            or df2['adx'].iloc[-1] < 23
+                                            ):
                                             ut.binancecierrotodo(par,'BUY')
                                     else:
-                                        if df.ta.cci(40).iloc[-1] >=-95 or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]:    
+                                        if  (df.ta.cci(40).iloc[-1] >=-95 
+                                            or df.ta.stochrsi()['STOCHRSIk_14_14_3_3'].iloc[-1]>df.ta.stochrsi()['STOCHRSId_14_14_3_3'].iloc[-1]
+                                            or df2['adx'].iloc[-1] < 23
+                                            ):
                                             ut.binancecierrotodo(par,'BUY')                                
 
                             ut.closeallopenorders(par)
