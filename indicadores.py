@@ -3,13 +3,17 @@ import pandas as pd
 pd.core.common.is_list_like = pd.api.types.is_list_like
 sys.path.insert(1,'./')
 import numpy as np
-  
-def atr(df):
+
+def tr(df):
     high_low = df['high'] - df['low']
     high_close = np.abs(df['high'] - df['close'].shift())
     low_close = np.abs(df['low'] - df['close'].shift())
     ranges = pd.concat([high_low, high_close, low_close], axis=1)
-    true_range = np.max(ranges, axis=1)
+    true_range = np.max(ranges, axis=1)    
+    return true_range
+
+def atr(df):
+    true_range = tr(df)
     atr = true_range.rolling(14).sum()/14
     return atr
 
