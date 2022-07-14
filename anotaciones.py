@@ -81,9 +81,7 @@ df2=df[['DX','DIPlus','DirectionalMovementPlus','DirectionalMovementMinus','Smoo
 print(df2)
 
 
-#################
-
-
+##############################################################################################3
 Multiplier = 3
 Length = 21
   
@@ -94,19 +92,12 @@ df['avgTR'] = pta.wma(ind.atr(df,1), Length)
 df['highestC']   = df2.close.max()
 df['lowestC']    = df2.close.min()
 
-df['hiLimit'] = df.highestC.shift(1) -(df.avgTR.shift(1) * Multiplier)
-df['loLimit'] = df.lowestC.shift(1) +(df.avgTR.shift(1) * Multiplier)
+df['hiLimit'] = df.highestC.shift(1) - (df.avgTR.shift(1) * Multiplier)
+df['loLimit'] = df.lowestC.shift(1) + (df.avgTR.shift(1) * Multiplier)
 
 df['ret'] = 0.0
-#iff(close > hiLimit and close > loLimit, hiLimit,
-# iff(close < loLimit and close < hiLimit, loLimit, nz(ret[1], close)))
-
-
 df['ret'] = np.where((df.close > df.hiLimit) & (df.close > df.loLimit), df.hiLimit, 
 np.where((df.close < df.hiLimit) & (df.close < df.loLimit),df.loLimit,
 np.where(df.ret.shift(1) == 0.0,df.close,df.ret.shift(1))))
 
 print(df)
-
-
-#nz(x, y) is equivalent to the logical construction na(x) ? y : x
