@@ -80,8 +80,8 @@ def main() -> None:
                         df=ut.calculardf (par,temporalidad,ventana)
                         df2=ind.trendtraderstrategy (df)
                         currentprice = ut.currentprice(par)
-                        if  (currentprice > df2.ret.iloc[-1] > df.ta.ema(200).iloc[-1]
-                            and df2.ret.iloc[-1] !=0.0
+                        if  (currentprice > df2.iloc[-1] > df.ta.ema(200).iloc[-1]
+                            and df2.iloc[-1] !=0.0
                             and df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0.0
                             ):
                             ############################
@@ -92,14 +92,14 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = df2.ret.iloc[-1]
+                            stopprice = df2.iloc[-1]
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
                         else: 
-                            if  (currentprice < df2.ret.iloc[-1] < df.ta.ema(200).iloc[-1]
-                                and df2.ret.iloc[-1] !=0.0
+                            if  (currentprice < df2.iloc[-1] < df.ta.ema(200).iloc[-1]
+                                and df2.iloc[-1] !=0.0
                                 and df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0.0
                                 ):
                                 ############################
@@ -110,7 +110,7 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
-                                stopprice = df2.ret.iloc[-1]                                                                
+                                stopprice = df2.iloc[-1]                                                                
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
