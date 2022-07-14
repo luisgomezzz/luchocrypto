@@ -12,9 +12,9 @@ def tr(df):
     true_range = np.max(ranges, axis=1)    
     return true_range
 
-def atr(df):
+def atr(df,length):
     true_range = tr(df)
-    atr = true_range.rolling(14).sum()/14
+    atr = true_range.rolling(length).sum()/length
     return atr
 
 def atrslf(df):
