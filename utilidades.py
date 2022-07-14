@@ -317,12 +317,12 @@ def posicioncompleta(pair,side,ratio,stopprice=0):
                fraccionlimit=3/4
                posicionporc=70
 
-            binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)
+            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)
 
             fraccionlimit=1/2
             posicionporc=20
 
-            binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)            
+            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)            
 
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))

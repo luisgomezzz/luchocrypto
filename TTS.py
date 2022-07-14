@@ -80,9 +80,11 @@ def main() -> None:
                         df=ut.calculardf (par,temporalidad,ventana)
                         df2=ind.trendtraderstrategy (df)
                         currentprice = ut.currentprice(par)
-                        if  (currentprice > df2.iloc[-1] > df.ta.ema(200).iloc[-1]
+                        if  (currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]
                             and df2.iloc[-1] !=0.0
                             and df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0.0
+                            and (df.close.iloc[-2] < df2.iloc[-1] or df.close.iloc[-3] < df2.iloc[-1])
+                            and currentprice > df2.iloc[-1]
                             ):
                             ############################
                             ########POSICION BUY########
@@ -98,9 +100,11 @@ def main() -> None:
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
                         else: 
-                            if  (currentprice < df2.iloc[-1] < df.ta.ema(200).iloc[-1]
+                            if  (currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]
                                 and df2.iloc[-1] !=0.0
                                 and df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0.0
+                                and (df.close.iloc[-2] > df2.iloc[-1] or df.close.iloc[-3] > df2.iloc[-1])
+                                and currentprice < df2.iloc[-1]
                                 ):
                                 ############################
                                 ####### POSICION SELL ######
@@ -118,7 +122,7 @@ def main() -> None:
 
                         if posicioncreada==True:
                             ut.sound()
-                            while float(exchange.fetch_balance()['info']['totalPositionInitialMargin'])!=0.0:
+                            while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
 
                             ut.closeallopenorders(par)
