@@ -81,3 +81,73 @@ df2=df[['DX','DIPlus','DirectionalMovementPlus','DirectionalMovementMinus','Smoo
 print(df2)
 
 
+from time import sleep
+from binance.client import Client
+from binance.exceptions import BinanceAPIException
+import sys, os
+import pandas as pd
+pd.core.common.is_list_like = pd.api.types.is_list_like
+import yfinance as yahoo_finance
+yahoo_finance.pdr_override()
+sys.path.insert(1,'./')
+import utilidades as ut
+import datetime as dt
+from datetime import datetime
+import numpy as np
+from datetime import datetime, timedelta
+import pandas_ta as pta
+from finta import TA
+import indicadores as ind
+
+client = Client(ut.binance_api, ut.binance_secret) 
+
+##PARAMETROS##########################################################################################
+mazmorra=['1000SHIBUSDT','DODOUSDT'] #Monedas que no quiero operar en orden de castigo
+ventana = 240 #Ventana de búsqueda en minutos.   
+exchange=ut.exchange #login
+lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+saldo_inicial=ut.balancetotal
+posicioncreada = False
+minvolumen24h=float(100000000)
+vueltas=0
+minutes_diff=0
+lista_monedas_filtradas=[]
+mensaje=''
+porcentajevariacion = 0.30
+balanceobjetivo = 24.00
+dicciobuy = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
+dicciosell = {'NADA': [0.0,0.0,str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))]}
+dicciobuy.clear()
+dicciosell.clear()
+ratio = 0.58 #Risk/Reward Ratio
+temporalidad='1m'   
+par='ALICEUSDT'
+ut.clear() #limpia terminal
+Multiplier = 3
+Length = 21
+  
+df = ut.calculardf (par,temporalidad,ventana)
+
+df2 = ut.calculardf (par,temporalidad,Length)
+
+
+df['avgTR'] = pta.wma(ind.atr(df,1), Length)
+df['highestC']   = df2.close.max()
+df['lowestC']    = df2.close.min()
+
+df['hiLimit'] = df.highestC.shift(1) -(df.avgTR.shift(1) * Multiplier)
+df['loLimit'] = df.lowestC.shift(1) +(df.avgTR.shift(1) * Multiplier)
+
+df['ret'] = 0.0
+#iff(close > hiLimit and close > loLimit, hiLimit,
+# iff(close < loLimit and close < hiLimit, loLimit, nz(ret[1], close)))
+
+
+df['ret'] = np.where((df.close > df.hiLimit) & (df.close > df.loLimit), df.hiLimit, 
+np.where((df.close < df.hiLimit) & (df.close < df.loLimit),df.loLimit,
+np.where(np.isnan(df.ret.shift(1)),df.close,df.ret.shift(1))))
+
+print(df)
+
+
+#nz(x, y) is equivalent to the logical construction na(x) ? y : x
