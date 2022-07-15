@@ -4,6 +4,7 @@ pd.core.common.is_list_like = pd.api.types.is_list_like
 sys.path.insert(1,'./')
 import numpy as np
 import pandas_ta as pta
+pd.options.mode.chained_assignment = None
 
 def tr(df):
     high_low = df['high'] - df['low']
@@ -29,19 +30,24 @@ def atrslf(df):
 def trendtraderstrategy (df):
     Multiplier = 3
     Length = 21    
-    df2=df.tail(Length)
-
     df['avgTR'] = pta.wma(atr(df,1), Length)
-    df['highestC']   = df2.close.max()
-    df['lowestC']    = df2.close.min()
-
-    df['hiLimit'] = df.highestC.shift(1) - (df.avgTR.shift(1) * Multiplier)
-    df['loLimit'] = df.lowestC.shift(1) + (df.avgTR.shift(1) * Multiplier)
-
+    df=df.tail(Length)
+    df['highestC']   = df.close.max()
+    df['lowestC']    = df.close.min()
+    df=df.tail(Length)
+    df['hiLimit'] = 0.0
+    df['loLimit'] = 0.0
     df['ret'] = 0.0
-    df['ret'] = np.where((df.close > df.hiLimit) & (df.close > df.loLimit), df.hiLimit, 
-    np.where((df.close < df.hiLimit) & (df.close < df.loLimit),df.loLimit,
-    np.where(~df.ret.shift(1).isna(),df.ret.shift(1),df.close)))
+    df.insert(loc=0, column='row_num', value=np.arange(len(df)))
 
-    return df.ret
+    for index, row in df.iterrows():
+        df.hiLimit[index] = df.highestC[df.row_num[index]-1] - (df.avgTR[df.row_num[index]-1] * Multiplier)
+        df.loLimit[index] = df.lowestC[df.row_num[index]-1] + (df.avgTR[df.row_num[index]-1] * Multiplier)
+
+    for index, row in df.iterrows():
+        df.ret[index] = np.where((row.close > row.hiLimit) & (row.close > row.loLimit), row.hiLimit, 
+            np.where((row.close < row.hiLimit) & (row.close < row.loLimit),row.loLimit,
+            np.where(df.ret[df.row_num[index]-1]!=0,df.ret[df.row_num[index]-1],row.close)))
+
+    return df.ret.iloc[-1]
 

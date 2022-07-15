@@ -101,3 +101,31 @@ np.where((df.close < df.hiLimit) & (df.close < df.loLimit),df.loLimit,
 np.where(df.ret.shift(1) == 0.0,df.close,df.ret.shift(1))))
 
 print(df)
+
+
+
+def trendtraderstrategy (df):
+    Multiplier = 3
+    Length = 21    
+    df2=df.tail(Length)
+
+    df['avgTR'] = pta.wma(atr(df,1), Length)
+    df['highestC']   = df2.close.max()
+    df['lowestC']    = df2.close.min()
+
+    df['hiLimit'] = df.highestC.shift(1) - (df.avgTR.shift(1) * Multiplier)
+    df['loLimit'] = df.lowestC.shift(1) + (df.avgTR.shift(1) * Multiplier)
+
+    df['ret'] = 0.0
+    df.insert(loc=0, column='row_num', value=np.arange(len(df)))
+    df['condicion']='nada'
+
+    for index, row in df.iterrows():
+        df.ret[index] = np.where((row.close > row.hiLimit) & (row.close > row.loLimit), row.hiLimit, 
+            np.where((row.close < row.hiLimit) & (row.close < row.loLimit),row.loLimit,
+            np.where(df.ret[df.row_num[index]-1]!=0,df.ret[df.row_num[index]-1],row.close)))
+
+        #df.condicion[index] = np.where((row.close > row.hiLimit) & (row.close > row.loLimit), 'cond1', 
+        #    np.where((row.close < row.hiLimit) & (row.close < row.loLimit),'cond2',
+        #    np.where(df.ret[df.row_num[index]-1]!=0,'cond3','cond4')))    
+    return df.ret

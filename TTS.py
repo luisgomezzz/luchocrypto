@@ -78,13 +78,16 @@ def main() -> None:
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
-                        df2=ind.trendtraderstrategy (df)
+                        dfant=df
+                        dfant.drop(dfant.tail(1).index,inplace=True)
+                        ttsactual=ind.trendtraderstrategy (df)
+                        ttsanterior=ind.trendtraderstrategy (dfant)                                                
+                        
                         currentprice = ut.currentprice(par)
                         if  (currentprice > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]
-                            and df2.iloc[-1] !=0.0
                             and df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0.0
-                            and (df.close.iloc[-2] < df2.iloc[-1] or df.close.iloc[-3] < df2.iloc[-1])
-                            and currentprice > df2.iloc[-1]
+                            and currentprice > ttsactual
+                            and (dfant.close.iloc[-1] < ttsanterior or df.close.iloc[-2] < ttsanterior)
                             ):
                             ############################
                             ########POSICION BUY########
@@ -94,17 +97,16 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = df2.iloc[-1]
+                            stopprice = ttsactual
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
                         else: 
                             if  (currentprice < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]
-                                and df2.iloc[-1] !=0.0
-                                and df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0.0
-                                and (df.close.iloc[-2] > df2.iloc[-1] or df.close.iloc[-3] > df2.iloc[-1])
-                                and currentprice < df2.iloc[-1]
+                                and df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0.0                                
+                                and currentprice < ttsactual
+                                and (dfant.close.iloc[-1] > ttsanterior or dfant.close.iloc[-2] > ttsanterior)
                                 ):
                                 ############################
                                 ####### POSICION SELL ######
@@ -114,7 +116,7 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
-                                stopprice = df2.iloc[-1]                                                                
+                                stopprice = ttsactual                                                                
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
