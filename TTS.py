@@ -37,7 +37,7 @@ def main() -> None:
     lista_monedas_filtradas=[]
     mensaje=''
     balanceobjetivo = 24.00+24.88
-    temporalidad='3m'   
+    temporalidad='1m'   
     ratio = 1/1.0 #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
