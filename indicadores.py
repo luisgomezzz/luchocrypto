@@ -19,13 +19,13 @@ def atr(df,length):
     atr = true_range.rolling(length).sum()/length
     return atr
 
-def atrslf(df):
+def atrslf(df,length):
     #ATR Stop Loss Finder
-    rma = df.ta.rma(close=atr(df), length=14)
+    rma = df.ta.rma(close=atr(df,length), length=14)
     m = 0.85
     x = rma * m + df.high
     x2 = df.low - rma * m
-    return x,x2
+    return x.iloc[-1],x2.iloc[-1]
 
 def trendtraderstrategy (df):
     Multiplier = 3
@@ -51,3 +51,14 @@ def trendtraderstrategy (df):
 
     return df.ret.iloc[-1]
 
+def get_sma(prices, rate):
+    return prices.rolling(rate).mean()
+
+def get_bollinger_bands(df, rate=20):
+    df.index = np.arange(df.shape[0])
+    prices=df.close
+    sma = get_sma(prices, rate)
+    std = prices.rolling(rate).std()
+    bollinger_up = sma + std * 2 # Calculate top band
+    bollinger_down = sma - std * 2 # Calculate bottom band
+    return bollinger_up, bollinger_down

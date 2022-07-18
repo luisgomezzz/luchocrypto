@@ -21,7 +21,7 @@ import indicadores as ind
 client = ut.client
 exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
-nombrelog = "log_TTS.txt"
+nombrelog = "log_bb.txt"
 
 def main() -> None:
 
@@ -38,7 +38,7 @@ def main() -> None:
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='1m'   
-    ratio = 1/1.0 #Risk/Reward Ratio
+    ratio = 1/0.5 #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
         
@@ -78,20 +78,13 @@ def main() -> None:
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
-                        dfant=df
-                        dfant.drop(dfant.tail(1).index,inplace=True)
-                        dfant2=df
-                        dfant2.drop(dfant2.tail(2).index,inplace=True)
-
-                        ttsactual=ind.trendtraderstrategy (df)
-                        ttsanterior=ind.trendtraderstrategy (dfant)
-                        ttsanterior2=ind.trendtraderstrategy (dfant2)                                                
-                        
+                        df['bollinger_up'], df['bollinger_down'] = ind.get_bollinger_bands(df)                        
                         currentprice = ut.currentprice(par)
-                        if  (currentprice > df.ta.ema(10).iloc[-1] > df.ta.ema(50).iloc[-1] > df.ta.ema(200).iloc[-1]
-                            and df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0.0
-                            and currentprice > ttsactual
-                            and (dfant.close.iloc[-1] < ttsanterior or dfant2.close.iloc[-1] < ttsanterior2)
+
+                        if  (df.ta.adx()['ADX_14'].iloc[-1] <= 20 
+                            and df.close.iloc[-2] > df.bollinger_down.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
+                            and df.close.iloc[-3] < df.bollinger_down.iloc[-3] #antepenúltima vela cerró con colse menor que el limite bajo
+                            and currentprice > df.bollinger_down.iloc[-1]
                             ):
                             ############################
                             ########POSICION BUY########
@@ -101,16 +94,16 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = ttsactual
+                            stopprice = df.low.iloc[-2]
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
                         else: 
-                            if  (currentprice < df.ta.ema(10).iloc[-1] < df.ta.ema(50).iloc[-1] < df.ta.ema(200).iloc[-1]
-                                and df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0.0                                
-                                and currentprice < ttsactual
-                                and (dfant.close.iloc[-1] > ttsanterior or dfant2.close.iloc[-1] > ttsanterior2)
+                            if  (df.ta.adx()['ADX_14'].iloc[-1] <= 20 
+                                and df.close.iloc[-2] < df.bollinger_up.iloc[-2]
+                                and df.close.iloc[-3] > df.bollinger_up.iloc[-3]
+                                and currentprice < df.bollinger_up.iloc[-1]
                                 ):
                                 ############################
                                 ####### POSICION SELL ######
@@ -120,7 +113,7 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
-                                stopprice = ttsactual                                                                
+                                stopprice = df.high.iloc[-2]                                                             
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta

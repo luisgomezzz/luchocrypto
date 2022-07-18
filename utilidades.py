@@ -27,6 +27,7 @@ import sys
 from time import sleep
 from binance.helpers import round_step_size
 from binance.client import Client
+import indicadores as ind
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -277,7 +278,7 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,ratio,stopprice=0):   
+def posicioncompleta(pair,side,ratio,df,stopprice=0):   
    serror = True
    porcentajeentrada=80
    micapital = balancetotal()
@@ -309,6 +310,23 @@ def posicioncompleta(pair,side,ratio,stopprice=0):
                if binancestoploss (pair,side,stopprice)==0:                  
                   if binancetakeprofit(pair,side,profitprice)==False:
                      binancetakeprofit(pair,side,profitpricedefault)
+               else:
+                  if side =='BUY':
+                     stopprice=ind.atrslf(df,14)[1]
+                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
+                  else:
+                     stopprice=ind.atrslf(df,14)[0] 
+                     profitprice = precioactual-((stopprice-precioactual)/ratio)                       
+                  if binancestoploss (pair,side,stopprice)==0:                  
+                     if binancetakeprofit(pair,side,profitprice)==False:
+                        binancetakeprofit(pair,side,profitpricedefault)
+                  else:
+                     print("Cierro todo por no poder crear Stop loss...")
+                     if side =='BUY':
+                        binancecierrotodo(pair,'SELL')
+                     else:   
+                        binancecierrotodo(pair,'BUY')
+                     closeallopenorders(pair)
             
             if side =='BUY':
                fraccionlimit=1/4
@@ -337,11 +355,16 @@ def posicioncompleta(pair,side,ratio,stopprice=0):
             mensaje="No se pudo crear la posición. "
             print(mensaje)
             serror=False
-   except:
-      mensaje="No se pudo crear la posición. Se detectaron posiciones abiertas. "
-      print(mensaje)
+   except BinanceAPIException as a:
+      print(a.message,"No se pudo crear la posición.")
       serror=False
-      pass    
+      pass     
+   except Exception as falla:
+      exc_type, exc_obj, exc_tb = sys.exc_info()
+      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+pair)
+      serror=False
+      pass
 
    return serror, mensaje       
 
@@ -548,7 +571,7 @@ def get_adx(high, low, close, lookback):
       dx = (abs(plus_di - minus_di) / abs(plus_di + minus_di)) * 100
       adx = ((dx.shift(1) * (lookback - 1)) + dx) / lookback
       adx_smooth = adx.ewm(alpha = 1/lookback).mean()
-      return plus_di, minus_di, adx_smooth
+      return plus_di, minus_di, adx_smooth, adx
 
 def implement_adx_strategy(prices, pdi, ndi, adx):
       buy_price = []
