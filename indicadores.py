@@ -105,6 +105,6 @@ def fli(df):
     df['buy']=np.where(df.iTrend[df.row_num[index]-1]==-1 and df.iTrend==1 , 1 , 0)
     df['sell']=np.where(df.iTrend[df.row_num[index]-1]==1 and df.iTrend==-1, 1 , 0)
 
-    #print(df)
+    print(df)
 
-    return df.buy.iloc[-1]  ,df.sell.iloc[-1]
+    return df.TrendLine.iloc[-1], df.buy.iloc[-1], df.sell.iloc[-1]
