@@ -31,7 +31,7 @@ def main() -> None:
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial = ut.balancetotal()
     posicioncreada = False
-    minvolumen24h=float(100000000)
+    minvolumen24h=float(200000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -78,12 +78,13 @@ def main() -> None:
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
+                        df['dibujo'] = ind.fli(df).dibujo
+                        df['hma']=df.ta.hma(55)
+                        df['macdh'] = df.ta.macd()['MACDh_12_26_9']
 
-                        dffli = ind.fli(df)
-
-                        if  (df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0 
-                            and (dffli.dibujo.iloc[-1] == 'Bomba')
-                            and df.ta.hma().iloc[-1]>df.ta.hma().iloc[-3]
+                        if  (df.macdh.iloc[-1] > 0 
+                            and df.dibujo.iloc[-1] == 'Bomba'
+                            and df.hma.iloc[-1] > df.hma.iloc[-3]
                             ):
                             ############################
                             ########POSICION BUY########
@@ -93,16 +94,16 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = df.ta.hma().iloc[-1]
+                            stopprice = df.hma.iloc[-1]
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
                             
                         else: 
-                            if  (df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0 
-                                and (dffli.dibujo.iloc[-1] == 'Martillo')
-                                and df.ta.hma().iloc[-1]<df.ta.hma().iloc[-3]
+                            if  (df.macdh.iloc[-1] < 0 
+                                and df.dibujo.iloc[-1] == 'Martillo'
+                                and df.hma.iloc[-1] < df.hma.iloc[-3]
                                 ):
                                 ############################
                                 ####### POSICION SELL ######
@@ -112,7 +113,7 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = df.ta.hma().iloc[-1]
+                                stopprice = df.hma.iloc[-1]
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
