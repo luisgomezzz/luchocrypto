@@ -82,29 +82,36 @@ def indatr(df, n=14):
     return atr    
 
 def fli(df):
+    flidf=df.copy()
     BBperiod      = 21
     BBdeviations  = 1
     ATRperiod     = 5
     
-    df['BBUpper']=df.ta.sma(BBperiod)+df['close'].rolling(BBperiod).std()*BBdeviations
-    df['BBLower']=pta.sma(df.close,BBperiod)-df['close'].rolling(BBperiod).std()*BBdeviations    
-    df['BBSignal'] = np.where(df.close>df.BBUpper,1,np.where(df.close<df.BBLower,-1,0))
-    df.insert(loc=0, column='row_num', value=np.arange(len(df)))
+    flidf['BBUpper']=pta.sma(flidf.close,BBperiod)+flidf.close.rolling(BBperiod).std()*BBdeviations
+    flidf['BBLower']=pta.sma(flidf.close,BBperiod)-flidf.close.rolling(BBperiod).std()*BBdeviations    
+    flidf['BBSignal'] = np.where(flidf.close>flidf.BBUpper,1,np.where(flidf.close<flidf.BBLower,-1,0))
+    flidf['lowatr']=flidf.low-indatr(flidf,ATRperiod)
+    flidf['highatr']=flidf.high+indatr(flidf,ATRperiod)
+    
+    flidf['TrendLine'] = 0.0
+    flidf['iTrend'] = 0
+    flidf['buy'] = 0
+    flidf['sell'] = 0
 
-    df['TrendLine'] = 0.0
-    for index, row in df.iterrows():
-        df.TrendLine = np.where(df.BBSignal==1,np.where(df.low-indatr(df,ATRperiod)<df.TrendLine[df.row_num[index]-1],df.TrendLine[df.row_num[index]-1],df.low-indatr(df,ATRperiod)),df.TrendLine)
-        df.TrendLine = np.where(df.BBSignal==-1,np.where(df.high+indatr(df,ATRperiod)>df.TrendLine[df.row_num[index]-1],df.TrendLine[df.row_num[index]-1],df.high+indatr(df,ATRperiod)),df.TrendLine)
-        df.TrendLine = np.where(df.BBSignal==0,df.TrendLine[df.row_num[index]-1],df.TrendLine)
+    for index, row in flidf.iterrows():
+        flidf.TrendLine = np.where(flidf.BBSignal==1,np.where(flidf.lowatr<flidf.TrendLine.shift(1),flidf.TrendLine.shift(1),flidf.lowatr),flidf.TrendLine)
+        flidf.TrendLine = np.where(flidf.BBSignal==-1,np.where(flidf.highatr>flidf.TrendLine.shift(1),flidf.TrendLine.shift(1),flidf.highatr),flidf.TrendLine)
+        flidf.TrendLine = np.where(flidf.BBSignal==0,flidf.TrendLine.shift(1),flidf.TrendLine)            
+    
+    for index, row in flidf.iterrows():
+        flidf.iTrend = flidf.iTrend.shift(1)
+        flidf.iTrend = np.where(flidf.TrendLine>flidf.TrendLine.shift(1),1,np.where(flidf.TrendLine<flidf.TrendLine.shift(1),-1,flidf.iTrend.shift(1)))
+    
+    flidf.buy = np.where((flidf.iTrend.shift(1)==-1) & (flidf.iTrend==1),1,np.NaN)
+    flidf.sell  = np.where((flidf.iTrend.shift(1)==1) & (flidf.iTrend==-1),1,np.NaN)
+    flidf['dibujo'] = np.where(flidf.buy == 1 & (flidf.sell.shift(1) != 1),'Bomba',np.where(flidf.sell == 1 & (flidf.buy.shift(1) != 1),'Martillo',np.NaN))
 
-    df['iTrend'] = 0
-    for index, row in df.iterrows():
-        df.iTrend = np.where(df.TrendLine>df.TrendLine[df.row_num[index]-1],1,df.iTrend[df.row_num[index]-1])
-        df.iTrend = np.where(df.TrendLine<df.TrendLine[df.row_num[index]-1],-1,df.iTrend[df.row_num[index]-1])
+    dffinal=flidf[['TrendLine','dibujo']].copy() 
 
-    df['buy']=np.where(df.iTrend[df.row_num[index]-1]==-1 and df.iTrend==1 , 1 , 0)
-    df['sell']=np.where(df.iTrend[df.row_num[index]-1]==1 and df.iTrend==-1, 1 , 0)
+    return dffinal
 
-    print(df)
-
-    return df.TrendLine.iloc[-1], df.buy.iloc[-1], df.sell.iloc[-1]

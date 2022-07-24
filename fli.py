@@ -38,7 +38,7 @@ def main() -> None:
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='1m'   
-    ratio = 1/(1.5) #Risk/Reward Ratio
+    ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
         
@@ -79,10 +79,10 @@ def main() -> None:
                         
                         df=ut.calculardf (par,temporalidad,ventana)
 
-                        trendline, v_buy, v_sell = ind.fli(df)
+                        dffli = ind.fli(df)
 
                         if  (df.ta.macd()['MACDh_12_26_9'].iloc[-1] > 0 
-                            and v_buy == 1
+                            and (dffli.dibujo.iloc[-1] == 'Bomba')
                             and df.ta.hma().iloc[-1]>df.ta.hma().iloc[-3]
                             ):
                             ############################
@@ -93,14 +93,15 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            #stopprice = trendline
-                            #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
-                            #print(mensajeposicioncompleta)
-                            #mensaje=mensaje+mensajeposicioncompleta 
-                            #balancegame=ut.balancetotal()
+                            stopprice = df.ta.hma().iloc[-1]
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
+                            print(mensajeposicioncompleta)
+                            mensaje=mensaje+mensajeposicioncompleta 
+                            balancegame=ut.balancetotal()
+                            
                         else: 
                             if  (df.ta.macd()['MACDh_12_26_9'].iloc[-1] < 0 
-                                and v_sell == 1
+                                and (dffli.dibujo.iloc[-1] == 'Martillo')
                                 and df.ta.hma().iloc[-1]<df.ta.hma().iloc[-3]
                                 ):
                                 ############################
@@ -111,11 +112,11 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                #stopprice = trendline
-                                #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
-                                #print(mensajeposicioncompleta)
-                                #mensaje=mensaje+mensajeposicioncompleta
-                                #balancegame=ut.balancetotal()
+                                stopprice = df.ta.hma().iloc[-1]
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                                print(mensajeposicioncompleta)
+                                mensaje=mensaje+mensajeposicioncompleta
+                                balancegame=ut.balancetotal()                                
 
                         if posicioncreada==True:
                             ut.sound()
