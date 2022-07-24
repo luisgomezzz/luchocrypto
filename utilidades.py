@@ -278,7 +278,7 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,ratio,df,stopprice=0):   
+def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
    serror = True
    porcentajeentrada=80
    micapital = balancetotal()
@@ -297,11 +297,13 @@ def posicioncompleta(pair,side,ratio,df,stopprice=0):
             if side =='BUY':
                stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
                profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
-               profitprice = ((precioactual-stopprice)/ratio)+precioactual
+               if profitprice == 0:
+                  profitprice = ((precioactual-stopprice)/ratio)+precioactual
             else:
                stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
                profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
-               profitprice = precioactual-((stopprice-precioactual)/ratio)
+               if profitprice == 0:
+                  profitprice = precioactual-((stopprice-precioactual)/ratio)
 
             if stopprice == 0:
                if binancestoploss (pair,side,stoppricedefault)==0:                  

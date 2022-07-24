@@ -62,3 +62,49 @@ def get_bollinger_bands(df, rate=20):
     bollinger_up = sma + std * 2 # Calculate top band
     bollinger_down = sma - std * 2 # Calculate bottom band
     return bollinger_up, bollinger_down
+
+def wwma(values, n):
+    """
+     J. Welles Wilder's EMA 
+    """
+    return values.ewm(alpha=1/n, adjust=False).mean()
+
+def indatr(df, n=14):
+    data = df.copy()
+    high = data.high
+    low = data.low
+    close = data.close
+    data['tr0'] = abs(high - low)
+    data['tr1'] = abs(high - close.shift())
+    data['tr2'] = abs(low - close.shift())
+    tr = data[['tr0', 'tr1', 'tr2']].max(axis=1)
+    atr = wwma(tr, n)
+    return atr    
+
+def fli(df):
+    BBperiod      = 21
+    BBdeviations  = 1
+    ATRperiod     = 5
+    
+    df['BBUpper']=df.ta.sma(BBperiod)+df['close'].rolling(BBperiod).std()*BBdeviations
+    df['BBLower']=pta.sma(df.close,BBperiod)-df['close'].rolling(BBperiod).std()*BBdeviations    
+    df['BBSignal'] = np.where(df.close>df.BBUpper,1,np.where(df.close<df.BBLower,-1,0))
+    df.insert(loc=0, column='row_num', value=np.arange(len(df)))
+
+    df['TrendLine'] = 0.0
+    for index, row in df.iterrows():
+        df.TrendLine = np.where(df.BBSignal==1,np.where(df.low-indatr(df,ATRperiod)<df.TrendLine[df.row_num[index]-1],df.TrendLine[df.row_num[index]-1],df.low-indatr(df,ATRperiod)),df.TrendLine)
+        df.TrendLine = np.where(df.BBSignal==-1,np.where(df.high+indatr(df,ATRperiod)>df.TrendLine[df.row_num[index]-1],df.TrendLine[df.row_num[index]-1],df.high+indatr(df,ATRperiod)),df.TrendLine)
+        df.TrendLine = np.where(df.BBSignal==0,df.TrendLine[df.row_num[index]-1],df.TrendLine)
+
+    df['iTrend'] = 0
+    for index, row in df.iterrows():
+        df.iTrend = np.where(df.TrendLine>df.TrendLine[df.row_num[index]-1],1,df.iTrend[df.row_num[index]-1])
+        df.iTrend = np.where(df.TrendLine<df.TrendLine[df.row_num[index]-1],-1,df.iTrend[df.row_num[index]-1])
+
+    df['buy']=np.where(df.iTrend[df.row_num[index]-1]==-1 and df.iTrend==1 , 1 , 0)
+    df['sell']=np.where(df.iTrend[df.row_num[index]-1]==1 and df.iTrend==-1, 1 , 0)
+
+    #print(df)
+
+    return df.buy.iloc[-1]  ,df.sell.iloc[-1]

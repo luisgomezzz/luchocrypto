@@ -80,6 +80,7 @@ def main() -> None:
                         df=ut.calculardf (par,temporalidad,ventana)
                         df['bollinger_up'], df['bollinger_down'] = ind.get_bollinger_bands(df)                        
                         currentprice = ut.currentprice(par)
+                        profitprice = (pta.sma(low=df.low,close=df.close,high=df.high).iloc[-1])
 
                         if  (df.ta.adx()['ADX_14'].iloc[-1] <= 20 
                             and df.close.iloc[-2] > df.bollinger_down.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
@@ -95,7 +96,7 @@ def main() -> None:
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
                             stopprice = df.low.iloc[-2]
-                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice,profitprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
                             balancegame=ut.balancetotal()
@@ -114,7 +115,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)
                                 stopprice = df.high.iloc[-2]                                                             
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice,profitprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
                                 balancegame=ut.balancetotal()
