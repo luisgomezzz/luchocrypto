@@ -26,19 +26,19 @@ nombrelog = "log_fli.txt"
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624'] #Monedas que no quiero operar 
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930'] #Monedas que no quiero operar 
     ventana = 240 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial = ut.balancetotal()
     posicioncreada = False
-    minvolumen24h=float(200000000)
+    minvolumen24h=float(100000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='1m'   
-    ratio = 1/(1.0) #Risk/Reward Ratio
+    ratio = 1/(1.5) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
         
@@ -82,6 +82,9 @@ def main() -> None:
                         df['hma']=df.ta.hma(55)
                         df['macdh'] = df.ta.macd()['MACDh_12_26_9']
 
+                        swinglow, swinghigh= ind.swingHighLow(df)
+                        atr=ind.atr(df,14).iloc[-1]
+
                         if  (df.macdh.iloc[-1] > 0 
                             and df.dibujo.iloc[-1] == 'Bomba'
                             and df.hma.iloc[-1] > df.hma.iloc[-3]
@@ -94,7 +97,7 @@ def main() -> None:
                             mensaje="Trade - "+par+" - "+lado
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                            
-                            stopprice = df.hma.iloc[-1]
+                            stopprice = swinglow
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta 
@@ -113,16 +116,23 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = df.hma.iloc[-1]
+                                stopprice = swinghigh
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
                                 balancegame=ut.balancetotal()                                
 
+                        stopganando=0.0
+                        stopganandocreado=False
                         if posicioncreada==True:
                             ut.sound()
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
+                                if float(exchange.fetch_balance()['info']['totalCrossUnPnl']) >= 0.03 and stopganando==0.0:#entra una sola vez para tomar el valor
+                                    stopganando=ut.currentprice(par) 
+                                if stopganandocreado==False and stopganando!=0.0 and float(exchange.fetch_balance()['info']['totalCrossUnPnl'])>0.0:
+                                    if ut.binancestoploss (par,lado,stopganando)==0:
+                                        stopganandocreado=True
 
                             ut.closeallopenorders(par)
                             posicioncreada=False                                                                
