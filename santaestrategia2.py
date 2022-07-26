@@ -1,5 +1,5 @@
 #****************************************************************************************
-# version 1.0
+# version 2.0
 #
 #****************************************************************************************
 
@@ -21,17 +21,17 @@ import indicadores as ind
 client = ut.client
 exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
-nombrelog = "log_fli.txt"
+nombrelog = "log_santa2.txt"
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624'] #Monedas que no quiero operar 
-    ventana = 240 #Ventana de búsqueda en minutos.   
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930'] #Monedas que no quiero operar 
+    ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial = ut.balancetotal()
     posicioncreada = False
-    minvolumen24h=float(200000000)
+    minvolumen24h=float(100000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -41,6 +41,9 @@ def main() -> None:
     ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
+    porcentaje=5
+    apalancamiento = 10 #siempre en 10 segun la estrategia de santi
+    margen = 'CROSSED'
         
     ##############START
     ut.clear() #limpia terminal
@@ -70,7 +73,6 @@ def main() -> None:
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
                         vueltas==0
-
                 try:
                     try:
                                                           
@@ -78,51 +80,49 @@ def main() -> None:
                         sys.stdout.flush()
                         
                         df=ut.calculardf (par,temporalidad,ventana)
-                        df['dibujo'] = ind.fli(df).dibujo
-                        df['hma']=df.ta.hma(55)
-                        df['macdh'] = df.ta.macd()['MACDh_12_26_9']
+                        precioanterior = df.close.min()
+                        precioactual = ut.currentprice(par)  
+                        preciomayor = df.close.max()
+                        swinglow, swinghigh= ind.swingHighLow(df)
 
-                        if  (df.macdh.iloc[-1] > 0 
-                            and df.dibujo.iloc[-1] == 'Bomba'
-                            and df.hma.iloc[-1] > df.hma.iloc[-3]
-                            ):
+                        if  ((precioactual - precioanterior)*(100/precioanterior))>=porcentaje and (precioactual>=preciomayor):
                             ############################
-                            ########POSICION BUY########
-                            ############################                            
-                            lado='BUY'
+                            ####### POSICION SELL ######
+                            ############################
+                            print("\rDefiniendo apalancamiento...")
+                            client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                            try: 
+                                print("\rDefiniendo Cross/Isolated...")
+                                client.futures_change_margin_type(symbol=par, marginType=margen)
+                            except BinanceAPIException as a:
+                                if a.message!="No need to change margin type.":
+                                    print("Except 7",a.status_code,a.message)
+                                else:
+                                    print("Done!")   
+                                pass
+
+                            lado='SELL'
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - "+lado
+                            mensaje=mensaje+"\rSubió un",round(((precioactual - precioanterior)*(100/precioanterior)),2)
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                            print(mensaje)                            
-                            stopprice = df.hma.iloc[-1]
-                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice)
+                            print(mensaje)                                
+                            stopprice = swinghigh
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                             print(mensajeposicioncompleta)
-                            mensaje=mensaje+mensajeposicioncompleta 
-                            balancegame=ut.balancetotal()
-                            
-                        else: 
-                            if  (df.macdh.iloc[-1] < 0 
-                                and df.dibujo.iloc[-1] == 'Martillo'
-                                and df.hma.iloc[-1] < df.hma.iloc[-3]
-                                ):
-                                ############################
-                                ####### POSICION SELL ######
-                                ############################
-                                lado='SELL'
-                                print("\n*********************************************************************************************")
-                                mensaje="Trade - "+par+" - "+lado
-                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                print(mensaje)                                
-                                stopprice = df.hma.iloc[-1]
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
-                                print(mensajeposicioncompleta)
-                                mensaje=mensaje+mensajeposicioncompleta
-                                balancegame=ut.balancetotal()                                
-
+                            mensaje=mensaje+mensajeposicioncompleta
+                            balancegame=ut.balancetotal()                                
+                        
                         if posicioncreada==True:
                             ut.sound()
+                            hayguita = True
+                            i = 1
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
+                                #CREA COMPENSACIONES
+                                if hayguita==True:
+                                    hayguita=ut.compensaciones(par,client,i)                       
+                                    i=i+1
 
                             ut.closeallopenorders(par)
                             posicioncreada=False                                                                
