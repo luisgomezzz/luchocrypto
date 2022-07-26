@@ -66,6 +66,7 @@ def currentprice(par):
 def binancetakeprofit(pair,side,profitprice):
 
    created=True
+   print('binancetakeprofit',pair,side,profitprice)
    
    if side=='BUY':
       side='SELL'         
