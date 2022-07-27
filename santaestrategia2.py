@@ -42,7 +42,7 @@ def main() -> None:
     ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
-    porcentaje = 5
+    porcentaje = 2
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
         
