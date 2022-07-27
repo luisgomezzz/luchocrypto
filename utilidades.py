@@ -28,6 +28,7 @@ from time import sleep
 from binance.helpers import round_step_size
 from binance.client import Client
 import indicadores as ind
+import winsound as ws
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -257,15 +258,15 @@ def timeindex(df):
     df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
 def sound():
-    duration = 1000  # milliseconds
-    freq = 440  # Hz
+   duration = 1000  # milliseconds
+   freq = 440  # Hz
 
-    # for windows
-    if name == 'nt':
-        _ = system('cls')
-    # for mac and linux(here, os.name is 'posix')
-    else:
-        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+   # for windows
+   if os.name == 'nt':
+      ws.Beep(freq, duration)
+   # for mac and linux(here, os.name is 'posix')
+   else:
+      _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
 
 def clear():  
     # for windows

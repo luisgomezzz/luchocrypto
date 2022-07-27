@@ -16,6 +16,7 @@ from datetime import datetime
 import pandas_ta as pta
 from time import sleep
 import indicadores as ind
+from datetime import timedelta
 
 ##CONFIG########################
 client = ut.client
@@ -41,7 +42,7 @@ def main() -> None:
     ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
-    porcentaje=5
+    porcentaje = 5
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
         
@@ -79,16 +80,23 @@ def main() -> None:
                         sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                         sys.stdout.flush()
                         
-                        df=ut.calculardf (par,temporalidad,ventana)
-                        precioanterior = df.close.min()
-                        precioactual = ut.currentprice(par)  
-                        preciomayor = df.close.max()
-                        swinglow, swinghigh= ind.swingHighLow(df)
+                        ###############
+                        comienzo = datetime.now() - timedelta(minutes=ventana)
+                        comienzoms = int(comienzo.timestamp() * 1000)
+                        finalms = int(datetime.now().timestamp() * 1000)
+                        trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)
+                        precioanterior = float(min(trades, key=lambda x:x['p'])['p'])
+                        precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
+                        preciomayor = float(max(trades, key=lambda x:x['p'])['p'])
+
+                        ################
 
                         if  ((precioactual - precioanterior)*(100/precioanterior))>=porcentaje and (precioactual>=preciomayor):
                             ############################
                             ####### POSICION SELL ######
                             ############################
+                            df=ut.calculardf (par,temporalidad,ventana)
+
                             print("\rDefiniendo apalancamiento...")
                             client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                             try: 
@@ -104,11 +112,11 @@ def main() -> None:
                             lado='SELL'
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - "+lado
-                            mensaje=mensaje+"\rSubió un",round(((precioactual - precioanterior)*(100/precioanterior)),2)
+                            mensaje=mensaje+"\nSubió un "+str(round(((precioactual - precioanterior)*(100/precioanterior)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = swinghigh
-                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                            stopprice = precioactual*(1+2/100)
+                            #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
                             balancegame=ut.balancetotal()                                
