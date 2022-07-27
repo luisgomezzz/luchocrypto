@@ -42,7 +42,7 @@ def main() -> None:
     ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
     porcentajelejosdeema5=1.00
-    porcentaje = 5
+    porcentaje = 1.5
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
         
@@ -83,13 +83,13 @@ def main() -> None:
                         ###############
 
                         trades = ut.binancetrades(par,ventana)
-                        precioanterior = float(min(trades, key=lambda x:x['p'])['p'])
+                        preciomenor = float(min(trades, key=lambda x:x['p'])['p'])
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
-                        preciomayor = float(max(trades, key=lambda x:x['p'])['p'])
+                        preciomayor = float(max(trades, key=lambda x:x['p'])['p'])   
 
                         ################
 
-                        if  ((precioactual - precioanterior)*(100/precioanterior))>=porcentaje and (precioactual>=preciomayor):
+                        if  ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
                             ############################
                             ####### POSICION SELL ######
                             ############################
@@ -110,7 +110,7 @@ def main() -> None:
                             lado='SELL'
                             print("\n*********************************************************************************************")
                             mensaje="Trade - "+par+" - "+lado
-                            mensaje=mensaje+"\nSubió un "+str(round(((precioactual - precioanterior)*(100/precioanterior)),2))+" %"
+                            mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
                             stopprice = precioactual*(1+2/100)
@@ -118,7 +118,37 @@ def main() -> None:
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
                             balancegame=ut.balancetotal()                                
-                        
+                        else:
+                            if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor):
+                                ############################
+                                ####### POSICION BUY ######
+                                ############################
+                                df=ut.calculardf (par,temporalidad,ventana)
+
+                                print("\rDefiniendo apalancamiento...")
+                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                try: 
+                                    print("\rDefiniendo Cross/Isolated...")
+                                    client.futures_change_margin_type(symbol=par, marginType=margen)
+                                except BinanceAPIException as a:
+                                    if a.message!="No need to change margin type.":
+                                        print("Except 7",a.status_code,a.message)
+                                    else:
+                                        print("Done!")   
+                                    pass
+
+                                lado='BUY'
+                                print("\n*********************************************************************************************")
+                                mensaje="Trade - "+par+" - "+lado
+                                mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
+                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                print(mensaje)                                
+                                stopprice = precioactual*(1-2/100)
+                                #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                                print(mensajeposicioncompleta)
+                                mensaje=mensaje+mensajeposicioncompleta
+                                balancegame=ut.balancetotal()                                
+
                         if posicioncreada==True:
                             ut.sound()
                             hayguita = True
