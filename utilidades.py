@@ -29,6 +29,8 @@ from binance.helpers import round_step_size
 from binance.client import Client
 import indicadores as ind
 import winsound as ws
+from datetime import timedelta
+from datetime import datetime
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -735,3 +737,17 @@ def compensaciones(par,client,i):
       else:
          print("Se crearon todas las compensaciones.")                                       
       return False
+
+def binancetrades(par,ventana):
+   comienzo = datetime.now() - timedelta(minutes=ventana)
+   comienzoms = int(comienzo.timestamp() * 1000)
+   finalms = int(datetime.now().timestamp() * 1000)
+   leido = False
+   while leido == False:
+      try:
+         trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)      
+         leido = True
+      except:
+         pass
+   return trades
+

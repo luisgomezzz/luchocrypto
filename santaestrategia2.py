@@ -16,7 +16,7 @@ from datetime import datetime
 import pandas_ta as pta
 from time import sleep
 import indicadores as ind
-from datetime import timedelta
+
 
 ##CONFIG########################
 client = ut.client
@@ -81,10 +81,8 @@ def main() -> None:
                         sys.stdout.flush()
                         
                         ###############
-                        comienzo = datetime.now() - timedelta(minutes=ventana)
-                        comienzoms = int(comienzo.timestamp() * 1000)
-                        finalms = int(datetime.now().timestamp() * 1000)
-                        trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)
+
+                        trades = ut.binancetrades(par,ventana)
                         precioanterior = float(min(trades, key=lambda x:x['p'])['p'])
                         precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
                         preciomayor = float(max(trades, key=lambda x:x['p'])['p'])
