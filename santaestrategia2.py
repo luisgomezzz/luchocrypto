@@ -27,7 +27,7 @@ nombrelog = "log_santa2.txt"
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930'] #Monedas que no quiero operar 
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'] #Monedas que no quiero operar 
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     saldo_inicial = ut.balancetotal()
@@ -41,8 +41,7 @@ def main() -> None:
     temporalidad='1m'   
     ratio = 1/(1.0) #Risk/Reward Ratio
     mensajeposicioncompleta=''
-    porcentajelejosdeema5=1.00
-    porcentaje = 1.5
+    porcentaje = 5
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
         
@@ -114,7 +113,7 @@ def main() -> None:
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
                             stopprice = precioactual*(1+2/100)
-                            #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
                             balancegame=ut.balancetotal()                                
@@ -144,7 +143,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
                                 stopprice = precioactual*(1-2/100)
-                                #posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
                                 balancegame=ut.balancetotal()                                
@@ -156,7 +155,7 @@ def main() -> None:
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
                                 #CREA COMPENSACIONES
-                                if hayguita==True:
+                                if hayguita==True and i<3:
                                     hayguita=ut.compensaciones(par,client,i)                       
                                     i=i+1
 

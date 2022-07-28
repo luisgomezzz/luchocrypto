@@ -193,7 +193,6 @@ def get_priceprecision(par):
 def binancecierrotodo(par,lado) -> bool:   
    print("FUNCION CIERROTODO")
    cerrado = False    
-   mensaje=''
    
    while cerrado == False:
       try:        
@@ -204,16 +203,8 @@ def binancecierrotodo(par,lado) -> bool:
             cerrado = True
             print("Posición cerrada.")
       except BinanceAPIException as a:
-         try:        
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
-            cerrado = True
-            print("Posición cerrada sin reduceonly.")
-         except BinanceAPIException as a:
-            print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
-            botlaburo = creobot('laburo')
-            mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-            botlaburo.send_text(mensaje)
-            input(mensaje)          
+         print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
+         pass          
       except Exception as falla:
          print("Error2 FUNCION CIERROTODO: "+str(falla))
          pass     
@@ -284,7 +275,7 @@ def truncate(number, digits) -> float:
 
 def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
    serror = True
-   porcentajeentrada=10
+   porcentajeentrada=50
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(pair))
    stopdefaultporc = 1
@@ -721,9 +712,9 @@ def osovago(df):
 def compensaciones(par,client,i):         
    #valor de las compensaciones
 
-   apreto= get_positionamt(par)*(1+i/10) 
+   apreto= get_positionamt(par)*(5+i/10) 
    apretoformateado=abs(truncate(apreto,get_quantityprecision(par)))
-   preciolimit = currentprice(par)*(1+i/250)   
+   preciolimit = currentprice(par)*(1+i/150)   
    preciolimit = get_rounded_price(par, preciolimit)  
    limitprice=truncate(preciolimit,get_priceprecision(par))
 
