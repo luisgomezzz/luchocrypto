@@ -275,7 +275,7 @@ def truncate(number, digits) -> float:
 
 def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
    serror = True
-   porcentajeentrada=50
+   porcentajeentrada=20
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(pair))
    stopdefaultporc = 1
