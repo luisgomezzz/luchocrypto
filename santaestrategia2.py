@@ -152,11 +152,12 @@ def main() -> None:
                             ut.sound()
                             hayguita = True
                             i = 1
+                            montoinicialposicion=ut.get_positionamt(par)
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
                                 #CREA COMPENSACIONES
                                 if hayguita==True and i<3:
-                                    hayguita=ut.compensaciones(par,client,i)                       
+                                    hayguita=ut.compensaciones(par,client,montoinicialposicion,i)                       
                                     i=i+1
 
                             ut.closeallopenorders(par)

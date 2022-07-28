@@ -275,7 +275,7 @@ def truncate(number, digits) -> float:
 
 def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
    serror = True
-   porcentajeentrada=20
+   porcentajeentrada=10
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(pair))
    stopdefaultporc = 1
@@ -709,12 +709,12 @@ def osovago(df):
    value=df['value'].iloc[-1]
    return enter_long,enter_short,gray,value
 
-def compensaciones(par,client,i):         
+def compensaciones(par,client,montoinicialposicion,i):         
    #valor de las compensaciones
 
-   apreto= get_positionamt(par)*(5+i/10) 
+   apreto= montoinicialposicion*(1+(10/100)) 
    apretoformateado=abs(truncate(apreto,get_quantityprecision(par)))
-   preciolimit = currentprice(par)*(1+i/150)   
+   preciolimit = getentryprice(par)*(1+(i/100))   
    preciolimit = get_rounded_price(par, preciolimit)  
    limitprice=truncate(preciolimit,get_priceprecision(par))
 
