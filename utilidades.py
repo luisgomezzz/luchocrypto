@@ -275,7 +275,7 @@ def truncate(number, digits) -> float:
 
 def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
    serror = True
-   porcentajeentrada=10
+   porcentajeentrada=30
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(pair))
    stopdefaultporc = 1
@@ -709,18 +709,21 @@ def osovago(df):
    value=df['value'].iloc[-1]
    return enter_long,enter_short,gray,value
 
-def compensaciones(par,client,montoinicialposicion,i):         
-   #valor de las compensaciones
+def compensaciones(par,client,lado,montoinicialposicion,distanciaporc):         
+   apreto= abs(montoinicialposicion)*(1+(10/100)) 
+   apretoformateado=truncate(apreto,get_quantityprecision(par))
 
-   apreto= montoinicialposicion*(1+(10/100)) 
-   apretoformateado=abs(truncate(apreto,get_quantityprecision(par)))
-   preciolimit = getentryprice(par)*(1+(i/100))   
+   if lado =='SELL':
+      preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
+   else:
+      preciolimit = getentryprice(par)*(1-(distanciaporc/100))
+
    preciolimit = get_rounded_price(par, preciolimit)  
    limitprice=truncate(preciolimit,get_priceprecision(par))
 
    try:
-      client.futures_create_order(symbol=par, side='SELL', type='LIMIT', timeInForce='GTC', quantity=apretoformateado,price=limitprice)      
-      print("\rCompensación", i ,"creada. \033[K")
+      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=apretoformateado,price=limitprice)      
+      print("\nCompensación creada. ")
       return True
    except BinanceAPIException as a:                                       
       if a.message!="Margin is insufficient.":

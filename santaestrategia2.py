@@ -112,7 +112,7 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = precioactual*(1+2/100)
+                            stopprice = precioactual*(1+8/100)
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
@@ -142,7 +142,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = precioactual*(1-2/100)
+                                stopprice = precioactual*(1-8/100)
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
@@ -152,13 +152,16 @@ def main() -> None:
                             ut.sound()
                             hayguita = True
                             i = 1
+                            distanciaporc = 1.5
                             montoinicialposicion=ut.get_positionamt(par)
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
+                                
                                 #CREA COMPENSACIONES
                                 if hayguita==True and i<3:
-                                    hayguita=ut.compensaciones(par,client,montoinicialposicion,i)                       
+                                    hayguita=ut.compensaciones(par,client,lado,montoinicialposicion,distanciaporc)                       
                                     i=i+1
+                                    distanciaporc=distanciaporc+1.5
 
                             ut.closeallopenorders(par)
                             posicioncreada=False                                                                
