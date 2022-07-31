@@ -15,14 +15,13 @@ import datetime as dt
 from datetime import datetime
 import pandas_ta as pta
 from time import sleep
-import indicadores as ind
-
 
 ##CONFIG########################
 client = ut.client
 exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
 nombrelog = "log_santa2.txt"
+################################
 
 def main() -> None:
 
@@ -39,11 +38,13 @@ def main() -> None:
     mensaje=''
     balanceobjetivo = 24.00+24.88
     temporalidad='1m'   
-    ratio = 1/(1.0) #Risk/Reward Ratio
-    mensajeposicioncompleta=''
-    porcentaje = 5
+    ratio = 1/(0.2) #Risk/Reward Ratio
+    mensajeposicioncompleta=''    
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
+    porcentaje = 5 #porcentaje de variacion para entrar 
+    porcentajestoploss = 60 #porcentaje total de pérdida en la cuenta para asumir stop (20)
+    porcentajeentrada = 30 #porcentaje de la cuenta para crear la posición (10)
         
     ##############START
     ut.clear() #limpia terminal
@@ -112,8 +113,8 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = precioactual*(1+8/100)
-                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                            stopprice = ut.stoppriceinvalidation (par,porcentajestoploss)
+                            posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
                             balancegame=ut.balancetotal()                                
@@ -142,24 +143,26 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = precioactual*(1-8/100)
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,stopprice) 
+                                stopprice = ut.stoppriceinvalidation (par,porcentajestoploss)
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
                                 balancegame=ut.balancetotal()                                
 
                         if posicioncreada==True:
+                            
                             ut.sound()
                             hayguita = True
                             i = 1
                             distanciaporc = 1.5
-                            montoinicialposicion=ut.get_positionamt(par)
+                            montoinicialposicion = ut.get_positionamt(par)
+                            apretoporc = 0 # por ahora solo se arman algunas compensaciones con el mismo tamaño que la posición inicial.
                             while ut.posicionesabiertas() == True:
                                 ut.waiting(1)
                                 
                                 #CREA COMPENSACIONES
                                 if hayguita==True and i<3:
-                                    hayguita=ut.compensaciones(par,client,lado,montoinicialposicion,distanciaporc)                       
+                                    hayguita = ut.compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc)                       
                                     i=i+1
                                     distanciaporc=distanciaporc+1.5
 

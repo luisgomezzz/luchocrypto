@@ -67,10 +67,7 @@ def currentprice(par):
    return current
 
 def binancetakeprofit(pair,side,profitprice):
-
    created=True
-   print('binancetakeprofit',pair,side,profitprice)
-   
    if side=='BUY':
       side='SELL'         
    else:
@@ -251,7 +248,7 @@ def timeindex(df):
     df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
 def sound():
-   duration = 1000  # milliseconds
+   duration = 2000  # milliseconds
    freq = 440  # Hz
 
    # for windows
@@ -273,9 +270,8 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
+def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitprice=0):   
    serror = True
-   porcentajeentrada=30
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(pair))
    stopdefaultporc = 1
@@ -709,8 +705,8 @@ def osovago(df):
    value=df['value'].iloc[-1]
    return enter_long,enter_short,gray,value
 
-def compensaciones(par,client,lado,montoinicialposicion,distanciaporc):         
-   apreto= abs(montoinicialposicion)*(1+(10/100)) 
+def compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc):         
+   apreto= abs(montoinicialposicion)*(1+(apretoporc/100)) #
    apretoformateado=truncate(apreto,get_quantityprecision(par))
 
    if lado =='SELL':
@@ -745,3 +741,24 @@ def binancetrades(par,ventana):
          pass
    return trades
 
+def get_positionamtusdt(par):
+   precioactualusdt=currentprice(par)
+   positionamt=get_positionamt(par)
+   tamanioposusdt=positionamt*precioactualusdt
+   return tamanioposusdt
+
+def stoppriceinvalidation (par,porcentajestoploss):
+   entryprice = getentryprice(par)
+   positionamount = get_positionamtusdt(par)
+   totalbalance = balancetotal()
+
+   stopprice = (entryprice*(positionamount)
+   /
+   ((positionamount)-(entryprice*totalbalance*porcentajestoploss/100))
+   )
+   
+   print(stopprice)
+   return stopprice
+
+
+   
