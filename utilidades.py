@@ -759,19 +759,18 @@ def stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada):
       positionamount = totalbalance*porcentajeentrada/100   
 
    if lado =='BUY':
-      stopprice = (entryprice*(positionamount)
+      stoppriceporc = (entryprice*(positionamount)
       /
       ((positionamount)-(entryprice*totalbalance*porcentajestoploss/100))
       )
    else:
-      stopprice = (entryprice*(positionamount)
+      stoppriceporc = (entryprice*(positionamount)
       /
       ((positionamount)+(entryprice*totalbalance*porcentajestoploss/100))
       )
 
-
-   print(stopprice)
-   return stopprice
+   print("stoppriceporc: "+str(stoppriceporc))
+   return stoppriceporc
 
 
    

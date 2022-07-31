@@ -42,7 +42,7 @@ def main() -> None:
     mensajeposicioncompleta=''    
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
-    porcentaje = 5 #porcentaje de variacion para entrar 
+    porcentaje = 1.5 #porcentaje de variacion para entrar 
     porcentajestoploss = 60 #porcentaje total de pérdida en la cuenta para asumir stop (20)
     porcentajeentrada = 30 #porcentaje de la cuenta para crear la posición (10)
         
@@ -113,7 +113,7 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = ut.stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada)
+                            stopprice = precioactual*(1+10/100)
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
@@ -143,7 +143,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = ut.stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada)
+                                stopprice = precioactual*(1-10/100)
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
