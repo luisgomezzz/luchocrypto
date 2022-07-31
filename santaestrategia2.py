@@ -113,7 +113,7 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = ut.stoppriceinvalidation (par,porcentajestoploss)
+                            stopprice = ut.stoppriceinvalidation (par,porcentajestoploss,porcentajeentrada)
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
@@ -143,7 +143,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = ut.stoppriceinvalidation (par,porcentajestoploss)
+                                stopprice = ut.stoppriceinvalidation (par,porcentajestoploss,porcentajeentrada)
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
