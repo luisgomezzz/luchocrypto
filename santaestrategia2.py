@@ -42,7 +42,7 @@ def main() -> None:
     mensajeposicioncompleta=''    
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
-    porcentaje = 1.5 #porcentaje de variacion para entrar 
+    porcentaje = 5 #porcentaje de variacion para entrar 
     porcentajestoploss = 60 #porcentaje total de pérdida en la cuenta para asumir stop (20)
     porcentajeentrada = 30 #porcentaje de la cuenta para crear la posición (10)
         
