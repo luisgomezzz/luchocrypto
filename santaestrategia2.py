@@ -36,15 +36,15 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88
+    balanceobjetivo = 24.00+24.88+71.53
     temporalidad='1m'   
-    ratio = 1/(0.2) #Risk/Reward Ratio
+    ratio = 1/(0.5) #Risk/Reward Ratio
     mensajeposicioncompleta=''    
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
-    porcentajestoploss = 60 #porcentaje total de pérdida en la cuenta para asumir stop (20)
-    porcentajeentrada = 30 #porcentaje de la cuenta para crear la posición (10)
+    porcentajestoploss = 20 #porcentaje total de pérdida en la cuenta para asumir stop (20)
+    porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
         
     ##############START
     ut.clear() #limpia terminal
@@ -113,7 +113,7 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = precioactual*(1+10/100)
+                            stopprice = precioactual*(1+20/100)
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
@@ -143,7 +143,7 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = precioactual*(1-10/100)
+                                stopprice = precioactual*(1-20/100)
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
