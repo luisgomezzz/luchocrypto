@@ -93,8 +93,8 @@ def main() -> None:
                             ############################
                             ####### POSICION SELL ######
                             ############################
+                            ut.sound()
                             df=ut.calculardf (par,temporalidad,ventana)
-
                             print("\rDefiniendo apalancamiento...")
                             client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                             try: 
@@ -113,7 +113,7 @@ def main() -> None:
                             mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                             mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             print(mensaje)                                
-                            stopprice = ut.stoppriceinvalidation (par,porcentajestoploss,porcentajeentrada)
+                            stopprice = ut.stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada)
                             posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                             print(mensajeposicioncompleta)
                             mensaje=mensaje+mensajeposicioncompleta
@@ -123,8 +123,8 @@ def main() -> None:
                                 ############################
                                 ####### POSICION BUY ######
                                 ############################
+                                ut.sound()
                                 df=ut.calculardf (par,temporalidad,ventana)
-
                                 print("\rDefiniendo apalancamiento...")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                                 try: 
@@ -143,15 +143,14 @@ def main() -> None:
                                 mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = ut.stoppriceinvalidation (par,porcentajestoploss,porcentajeentrada)
+                                stopprice = ut.stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada)
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta
                                 balancegame=ut.balancetotal()                                
 
-                        if posicioncreada==True:
+                        if posicioncreada==True:                            
                             
-                            ut.sound()
                             hayguita = True
                             i = 1
                             distanciaporc = 1.5

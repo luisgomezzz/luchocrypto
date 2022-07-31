@@ -747,22 +747,29 @@ def get_positionamtusdt(par):
    tamanioposusdt=positionamt*precioactualusdt
    return tamanioposusdt
 
-def stoppriceinvalidation (par,porcentajestoploss,porcentajeentrada):
+def stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada):
    
    totalbalance = balancetotal()
    entryprice = getentryprice(par)
    if entryprice == 0:
       entryprice = currentprice(par)
       
-   positionamount = get_positionamtusdt(par)
+   positionamount = abs(get_positionamtusdt(par))
    if positionamount == 0:
       positionamount = totalbalance*porcentajeentrada/100   
 
-   stopprice = (entryprice*(positionamount)
-   /
-   ((positionamount)-(entryprice*totalbalance*porcentajestoploss/100))
-   )
-   
+   if lado =='BUY':
+      stopprice = (entryprice*(positionamount)
+      /
+      ((positionamount)-(entryprice*totalbalance*porcentajestoploss/100))
+      )
+   else:
+      stopprice = (entryprice*(positionamount)
+      /
+      ((positionamount)+(entryprice*totalbalance*porcentajestoploss/100))
+      )
+
+
    print(stopprice)
    return stopprice
 
