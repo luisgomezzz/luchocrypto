@@ -43,7 +43,7 @@ def main() -> None:
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
-    porcentajestoploss = 20 #porcentaje total de pérdida en la cuenta para asumir stop (20)
+    porcentajestoploss = 10 #porcentaje total de pérdida en la cuenta para asumir stop (10)
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
         
     ##############START
@@ -160,7 +160,7 @@ def main() -> None:
                                 ut.waiting(1)
                                 
                                 #CREA COMPENSACIONES
-                                if hayguita==True and i<3:
+                                if hayguita==True and i<2:
                                     hayguita = ut.compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc)                       
                                     i=i+1
                                     distanciaporc=distanciaporc+1.5
