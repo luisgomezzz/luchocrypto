@@ -42,7 +42,8 @@ def main() -> None:
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
-        
+    operando=[]
+
     ##############START
     ut.clear() #limpia terminal
     for s in lista_de_monedas:
@@ -63,18 +64,20 @@ def main() -> None:
         while True:
 
             for par in lista_monedas_filtradas:
-                if par not in mazmorra:
-                    # para calcular tiempo de vuelta completa                
-                    if vueltas==0:
-                        datetime_start = datetime.today()
-                    else:
-                        if vueltas == len(lista_monedas_filtradas):
-                            datetime_end = datetime.today()
-                            minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
-                            vueltas==0
+                # para calcular tiempo de vuelta completa                
+                if vueltas==0:
+                    datetime_start = datetime.today()
+                else:
+                    if vueltas == len(lista_monedas_filtradas):
+                        datetime_end = datetime.today()
+                        minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
+                        vueltas==0
+                try:
+                    
                     try:
-                        try:
-                                                            
+
+                        if par not in operando:    
+
                             sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
                             sys.stdout.flush()
                             
@@ -158,28 +161,28 @@ def main() -> None:
                                     distanciaporc=distanciaporc+1
 
                                 posicioncreada=False    
-                                mazmorra.append(par)                                                            
-                                
-                        except KeyboardInterrupt:
-                            print("\nSalida solicitada. ")
-                            sys.exit()
-                        except BinanceAPIException as e:
-                            if e.message!="Invalid symbol.":
-                                print("\nError3 - Par:",par,"-",e.status_code,e.message)                            
-                            pass
-                        except Exception as falla:
-                            exc_type, exc_obj, exc_tb = sys.exc_info()
-                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                            print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
-                            pass
-
+                                operando.append(par)                                                            
+                            
                     except KeyboardInterrupt:
-                        print("\nSalida solicitada.")
-                        sys.exit()            
-                    except BinanceAPIException as a:
-                        if a.message!="Invalid symbol.":
-                            print("Error5 - Par:",par,"-",a.status_code,a.message)
+                        print("\nSalida solicitada. ")
+                        sys.exit()
+                    except BinanceAPIException as e:
+                        if e.message!="Invalid symbol.":
+                            print("\nError3 - Par:",par,"-",e.status_code,e.message)                            
                         pass
+                    except Exception as falla:
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+                        pass
+
+                except KeyboardInterrupt:
+                    print("\nSalida solicitada.")
+                    sys.exit()            
+                except BinanceAPIException as a:
+                    if a.message!="Invalid symbol.":
+                        print("Error5 - Par:",par,"-",a.status_code,a.message)
+                    pass
             
                 vueltas=vueltas+1
 
