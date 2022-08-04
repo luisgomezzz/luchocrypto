@@ -279,7 +279,7 @@ def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitpric
    mensaje=''
 
    try:
-      if posicionesabiertas()==False: #si no hay posiciones abiertas creo la alertada.
+      
          if binancecreoposicion (pair,size,side)==True:
 
             precioactual = getentryprice(pair)
