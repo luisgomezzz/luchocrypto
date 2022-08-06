@@ -3,6 +3,7 @@
 #
 #****************************************************************************************
 
+from time import sleep
 from binance.exceptions import BinanceAPIException
 import sys, os
 import pandas as pd
@@ -13,20 +14,44 @@ sys.path.insert(1,'./')
 import utilidades as ut
 import datetime as dt
 from datetime import datetime
-import pandas_ta as pta
+import threading
 from time import sleep
-
 ##CONFIG########################
 client = ut.client
 exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
 nombrelog = "log_santa2.txt"
 ################################
+operando=[]    #lista de monedas que se están operando
+
+def takeprofitupdating(par,lado):
+    print("takeprofitupdating "+par+"-"+lado)
+    tamanioposicion = ut.get_positionamt(par)
+    while tamanioposicion!=0:
+        if tamanioposicion!=ut.get_positionamt(par):
+            if lado=='BUY':
+                profitprice = ut.getentryprice(par)*(1+1.1/100)
+            else:
+                profitprice = ut.getentryprice(par)*(1-1.1/100)
+                
+            ut.binancetakeprofit(par,lado,profitprice)
+            sleep(1)
+            tamanioposicion = ut.get_positionamt(par)            
+    print("Final del trade "+par+" en "+lado)
+
+def trading(par,lado):
+    #Actualiza el profit
+    takeprofitupdating(par,lado)
+    #cierra todas las 'ordenes
+    ut.closeallopenorders(par)
+    #ya no lo estoy operando
+    operando.remove(par)
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'] #Monedas que no quiero operar 
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'
+    ,'FILUSDT'] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -45,7 +70,7 @@ def main() -> None:
     porcentaje = 5 #porcentaje de variacion para entrar 
     #porcentajestoploss = 10 #porcentaje total de pérdida en la cuenta para asumir stop (10)
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
-    operando=[]    #lista de monedas que se están operando
+    
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
@@ -175,6 +200,9 @@ def main() -> None:
                                     i=i+1
                                     distanciaporc=distanciaporc+paso
                                     tamanio=tamanio*(1+30/100)
+
+                                hilo = threading.Thread(target=trading, args=(par,lado))
+                                hilo.start()
 
                                 posicioncreada=False       
                                 
