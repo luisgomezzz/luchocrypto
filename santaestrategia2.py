@@ -26,8 +26,8 @@ nombrelog = "log_santa2.txt"
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'
-    ] #Monedas que no quiero operar 
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'] #Monedas que no quiero operar 
+    toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
@@ -36,7 +36,7 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    #balanceobjetivo = 24.00+24.88+71.53
+    balanceobjetivo = 24.00+24.88+71.53
     temporalidad='1m'   
     ratio = 1/(0.1) #Risk/Reward Ratio
     mensajeposicioncompleta=''    
@@ -47,10 +47,13 @@ def main() -> None:
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
     operando=[]    #lista de monedas que se están operando
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
+    distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
+    distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
 
-    ##############START
+    ##############START    
     
     ut.clear() #limpia terminal
+    print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
@@ -97,7 +100,7 @@ def main() -> None:
                                 ############################
                                 ####### POSICION SELL ######
                                 ############################
-                                
+                                ut.sound()
                                 df=ut.calculardf (par,temporalidad,ventana)
                                 print("\rDefiniendo apalancamiento...")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -117,17 +120,18 @@ def main() -> None:
                                 mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 print(mensaje)                                
-                                stopprice = precioactual*(1+90/100)
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
+                                stopprice = ut.currentprice(par)*(1+90/100)
+                                profitprice = ut.currentprice(par)*(1-(1.1/100))
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice,profitprice) 
                                 print(mensajeposicioncompleta)
-                                mensaje=mensaje+mensajeposicioncompleta
+                                mensaje=mensaje+mensajeposicioncompleta                                
                               
                             else:
                                 if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor):
                                     ############################
                                     ####### POSICION BUY ######
                                     ############################
-                                    
+                                    ut.sound()
                                     df=ut.calculardf (par,temporalidad,ventana)
                                     print("\rDefiniendo apalancamiento...")
                                     client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -147,29 +151,33 @@ def main() -> None:
                                     mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     print(mensaje)                                
-                                    stopprice = precioactual*(1-90/100)
-                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice) 
+                                    stopprice = ut.currentprice(par)*(1-90/100)
+                                    profitprice = ut.currentprice(par)*(1+1.1/100)
+                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice,profitprice) 
                                     print(mensajeposicioncompleta)
-                                    mensaje=mensaje+mensajeposicioncompleta
+                                    mensaje=mensaje+mensajeposicioncompleta                                    
 
                             if posicioncreada==True:     
-                                ut.sound()                       
+                                                       
                                 operando.append(par)
                                 hayguita = True
                                 i = 1
-                                distanciaporc = 1.5
-                                montoinicialposicion = ut.get_positionamt(par)
-                                apretoporc = 0 # por ahora solo se arman algunas compensaciones con el mismo tamaño que la posición inicial.
-                                    
-                                #CREA COMPENSACIONES
-                                while hayguita==True and i<2:
-                                    hayguita = ut.compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc)                       
-                                    i=i+1
-                                    distanciaporc=distanciaporc+1.5
-
-                                posicioncreada=False                                                                
+                                if par in toppar:
+                                    paso = distancianotoppar
+                                else:
+                                    paso = distanciatoppar
+                                distanciaporc = paso
+                                tamanio = ut.get_positionamt(par)
                                 
-                                print(mensaje)
+                                #CREA COMPENSACIONES
+                                while hayguita==True and i<=8:
+                                    hayguita = ut.compensaciones(par,client,lado,tamanio,distanciaporc)                       
+                                    i=i+1
+                                    distanciaporc=distanciaporc+paso
+                                    tamanio=tamanio*(1+30/100)
+
+                                posicioncreada=False       
+                                
                                 print("\n*********************************************************************************************")
                                 #escribo file
                                 f = open(nombrelog, "a")

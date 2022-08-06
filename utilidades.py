@@ -113,9 +113,9 @@ def binancecrearlimite(par,fraccionlimit,profitprice,posicionporc,lado):
 
    return retorno
 
-def binancestoploss (pair,side,stopprice)-> int:
+def binancestoploss (pair,side,stopprice):
    
-   retorno=0 # 0: creado, 1: problema
+   retorno = True
    
    if side == 'BUY':
       side='SELL'
@@ -128,7 +128,7 @@ def binancestoploss (pair,side,stopprice)-> int:
       print("Stop loss creado. ",preciostop)
    except BinanceAPIException as a:
       print(a.message,"no se pudo crear el stop loss.")
-      retorno=1
+      retorno=False
       pass
 
    return retorno
@@ -297,10 +297,10 @@ def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitpric
                   profitprice = precioactual-((stopprice-precioactual)/ratio)
 
             if stopprice == 0:
-               if binancestoploss (pair,side,stoppricedefault)==0:                  
+               if binancestoploss (pair,side,stoppricedefault)==True:                  
                   binancetakeprofit(pair,side,profitpricedefault)
             else:
-               if binancestoploss (pair,side,stopprice)==0:                  
+               if binancestoploss (pair,side,stopprice)==True:                  
                   if binancetakeprofit(pair,side,profitprice)==False:
                      binancetakeprofit(pair,side,profitpricedefault)
                else:
@@ -310,7 +310,7 @@ def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitpric
                   else:
                      stopprice=ind.atrslf(df,14)[0] 
                      profitprice = precioactual-((stopprice-precioactual)/ratio)                       
-                  if binancestoploss (pair,side,stopprice)==0:                  
+                  if binancestoploss (pair,side,stopprice)==True:                  
                      if binancetakeprofit(pair,side,profitprice)==False:
                         binancetakeprofit(pair,side,profitpricedefault)
                   else:
@@ -321,20 +321,6 @@ def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitpric
                         binancecierrotodo(pair,'BUY')
                      closeallopenorders(pair)
             
-            if side =='BUY':
-               fraccionlimit=1/4
-               posicionporc=70
-            else:
-               fraccionlimit=3/4
-               posicionporc=70
-
-            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)
-
-            fraccionlimit=1/2
-            posicionporc=20
-
-            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)            
-
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
                mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
@@ -705,9 +691,9 @@ def osovago(df):
    value=df['value'].iloc[-1]
    return enter_long,enter_short,gray,value
 
-def compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc):         
-   apreto= abs(montoinicialposicion)*(1+(apretoporc/100)) #
-   apretoformateado=truncate(apreto,get_quantityprecision(par))
+def compensaciones(par,client,lado,tamanio,distanciaporc):         
+
+   tamanioformateado=truncate(abs(tamanio),get_quantityprecision(par))
 
    if lado =='SELL':
       preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
@@ -718,8 +704,8 @@ def compensaciones(par,client,lado,montoinicialposicion,distanciaporc,apretoporc
    limitprice=truncate(preciolimit,get_priceprecision(par))
 
    try:
-      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=apretoformateado,price=limitprice)      
-      print("\nCompensación creada. ")
+      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
+      print("\nCompensación creada. Tamaño: "+str(tamanioformateado)+" - precio: "+str(limitprice))
       return True
    except BinanceAPIException as a:                                       
       if a.message!="Margin is insufficient.":
