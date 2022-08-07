@@ -51,7 +51,7 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'
-    ,'FILUSDT'] #Monedas que no quiero operar 
+    ] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -61,9 +61,8 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88+71.53
+    balanceobjetivo = 24.00+24.88+71.53+71.62
     temporalidad='1m'   
-    ratio = 1/(0.1) #Risk/Reward Ratio
     mensajeposicioncompleta=''    
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
@@ -147,7 +146,7 @@ def main() -> None:
                                     paso = distanciatoppar
                                 else:
                                     paso = distancianotoppar  
-                                distanciaporc=cantidadcompensaciones*paso                               
+                                distanciaporc=(cantidadcompensaciones+2)*paso                               
                                 posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta                                
@@ -181,7 +180,7 @@ def main() -> None:
                                         paso = distanciatoppar
                                     else:
                                         paso = distancianotoppar
-                                    distanciaporc=cantidadcompensaciones*paso                                                       
+                                    distanciaporc=(cantidadcompensaciones+2)*paso
                                     posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
                                     print(mensajeposicioncompleta)
                                     mensaje=mensaje+mensajeposicioncompleta                                    
@@ -204,7 +203,7 @@ def main() -> None:
                                     i=i+1            
 
                                 # PUNTO DE ATAQUE
-                                ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+paso)    
+                                ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+1)    
 
                                 hilo = threading.Thread(target=trading, args=(par,lado))
                                 hilo.start()
