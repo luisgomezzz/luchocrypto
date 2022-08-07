@@ -270,56 +270,27 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitprice=0):   
+def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):   
    serror = True
    micapital = balancetotal()
-   size = (micapital*porcentajeentrada/100)/(currentprice(pair))
-   stopdefaultporc = 1
-   profitdefaultporc = 1   
+   size = (micapital*porcentajeentrada/100)/(currentprice(par))
    mensaje=''
 
    try:
       
-         if binancecreoposicion (pair,size,side)==True:
+         if binancecreoposicion (par,size,lado)==True:
 
-            precioactual = getentryprice(pair)
+            precioactual = getentryprice(par)
 
-            #valores de stop y profit standard
-            if side =='BUY':
-               stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
-               profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
-               if profitprice == 0:
-                  profitprice = ((precioactual-stopprice)/ratio)+precioactual
+            if lado =='BUY':
+               profitprice = precioactual*(1+1.1/100)
+               stopprice = precioactual*(1-distanciaporc/100)
             else:
-               stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
-               profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
-               if profitprice == 0:
-                  profitprice = precioactual-((stopprice-precioactual)/ratio)
+               profitprice = precioactual*(1-(1.1/100))
+               stopprice = precioactual*(1+distanciaporc/100)
 
-            if stopprice == 0:
-               if binancestoploss (pair,side,stoppricedefault)==True:                  
-                  binancetakeprofit(pair,side,profitpricedefault)
-            else:
-               if binancestoploss (pair,side,stopprice)==True:                  
-                  if binancetakeprofit(pair,side,profitprice)==False:
-                     binancetakeprofit(pair,side,profitpricedefault)
-               else:
-                  if side =='BUY':
-                     stopprice=ind.atrslf(df,14)[1]
-                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
-                  else:
-                     stopprice=ind.atrslf(df,14)[0] 
-                     profitprice = precioactual-((stopprice-precioactual)/ratio)                       
-                  if binancestoploss (pair,side,stopprice)==True:                  
-                     if binancetakeprofit(pair,side,profitprice)==False:
-                        binancetakeprofit(pair,side,profitpricedefault)
-                  else:
-                     print("Cierro todo por no poder crear Stop loss...")
-                     if side =='BUY':
-                        binancecierrotodo(pair,'SELL')
-                     else:   
-                        binancecierrotodo(pair,'BUY')
-                     closeallopenorders(pair)
+            binancestoploss (par,lado,stopprice)
+            binancetakeprofit(par,lado,profitprice)               
             
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
@@ -341,7 +312,7 @@ def posicioncompleta(pair,side,ratio,df,porcentajeentrada,stopprice=0,profitpric
    except Exception as falla:
       exc_type, exc_obj, exc_tb = sys.exc_info()
       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+pair)
+      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
       serror=False
       pass
 

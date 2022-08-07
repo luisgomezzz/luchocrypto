@@ -68,13 +68,11 @@ def main() -> None:
     apalancamiento = 10 #siempre en 10 segun la estrategia de santi
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
-    #porcentajestoploss = 10 #porcentaje total de pérdida en la cuenta para asumir stop (10)
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
-    
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
-
+    cantidadcompensaciones = 8
     ##############START    
     
     ut.clear() #limpia terminal
@@ -144,10 +142,13 @@ def main() -> None:
                                 mensaje="Trade - "+par+" - "+lado
                                 mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                 mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                print(mensaje)                                
-                                stopprice = ut.currentprice(par)*(1+90/100)
-                                profitprice = ut.currentprice(par)*(1-(1.1/100))
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice,profitprice) 
+                                print(mensaje)
+                                if par in toppar:
+                                    paso = distanciatoppar
+                                else:
+                                    paso = distancianotoppar  
+                                distanciaporc=cantidadcompensaciones*paso                               
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta                                
                               
@@ -175,10 +176,13 @@ def main() -> None:
                                     mensaje="Trade - "+par+" - "+lado
                                     mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                    print(mensaje)                                
-                                    stopprice = ut.currentprice(par)*(1-90/100)
-                                    profitprice = ut.currentprice(par)*(1+1.1/100)
-                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompleta(par,lado,ratio,df,porcentajeentrada,stopprice,profitprice) 
+                                    print(mensaje)    
+                                    if par in toppar:
+                                        paso = distanciatoppar
+                                    else:
+                                        paso = distancianotoppar
+                                    distanciaporc=cantidadcompensaciones*paso                                                       
+                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
                                     print(mensajeposicioncompleta)
                                     mensaje=mensaje+mensajeposicioncompleta                                    
 
@@ -187,19 +191,20 @@ def main() -> None:
                                 operando.append(par)
                                 hayguita = True
                                 i = 1
-                                if par in toppar:
-                                    paso = distancianotoppar
-                                else:
-                                    paso = distanciatoppar
-                                distanciaporc = paso
+                                distanciaporc = 0
                                 tamanio = ut.get_positionamt(par)
-                                
+                                tamaniototal = 0
+
                                 #CREA COMPENSACIONES
-                                while hayguita==True and i<=8:
-                                    hayguita = ut.compensaciones(par,client,lado,tamanio,distanciaporc)                       
-                                    i=i+1
-                                    distanciaporc=distanciaporc+paso
+                                while hayguita==True and i<=cantidadcompensaciones:
                                     tamanio=tamanio*(1+30/100)
+                                    tamaniototal=tamaniototal+tamanio
+                                    distanciaporc=distanciaporc+paso                                    
+                                    hayguita = ut.compensaciones(par,client,lado,tamanio,distanciaporc)                       
+                                    i=i+1            
+
+                                # PUNTO DE ATAQUE
+                                ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+paso)    
 
                                 hilo = threading.Thread(target=trading, args=(par,lado))
                                 hilo.start()
