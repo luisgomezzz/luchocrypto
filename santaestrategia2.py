@@ -23,25 +23,34 @@ botlaburo = ut.creobot('laburo')
 nombrelog = "log_santa2.txt"
 ################################
 operando=[]    #lista de monedas que se están operando
+apalancamiento = 10 #siempre en 10 segun la estrategia de santi
+procentajeperdida = 10
 
-def takeprofitupdating(par,lado):
-    print("takeprofitupdating "+par+"-"+lado)
-    tamanioposicion = ut.get_positionamt(par)
-    while tamanioposicion!=0:
+def updating(par,lado):
+
+    print("updating... "+par+"-"+lado)
+    tamanioposicion = ut.get_positionamt(par)    
+
+    while tamanioposicion!=0:        
+        pnl = (ut.get_positionamt(par)/apalancamiento)*(ut.currentprice(par)/ut.getentryprice(par))
+        stopprice = ((ut.balancetotal()*procentajeperdida/100)*apalancamiento*ut.getentryprice(par))/ut.get_positionamt(par)
+        print("updating - "+par+" - Pnl: "+str(ut.truncate(pnl,2))+". El stop deberia estar en el precio: "+str(stopprice))
+        #actualizar takeprofit
         if tamanioposicion!=ut.get_positionamt(par):
             if lado=='BUY':
                 profitprice = ut.getentryprice(par)*(1+1.1/100)
+                
             else:
                 profitprice = ut.getentryprice(par)*(1-1.1/100)
                 
             ut.binancetakeprofit(par,lado,profitprice)
-            sleep(1)
             tamanioposicion = ut.get_positionamt(par)            
+    
     print("Final del trade "+par+" en "+lado)
 
 def trading(par,lado):
     #Actualiza el profit
-    takeprofitupdating(par,lado)
+    updating(par,lado)
     #cierra todas las 'ordenes
     ut.closeallopenorders(par)
     #ya no lo estoy operando
@@ -56,22 +65,23 @@ def main() -> None:
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
-    minvolumen24h=float(100000000)
+    minvolumen24h=float(50000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
     balanceobjetivo = 24.00+24.88+71.53+71.62
     temporalidad='1m'   
-    mensajeposicioncompleta=''    
-    apalancamiento = 10 #siempre en 10 segun la estrategia de santi
+    mensajeposicioncompleta=''        
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
+    porcentajepocovolumen = 7 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     cantidadcompensaciones = 8
+    
     ##############START    
     
     ut.clear() #limpia terminal
@@ -92,8 +102,13 @@ def main() -> None:
     try:
 
         while True:
+            
+            while dt.datetime.today().hour in [21,22]:
+                print("\nFuera de horario.")
+                sleep(1800) #aguarda media hora
 
             for par in lista_monedas_filtradas:
+
                 # para calcular tiempo de vuelta completa                
                 if vueltas==0:
                     datetime_start = datetime.today()
@@ -118,7 +133,12 @@ def main() -> None:
 
                             ################
 
-                            if  ((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor):
+                            if  ((((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) 
+                                and (client.futures_ticker(symbol=par)['quoteVolume'])>100000000)
+                                or
+                                (((precioactual - preciomenor)*(100/preciomenor))>=porcentajepocovolumen and (precioactual>=preciomayor) 
+                                and (client.futures_ticker(symbol=par)['quoteVolume'])<=100000000)
+                            ):
                                 ############################
                                 ####### POSICION SELL ######
                                 ############################
@@ -152,7 +172,12 @@ def main() -> None:
                                 mensaje=mensaje+mensajeposicioncompleta                                
                               
                             else:
-                                if ((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor):
+                                if ((((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor)
+                                    and (client.futures_ticker(symbol=par)['quoteVolume'])>100000000)
+                                    or    
+                                    (((preciomenor - precioactual)*(100/preciomenor))>=porcentajepocovolumen and (precioactual<=preciomenor)
+                                    and (client.futures_ticker(symbol=par)['quoteVolume'])<=100000000)
+                                ):
                                     ############################
                                     ####### POSICION BUY ######
                                     ############################
@@ -217,9 +242,10 @@ def main() -> None:
                                 f.write("\n*********************************************************************************************\n")
                                 f.close()
 
-                                if len(operando)==tradessimultaneos:
+                                if len(operando)>=tradessimultaneos:
                                     print("\nSe alcanzó el número máximo de trades simultaneos.")
-                                    sys.exit()    
+                                while len(operando)>=tradessimultaneos:                                    
+                                    ut.waiting(1)
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")

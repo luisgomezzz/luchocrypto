@@ -275,6 +275,7 @@ def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(par))
    mensaje=''
+   profitporc=1.1
 
    try:
       
@@ -283,10 +284,10 @@ def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):
             precioactual = getentryprice(par)
 
             if lado =='BUY':
-               profitprice = precioactual*(1+1.1/100)
+               profitprice = precioactual*(1+profitporc/100)
                stopprice = precioactual*(1-distanciaporc/100)
             else:
-               profitprice = precioactual*(1-(1.1/100))
+               profitprice = precioactual*(1-(profitporc/100))
                stopprice = precioactual*(1+distanciaporc/100)
 
             binancestoploss (par,lado,stopprice)
