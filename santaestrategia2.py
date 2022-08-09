@@ -22,9 +22,9 @@ exchange = ut.exchange
 botlaburo = ut.creobot('laburo')      
 nombrelog = "log_santa2.txt"
 ################################
-operando=[]    #lista de monedas que se están operando
+operando=[] #lista de monedas que se están operando
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-procentajeperdida = 10
+procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 
 def updating(par,lado):
 
@@ -59,13 +59,13 @@ def trading(par,lado):
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930'
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
     ] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
-    minvolumen24h=float(50000000)
+    minvolumen24h=float(10000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -75,12 +75,12 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
-    porcentajepocovolumen = 7 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
+    porcentajepocovolumen = 10 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
-    cantidadcompensaciones = 8
+    cantidadcompensaciones = 8 #compensaciones
     
     ##############START    
     
@@ -103,9 +103,9 @@ def main() -> None:
 
         while True:
             
-            while dt.datetime.today().hour in [21,22]:
-                print("\nFuera de horario.")
-                sleep(1800) #aguarda media hora
+            #while dt.datetime.today().hour == 21:
+            #    print("\nFuera de horario.")
+            #    sleep(1800) #aguarda media hora
 
             for par in lista_monedas_filtradas:
 
