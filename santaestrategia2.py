@@ -75,7 +75,7 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     porcentaje = 5 #porcentaje de variacion para entrar 
-    porcentajepocovolumen = 10 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
+    porcentajepocovolumen = 7 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
@@ -143,7 +143,6 @@ def main() -> None:
                                 ####### POSICION SELL ######
                                 ############################
                                 ut.sound()
-                                df=ut.calculardf (par,temporalidad,ventana)
                                 print("\rDefiniendo apalancamiento...")
                                 client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                                 try: 
@@ -182,7 +181,6 @@ def main() -> None:
                                     ####### POSICION BUY ######
                                     ############################
                                     ut.sound()
-                                    df=ut.calculardf (par,temporalidad,ventana)
                                     print("\rDefiniendo apalancamiento...")
                                     client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                                     try: 
