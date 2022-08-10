@@ -19,9 +19,9 @@ from time import sleep
 ##CONFIG########################
 client = ut.client
 exchange = ut.exchange
-botlaburo = ut.creobot('laburo')      
 nombrelog = "log_santa2.txt"
 ################################
+temporalidad = '1m'
 operando=[] #lista de monedas que se están operando
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
@@ -31,10 +31,7 @@ def updating(par,lado):
     print("updating... "+par+"-"+lado)
     tamanioposicion = ut.get_positionamt(par)    
 
-    while tamanioposicion!=0:        
-        pnl = (ut.get_positionamt(par)/apalancamiento)*(ut.currentprice(par)/ut.getentryprice(par))
-        stopprice = ((ut.balancetotal()*procentajeperdida/100)*apalancamiento*ut.getentryprice(par))/ut.get_positionamt(par)
-        print("updating - "+par+" - Pnl: "+str(ut.truncate(pnl,2))+". El stop deberia estar en el precio: "+str(stopprice))
+    while tamanioposicion!=0: 
         #actualizar takeprofit
         if tamanioposicion!=ut.get_positionamt(par):
             if lado=='BUY':
@@ -60,28 +57,27 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    ] #Monedas que no quiero operar 
+    ,'ATOMUSDT'] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
-    minvolumen24h=float(10000000)
+    minvolumen24h=float(50000000.00)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
     balanceobjetivo = 24.00+24.88+71.53+71.62
-    temporalidad='1m'   
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
-    porcentaje = 5 #porcentaje de variacion para entrar 
-    porcentajepocovolumen = 7 #porcentaje de variacion para entrar cuando el volumen es menor a 100M
     porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     cantidadcompensaciones = 8 #compensaciones
-    
+    porcentajevariacionnormal=5.0
+    porcentajevariacionriesgo=7.0
+    maximavariacion=0.0
     ##############START    
     
     ut.clear() #limpia terminal
@@ -102,11 +98,12 @@ def main() -> None:
     try:
 
         while True:
+            #en operaciones riesgosas las variaciones deben ser mayores
+            if dt.datetime.today().hour == 21:
+                porcentaje = porcentajevariacionriesgo
+            else:
+                porcentaje = porcentajevariacionnormal
             
-            #while dt.datetime.today().hour == 21:
-            #    print("\nFuera de horario.")
-            #    sleep(1800) #aguarda media hora
-
             for par in lista_monedas_filtradas:
 
                 # para calcular tiempo de vuelta completa                
@@ -121,64 +118,33 @@ def main() -> None:
                     try:
                         if par not in operando:     
 
-                            sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+"\033[K")
-                            sys.stdout.flush()
+                            df=ut.calculardf (par,temporalidad,ventana)
+                            df = df[:-1]
+                            preciomenor=df.close.min()
+                            preciomayor=df.close.max()
+                            precioactual=ut.currentprice(par)
+
+                            if (precioactual - preciomenor)*(100/preciomenor)>0:
+                                variacion = (precioactual - preciomenor)*(100/preciomenor)
+                            else:
+                                variacion = (preciomenor - precioactual)*(100/preciomenor)
                             
-                            ###############
-
-                            trades = ut.binancetrades(par,ventana)
-                            preciomenor = float(min(trades, key=lambda x:x['p'])['p'])
-                            precioactual = float(client.get_symbol_ticker(symbol=par)["price"])  
-                            preciomayor = float(max(trades, key=lambda x:x['p'])['p'])   
-
+                            if variacion > maximavariacion:
+                                maximavariacion = variacion
+                                maximavariacionpar = par
+                            
+                            sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%\033[K")
+                            sys.stdout.flush()
                             ################
 
-                            if  ((((precioactual - preciomenor)*(100/preciomenor))>=porcentaje and (precioactual>=preciomayor) 
-                                and (client.futures_ticker(symbol=par)['quoteVolume'])>100000000)
-                                or
-                                (((precioactual - preciomenor)*(100/preciomenor))>=porcentajepocovolumen and (precioactual>=preciomayor) 
-                                and (client.futures_ticker(symbol=par)['quoteVolume'])<=100000000)
-                            ):
-                                ############################
-                                ####### POSICION SELL ######
-                                ############################
-                                ut.sound()
-                                print("\rDefiniendo apalancamiento...")
-                                client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-                                try: 
-                                    print("\rDefiniendo Cross/Isolated...")
-                                    client.futures_change_margin_type(symbol=par, marginType=margen)
-                                except BinanceAPIException as a:
-                                    if a.message!="No need to change margin type.":
-                                        print("Except 7",a.status_code,a.message)
-                                    else:
-                                        print("Done!")   
-                                    pass
-
-                                lado='SELL'
-                                print("\n*********************************************************************************************")
-                                mensaje="Trade - "+par+" - "+lado
-                                mensaje=mensaje+"\nSubió un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
-                                mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                print(mensaje)
-                                if par in toppar:
-                                    paso = distanciatoppar
-                                else:
-                                    paso = distancianotoppar  
-                                distanciaporc=(cantidadcompensaciones+2)*paso                               
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
-                                print(mensajeposicioncompleta)
-                                mensaje=mensaje+mensajeposicioncompleta                                
-                              
-                            else:
-                                if ((((preciomenor - precioactual)*(100/preciomenor))>=porcentaje and (precioactual<=preciomenor)
-                                    and (client.futures_ticker(symbol=par)['quoteVolume'])>100000000)
-                                    or    
-                                    (((preciomenor - precioactual)*(100/preciomenor))>=porcentajepocovolumen and (precioactual<=preciomenor)
-                                    and (client.futures_ticker(symbol=par)['quoteVolume'])<=100000000)
-                                ):
+                            if  ((precioactual - preciomenor)*(100/preciomenor)) >= porcentaje and precioactual >= preciomayor:
+                                vol=float(client.futures_ticker(symbol=par)['quoteVolume'])
+                                print("SELL-cumple1 vol: "+str(vol))
+                                if (vol >= float(100000000.00)
+                                or (vol <  float(100000000.00) and ((precioactual - preciomenor)*(100/preciomenor)) >= porcentajevariacionriesgo)
+                                    ):
                                     ############################
-                                    ####### POSICION BUY ######
+                                    ####### POSICION SELL ######
                                     ############################
                                     ut.sound()
                                     print("\rDefiniendo apalancamiento...")
@@ -193,29 +159,67 @@ def main() -> None:
                                             print("Done!")   
                                         pass
 
-                                    lado='BUY'
+                                    lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
-                                    mensaje=mensaje+"\nBajó un "+str(round(((precioactual - preciomenor)*(100/preciomenor)),2))+" %"
+                                    mensaje=mensaje+"\nSubió un "+str(ut.truncate(variacion,3))+" %"
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                    print(mensaje)    
+                                    print(mensaje)
                                     if par in toppar:
                                         paso = distanciatoppar
                                     else:
-                                        paso = distancianotoppar
-                                    distanciaporc=(cantidadcompensaciones+2)*paso
+                                        paso = distancianotoppar  
+                                    distanciaporc=(cantidadcompensaciones+2)*paso                               
                                     posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
                                     print(mensajeposicioncompleta)
-                                    mensaje=mensaje+mensajeposicioncompleta                                    
+                                    mensaje=mensaje+mensajeposicioncompleta                                
+                              
+                            else:
+                                if  ((preciomenor - precioactual)*(100/preciomenor)) >= porcentaje and precioactual <= preciomenor:
+                                    vol=float(client.futures_ticker(symbol=par)['quoteVolume'])
+                                    print("BUY-cumple1 vol: "+str(vol))
+                                    if (vol >= float(100000000)
+                                    or (vol <  float(100000000) and ((preciomenor - precioactual)*(100/preciomenor)) >= porcentajevariacionriesgo)
+                                        ):
+                                        ############################
+                                        ####### POSICION BUY ######
+                                        ############################
+                                        ut.sound()
+                                        print("\rDefiniendo apalancamiento...")
+                                        client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                        try: 
+                                            print("\rDefiniendo Cross/Isolated...")
+                                            client.futures_change_margin_type(symbol=par, marginType=margen)
+                                        except BinanceAPIException as a:
+                                            if a.message!="No need to change margin type.":
+                                                print("Except 7",a.status_code,a.message)
+                                            else:
+                                                print("Done!")   
+                                            pass
+
+                                        lado='BUY'
+                                        print("\n*********************************************************************************************")
+                                        mensaje="Trade - "+par+" - "+lado
+                                        mensaje=mensaje+"\nBajó un "+str(ut.truncate(variacion,3))+" %"
+                                        mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                        print(mensaje)    
+                                        if par in toppar:
+                                            paso = distanciatoppar
+                                        else:
+                                            paso = distancianotoppar
+                                        distanciaporc=(cantidadcompensaciones+2)*paso
+                                        posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
+                                        print(mensajeposicioncompleta)
+                                        mensaje=mensaje+mensajeposicioncompleta
 
                             if posicioncreada==True:     
                                                        
                                 operando.append(par)
                                 hayguita = True
                                 i = 1
-                                distanciaporc = 0
+                                distanciaporc = 0.0
                                 tamanio = ut.get_positionamt(par)
-                                tamaniototal = 0
+                                tamaniototal = 0.0
 
                                 #CREA COMPENSACIONES
                                 while hayguita==True and i<=cantidadcompensaciones:
