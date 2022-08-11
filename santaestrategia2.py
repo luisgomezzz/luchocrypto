@@ -3,7 +3,6 @@
 #
 #****************************************************************************************
 
-from time import sleep
 from binance.exceptions import BinanceAPIException
 import sys, os
 import pandas as pd
@@ -15,11 +14,12 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime
 import threading
-from time import sleep
+
 ##CONFIG########################
 client = ut.client
 exchange = ut.exchange
 nombrelog = "log_santa2.txt"
+operandofile = 'operando.txt'
 ################################
 temporalidad = '1m'
 operando=[] #lista de monedas que se están operando
@@ -51,13 +51,24 @@ def trading(par,lado):
     #cierra todas las 'ordenes
     ut.closeallopenorders(par)
     #ya no lo estoy operando
-    operando.remove(par)
+    #leo
+    with open(operandofile, 'r') as filehandle:
+        operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+    # remove the item for all its occurrences
+    c = operando.count(par)
+    for i in range(c):
+        operando.remove(par)
+    #borro todo
+    open(operandofile, "w").close()
+    ##agrego
+    with open(operandofile, 'a') as filehandle:
+        filehandle.writelines("%s\n" % place for place in operando)
+
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    ,'ATOMUSDT'] #Monedas que no quiero operar 
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT'] #monedas top
     ventana = 40 #Ventana de búsqueda en minutos.   
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
@@ -78,6 +89,7 @@ def main() -> None:
     porcentajevariacionnormal=5.0
     porcentajevariacionriesgo=7.0
     maximavariacion=0.0
+    maximavariacionhora=''
     ##############START    
     
     ut.clear() #limpia terminal
@@ -105,6 +117,9 @@ def main() -> None:
                 porcentaje = porcentajevariacionnormal
             
             for par in lista_monedas_filtradas:
+                # se lee el file 
+                with open(operandofile, 'r') as filehandle:
+                    operando = [current_place.rstrip() for current_place in filehandle.readlines()]
 
                 # para calcular tiempo de vuelta completa                
                 if vueltas==0:
@@ -114,8 +129,11 @@ def main() -> None:
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
                         vueltas==0
+                
                 try:
+
                     try:
+                        
                         if par not in operando:     
 
                             df=ut.calculardf (par,temporalidad,ventana)
@@ -132,14 +150,14 @@ def main() -> None:
                             if variacion > maximavariacion:
                                 maximavariacion = variacion
                                 maximavariacionpar = par
+                                maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                             
-                            sys.stdout.write("\rBuscando. Ctrl+c para salir. Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%\033[K")
+                            sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
                             sys.stdout.flush()
                             ################
 
                             if  ((precioactual - preciomenor)*(100/preciomenor)) >= porcentaje and precioactual >= preciomayor:
                                 vol=float(client.futures_ticker(symbol=par)['quoteVolume'])
-                                print("SELL-cumple1 vol: "+str(vol))
                                 if (vol >= float(100000000.00)
                                 or (vol <  float(100000000.00) and ((precioactual - preciomenor)*(100/preciomenor)) >= porcentajevariacionriesgo)
                                     ):
@@ -177,7 +195,6 @@ def main() -> None:
                             else:
                                 if  ((preciomenor - precioactual)*(100/preciomenor)) >= porcentaje and precioactual <= preciomenor:
                                     vol=float(client.futures_ticker(symbol=par)['quoteVolume'])
-                                    print("BUY-cumple1 vol: "+str(vol))
                                     if (vol >= float(100000000)
                                     or (vol <  float(100000000) and ((preciomenor - precioactual)*(100/preciomenor)) >= porcentajevariacionriesgo)
                                         ):
@@ -213,8 +230,11 @@ def main() -> None:
                                         mensaje=mensaje+mensajeposicioncompleta
 
                             if posicioncreada==True:     
-                                                       
-                                operando.append(par)
+
+                                #agrego al file el par                       
+                                with open(operandofile, 'a') as filehandle:
+                                    filehandle.writelines("%s\n" % place for place in [par])
+
                                 hayguita = True
                                 i = 1
                                 distanciaporc = 0.0

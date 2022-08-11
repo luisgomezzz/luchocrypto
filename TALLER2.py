@@ -47,16 +47,56 @@ porcentaje=5
 par='RENUSDT'
 
 
-df=ut.calculardf (par,temporalidad,ventana)
-preciomenor=df.low.min()
-precioactual=ut.currentprice(par)
-preciomayor=df.close.max()
 
-trades = ut.binancetrades(par,ventana)
-preciomenor2 = float(min(trades, key=lambda x:x['p'])['p'])
-precioactual2 = float(client.get_symbol_ticker(symbol=par)["price"])  
-preciomayor2 = float(max(trades, key=lambda x:x['p'])['p'])   
+## define list of places
+#places_list = ['Berlin', 'Cape Town', 'Sydney', 'Moscow']
+#
+#with open('operando.txt', 'w') as filehandle:
+#    filehandle.writelines("%s\n" % place for place in places_list)
+#
+## define empty list
+#places = []
+#
+## open file and read the content in a list
+#with open('operando.txt', 'r') as filehandle:
+#    places = [current_place.rstrip() for current_place in filehandle.readlines()]
+#
+#print(places)
 
-print(df)
-df = df[:-1]
-print(df)
+##agrego
+#with open('operando.txt', 'a') as filehandle:
+#    filehandle.writelines("%s\n" % place for place in ['BTCUSDT'])
+#
+##leo
+#with open('operando.txt', 'r') as filehandle:
+#    places = [current_place.rstrip() for current_place in filehandle.readlines()]
+#
+#print(places)
+
+#borro todo
+#open("operando.txt", "a").close()
+
+#leo
+with open('operando.txt', 'r') as filehandle:
+    operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+
+print(str(operando))
+
+##agrego
+#with open('operando.txt', 'a') as filehandle:
+#    filehandle.writelines("%s\n" % place for place in [par])
+
+
+# remove the item for all its occurrences
+c = operando.count(par)
+for i in range(c):
+    operando.remove(par)
+
+#borro todo
+open("operando.txt", "w").close()
+##agrego
+with open('operando.txt', 'a') as filehandle:
+    filehandle.writelines("%s\n" % place for place in operando)
+
+
+print(str(operando))
