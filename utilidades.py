@@ -247,10 +247,9 @@ def timeindex(df):
     df['time3']=(pd.to_datetime(df['time2'],unit='s')) 
     df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
-def sound():
-   duration = 2000  # milliseconds
-   freq = 440  # Hz
-
+def sound(duration = 2000,freq = 440):
+     # milliseconds
+     # Hz
    # for windows
    if os.name == 'nt':
       ws.Beep(freq, duration)
