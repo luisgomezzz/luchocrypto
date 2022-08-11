@@ -5,10 +5,6 @@
 
 from binance.exceptions import BinanceAPIException
 import sys, os
-import pandas as pd
-pd.core.common.is_list_like = pd.api.types.is_list_like
-import yfinance as yahoo_finance
-yahoo_finance.pdr_override()
 sys.path.insert(1,'./')
 import utilidades as ut
 import datetime as dt
@@ -20,29 +16,45 @@ client = ut.client
 exchange = ut.exchange
 nombrelog = "log_santa2.txt"
 operandofile = 'operando.txt'
-################################
 temporalidad = '1m'
 operando=[] #lista de monedas que se están operando
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
+incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
+#########################################################################################################################################
+
 
 def updating(par,lado):
-
     print("updating... "+par+"-"+lado)
-    tamanioposicion = ut.get_positionamt(par)    
+    profitnormalporc = 1.1 
+    profitmedioporc = 0.5
+    profitaltoporc = 0.2
+    tamanioposicionguardado = ut.get_positionamt(par)
+    tamanioposicioninicial = tamanioposicionguardado
+    tamanioactual = tamanioposicioninicial
 
-    while tamanioposicion!=0: 
-        #actualizar takeprofit
-        if tamanioposicion!=ut.get_positionamt(par):
-            if lado=='BUY':
-                profitprice = ut.getentryprice(par)*(1+1.1/100)
-                
+    while tamanioactual!=0.0: 
+
+        if tamanioposicionguardado!=tamanioactual:
+
+            if tamanioactual<= tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 2)):
+                profitporc = profitnormalporc
             else:
-                profitprice = ut.getentryprice(par)*(1-1.1/100)
+                if tamanioactual>= tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 4)):
+                    profitporc=profitaltoporc
+                else:
+                    profitporc=profitmedioporc
+            
+            if lado=='BUY':
+                profitprice = ut.getentryprice(par)*(1+profitporc/100)                
+            else:
+                profitprice = ut.getentryprice(par)*(1-profitporc/100)
                 
             ut.binancetakeprofit(par,lado,profitprice)
-            tamanioposicion = ut.get_positionamt(par)            
+            tamanioposicionguardado = tamanioactual            
     
+        tamanioactual=ut.get_positionamt(par)
+
     print("Final del trade "+par+" en "+lado)
 
 def trading(par,lado):
@@ -243,7 +255,7 @@ def main() -> None:
 
                                 #CREA COMPENSACIONES
                                 while hayguita==True and i<=cantidadcompensaciones:
-                                    tamanio=tamanio*(1+30/100)
+                                    tamanio=tamanio*(1+incrementocompensacionporc/100)
                                     tamaniototal=tamaniototal+tamanio
                                     distanciaporc=distanciaporc+paso                                    
                                     hayguita = ut.compensaciones(par,client,lado,tamanio,distanciaporc)                       
