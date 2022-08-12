@@ -168,10 +168,7 @@ def main() -> None:
                             preciomayor=df.close.max()
                             precioactual=ut.currentprice(par)
 
-                            if (precioactual - preciomenor)*(100/preciomenor)>0:
-                                variacion = (precioactual - preciomenor)*(100/preciomenor)
-                            else:
-                                variacion = (preciomenor - precioactual)*(100/preciomenor)
+                            variacion = ((preciomayor/preciomenor)-1)*100
                             
                             if variacion > maximavariacion:
                                 maximavariacion = variacion
@@ -181,7 +178,7 @@ def main() -> None:
                             sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
                             sys.stdout.flush()                            
 
-                            if  ((precioactual - preciomenor)*(100/preciomenor)) >= porcentaje and precioactual >= preciomayor:
+                            if  variacion >= porcentaje and precioactual >= preciomayor:
                                 ############################
                                 ####### POSICION SELL ######
                                 ############################
@@ -214,7 +211,7 @@ def main() -> None:
                                 mensaje=mensaje+mensajeposicioncompleta                                
                               
                             else:
-                                if  ((preciomenor - precioactual)*(100/preciomenor)) >= porcentaje and precioactual <= preciomenor:
+                                if  variacion >= porcentaje and precioactual <= preciomenor:
                                     ############################
                                     ####### POSICION BUY ######
                                     ############################
