@@ -10,21 +10,18 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime
 import threading
-
-##CONFIG########################
+##CONFIG
 client = ut.client
 exchange = ut.exchange
 nombrelog = "log_santa2.txt"
 operandofile = 'operando.txt'
-
-## PARAMETROS FUNDAMENTALES #############################################################################################################
+## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-procentajeperdida = 8 #porcentaje de mi capital total maximo a perder
-porcentajeentrada = 8 #porcentaje de la cuenta para crear la posición (10)
+procentajeperdida = 7 #porcentaje de mi capital total maximo a perder
+porcentajeentrada = 7 #porcentaje de la cuenta para crear la posición (10)
 ventana = 30 #Ventana de búsqueda en minutos.   
-
-## VARIABLES GLOBALES ###################################################################################################################
+## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 
@@ -37,21 +34,22 @@ def updating(par,lado):
     profitnormalporc = 1.1 
     profitmedioporc = 0.5
     profitaltoporc = 0.2
-    tamanioposicionguardado = ut.get_positionamtusdt(par)
-    tamanioposicioninicial = tamanioposicionguardado
-    tamanioactual = tamanioposicioninicial
-    print("tamaño actual: "+str(tamanioactual))
-    print("con 2 compensaciones tomadas seria: "+str(tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 2))))
-    print("con 4 compensaciones tomadas seria: "+str(tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 4))))
+    cuentacompensaciones = 0
+    tamanioposicionguardado = ut.get_positionamt(par)
+    tamanioactual = tamanioposicionguardado
+
     while tamanioactual!=0.0: 
 
         if tamanioposicionguardado!=tamanioactual:
-            print("cambió tamaño actual: "+str(tamanioactual))
+
             ut.sound(duration = 250,freq = 659)
-            if abs(tamanioactual) <= abs(tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 2))):
+            
+            cuentacompensaciones=cuentacompensaciones+1
+
+            if cuentacompensaciones <= 2:
                 profitporc = profitnormalporc
             else:
-                if abs(tamanioactual) >= abs(tamanioposicioninicial*(pow((1+incrementocompensacionporc/100), 4))):
+                if cuentacompensaciones >= 4:
                     profitporc=profitaltoporc
                 else:
                     profitporc=profitmedioporc
@@ -64,7 +62,7 @@ def updating(par,lado):
             ut.binancetakeprofit(par,lado,profitprice)
             tamanioposicionguardado = tamanioactual            
     
-        tamanioactual=ut.get_positionamtusdt(par)
+        tamanioactual=ut.get_positionamt(par)
 
     print("Final del trade "+par+" en "+lado)
 
