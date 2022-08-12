@@ -245,7 +245,7 @@ def main() -> None:
 
                             if posicioncreada==True:     
 
-                                #agrego al file el par                       
+                                #agrego el par al file
                                 with open(operandofile, 'a') as filehandle:
                                     filehandle.writelines("%s\n" % place for place in [par])
 
