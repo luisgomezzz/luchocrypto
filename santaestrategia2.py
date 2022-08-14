@@ -39,6 +39,8 @@ def updating(par,lado):
     tamanioactual = tamanioposicionguardado
 
     while tamanioactual!=0.0: 
+        print("PNL: "+str(ut.truncate(ut.pnl(par,lado),2)))
+        print("Precio Stop debería ser: "+str(ut.truncate(ut.preciostop(par,procentajeperdida),2)))
 
         if tamanioposicionguardado!=tamanioactual:
 
@@ -68,11 +70,9 @@ def updating(par,lado):
 
 def trading(par,lado):
     print("Trading... "+par+"-"+lado)
-    #Actualiza el profit
     updating(par,lado)
-    #cierra todas las 'ordenes
     ut.closeallopenorders(par)
-    #ya no lo estoy operando
+    #se quita la moneda del arhivo ya que no se está operando
     #leo
     with open(operandofile, 'r') as filehandle:
         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
@@ -85,7 +85,6 @@ def trading(par,lado):
     ##agrego
     with open(operandofile, 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)
-
 
 def main() -> None:
 
