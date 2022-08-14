@@ -39,7 +39,7 @@ def updating(par,lado):
     tamanioactual = tamanioposicionguardado
 
     while tamanioactual!=0.0: 
-        print("PNL: "+str(ut.truncate(ut.pnl(par,lado),2)))
+        
         print("Precio Stop debería ser: "+str(ut.truncate(ut.preciostop(par,procentajeperdida),2)))
 
         if tamanioposicionguardado!=tamanioactual:

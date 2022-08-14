@@ -732,15 +732,19 @@ def stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada):
 def pnl(par,lado):   
    precioentrada = getentryprice(par)
    if precioentrada !=0.0:
-      tamanio = get_positionamt(par)
-      precioactual = currentprice(par)
-      pnl = ((precioactual/precioentrada)-1)*tamanio
-      if lado == 'BUY':
-         if precioactual<precioentrada:
-            pnl=pnl*-1
-      else:
-         if precioactual>precioentrada:
-            pnl=pnl*-1
+      try:
+         tamanio = get_positionamtusdt(par)
+         precioactual = currentprice(par)
+         pnl = ((precioactual/precioentrada)-1)*tamanio
+         if lado == 'BUY':
+            if precioactual<precioentrada:
+               pnl=pnl*-1
+         else:
+            if precioactual>precioentrada:
+               pnl=pnl*-1
+      except Exception as ex:
+         pnl = 0
+         pass               
    else:
       pnl = 0   
 
@@ -749,10 +753,14 @@ def pnl(par,lado):
 def preciostop(par,procentajeperdida):
    precioentrada = getentryprice(par)
    if precioentrada !=0.0:
-      tamanio = get_positionamt(par)
-      micapital = balancetotal()
-      perdida = (micapital*procentajeperdida/100)*-1
-      preciostop = ((perdida/tamanio)+1)*precioentrada
+      try:
+         tamanio = get_positionamtusdt(par)
+         micapital = balancetotal()
+         perdida = (micapital*procentajeperdida/100)*-1
+         preciostop = ((perdida/tamanio)+1)*precioentrada
+      except Exception as ex:
+         preciostop = 0
+         pass
    else:
       preciostop = 0
 
