@@ -33,13 +33,13 @@ def updating(par,lado):
     
     profitnormalporc = 1.1 
     profitmedioporc = 0.5
-    profitaltoporc = 0.2
+    profitaltoporc = 0.3
     cuentacompensaciones = 0
     tamanioposicionguardado = ut.get_positionamt(par)
     tamanioactual = tamanioposicionguardado
 
     while tamanioactual!=0.0: 
-        
+        print("PNL: "+str(ut.truncate(ut.pnl(par,lado),2)))
         print("Precio Stop debería ser: "+str(ut.truncate(ut.preciostop(par,procentajeperdida),2)))
 
         if tamanioposicionguardado!=tamanioactual:

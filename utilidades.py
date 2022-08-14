@@ -736,12 +736,12 @@ def pnl(par,lado):
          tamanio = get_positionamtusdt(par)
          precioactual = currentprice(par)
          pnl = ((precioactual/precioentrada)-1)*tamanio
-         if lado == 'BUY':
-            if precioactual<precioentrada:
-               pnl=pnl*-1
-         else:
-            if precioactual>precioentrada:
-               pnl=pnl*-1
+         #if lado == 'BUY':
+         #   if precioactual<precioentrada:
+         #      pnl=pnl*-1
+         #else:
+         #   if precioactual>precioentrada:
+         #      pnl=pnl*-1
       except Exception as ex:
          pnl = 0
          pass               
