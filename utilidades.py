@@ -84,16 +84,12 @@ def binancetakeprofit(pair,side,profitprice):
 
    return created
 
-def binancecrearlimite(par,fraccionlimit,profitprice,posicionporc,lado):
+def binancecrearlimite(par,preciolimit,posicionporc,lado):
    retorno = True   
 
-   precioactual = getentryprice(par)
-   
    if lado=='BUY':
-      preciolimit = precioactual+fraccionlimit*(profitprice-precioactual)
       lado='SELL'
    else:
-      preciolimit = profitprice + fraccionlimit*(precioactual-profitprice)
       lado='BUY'
 
    sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
@@ -677,13 +673,13 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
    try:
       client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
       print("\nCompensación creada. Tamaño: "+str(tamanioformateado)+" - precio: "+str(limitprice))
-      return True
+      return True,limitprice
    except BinanceAPIException as a:                                       
       if a.message!="Margin is insufficient.":
          print("Except 8",a.status_code,a.message)
       else:
          print("Se crearon todas las compensaciones.")                                       
-      return False
+      return False,0
 
 def binancetrades(par,ventana):
    comienzo = datetime.now() - timedelta(minutes=ventana)
@@ -729,7 +725,7 @@ def stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada):
    print("stoppriceporc: "+str(stoppriceporc))
    return stoppriceporc
 
-def pnl(par,lado):   
+def pnl(par):   
    precioentrada = getentryprice(par)
    if precioentrada !=0.0:
       try:
@@ -758,6 +754,20 @@ def preciostop(par,procentajeperdida):
          micapital = balancetotal()
          perdida = (micapital*procentajeperdida/100)*-1
          preciostop = ((perdida/tamanio)+1)*precioentrada
+      except Exception as ex:
+         preciostop = 0
+         pass
+   else:
+      preciostop = 0
+
+   return preciostop
+
+def preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal):   
+   if precioposicionfinal !=0.0:
+      try:
+         micapital = balancetotal()
+         perdida = (micapital*procentajeperdida/100)*-1
+         preciostop = ((perdida/tamaniototal)+1)*precioposicionfinal
       except Exception as ex:
          preciostop = 0
          pass

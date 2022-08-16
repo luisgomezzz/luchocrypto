@@ -34,34 +34,64 @@ def updating(par,lado):
     profitnormalporc = 1.1 
     profitmedioporc = 0.5
     profitaltoporc = 0.3
-    cuentacompensaciones = 0
     tamanioposicionguardado = ut.get_positionamt(par)
     tamanioactual = tamanioposicionguardado
+    balancetotal=ut.balancetotal()
 
+    dict = {
+        1.1 : 30,
+        1.15: 20,
+        1.3 : 20,
+        1.5 : 15,
+        2   : 15
+    }
+
+    #crea limites
+    try:
+        for porc, tamanio in dict.items():
+            if lado=='BUY':
+                preciolimit = ut.getentryprice(par)*(1+porc/100)                
+            else:
+                preciolimit = ut.getentryprice(par)*(1-porc/100)
+            
+            ut.binancecrearlimite(par,preciolimit,tamanio,lado)
+    except Exception as ex:
+        pass
+
+    #actualiza take profits
     while tamanioactual!=0.0: 
-        print("PNL: "+str(ut.truncate(ut.pnl(par,lado),2)))
-        print("Precio Stop debería ser: "+str(ut.truncate(ut.preciostop(par,procentajeperdida),2)))
 
         if tamanioposicionguardado!=tamanioactual:
 
             ut.sound(duration = 250,freq = 659)
-            
-            cuentacompensaciones=cuentacompensaciones+1
 
-            if cuentacompensaciones <= 2:
+            tamanioactualusdt=ut.get_positionamtusdt(par) 
+
+            if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*3:
                 profitporc = profitnormalporc
             else:
-                if cuentacompensaciones >= 4:
+                if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
                     profitporc=profitaltoporc
                 else:
                     profitporc=profitmedioporc
             
             if lado=='BUY':
-                profitprice = ut.getentryprice(par)*(1+profitporc/100)                
+                profitprice = ut.getentryprice(par)*(1+profitporc/100)        
+                stopenganancias=ut.currentprice(par)*(1-0.5/100)
             else:
                 profitprice = ut.getentryprice(par)*(1-profitporc/100)
-                
-            ut.binancetakeprofit(par,lado,profitprice)
+                stopenganancias=ut.currentprice(par)*(1+0.5/100)
+
+            profitprice=profitprice+1
+
+            if ut.pnl(par) > 0.0:
+                try:
+                    ut.binancestoploss (par,lado,stopenganancias)
+                except Exception as ex:
+                    pass
+            else:
+                ut.binancetakeprofit(par,lado,profitprice)
+            
             tamanioposicionguardado = tamanioactual            
     
         tamanioactual=ut.get_positionamt(par)
@@ -250,18 +280,23 @@ def main() -> None:
                                 i = 1
                                 distanciaporc = 0.0
                                 tamanio = ut.get_positionamt(par)
-                                tamaniototal = 0.0
-
+                                tamaniototal = tamanio
+                                precioporcantidad = tamanio*ut.getentryprice(par)
                                 #CREA COMPENSACIONES
                                 while hayguita==True and i<=cantidadcompensaciones:
                                     tamanio=tamanio*(1+incrementocompensacionporc/100)
                                     tamaniototal=tamaniototal+tamanio
                                     distanciaporc=distanciaporc+paso                                    
-                                    hayguita = ut.compensaciones(par,client,lado,tamanio,distanciaporc)                       
+                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc)      
+                                    precioporcantidad = precioporcantidad+(tamanio*preciolimit)
                                     i=i+1            
 
                                 # PUNTO DE ATAQUE
                                 ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+1)    
+
+                                precioposicionfinal=precioporcantidad/tamaniototal
+
+                                print("precio en que debería ir stop: "+str(ut.preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal)))
 
                                 hilo = threading.Thread(target=trading, args=(par,lado))
                                 hilo.start()
