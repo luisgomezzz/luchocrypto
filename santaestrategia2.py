@@ -39,11 +39,16 @@ def updating(par,lado):
     balancetotal=ut.balancetotal()
 
     dict = {
-        1.1 : 30,
-        1.15: 20,
+        1.1 : 50,
         1.3 : 20,
         1.5 : 15,
         2   : 15
+        ###original        
+        #1.1 : 30,
+        #1.15: 20,
+        #1.3 : 20,
+        #1.5 : 15,
+        #2   : 15
     }
 
     #crea limites
@@ -86,10 +91,12 @@ def updating(par,lado):
 
             if ut.pnl(par) > 0.0:
                 try:
-                    ut.binancestoploss (par,lado,stopenganancias)
+                    # stop en ganancias cuando tocó un TP
+                    ut.binancestoploss (par,lado,stopenganancias) 
                 except Exception as ex:
                     pass
             else:
+                # take profit que persigue al precio cuando toma compensaciones (por ahora toma todo)
                 ut.binancetakeprofit(par,lado,profitprice)
             
             tamanioposicionguardado = tamanioactual            

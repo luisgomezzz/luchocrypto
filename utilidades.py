@@ -279,21 +279,21 @@ def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):
             precioactual = getentryprice(par)
 
             if lado =='BUY':
-               profitprice = precioactual*(1+profitporc/100)
+               #profitprice = precioactual*(1+profitporc/100)
                stopprice = precioactual*(1-distanciaporc/100)
             else:
-               profitprice = precioactual*(1-(profitporc/100))
+               #profitprice = precioactual*(1-(profitporc/100))
                stopprice = precioactual*(1+distanciaporc/100)
 
             binancestoploss (par,lado,stopprice)
-            binancetakeprofit(par,lado,profitprice)               
+            #binancetakeprofit(par,lado,profitprice)               
             
             if stopprice>precioactual:
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
                mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
+               #mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
             else:
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
+               #mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
                mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
                mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
 
