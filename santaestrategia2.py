@@ -3,6 +3,7 @@
 #
 #****************************************************************************************
 
+from this import d
 from binance.exceptions import BinanceAPIException
 import sys, os
 sys.path.insert(1,'./')
@@ -29,15 +30,7 @@ incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la comp
 ###################################################################################################################
 ###################################################################################################################
 
-def updating(par,lado):
-    
-    profitnormalporc = 1.1 
-    profitmedioporc = 0.5
-    profitaltoporc = 0.3
-    tamanioposicionguardado = ut.get_positionamt(par)
-    tamanioactual = tamanioposicionguardado
-    balancetotal=ut.balancetotal()
-
+def creaactualizalimits (par,lado,limitorders=[],divisor=1):
     dict = {
         1.1 : 50,
         1.3 : 20,
@@ -50,54 +43,70 @@ def updating(par,lado):
         #1.5 : 15,
         #2   : 15
     }
-
-    #crea limites
     try:
+        #cancela los TPs
+        for id in limitorders:
+            exchange.cancel_order(id, par)
+        #crea los TPs
         for porc, tamanio in dict.items():
             if lado=='BUY':
-                preciolimit = ut.getentryprice(par)*(1+porc/100)                
+                preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
             else:
-                preciolimit = ut.getentryprice(par)*(1-porc/100)
-            
-            ut.binancecrearlimite(par,preciolimit,tamanio,lado)
+                preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
+            creado,order=ut.binancecrearlimite(par,preciolimit,tamanio,lado)
+            if creado==True:
+                limitorders.append(order['id'])
     except Exception as ex:
-        pass
+        pass        
+    return limitorders
 
-    #actualiza take profits
+def updating(par,lado):
+    
+    profitnormalporc = 1
+    profitmedioporc = 2
+    profitaltoporc = 3
+    tamanioposicionguardado = ut.get_positionamt(par)
+    tamanioactual = tamanioposicionguardado
+    balancetotal=ut.balancetotal()    
+    limitorders = []
+    divisor=1
+
+    #crea TPs
+    limitorders=creaactualizalimits (par,lado,limitorders,divisor)
+
+    #actualiza tps y stops
     while tamanioactual!=0.0: 
 
         if tamanioposicionguardado!=tamanioactual:
 
             ut.sound(duration = 250,freq = 659)
 
-            tamanioactualusdt=ut.get_positionamtusdt(par) 
-
-            if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*3:
-                profitporc = profitnormalporc
-            else:
-                if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
-                    profitporc=profitaltoporc
-                else:
-                    profitporc=profitmedioporc
-            
-            if lado=='BUY':
-                profitprice = ut.getentryprice(par)*(1+profitporc/100)        
-                stopenganancias=ut.currentprice(par)*(1-0.5/100)
-            else:
-                profitprice = ut.getentryprice(par)*(1-profitporc/100)
-                stopenganancias=ut.currentprice(par)*(1+0.5/100)
-
-            profitprice=profitprice+1
-
             if ut.pnl(par) > 0.0:
                 try:
                     # stop en ganancias cuando tocó un TP
+                    precioactual=ut.currentprice(par)
+                    precioposicion=ut.getentryprice(par)
+                    if lado=='BUY':
+                        stopenganancias=precioposicion+((precioactual-precioposicion)/2)
+                    else:
+                        stopenganancias=ut.currentprice(par)*(1+0.5/100)
+                        stopenganancias=precioposicion-((precioposicion-precioactual)/2)
                     ut.binancestoploss (par,lado,stopenganancias) 
                 except Exception as ex:
                     pass
             else:
-                # take profit que persigue al precio cuando toma compensaciones (por ahora toma todo)
-                ut.binancetakeprofit(par,lado,profitprice)
+                # take profit que persigue al precio cuando toma compensaciones 
+                tamanioactualusdt=ut.get_positionamtusdt(par) 
+
+                if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*3:
+                    divisor = profitnormalporc
+                else:
+                    if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
+                        divisor=profitaltoporc
+                    else:
+                        divisor=profitmedioporc   
+                                    
+                limitorders=creaactualizalimits (par,lado,limitorders,divisor)
             
             tamanioposicionguardado = tamanioactual            
     
@@ -106,8 +115,9 @@ def updating(par,lado):
     print("Final del trade "+par+" en "+lado)
 
 def trading(par,lado):
-    print("Trading... "+par+"-"+lado)
+    #updatea...
     updating(par,lado)
+    #cierra todo porque se terminó el trade
     ut.closeallopenorders(par)
     #se quita la moneda del arhivo ya que no se está operando
     #leo
