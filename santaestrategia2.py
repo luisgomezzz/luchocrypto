@@ -192,13 +192,16 @@ def main() -> None:
                     operando = [current_place.rstrip() for current_place in filehandle.readlines()]
 
                 # para calcular tiempo de vuelta completa                
-                if vueltas==0:
+                if vueltas == 0:
                     datetime_start = datetime.today()
+                    vueltas = 1
                 else:
                     if vueltas == len(lista_monedas_filtradas):
                         datetime_end = datetime.today()
                         minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
-                        vueltas==0
+                        vueltas = 0
+                    else:
+                        vueltas = vueltas+1
                 
                 try:
 
@@ -357,8 +360,6 @@ def main() -> None:
                     if a.message!="Invalid symbol.":
                         print("Error5 - Par:",par,"-",a.status_code,a.message)
                     pass
-            
-                vueltas=vueltas+1
 
     except BinanceAPIException as a:
        print("Error6 - Par:",par,"-",a.status_code,a.message)
