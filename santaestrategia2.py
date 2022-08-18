@@ -157,7 +157,7 @@ def main() -> None:
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     cantidadcompensaciones = 8 #compensaciones
     porcentajevariacionnormal=5.0
-    porcentajevariacionriesgo=7.0
+    porcentajevariacionriesgo=10.0
     maximavariacion=0.0
     maximavariacionhora=''
     ##############START    
