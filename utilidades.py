@@ -99,7 +99,6 @@ def binancecrearlimite(par,preciolimit,posicionporc,lado):
 
    try:
       limitprice=truncate(preciolimit,get_priceprecision(par))
-      print("Limit. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
       order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
       print("Limit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
       creado= True
