@@ -678,9 +678,10 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
    except BinanceAPIException as a:                                       
       if a.message!="Margin is insufficient.":
          print("Except 8",a.status_code,a.message)
+         return True,0
       else:
          print("Se crearon todas las compensaciones.")                                       
-      return False,0
+         return False,0
 
 def binancetrades(par,ventana):
    comienzo = datetime.now() - timedelta(minutes=ventana)

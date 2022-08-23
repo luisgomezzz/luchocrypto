@@ -19,8 +19,8 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-procentajeperdida = 8 #porcentaje de mi capital total maximo a perder
-porcentajeentrada = 8 #porcentaje de la cuenta para crear la posición (10)
+procentajeperdida = 7 #porcentaje de mi capital total maximo a perder
+porcentajeentrada = 7 #porcentaje de la cuenta para crear la posición (10)
 ventana = 30 #Ventana de búsqueda en minutos.   
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
@@ -161,7 +161,7 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88+71.53+71.62
+    balanceobjetivo = 24.00+24.88+71.53+71.62+400
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
@@ -317,18 +317,30 @@ def main() -> None:
                                 precioporcantidad = tamanio*ut.getentryprice(par)
                                 #CREA COMPENSACIONES
                                 while hayguita==True and i<=cantidadcompensaciones:
-                                    tamanio=tamanio*(1+incrementocompensacionporc/100)
-                                    tamaniototal=tamaniototal+tamanio
+                                    tamanio=tamanio*(1+incrementocompensacionporc/100)                                    
                                     distanciaporc=distanciaporc+paso                                    
-                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc)      
+                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
+                                    # si falló intento de nuevo
+                                    while hayguita==True and preciolimit==0:
+                                        hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
                                     precioporcantidad = precioporcantidad+(tamanio*preciolimit)
+                                    tamaniototal=tamaniototal+tamanio
                                     i=i+1            
 
                                 # PUNTO DE ATAQUE
-                                ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+1)    
+                                # si ya creó todas las compensaciones se crea la de ataque
+                                if i==cantidadcompensaciones+1:
+                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+1)    
+                                    if hayguita==False:
+                                        print("\nNo se pudo crear la compensación de ataque...\n")
+                                    else:
+                                        print("\nCompensación de ataque creada...\n")
 
                                 precioposicionfinal=precioporcantidad/tamaniototal
-
+                                
+                                print("precioporcantidad: "+str(precioporcantidad))
+                                print("tamaniototal: "+str(tamaniototal))
+                                print("precioposicionfinal: "+str(precioposicionfinal))
                                 print("precio en que debería ir stop: "+str(ut.preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal)))
 
                                 hilo = threading.Thread(target=trading, args=(par,lado))
