@@ -50,7 +50,11 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
         #cancela los TPs
         for id in limitorders:
             print("Cancela "+str(id))
-            exchange.cancel_order(id, par)
+            try:
+                exchange.cancel_order(id, par)      
+            except Exception as ex:
+                print("Error3 creaactualizatps: "+str(ex)+"\n")
+                pass  
         #crea los TPs
         for porc, tamanio in dict.items():
             print("tp "+str(tp))
@@ -161,7 +165,7 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88+71.53+71.62+400
+    balanceobjetivo = 24.00+24.88+71.53+71.62+400 #los 400 son los del prestamo
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
@@ -324,17 +328,20 @@ def main() -> None:
                                     while hayguita==True and preciolimit==0:
                                         hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
                                     precioporcantidad = precioporcantidad+(tamanio*preciolimit)
-                                    tamaniototal=tamaniototal+tamanio
+                                    tamaniototal = tamaniototal+tamanio
                                     i=i+1            
 
                                 # PUNTO DE ATAQUE
                                 # si ya creó todas las compensaciones se crea la de ataque
                                 if i==cantidadcompensaciones+1:
-                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamaniototal*3,distanciaporc+1)    
+                                    tamanio=tamaniototal*3
+                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc+1)    
                                     if hayguita==False:
                                         print("\nNo se pudo crear la compensación de ataque...\n")
                                     else:
                                         print("\nCompensación de ataque creada...\n")
+                                        precioporcantidad = precioporcantidad+(tamanio*preciolimit)
+                                        tamaniototal = tamaniototal+tamanio
 
                                 precioposicionfinal=precioporcantidad/tamaniototal
                                 
