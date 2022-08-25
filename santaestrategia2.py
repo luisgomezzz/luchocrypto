@@ -18,9 +18,9 @@ nombrelog = "log_santa2.txt"
 operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
-apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-procentajeperdida = 7 #porcentaje de mi capital total maximo a perder
-porcentajeentrada = 7 #porcentaje de la cuenta para crear la posición (10)
+apalancamiento = 15 #siempre en 10 segun la estrategia de santi
+procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
+porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
 ventana = 30 #Ventana de búsqueda en minutos.   
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
@@ -33,6 +33,7 @@ incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la comp
 # MANEJO DE TPs
 def creaactualizatps (par,lado,limitorders=[],divisor=1):
     print("creaactualizatps-limitorders: "+str(limitorders))
+    limitordersnuevos=[]
     tp = 1
     dict = {
         1.1 : 50,
@@ -47,14 +48,6 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
         #2   : 15
     }
     try:
-        #cancela los TPs
-        for id in limitorders:
-            print("Cancela "+str(id))
-            try:
-                exchange.cancel_order(id, par)      
-            except Exception as ex:
-                print("Error3 creaactualizatps: "+str(ex)+"\n")
-                pass  
         #crea los TPs
         for porc, tamanio in dict.items():
             print("tp "+str(tp))
@@ -64,8 +57,17 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
                 preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
             creado,order=ut.binancecrearlimite(par,preciolimit,tamanio,lado)
             if creado==True:
-                limitorders.append(order['orderId'])
+                limitordersnuevos.append(order['orderId'])
             tp=tp+1
+        #cancela los TPs viejos
+        for id in limitorders:
+            print("Cancela "+str(id))
+            try:
+                exchange.cancel_order(id, par)   
+            except Exception as ex:
+                print("Error3 creaactualizatps: "+str(ex)+"\n")
+                pass  
+        limitorders=limitordersnuevos
         print("limitorders: "+str(limitorders))
     except BinanceAPIException as bin:
         print("Error1 creaactualizatps: ",bin.status_code,bin.message+"\n")   
@@ -154,7 +156,7 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    ,'RLCUSDT','TRBUSDT'] #Monedas que no quiero operar 
+    ,'RLCUSDT','TRBUSDT','BLZUSDT'] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
     ,'AVAXUSDT'] #monedas top
     
@@ -342,6 +344,11 @@ def main() -> None:
                                         print("\nCompensación de ataque creada...\n")
                                         precioporcantidad = precioporcantidad+(tamanio*preciolimit)
                                         tamaniototal = tamaniototal+tamanio
+                                        if lado=='BUY':
+                                            stopprice=preciolimit*(1-1/100)
+                                        else:
+                                            stopprice=preciolimit*(1+1/100)
+                                        ut.binancestoploss (par,lado,stopprice) 
 
                                 precioposicionfinal=precioporcantidad/tamaniototal
                                 
