@@ -326,9 +326,6 @@ def main() -> None:
                                     tamanio=tamanio*(1+incrementocompensacionporc/100)                                    
                                     distanciaporc=distanciaporc+paso                                    
                                     hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
-                                    # si falló intento de nuevo
-                                    while hayguita==True and preciolimit==0:
-                                        hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
                                     precioporcantidad = precioporcantidad+(tamanio*preciolimit)
                                     tamaniototal = tamaniototal+tamanio
                                     i=i+1            
