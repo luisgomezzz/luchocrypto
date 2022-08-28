@@ -777,3 +777,25 @@ def preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal):
       preciostop = 0
 
    return preciostop
+
+def stopvelavela (par,lado,temporalidad):
+   porc=0.2 #porcentaje de distancia 
+   df=calculardf (par,temporalidad,2)
+ 
+   if df.open.iloc[-2]<df.close.iloc[-2]:
+      colorvelaanterior='verde'
+   else:
+      if df.open.iloc[-2]>df.close.iloc[-2]:
+         colorvelaanterior='rojo'
+      else:        
+         colorvelaanterior='nada'
+
+   if lado=='SELL' and colorvelaanterior=='rojo':
+      stopvelavela=df.high.iloc[-2]*(1+porc/100)
+   else:
+      if lado=='BUY' and colorvelaanterior=='verde':
+         stopvelavela=df.low.iloc[-2]*(1-porc/100)
+      else:
+         stopvelavela=0.0
+
+   return stopvelavela

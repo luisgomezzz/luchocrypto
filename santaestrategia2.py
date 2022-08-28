@@ -129,6 +129,18 @@ def updating(par,lado):
             
             tamanioposicionguardado = tamanioactual            
     
+        else:
+            if ut.pnl(par) > 0.0:
+                stopvelavela=ut.stopvelavela (par,lado,temporalidad)
+                if lado=='SELL':
+                    if stopvelavela!=0.0 and stopvelavela<stopenganancias:
+                        ut.binancestoploss (par,lado,stopvelavela)
+                        stopenganancias=stopvelavela
+                else:
+                    if stopvelavela!=0.0 and stopvelavela>stopenganancias:
+                        ut.binancestoploss (par,lado,stopvelavela)
+                        stopenganancias=stopvelavela
+
         tamanioactual=ut.get_positionamt(par)
 
     print("\nupdating-Final del trade "+par+" en "+lado)
@@ -156,7 +168,8 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    ,'RLCUSDT','TRBUSDT','BLZUSDT'] #Monedas que no quiero operar 
+    #,'RLCUSDT','TRBUSDT','BLZUSDT'
+    ] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
     ,'AVAXUSDT'] #monedas top
     
