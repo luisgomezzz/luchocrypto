@@ -206,9 +206,15 @@ def main() -> None:
                 porcentaje = porcentajevariacionnormal
             
             for par in lista_monedas_filtradas:
-                # se lee el file 
+                #leo file
                 with open(operandofile, 'r') as filehandle:
                     operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+                if len(operando)>=tradessimultaneos:
+                    print("\nSe alcanzó el número máximo de trades simultaneos.")
+                while len(operando)>=tradessimultaneos:           
+                    with open(operandofile, 'r') as filehandle:
+                        operando = [current_place.rstrip() for current_place in filehandle.readlines()]                         
+                    ut.waiting(1)
 
                 # para calcular tiempo de vuelta completa                
                 if vueltas == 0:
@@ -325,26 +331,27 @@ def main() -> None:
                                 while hayguita==True and i<=cantidadcompensaciones:
                                     tamanio=tamanio*(1+incrementocompensacionporc/100)                                    
                                     distanciaporc=distanciaporc+paso                                    
-                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
-                                    precioporcantidad = precioporcantidad+(tamanio*preciolimit)
-                                    tamaniototal = tamaniototal+tamanio
+                                    hayguita,preciolimit,tamanioformateado = ut.compensaciones(par,client,lado,tamanio,distanciaporc) 
+                                    precioporcantidad = precioporcantidad+(tamanioformateado*preciolimit)
+                                    tamaniototal = tamaniototal+tamanioformateado
                                     i=i+1            
 
                                 # PUNTO DE ATAQUE
-                                # si ya creó todas las compensaciones se crea la de ataque
+                                # si ya creó todas las compensaciones se crea la de ataque a una distancia del 1% de la última
                                 if i==cantidadcompensaciones+1:
                                     tamanio=tamaniototal*3
-                                    hayguita,preciolimit = ut.compensaciones(par,client,lado,tamanio,distanciaporc+1)    
+                                    hayguita,preciolimit,tamanioformateado = ut.compensaciones(par,client,lado,tamanio,distanciaporc+1)    
                                     if hayguita==False:
                                         print("\nNo se pudo crear la compensación de ataque...\n")
                                     else:
                                         print("\nCompensación de ataque creada...\n")
-                                        precioporcantidad = precioporcantidad+(tamanio*preciolimit)
-                                        tamaniototal = tamaniototal+tamanio
+                                        precioporcantidad = precioporcantidad+(tamanioformateado*preciolimit)
+                                        tamaniototal = tamaniototal+tamanioformateado
                                         if lado=='BUY':
                                             stopprice=preciolimit*(1-1/100)
                                         else:
                                             stopprice=preciolimit*(1+1/100)
+                                        #se crea el stop price nuevo a una distancia del 1% de la compensacion de ataque
                                         ut.binancestoploss (par,lado,stopprice) 
 
                                 precioposicionfinal=precioporcantidad/tamaniototal
@@ -366,16 +373,6 @@ def main() -> None:
                                 f.write(mensaje)
                                 f.write("\n*********************************************************************************************\n")
                                 f.close()
-
-                                #leo file
-                                with open(operandofile, 'r') as filehandle:
-                                    operando = [current_place.rstrip() for current_place in filehandle.readlines()]
-                                if len(operando)>=tradessimultaneos:
-                                    print("\nSe alcanzó el número máximo de trades simultaneos.")
-                                while len(operando)>=tradessimultaneos:           
-                                    with open(operandofile, 'r') as filehandle:
-                                        operando = [current_place.rstrip() for current_place in filehandle.readlines()]                         
-                                    ut.waiting(1)
 
                     except KeyboardInterrupt:
                         print("\nSalida solicitada. ")
