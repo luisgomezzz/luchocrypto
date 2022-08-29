@@ -91,6 +91,7 @@ def updating(par,lado):
     #crea TPs
     print("\nupdating-CREA TPs...")
     limitorders=creaactualizatps (par,lado,limitorders,divisor)
+    stopenganancias = 0.0
 
     #actualiza tps y stops
     while tamanioactual!=0.0: 
@@ -130,7 +131,7 @@ def updating(par,lado):
             tamanioposicionguardado = tamanioactual            
     
         else:
-            if ut.pnl(par) > 0.0:
+            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:
                 stopvelavela=ut.stopvelavela (par,lado,temporalidad)
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
@@ -180,7 +181,7 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88+71.53+71.62+400 #los 400 son los del prestamo
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
