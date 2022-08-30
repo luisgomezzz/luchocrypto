@@ -764,12 +764,12 @@ def preciostop(par,procentajeperdida):
 
    return preciostop
 
-def preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal):   
-   if precioposicionfinal !=0.0:
+def preciostopsanta(procentajeperdida,precioporcantidad,preciodondequedariaposicion):   
+   if preciodondequedariaposicion !=0.0:
       try:
          micapital = balancetotal()
          perdida = (micapital*procentajeperdida/100)*-1
-         preciostop = ((perdida/tamaniototal)+1)*precioposicionfinal
+         preciostop = ((perdida/precioporcantidad)+1)*preciodondequedariaposicion
       except Exception as ex:
          preciostop = 0
          pass

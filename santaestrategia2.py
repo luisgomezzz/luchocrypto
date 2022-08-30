@@ -25,6 +25,7 @@ ventana = 30 #Ventana de búsqueda en minutos.
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
+balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
 
 ###################################################################################################################
 ###################################################################################################################
@@ -36,12 +37,8 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {
-        1.1 : 50,
-        1.3 : 20,
-        1.5 : 15,
-        2   : 15
         ###original        
-        #1.1 : 30,
+        1.1 : 30 # por ahora solo uno para probar el stop vela a vela
         #1.15: 20,
         #1.3 : 20,
         #1.5 : 15,
@@ -145,6 +142,7 @@ def updating(par,lado):
         tamanioactual=ut.get_positionamt(par)
 
     print("\nupdating-Final del trade "+par+" en "+lado)
+    print("\nObjetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
 
 def trading(par,lado):
     #updatea...
@@ -169,7 +167,7 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    #,'RLCUSDT','TRBUSDT','BLZUSDT'
+    ,'RLCUSDT','TRBUSDT','BLZUSDT'
     ] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
     ,'AVAXUSDT'] #monedas top
@@ -181,14 +179,14 @@ def main() -> None:
     minutes_diff=0
     lista_monedas_filtradas=[]
     mensaje=''
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
+
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
-    cantidadcompensaciones = 8 #compensaciones
+    cantidadcompensaciones = 5 #compensaciones
     porcentajevariacionnormal=5.0
     porcentajevariacionriesgo=7.0
     maximavariacion=0.0
@@ -368,12 +366,12 @@ def main() -> None:
                                         #se crea el stop price nuevo a una distancia del 1% de la compensacion de ataque
                                         ut.binancestoploss (par,lado,stopprice) 
 
-                                precioposicionfinal=precioporcantidad/tamaniototal
+                                preciodondequedariaposicion=precioporcantidad/tamaniototal
                                 
                                 print("precioporcantidad: "+str(precioporcantidad))
                                 print("tamaniototal: "+str(tamaniototal))
-                                print("precioposicionfinal: "+str(precioposicionfinal))
-                                print("precio en que debería ir stop: "+str(ut.preciostopsanta(procentajeperdida,tamaniototal,precioposicionfinal)))
+                                print("preciodondequedariaposicion: "+str(preciodondequedariaposicion))
+                                print("precio en que debería ir stop: "+str(ut.preciostopsanta(procentajeperdida,precioporcantidad,preciodondequedariaposicion)))
 
                                 hilo = threading.Thread(target=trading, args=(par,lado))
                                 hilo.start()
