@@ -672,16 +672,16 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
    limitprice=truncate(preciolimit,get_priceprecision(par))
 
    try:
-      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
+      order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
       print("\nCompensación creada. Tamaño: "+str(tamanioformateado)+" - precio: "+str(limitprice))
-      return True,limitprice,tamanioformateado
+      return True,limitprice,tamanioformateado,order['orderId']
    except BinanceAPIException as a:                                       
       if a.message!="Margin is insufficient.":
          print("Except 8",a.status_code,a.message)
-         return True,0,0
+         return True,0,0,0
       else:
          print("Se crearon todas las compensaciones.")                                       
-         return False,0,0
+         return False,0,0,0
 
 def binancetrades(par,ventana):
    comienzo = datetime.now() - timedelta(minutes=ventana)
@@ -764,12 +764,10 @@ def preciostop(par,procentajeperdida):
 
    return preciostop
 
-def preciostopsanta(procentajeperdida,precioporcantidad,preciodondequedariaposicion):   
-   if preciodondequedariaposicion !=0.0:
+def preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):   
+   if preciodondequedariaposicionalfinal !=0.0:
       try:
-         micapital = balancetotal()
-         perdida = (micapital*procentajeperdida/100)*-1
-         preciostop = ((perdida/precioporcantidad)+1)*preciodondequedariaposicion
+         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
       except Exception as ex:
          preciostop = 0
          pass
