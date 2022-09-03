@@ -271,7 +271,6 @@ def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(par))
    mensaje=''
-   profitporc=1.1
 
    try:
       
@@ -279,24 +278,8 @@ def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):
 
             precioactual = getentryprice(par)
 
-            if lado =='BUY':
-               #profitprice = precioactual*(1+profitporc/100)
-               stopprice = precioactual*(1-distanciaporc/100)
-            else:
-               #profitprice = precioactual*(1-(profitporc/100))
-               stopprice = precioactual*(1+distanciaporc/100)
+            mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
 
-            binancestoploss (par,lado,stopprice)
-            #binancetakeprofit(par,lado,profitprice)               
-            
-            if stopprice>precioactual:
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-               #mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
-            else:
-               #mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
 
          else:
             mensaje="No se pudo crear la posición. "
@@ -676,12 +659,8 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
       print("\nCompensación creada. Tamaño: "+str(tamanioformateado)+" - precio: "+str(limitprice))
       return True,limitprice,tamanioformateado,order['orderId']
    except BinanceAPIException as a:                                       
-      if a.message!="Margin is insufficient.":
-         print("Except 8",a.status_code,a.message)
-         return True,0,0,0
-      else:
-         print("Se crearon todas las compensaciones.")                                       
-         return False,0,0,0
+      print("Except 8",a.status_code,a.message)
+      return False,0,0,0
 
 def binancetrades(par,ventana):
    comienzo = datetime.now() - timedelta(minutes=ventana)
@@ -766,6 +745,8 @@ def preciostop(par,procentajeperdida):
 
 def preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):   
    if preciodondequedariaposicionalfinal !=0.0:
+      perdida=abs(perdida)*-1
+      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
       try:
          preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
       except Exception as ex:
