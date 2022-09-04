@@ -656,8 +656,8 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
 
    try:
       order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
-      print("\nCompensación creada. Tamaño: "+str(tamanioformateado)+" - precio: "+str(limitprice))
-      return True,limitprice,tamanioformateado,order['orderId']
+      print("\nCompensación creada. Tamaño: "+str(order['origQty'])+" - precio: "+str(order['price']))
+      return True,order['price'],order['origQty'],order['orderId']
    except BinanceAPIException as a:                                       
       print("Except 8",a.status_code,a.message)
       return False,0,0,0
