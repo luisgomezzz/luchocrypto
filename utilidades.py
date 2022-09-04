@@ -642,21 +642,18 @@ def osovago(df):
    value=df['value'].iloc[-1]
    return enter_long,enter_short,gray,value
 
-def compensaciones(par,client,lado,tamanio,distanciaporc):         
-
-   tamanioformateado=truncate(abs(tamanio),get_quantityprecision(par))
-
+def compensaciones(par,client,lado,tamanio,distanciaporc):
+   tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
+   
    if lado =='SELL':
       preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
    else:
       preciolimit = getentryprice(par)*(1-(distanciaporc/100))
-
    preciolimit = get_rounded_price(par, preciolimit)  
-   limitprice=truncate(preciolimit,get_priceprecision(par))
-
+   limitprice = truncate(preciolimit,get_priceprecision(par))
+   
    try:
       order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
-      print("\nCompensación creada. Tamaño: "+str(order['origQty'])+" - precio: "+str(order['price']))
       return True,order['price'],order['origQty'],order['orderId']
    except BinanceAPIException as a:                                       
       print("Except 8",a.status_code,a.message)
@@ -743,7 +740,9 @@ def preciostop(par,procentajeperdida):
 
    return preciostop
 
-def preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):   
+def preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
+   if lado == 'SELL':
+       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
    if preciodondequedariaposicionalfinal !=0.0:
       perdida=abs(perdida)*-1
       cantidadtotalconataqueusdt = cantidadtotalconataqueusdt

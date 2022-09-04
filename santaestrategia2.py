@@ -276,8 +276,7 @@ def main() -> None:
                             sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
                             sys.stdout.flush()       
 
-                            if  variacion >= porcentaje and precioactual >= preciomayor:
-                                
+                            if  variacion >= porcentaje and precioactual >= preciomayor:                                
                                 ############################
                                 ####### POSICION SELL ######
                                 ############################
@@ -310,8 +309,7 @@ def main() -> None:
                                 mensaje=mensaje+mensajeposicioncompleta                                
                               
                             else:
-                                if  variacion >= porcentaje and precioactual <= preciomenor:
-                                    
+                                if  variacion >= porcentaje and precioactual <= preciomenor:                                    
                                     ############################
                                     ####### POSICION BUY ######
                                     ############################
@@ -356,7 +354,7 @@ def main() -> None:
                                 cantidadtotal = 0.0
                                 cantidadtotalusdt = 0.0  
                                 precioinicial = ut.getentryprice(par)
-                                cantidad = ut.get_positionamt(par)
+                                cantidad = abs(ut.get_positionamt(par))
                                 cantidadusdt = cantidad*ut.getentryprice(par)
                                 cantidadtotal = cantidadtotal+cantidad
                                 cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
@@ -366,7 +364,7 @@ def main() -> None:
                                 else:
                                     preciodeataque = precioinicial*(1+paso/100)                                
                                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
-                                preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque    
+                                preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
                                 
                                 print("precioinicial: "+str(precioinicial)) 	
                                 print("cantidad: "+str(cantidad)) 	 				
@@ -377,11 +375,11 @@ def main() -> None:
                                 print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                 print("preciodeataque: "+str(preciodeataque)) 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
-                                preciostopsanta= ut.preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+                                preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta)) 
 
                                 #CREA COMPENSACIONES         
-                                while (abs(cantidadtotalconataqueusdt) <= balancetotal*apalancamiento # pregunta si supera mi capital
+                                while (cantidadtotalconataqueusdt <= balancetotal*apalancamiento # pregunta si supera mi capital
                                        and (
                                        (lado=='BUY' and preciodeataque > preciostopsanta)
                                        or 
@@ -391,23 +389,18 @@ def main() -> None:
                                     cantidad = cantidad*(1+incrementocompensacionporc/100) ##                       
                                     distanciaporc = distanciaporc+paso ##                                   
                                     hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc) ##
-                                    if hayguita==True:
-                                        if lado == 'BUY':
-                                            cantidadtotal = cantidadtotal+float(cantidadformateada) ##
-                                            cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
-                                            cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##                                        
-                                            preciodeataque = preciolimit*(1-paso/100)
-                                            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                                    if hayguita == True:
+                                        cantidadtotal = cantidadtotal+float(cantidadformateada) ##
+                                        cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
+                                        cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
+                                        if lado == 'BUY':                                      
+                                            preciodeataque = preciolimit*(1-paso/100)                                            
                                         else:
-                                            cantidadtotal = cantidadtotal-float(cantidadformateada) ##
-                                            cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit) ##
-                                            cantidadtotalconataque = cantidadtotal-(cantidadtotal*3) ##   
                                             preciodeataque = preciolimit*(1+paso/100)
-                                            cantidadtotalconataqueusdt = cantidadtotalusdt-(cantidadtotal*3*preciodeataque)
+                                        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
                                         preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque ##
-
-                                    print("precioinicial: "+str(precioinicial)) 	
-                                    print("cantidad: "+str(cantidad)) 	 				
+ 	
+                                    print("cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                     print("cantidadusdt: "+str(cantidadusdt)) 	 			
                                     print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                     print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
@@ -415,29 +408,22 @@ def main() -> None:
                                     print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                     print("preciodeataque: "+str(preciodeataque)) 	
                                     print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
-                                    preciostopsanta= ut.preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+                                    preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                     print("preciostopsanta: "+str(preciostopsanta)) 
 
                                 print("Cancela última compensación. ")
                                 try:
                                     exchange.cancel_order(compensacionid, par)  
                                     print("Cancelada. ")
-                                    if lado =='BUY':
-                                        cantidadtotal = cantidadtotal-cantidadformateada      
-                                        cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
-                                        cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
-                                        cantidadtotalconataque = cantidadtotal+cantidad
-                                    else:
-                                        cantidadtotal = cantidadtotal+cantidadformateada      
-                                        cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)   
-                                        cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
+                                    cantidadtotal = cantidadtotal-cantidadformateada      
+                                    cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
+                                    cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
                                     cantidadtotalconataque = cantidadtotal+cantidad
                                 except Exception as ex:
                                     print("Error cancela última compensación: "+str(ex)+"\n")
                                     pass   
                                 
-                                print("LUEGO DE LA CANCELACIÓN:")
-                                print("precioinicial: "+str(precioinicial)) 	
+                                print("LUEGO DE LA CANCELACIÓN:")	
                                 print("cantidad: "+str(cantidad)) 	 				
                                 print("cantidadusdt: "+str(cantidadusdt)) 	 			
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
@@ -446,7 +432,7 @@ def main() -> None:
                                 print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                 print("preciodeataque: "+str(preciodeataque)) 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
-                                preciostopsanta= ut.preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+                                preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta))                                 
 
                                 # PUNTO DE ATAQUE                                
@@ -456,14 +442,11 @@ def main() -> None:
                                     print("\nNo se pudo crear la compensación de ataque...\n")
                                 else:
                                     print("\nCompensación de ataque creada...\n")     
-                                    if lado=='BUY':
-                                        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
-                                    else:
-                                        cantidadtotalconataqueusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)
+                                    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
                                     preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
+
                                 print("Luego de la creacion del atque:")
-                                print("precioinicial: "+str(precioinicial)) 	
-                                print("cantidad: "+str(cantidad)) 	 				
+                                print("cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                 print("cantidadusdt: "+str(cantidadusdt)) 	 			
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                 print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
@@ -471,7 +454,7 @@ def main() -> None:
                                 print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                 print("preciodeataque: "+str(preciodeataque)) 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
-                                preciostopsanta= ut.preciostopsanta(cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+                                preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta))                                    
                                 ut.binancestoploss (par,lado,preciostopsanta) 
 
