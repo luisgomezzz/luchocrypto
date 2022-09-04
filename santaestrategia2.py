@@ -368,10 +368,9 @@ def main() -> None:
                                 
                                 print("precioinicial: "+str(precioinicial)) 	
                                 print("cantidad: "+str(cantidad)) 	 				
-                                print("cantidadusdt: "+str(cantidadusdt)) 	 			
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
-                                print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
+                                print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
+                                print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
                                 print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                 print("preciodeataque: "+str(preciodeataque)) 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
@@ -390,7 +389,7 @@ def main() -> None:
                                     distanciaporc = distanciaporc+paso ##                                   
                                     hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc) ##
                                     if hayguita == True:
-                                        cantidadtotal = cantidadtotal+float(cantidadformateada) ##
+                                        cantidadtotal = cantidadtotal+cantidadformateada
                                         cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
                                         cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
                                         if lado == 'BUY':                                      
@@ -400,11 +399,10 @@ def main() -> None:
                                         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
                                         preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque ##
  	
-                                    print("cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-                                    print("cantidadusdt: "+str(cantidadusdt)) 	 			
+                                    print("\ncantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                     print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                    print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
-                                    print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
+                                    print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
+                                    print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
                                     print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                     print("preciodeataque: "+str(preciodeataque)) 	
                                     print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
@@ -419,21 +417,22 @@ def main() -> None:
                                     cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
                                     cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
                                     cantidadtotalconataque = cantidadtotal+cantidad
+                                    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                                    preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
                                 except Exception as ex:
                                     print("Error cancela última compensación: "+str(ex)+"\n")
                                     pass   
                                 
                                 print("LUEGO DE LA CANCELACIÓN:")	
                                 print("cantidad: "+str(cantidad)) 	 				
-                                print("cantidadusdt: "+str(cantidadusdt)) 	 			
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
-                                print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
+                                print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
+                                print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
                                 print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
                                 print("preciodeataque: "+str(preciodeataque)) 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                 preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                print("preciostopsanta: "+str(preciostopsanta))                                 
+                                print("preciostopsanta: "+str(preciostopsanta)) 
 
                                 # PUNTO DE ATAQUE                                
 
@@ -446,8 +445,7 @@ def main() -> None:
                                     preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
 
                                 print("Luego de la creacion del atque:")
-                                print("cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-                                print("cantidadusdt: "+str(cantidadusdt)) 	 			
+                                print("\ncantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                 print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
                                 print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
