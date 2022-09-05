@@ -23,7 +23,7 @@ apalancamiento = 10 #siempre en 10 segun la estrategia de santi
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
 ventana = 30 #Ventana de búsqueda en minutos.   
-porcentajevariacionnormal = 1.5
+porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 7
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
@@ -181,15 +181,15 @@ def cantcompensacionesparacrear(cantidadtotalconataqueusdt,cantidadtotalconataqu
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT'
-    ,'RLCUSDT','TRBUSDT','BLZUSDT','FOOTBALLUSDT'
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
     ] #Monedas que no quiero operar 
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
     ,'AVAXUSDT'] #monedas top
     
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
-    minvolumen24h=float(100000000.00)
+    minvolumen24h=float(100000000)
+    mincapitalizacion = float(35000000)
     vueltas=0
     minutes_diff=0
     lista_monedas_filtradas=[]
@@ -214,7 +214,8 @@ def main() -> None:
             par = s['symbol']
             sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
             sys.stdout.flush()
-            if float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra:
+            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
+                and ut.capitalizacion(par)>=mincapitalizacion):
                 lista_monedas_filtradas.append(par)
         except Exception as ex:
             pass        
@@ -371,8 +372,7 @@ def main() -> None:
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                 print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
                                 print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
-                                print("preciodeataque: "+str(preciodeataque)) 	
+                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                 preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta)) 
@@ -403,8 +403,7 @@ def main() -> None:
                                     print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                     print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
                                     print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                    print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
-                                    print("preciodeataque: "+str(preciodeataque)) 	
+                                    print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                     	
                                     print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                     print("preciostopsanta: "+str(preciostopsanta)) 
@@ -417,7 +416,7 @@ def main() -> None:
                                     cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
                                     cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
                                     cantidadtotalconataque = cantidadtotal+cantidad
-                                    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                                    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciolimit)
                                     preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
                                 except Exception as ex:
                                     print("Error cancela última compensación: "+str(ex)+"\n")
@@ -428,14 +427,12 @@ def main() -> None:
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                 print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
                                 print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
-                                print("preciodeataque: "+str(preciodeataque)) 	
+                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                 preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta)) 
 
                                 # PUNTO DE ATAQUE                                
-
                                 hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc)    
                                 if hayguita == False:
                                     print("\nNo se pudo crear la compensación de ataque...\n")
@@ -449,8 +446,7 @@ def main() -> None:
                                 print("cantidadtotal: "+str(cantidadtotal)) 	 			
                                 print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
                                 print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
-                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	
-                                print("preciodeataque: "+str(preciodeataque)) 	
+                                print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
                                 print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                 preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
                                 print("preciostopsanta: "+str(preciostopsanta))                                    

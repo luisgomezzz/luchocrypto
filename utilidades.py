@@ -27,10 +27,10 @@ import sys
 from time import sleep
 from binance.helpers import round_step_size
 from binance.client import Client
-import indicadores as ind
 import winsound as ws
 from datetime import timedelta
 from datetime import datetime
+from numerize import numerize
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -777,3 +777,12 @@ def stopvelavela (par,lado,temporalidad):
          stopvelavela=0.0
 
    return stopvelavela
+
+def capitalizacion(par):
+   info = client.get_products()
+   lista=info['data']
+   df = pd.DataFrame(lista)
+   cap=df.c.loc[df['s'] == par]*df.cs.loc[df['s'] == par]
+   return float(cap)
+
+##print(numerize.numerize(100000000)) muestra numero en notacion copada
