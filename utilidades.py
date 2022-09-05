@@ -266,21 +266,16 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc):   
+def posicioncompletasanta(par,lado,porcentajeentrada):   
    serror = True
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(par))
    mensaje=''
 
-   try:
-      
+   try:      
          if binancecreoposicion (par,size,lado)==True:
-
             precioactual = getentryprice(par)
-
             mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-
-
          else:
             mensaje="No se pudo crear la posición. "
             print(mensaje)

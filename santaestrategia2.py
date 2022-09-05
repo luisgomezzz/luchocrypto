@@ -304,8 +304,7 @@ def main() -> None:
                                     paso = distanciatoppar
                                 else:
                                     paso = distancianotoppar  
-                                distanciaporc=(cantidadcompensaciones+2)*paso                               
-                                posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
+                                posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada) 
                                 print(mensajeposicioncompleta)
                                 mensaje=mensaje+mensajeposicioncompleta                                
                               
@@ -337,8 +336,7 @@ def main() -> None:
                                         paso = distanciatoppar
                                     else:
                                         paso = distancianotoppar
-                                    distanciaporc=(cantidadcompensaciones+2)*paso
-                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada,distanciaporc) 
+                                    posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada) 
                                     print(mensajeposicioncompleta)
                                     mensaje=mensaje+mensajeposicioncompleta
 
