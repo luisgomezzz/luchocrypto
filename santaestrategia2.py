@@ -144,11 +144,7 @@ def updating(par,lado):
                         ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
 
-        tamanioactual=ut.get_positionamt(par)
-
-    print("\nupdating-Final del trade "+par+" en "+lado)
-    print("\nSaldo: "+str(ut.truncate(ut.balancetotal(),2))+"\n")
-    print("\nObjetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
+        tamanioactual=ut.get_positionamt(par)    
 
 def trading(par,lado):
     #updatea...
@@ -168,6 +164,10 @@ def trading(par,lado):
     ##agrego
     with open(operandofile, 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)
+    
+    print("\ntrading-Final del trade "+par+" en "+lado)
+    print("\nSaldo: "+str(ut.truncate(ut.balancetotal(),2))+"\n")
+    print("\nObjetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
 
 def cantcompensacionesparacrear(cantidadtotalconataqueusdt,cantidadtotalconataque,precioinicial,incrementocompensacionporc,perdida):
     numerador=(math.log10(perdida+cantidadtotalconataqueusdt)
