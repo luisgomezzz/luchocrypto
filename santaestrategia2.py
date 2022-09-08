@@ -20,6 +20,7 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
+apalancamientoposta = 20 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -135,10 +136,12 @@ def updating(par,lado):
                 stopvelavela=ut.stopvelavela (par,lado,temporalidad)
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
+                        print("crea stopvelavela.")
                         ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
+                        print("crea stopvelavela.")
                         ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
 
@@ -282,7 +285,7 @@ def main() -> None:
                                     ############################
                                     ut.sound()
                                     print("\rDefiniendo apalancamiento...")
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+                                    client.futures_change_leverage(symbol=par, leverage=apalancamientoposta)
                                     try: 
                                         print("\rDefiniendo Cross/Isolated...")
                                         client.futures_change_margin_type(symbol=par, marginType=margen)
@@ -415,7 +418,7 @@ def main() -> None:
                                         cantidadtotalconataque = cantidadtotal+cantidad
                                         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciolimit)
                                         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-                                        distanciaporc = (distanciaporc-paso)+paso/2
+                                        distanciaporc = (distanciaporc-paso)+(paso/2)
                                     except Exception as ex:
                                         print("Error cancela última compensación: "+str(ex)+"\n")
                                         pass   
