@@ -28,7 +28,7 @@ porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 5
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
-incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
+incrementocompensacionporc = 10 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
 
 ###################################################################################################################
@@ -41,12 +41,11 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {        
-        ###original        
         1.1 : 30,
         1.15: 20,
-        1.3 : 20,
-        1.5 : 15,
-        2   : 15
+        1.3 : 20
+        #,1.5 : 15
+        #,2   : 15
     }
     try:
         #crea los TPs
@@ -89,6 +88,9 @@ def updating(par,lado):
     balancetotal=ut.balancetotal()    
     limitorders = []
     divisor=1
+    creado = False
+    orderid = 0
+    orderidanterior = 0
     #crea TPs
     print("\nupdating-CREA TPs...")
     limitorders=creaactualizatps (par,lado,limitorders,divisor)
@@ -137,13 +139,27 @@ def updating(par,lado):
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
                         print("crea stopvelavela.")
-                        ut.binancestoploss (par,lado,stopvelavela)
+                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
+                        if creado==True and orderidanterior!=0:
+                            try:
+                                exchange.cancel_order(orderidanterior, par)
+                                orderidanterior=orderid
+                                print("Stopvelavela anterior cancelado.")
+                            except:
+                                pass
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
                         print("crea stopvelavela.")
-                        ut.binancestoploss (par,lado,stopvelavela)
+                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
+                        if creado==True and orderidanterior!=0:
+                            try:
+                                exchange.cancel_order(orderidanterior, par)
+                                orderidanterior=orderid
+                                print("Stopvelavela anterior cancelado.")
+                            except:
+                                pass
 
         tamanioactual=ut.get_positionamt(par)    
 

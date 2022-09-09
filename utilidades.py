@@ -110,10 +110,9 @@ def binancecrearlimite(par,preciolimit,posicionporc,lado):
 
    return creado,order
 
-def binancestoploss (pair,side,stopprice):
-   
-   retorno = True
-   
+def binancestoploss (pair,side,stopprice):   
+   creado = False
+   stopid = 0
    if side == 'BUY':
       side='SELL'
    else:
@@ -121,14 +120,15 @@ def binancestoploss (pair,side,stopprice):
 
    try:
       preciostop=truncate(stopprice,get_priceprecision(pair))
-      client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+      order=client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
       print("Stop loss creado. ",preciostop)
+      creado = True
+      stopid = order['orderId']
    except BinanceAPIException as a:
       print(a.message,"no se pudo crear el stop loss.")
-      retorno=False
       pass
 
-   return retorno
+   return creado,stopid
 
 def creobot(tipo):
     if tipo=='amigos':
