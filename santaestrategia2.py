@@ -41,11 +41,11 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {        
-        1.1 : 30,
-        1.15: 20,
-        1.3 : 20
+        #1.1 : 30
+        #,1.15: 20
+        #,1.3 : 20
         #,1.5 : 15
-        #,2   : 15
+        2   : 15
     }
     try:
         #crea los TPs
@@ -147,6 +147,7 @@ def updating(par,lado):
                                 orderidanterior=orderid
                                 print("Stopvelavela anterior cancelado.")
                             except:
+                                orderidanterior=orderid
                                 pass
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
@@ -159,6 +160,7 @@ def updating(par,lado):
                                 orderidanterior=orderid
                                 print("Stopvelavela anterior cancelado.")
                             except:
+                                orderidanterior=orderid
                                 pass
 
         tamanioactual=ut.get_positionamt(par)    
@@ -218,7 +220,6 @@ def main() -> None:
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
-    cantidadcompensaciones = 5 #compensaciones
     maximavariacion=0.0
     maximavariacionhora=''
     ##############START    
@@ -434,7 +435,7 @@ def main() -> None:
                                         cantidadtotalconataque = cantidadtotal+cantidad
                                         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciolimit)
                                         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-                                        distanciaporc = (distanciaporc-paso)+(paso/2)
+                                        distanciaporc = (distanciaporc-paso)+(paso/3)
                                     except Exception as ex:
                                         print("Error cancela última compensación: "+str(ex)+"\n")
                                         pass   
