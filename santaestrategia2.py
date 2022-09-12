@@ -41,11 +41,11 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {        
-        #1.1 : 30
+        1.1 : 50
         #,1.15: 20
         #,1.3 : 20
         #,1.5 : 15
-        2   : 15
+        #2   : 15
     }
     try:
         #crea los TPs
@@ -164,12 +164,12 @@ def updating(par,lado):
                                 pass
 
         tamanioactual=ut.get_positionamt(par)    
+    #cierra todo porque se terminó el trade
+    ut.closeallopenorders(par)
 
 def trading(par,lado):
     #updatea...
     updating(par,lado)
-    #cierra todo porque se terminó el trade
-    ut.closeallopenorders(par)
     #se quita la moneda del arhivo ya que no se está operando
     #leo
     with open(operandofile, 'r') as filehandle:
@@ -244,7 +244,7 @@ def main() -> None:
     try:
 
         while True:
-            if dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
+            if 1==1: #dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
                 #en operaciones riesgosas las variaciones deben ser mayores
                 if dt.datetime.today().hour == 21:
                     porcentaje = porcentajevariacionriesgo
@@ -383,17 +383,9 @@ def main() -> None:
                                         preciodeataque = precioinicial*(1+paso/2/100)                                
                                     cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
                                     preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-                                    
-                                    print("precioinicial: "+str(precioinicial)) 	
-                                    print("cantidad: "+str(cantidad)) 	 				
-                                    print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                    print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
-                                    print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                    print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
-                                    print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                    print("preciostopsanta: "+str(preciostopsanta)) 
 
+                                    i=0
                                     #CREA COMPENSACIONES         
                                     while (cantidadtotalconataqueusdt <= balancetotal*apalancamiento # pregunta si supera mi capital
                                         and (
@@ -402,6 +394,7 @@ def main() -> None:
                                         (lado=='SELL' and preciodeataque < preciostopsanta)
                                         ) 
                                         ):
+                                        i=i+1
                                         cantidad = cantidad*(1+incrementocompensacionporc/100) ##                       
                                         distanciaporc = distanciaporc+paso ##                                   
                                         hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc) ##
@@ -415,17 +408,11 @@ def main() -> None:
                                                 preciodeataque = preciolimit*(1+paso/2/100)
                                             cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
                                             preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque ##
-        
-                                        print("\ncantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-                                        print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                        print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
-                                        print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                        print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                     	
-                                        print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
-                                        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                        print("preciostopsanta: "+str(preciostopsanta)) 
 
-                                    print("Cancela última compensación. ")
+                                        print("Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
+                                        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
+
+                                    print("Cancela última compensación ("+str(i)+")")
                                     try:
                                         exchange.cancel_order(compensacionid, par)  
                                         print("Cancelada. ")
@@ -439,35 +426,21 @@ def main() -> None:
                                     except Exception as ex:
                                         print("Error cancela última compensación: "+str(ex)+"\n")
                                         pass   
-                                    
-                                    print("LUEGO DE LA CANCELACIÓN:")	
-                                    print("cantidad: "+str(cantidad)) 	 				
-                                    print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                    print("cantidadtotalconataque: "+str(cantidadtotalconataque))                                     
-                                    print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	
-                                    print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
-                                    print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
+                                                                        
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                    print("preciostopsanta: "+str(preciostopsanta)) 
 
                                     # PUNTO DE ATAQUE                                
                                     hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc)    
                                     if hayguita == False:
-                                        print("\nNo se pudo crear la compensación de ataque...\n")
+                                        print("No se pudo crear la compensación de ataque...")
                                     else:
-                                        print("\nCompensación de ataque creada...\n")     
+                                        print("Compensación de ataque creada...")     
                                         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
                                         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
 
-                                    print("Luego de la creacion del atque:")
-                                    print("\ncantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-                                    print("cantidadtotal: "+str(cantidadtotal)) 	 			
-                                    print("cantidadtotalusdt: "+str(cantidadtotalusdt)) 	 		
-                                    print("cantidadtotalconataque: "+str(cantidadtotalconataque)) 
-                                    print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt)) 	                                 	
-                                    print("preciodondequedariaposicionalfinal: "+str(preciodondequedariaposicionalfinal)) 
+                                    print("Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                    print("preciostopsanta: "+str(preciostopsanta))                                    
+                                    print("Se crea Stop con el sugerido...")
                                     ut.binancestoploss (par,lado,preciostopsanta) 
 
                                     hilo = threading.Thread(target=trading, args=(par,lado))
