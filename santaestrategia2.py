@@ -22,13 +22,13 @@ temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
 apalancamientoposta = 20 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
-porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (10)
+porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 5
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
-incrementocompensacionporc = 10 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
+incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
 
 ###################################################################################################################
@@ -41,11 +41,11 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {        
-        1.1 : 50
-        #,1.15: 20
-        #,1.3 : 20
-        #,1.5 : 15
-        #2   : 15
+        1.1 : 30
+        ,1.15: 20
+        ,1.3 : 20
+        ,1.5 : 15
+        ,2   : 15
     }
     try:
         #crea los TPs
@@ -184,9 +184,7 @@ def trading(par,lado):
     with open(operandofile, 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)
     
-    print("\ntrading-Final del trade "+par+" en "+lado)
-    print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
-    print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
+    print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
 
 def cantcompensacionesparacrear(cantidadtotalconataqueusdt,cantidadtotalconataque,precioinicial,incrementocompensacionporc,perdida):
     numerador=(math.log10(perdida+cantidadtotalconataqueusdt)
