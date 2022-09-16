@@ -42,10 +42,10 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     tp = 1
     dict = {        
         1.1 : 30
-        ,1.15: 20
-        ,1.3 : 20
-        ,1.5 : 15
-        ,2   : 15
+        #,1.15: 20
+        #,1.3 : 20
+        #,1.5 : 15
+        #,2   : 15
     }
     try:
         #crea los TPs
