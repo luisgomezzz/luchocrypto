@@ -141,27 +141,33 @@ def updating(par,lado):
                         print("crea stopvelavela.")
                         creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
-                        if creado==True and orderidanterior!=0:
-                            try:
-                                exchange.cancel_order(orderidanterior, par)
+                        if creado==True:
+                            if orderidanterior==0:
                                 orderidanterior=orderid
-                                print("Stopvelavela anterior cancelado.")
-                            except:
-                                orderidanterior=orderid
-                                pass
+                            else:
+                                try:
+                                    exchange.cancel_order(orderidanterior, par)
+                                    orderidanterior=orderid
+                                    print("Stopvelavela anterior cancelado.")
+                                except:
+                                    orderidanterior=orderid
+                                    pass
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
                         print("crea stopvelavela.")
                         creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
-                        if creado==True and orderidanterior!=0:
-                            try:
-                                exchange.cancel_order(orderidanterior, par)
+                        if creado==True:
+                            if orderidanterior==0:
                                 orderidanterior=orderid
-                                print("Stopvelavela anterior cancelado.")
-                            except:
-                                orderidanterior=orderid
-                                pass
+                            else:
+                                try:
+                                    exchange.cancel_order(orderidanterior, par)
+                                    orderidanterior=orderid
+                                    print("Stopvelavela anterior cancelado.")
+                                except:
+                                    orderidanterior=orderid
+                                    pass
 
         tamanioactual=ut.get_positionamt(par)    
     #cierra todo porque se terminó el trade
