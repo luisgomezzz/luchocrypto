@@ -20,7 +20,7 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-apalancamientoposta = 20 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamientoposta = 30 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -41,7 +41,7 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {        
-        1.1 : 30
+        2 : 50
         #,1.15: 20
         #,1.3 : 20
         #,1.5 : 15
@@ -106,7 +106,7 @@ def updating(par,lado):
             if ut.pnl(par) > 0.0:
                 try:
                     # stop en ganancias cuando tocó un TP
-                    print("\nupdating-ACTUALIZAR STOP EN GANANCIAS PORQUE TOCÓ UN TP...")
+                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP...")
                     precioactual=ut.currentprice(par)
                     precioposicion=ut.getentryprice(par)
                     if lado=='BUY':
@@ -304,7 +304,6 @@ def main() -> None:
                                     ############################
                                     ####### POSICION SELL ######
                                     ############################
-                                    ut.sound()
                                     print("\rDefiniendo apalancamiento...")
                                     client.futures_change_leverage(symbol=par, leverage=apalancamientoposta)
                                     try: 
@@ -336,7 +335,6 @@ def main() -> None:
                                         ############################
                                         ####### POSICION BUY ######
                                         ############################
-                                        ut.sound()
                                         print("\rDefiniendo apalancamiento...")
                                         client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                                         try: 
@@ -363,7 +361,8 @@ def main() -> None:
                                         print(mensajeposicioncompleta)
                                         mensaje=mensaje+mensajeposicioncompleta
 
-                                if posicioncreada==True:     
+                                if posicioncreada==True:    
+                                    ut.sound()                                     
                                     
                                     #agrego el par al file
                                     with open(operandofile, 'a') as filehandle:
