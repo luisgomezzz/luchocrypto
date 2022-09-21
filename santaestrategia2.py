@@ -20,7 +20,7 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-apalancamientoposta = 30 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamientoposta = 50 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -362,7 +362,7 @@ def main() -> None:
                                         mensaje=mensaje+mensajeposicioncompleta
 
                                 if posicioncreada==True:    
-                                    ut.sound()                                     
+                                    ut.sound()
                                     
                                     #agrego el par al file
                                     with open(operandofile, 'a') as filehandle:
