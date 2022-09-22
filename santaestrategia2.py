@@ -199,7 +199,7 @@ def filtradodemonedas ():
     minvolumen24h=float(100000000)
     mincapitalizacion = float(35000000)    
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
-    ] #Monedas que no quiero operar     
+    ] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
