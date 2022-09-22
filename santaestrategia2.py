@@ -169,13 +169,11 @@ def updating(par,lado):
                                     orderidanterior=orderid
                                     pass
 
-        tamanioactual=ut.get_positionamt(par)    
+        tamanioactual=ut.get_positionamt(par)   
+
     #cierra todo porque se terminó el trade
     ut.closeallopenorders(par)
-
-def trading(par,lado):
-    #updatea...
-    updating(par,lado)
+    
     #se quita la moneda del arhivo ya que no se está operando
     #leo
     with open(operandofile, 'r') as filehandle:
@@ -188,36 +186,46 @@ def trading(par,lado):
     open(operandofile, "w").close()
     ##agrego
     with open(operandofile, 'a') as filehandle:
-        filehandle.writelines("%s\n" % place for place in operando)
-    
+        filehandle.writelines("%s\n" % place for place in operando)    
+
+def trading(par,lado):
+    #updatea...
+    updating(par,lado)
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
 
-def cantcompensacionesparacrear(cantidadtotalconataqueusdt,cantidadtotalconataque,precioinicial,incrementocompensacionporc,perdida):
-    numerador=(math.log10(perdida+cantidadtotalconataqueusdt)
-                /
-                (cantidadtotalconataque*precioinicial))
-
-    denominador = math.log10(1-incrementocompensacionporc/100)
-    
-    return ut.truncate(numerador/denominador,0)   
+def filtradodemonedas ():
+    lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+    lista=[]
+    minvolumen24h=float(100000000)
+    mincapitalizacion = float(35000000)    
+    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
+    ,'1000LUNCUSDT','LUNA2USDT','BTCSTUSDT'] #Monedas que no quiero operar     
+    for s in lista_de_monedas:
+        try:  
+            par = s['symbol']
+            sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
+            sys.stdout.flush()
+            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
+                and ut.capitalizacion(par)>=mincapitalizacion):
+                lista.append(par)
+        except Exception as ex:
+            pass        
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()    
+    return lista
 
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
-    ] #Monedas que no quiero operar 
+
     toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
     ,'AVAXUSDT'] #monedas top
     
-    lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     posicioncreada = False
-    minvolumen24h=float(100000000)
-    mincapitalizacion = float(35000000)
     vueltas=0
-    minutes_diff=0
-    lista_monedas_filtradas=[]
+    minutes_diff=0    
     mensaje=''
-
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
@@ -231,19 +239,8 @@ def main() -> None:
     ut.clear() #limpia terminal
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
-    for s in lista_de_monedas:
-        try:  
-            par = s['symbol']
-            sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
-            sys.stdout.flush()
-            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
-                and ut.capitalizacion(par)>=mincapitalizacion):
-                lista_monedas_filtradas.append(par)
-        except Exception as ex:
-            pass        
-        except KeyboardInterrupt as ky:
-            print("\nSalida solicitada. ")
-            sys.exit()
+    
+    lista_monedas_filtradas = filtradodemonedas()
 
     try:
 
