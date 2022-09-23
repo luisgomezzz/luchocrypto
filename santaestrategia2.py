@@ -241,6 +241,7 @@ def main() -> None:
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     maximavariacion=0.0
     maximavariacionhora=''
+    maximavariacionhoracomienzo = float(dt.datetime.today().hour)
     ##############START    
     
     ut.clear() #limpia terminal
@@ -307,6 +308,11 @@ def main() -> None:
                                 preciomenor=df.close.min()
                                 preciomayor=df.close.max()
                                 precioactual=ut.currentprice(par)
+
+                                # reinicia la máxima variación al pasar una hora
+                                if maximavariacionhoracomienzo != float(dt.datetime.today().hour):
+                                    maximavariacion=0.0
+                                    maximavariacionhoracomienzo = float(dt.datetime.today().hour)
 
                                 variacion = ((preciomayor/preciomenor)-1)*100
                                 
