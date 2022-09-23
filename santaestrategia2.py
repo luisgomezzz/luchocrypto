@@ -11,7 +11,7 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime
 import threading
-import math
+
 ##CONFIG
 client = ut.client
 exchange = ut.exchange
@@ -20,7 +20,7 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-apalancamientoposta = 50 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamientoposta = 20 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -30,7 +30,7 @@ porcentajevariacionriesgo = 5
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
-
+lista_monedas_filtradas_nueva = []
 ###################################################################################################################
 ###################################################################################################################
 ###################################################################################################################
@@ -194,26 +194,33 @@ def trading(par,lado):
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n")
 
 def filtradodemonedas ():
+    
+    lista_monedas_filtradas_aux = []
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
-    lista=[]
     minvolumen24h=float(100000000)
     mincapitalizacion = float(35000000)    
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
-    ] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
+    ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
-            sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
-            sys.stdout.flush()
+            #sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
+            #sys.stdout.flush()
             if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
                 and ut.capitalizacion(par)>=mincapitalizacion):
-                lista.append(par)
+                lista_monedas_filtradas_aux.append(par)
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
-            sys.exit()    
-    return lista
+            sys.exit()   
+
+    global lista_monedas_filtradas_nueva
+    lista_monedas_filtradas_nueva = lista_monedas_filtradas_aux
+
+def loopfiltradodemonedas ():
+    while True:
+        filtradodemonedas ()
 
 def main() -> None:
 
@@ -229,7 +236,7 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
-    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 1 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     maximavariacion=0.0
@@ -240,9 +247,16 @@ def main() -> None:
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
     
-    lista_monedas_filtradas = filtradodemonedas()
+    print("Filtrando monedas...")
+    filtradodemonedas()
+    print("fin de filtrando monedas...")
+    lista_monedas_filtradas = lista_monedas_filtradas_nueva
 
     try:
+
+        #lanza filtrado de monedas paralelo
+        hilofiltramoneda = threading.Thread(target=loopfiltradodemonedas)
+        hilofiltramoneda.start()        
 
         while True:
             if 1==1: #dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
@@ -251,6 +265,13 @@ def main() -> None:
                     porcentaje = porcentajevariacionriesgo
                 else:
                     porcentaje = porcentajevariacionnormal
+
+                res = [x for x in lista_monedas_filtradas + lista_monedas_filtradas_nueva if x not in lista_monedas_filtradas or x not in lista_monedas_filtradas_nueva]
+                if res:
+                    print("\nCambios en monedas filtradas: ")     
+                    print(res)
+                    print("\n")     
+                    lista_monedas_filtradas = lista_monedas_filtradas_nueva
                 
                 for par in lista_monedas_filtradas:
                     #leo file
@@ -294,7 +315,7 @@ def main() -> None:
                                     maximavariacionpar = par
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                 
-                                sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas analizadas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
+                                sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
                                 sys.stdout.flush()       
 
                                 if  variacion >= porcentaje and precioactual >= preciomayor:                                
