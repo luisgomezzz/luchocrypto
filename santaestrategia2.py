@@ -20,7 +20,7 @@ operandofile = 'operando.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
-apalancamientoposta = 20 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamientoposta = 25 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -236,7 +236,7 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
-    tradessimultaneos = 1 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     maximavariacion=0.0
