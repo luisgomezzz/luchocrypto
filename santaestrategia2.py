@@ -236,7 +236,7 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
-    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 1 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     maximavariacion=0.0
