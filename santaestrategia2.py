@@ -226,9 +226,8 @@ def loopfiltradodemonedas ():
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-
-    toppar=ut.rankingcap(n=30) # top n monedas en capitalización
-    
+    print("Creando Ranking....")
+    toppar=ut.rankingcap() # top n monedas en capitalización
     posicioncreada = False
     vueltas=0
     minutes_diff=0    
@@ -247,10 +246,9 @@ def main() -> None:
     ut.clear() #limpia terminal
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
-    
+    print("Ranking capitalización: "+str(toppar))    
     print("Filtrando monedas...")
     filtradodemonedas()
-    print("fin de filtrando monedas...")
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
     ut.printandlog(lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
 
