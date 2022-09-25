@@ -795,3 +795,31 @@ def printandlog(nombrelog,mensaje,pal=0,mode='a'):
          f = open(nombrelog, mode,encoding="utf-8")
          f.write("\n"+mensaje)
          f.close()   
+
+def rankingcap (n=30):
+   dict = {        
+        'nada' : 0.0
+   }
+   dict.clear()
+   lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+   mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
+   ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   listanombres=[]
+   for s in lista_de_monedas:
+       try:  
+           par = s['symbol']
+           if ('USDT' in par and par not in mazmorra):
+               dict[par] = capitalizacion(par)
+       except Exception as ex:
+           pass        
+       except KeyboardInterrupt as ky:
+           print("\nSalida solicitada. ")
+           sys.exit()   
+
+   ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
+
+   for index in range(0, n):
+      #print(ranking[index][1])
+      listanombres.append(ranking[index][1])
+
+   return listanombres

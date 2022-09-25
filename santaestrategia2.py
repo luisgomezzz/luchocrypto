@@ -227,8 +227,7 @@ def main() -> None:
 
     ##PARAMETROS##########################################################################################
 
-    toppar=['ADAUSDT','BNBUSDT','BTCUSDT','AXSUSDT','DOGEUSDT','ETHUSDT','MATICUSDT','TRXUSDT','SOLUSDT','XRPUSDT','ETCUSDT','DOTUSDT'
-    ,'AVAXUSDT'] #monedas top
+    toppar=ut.rankingcap(n=30) # top n monedas en capitalización
     
     posicioncreada = False
     vueltas=0
@@ -382,6 +381,7 @@ def main() -> None:
                                             paso = distanciatoppar
                                         else:
                                             paso = distancianotoppar
+                                        ut.printandlog(nombrelog,"distancia: "+str(paso))
                                         posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada) 
 
                                 if posicioncreada==True:    
