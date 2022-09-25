@@ -781,3 +781,17 @@ def capitalizacion(par):
    return float(cap)
 
 ##print(numerize.numerize(100000000)) muestra numero en notacion copada
+
+def printandlog(nombrelog,mensaje,pal=0,mode='a'):
+   if pal==0: #print y log
+      print(mensaje)
+      #escribo file
+      f = open(nombrelog, mode,encoding="utf-8")
+      f.write("\n"+mensaje)
+      f.close()   
+   else:
+      if pal==1: #solo log
+         #escribo file
+         f = open(nombrelog, mode,encoding="utf-8")
+         f.write("\n"+mensaje)
+         f.close()   

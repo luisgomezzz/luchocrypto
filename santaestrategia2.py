@@ -17,6 +17,7 @@ client = ut.client
 exchange = ut.exchange
 nombrelog = "log_santa2.txt"
 operandofile = 'operando.txt'
+lista_monedas_filtradas_file = 'lista_monedas_filtradas.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #siempre en 10 segun la estrategia de santi
@@ -252,11 +253,13 @@ def main() -> None:
     filtradodemonedas()
     print("fin de filtrando monedas...")
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
+    ut.printandlog(lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
 
     try:
 
         #lanza filtrado de monedas paralelo
         hilofiltramoneda = threading.Thread(target=loopfiltradodemonedas)
+        hilofiltramoneda.daemon = True
         hilofiltramoneda.start()        
 
         while True:
@@ -271,8 +274,8 @@ def main() -> None:
                 if res:
                     print("\nCambios en monedas filtradas: ")     
                     print(res)
-                    print("\n")     
                     lista_monedas_filtradas = lista_monedas_filtradas_nueva
+                    ut.printandlog(lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
                 
                 for par in lista_monedas_filtradas:
                     #leo file
@@ -345,14 +348,12 @@ def main() -> None:
                                     mensaje="Trade - "+par+" - "+lado
                                     mensaje=mensaje+"\nSubió un "+str(ut.truncate(variacion,3))+" %"
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                    print(mensaje)
+                                    ut.printandlog(nombrelog,mensaje)
                                     if par in toppar:
                                         paso = distanciatoppar
                                     else:
                                         paso = distancianotoppar  
                                     posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada) 
-                                    print(mensajeposicioncompleta)
-                                    mensaje=mensaje+mensajeposicioncompleta                                
                                 
                                 else:
                                     if  variacion >= porcentaje and precioactual <= preciomenor:                                    
@@ -376,18 +377,18 @@ def main() -> None:
                                         mensaje="Trade - "+par+" - "+lado
                                         mensaje=mensaje+"\nBajó un "+str(ut.truncate(variacion,3))+" %"
                                         mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
-                                        print(mensaje)    
+                                        ut.printandlog(nombrelog,mensaje)
                                         if par in toppar:
                                             paso = distanciatoppar
                                         else:
                                             paso = distancianotoppar
                                         posicioncreada,mensajeposicioncompleta=ut.posicioncompletasanta(par,lado,porcentajeentrada) 
-                                        print(mensajeposicioncompleta)
-                                        mensaje=mensaje+mensajeposicioncompleta
 
                                 if posicioncreada==True:    
                                     ut.sound()
-                                    
+
+                                    ut.printandlog(nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamtusdt(par)),1)
+
                                     #agrego el par al file
                                     with open(operandofile, 'a') as filehandle:
                                         filehandle.writelines("%s\n" % place for place in [par])
@@ -436,13 +437,13 @@ def main() -> None:
                                             cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
                                             preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque ##
 
-                                        print("Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
+                                        ut.printandlog(nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                         preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
 
-                                    print("Cancela última compensación ("+str(i)+")")
+                                    ut.printandlog(nombrelog,"Cancela última compensación ("+str(i)+")")
                                     try:
                                         exchange.cancel_order(compensacionid, par)  
-                                        print("Cancelada. ")
+                                        ut.printandlog(nombrelog,"Cancelada. ")
                                         cantidadtotal = cantidadtotal-cantidadformateada      
                                         cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
                                         cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
@@ -461,13 +462,13 @@ def main() -> None:
                                     if hayguita == False:
                                         print("No se pudo crear la compensación de ataque...")
                                     else:
-                                        print("Compensación de ataque creada...")     
+                                        ut.printandlog(nombrelog,"Compensación de ataque creada...")     
                                         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
                                         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
 
-                                    print("Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
+                                    ut.printandlog(nombrelog,"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
-                                    print("Se crea Stop con el sugerido...")
+                                    ut.printandlog(nombrelog,"Se crea Stop con el sugerido...")
                                     ut.binancestoploss (par,lado,preciostopsanta) 
 
                                     hilo = threading.Thread(target=trading, args=(par,lado))
@@ -476,12 +477,7 @@ def main() -> None:
                                     posicioncreada=False   
                                     maximavariacion = 0.0    
                                     
-                                    print("\n*********************************************************************************************")
-                                    #escribo file
-                                    f = open(nombrelog, "a")
-                                    f.write(mensaje)
-                                    f.write("\n*********************************************************************************************\n")
-                                    f.close()
+                                    ut.printandlog(nombrelog,"\n*********************************************************************************************")
 
                         except KeyboardInterrupt:
                             print("\nSalida solicitada. ")
