@@ -30,7 +30,7 @@ porcentajevariacionriesgo = 5
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+400 #los 400 son los del prestamo del dpto
+balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+400 #los 400 son los del prestamo del dpto
 lista_monedas_filtradas_nueva = []
 ###################################################################################################################
 ###################################################################################################################
