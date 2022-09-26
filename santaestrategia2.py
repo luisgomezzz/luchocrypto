@@ -199,7 +199,7 @@ def filtradodemonedas ():
     lista_monedas_filtradas_aux = []
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
     minvolumen24h=float(100000000)
-    mincapitalizacion = float(35000000)    
+    mincapitalizacion = float(80000000)    
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
     ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for s in lista_de_monedas:
