@@ -235,7 +235,7 @@ def main() -> None:
     mensajeposicioncompleta=''        
     margen = 'CROSSED'
     
-    tradessimultaneos = 1 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
     distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
     distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
     maximavariacion=0.0
@@ -385,7 +385,7 @@ def main() -> None:
                                 if posicioncreada==True:    
                                     ut.sound()
 
-                                    ut.printandlog(nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamtusdt(par)),1)
+                                    ut.printandlog(nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)),1)
 
                                     #agrego el par al file
                                     with open(operandofile, 'a') as filehandle:
