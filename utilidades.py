@@ -836,6 +836,6 @@ def maximasvariaciones(dias=90):
       df['variacion']=np.where((df.condicion==True),(((df.high/df.low)-1)*100),np.NaN)
       dict[par] = truncate(df.variacion.max(),2)
 
-   ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
+   ranking= (sorted([(v, k) for k, v in dict.items()]))      
    for index in range(0, len(ranking)):
       print(ranking[index])
