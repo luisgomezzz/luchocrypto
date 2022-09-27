@@ -823,3 +823,19 @@ def rankingcap (n=30):
       listanombres.append(ranking[index][1])
 
    return listanombres
+
+def maximasvariaciones(dias=90):
+   lista=['BTCUSDT', 'ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'EOSUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 'ATOMUSDT', 'IOTAUSDT', 'ALGOUSDT', 'DOGEUSDT', 'DOTUSDT', 'CRVUSDT', 'SOLUSDT', 'AVAXUSDT', 'HNTUSDT', 'NEARUSDT', 'FILUSDT', 'RSRUSDT', 'MATICUSDT', 'AXSUSDT', 'CHZUSDT', 'SANDUSDT', 'DYDXUSDT', 'GMTUSDT', 'APEUSDT', 'INJUSDT']
+   dict = {        
+        'nada' : 0.0
+   }
+   dict.clear()
+   for par in lista:
+      df=calculardf (par,'1d',dias)
+      df['condicion']=(df.high>=(df.low*(1+5/100))) | (df.low <=(df.high*(1-5/100)))
+      df['variacion']=np.where((df.condicion==True),(((df.high/df.low)-1)*100),np.NaN)
+      dict[par] = truncate(df.variacion.max(),2)
+
+   ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
+   for index in range(0, len(ranking)):
+      print(ranking[index])
