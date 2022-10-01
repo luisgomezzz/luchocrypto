@@ -236,8 +236,8 @@ def main() -> None:
     margen = 'CROSSED'
     
     tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
-    distanciatoppar = 1 # distancia entre compensaciones cuando el par está en el top
-    distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top
+    distanciatoppar = 1.7 # distancia entre compensaciones cuando el par está en el top (1.3)
+    distancianotoppar = 1.7 # distancia entre compensaciones cuando el par no está en el top (1.7)
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
