@@ -315,30 +315,35 @@ def main() -> None:
                                     maximavariacion=0.0
                                     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
 
-                                variacion = ((preciomayor/preciomenor)-1)*100
-                                
+                                timestampmaximo=max(df[df['close']==max( df['close'])]['time'])
+                                timestampminimo=max(df[df['close']==min( df['close'])]['time'])
+
+                                if timestampmaximo>=timestampminimo:
+                                    flecha = " ↑"
+                                    variacion = ((preciomayor/preciomenor)-1)*100
+                                else:
+                                    flecha = " ↓"
+                                    variacion = ((preciomenor/preciomayor)-1)*-100
+
                                 if variacion > maximavariacion:
                                     maximavariacion = variacion
                                     maximavariacionpar = par
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                    maximavariacionflecha = flecha
                                 
-                                sys.stdout.write("\r"+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+" "+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
+                                sys.stdout.write("\r"+par+" - Variación:"+flecha+str(ut.truncate(variacion,2))+"% - Tiempo de vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
                                 sys.stdout.flush()       
 
                                 if  variacion >= porcentaje and precioactual >= preciomayor:                                
                                     ############################
                                     ####### POSICION SELL ######
                                     ############################
-                                    print("\rDefiniendo apalancamiento...")
                                     client.futures_change_leverage(symbol=par, leverage=apalancamientoposta)
                                     try: 
-                                        print("\rDefiniendo Cross/Isolated...")
                                         client.futures_change_margin_type(symbol=par, marginType=margen)
                                     except BinanceAPIException as a:
                                         if a.message!="No need to change margin type.":
                                             print("Except 7",a.status_code,a.message)
-                                        else:
-                                            print("Done!")   
                                         pass
 
                                     lado='SELL'
@@ -358,16 +363,12 @@ def main() -> None:
                                         ############################
                                         ####### POSICION BUY ######
                                         ############################
-                                        print("\rDefiniendo apalancamiento...")
                                         client.futures_change_leverage(symbol=par, leverage=apalancamiento)
                                         try: 
-                                            print("\rDefiniendo Cross/Isolated...")
                                             client.futures_change_margin_type(symbol=par, marginType=margen)
                                         except BinanceAPIException as a:
                                             if a.message!="No need to change margin type.":
                                                 print("Except 7",a.status_code,a.message)
-                                            else:
-                                                print("Done!")   
                                             pass
 
                                         lado='BUY'
