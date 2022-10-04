@@ -33,6 +33,7 @@ operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+400 #los 400 son los del prestamo del dpto que quiero recuperar
 lista_monedas_filtradas_nueva = []
+flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
 ###################################################################################################################
 ###################################################################################################################
 ###################################################################################################################
@@ -435,7 +436,7 @@ def main() -> None:
                                             else:
                                                 preciodeataque = preciolimit*(1+paso/2/100)
                                             cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
-                                            preciodondequedariaposicionalfinal=cantidadtotalconataqueusdt/cantidadtotalconataque ##
+                                            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
 
                                         ut.printandlog(nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
                                         preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
@@ -450,24 +451,25 @@ def main() -> None:
                                     except Exception as ex:
                                         print("Error cancela última compensación: "+str(ex)+"\n")
                                         pass
-
-                                    '''                                    
+                                                                        
                                     # PUNTO DE ATAQUE  
-                                    cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
-                                    cantidadtotalconataque = cantidadtotal+cantidad
-                                    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciolimit)
-                                    preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-                                    distanciaporc = (distanciaporc-paso)+(paso/3)
-                                    ut.printandlog(nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
-                                    hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc)    
-                                    if hayguita == False:
-                                        print("No se pudo crear la compensación de ataque.")
+                                    if flagpuntodeataque ==1:
+                                        cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
+                                        cantidadtotalconataque = cantidadtotal+cantidad
+                                        distanciaporc = (distanciaporc-paso)+(paso/3)
+                                        ut.printandlog(nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
+                                        hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,client,lado,cantidad,distanciaporc)    
+                                        if hayguita == False:
+                                            print("No se pudo crear la compensación de ataque.")
+                                            cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+                                            preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
+                                        else:
+                                            ut.printandlog(nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
+                                            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
+                                            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
                                     else:
-                                        ut.printandlog(nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
-                                        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
-                                        preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
-                                    
-                                    '''
+                                        cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+                                        preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
 
                                     # STOP LOSS
                                     preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
