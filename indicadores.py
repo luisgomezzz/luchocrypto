@@ -124,4 +124,8 @@ def swingHighLow(df):
 
     return swinglow, swinghigh
 
-
+# Create VWAP function
+def vwap(df):
+    v = df['volume'].values
+    tp = (df['low'] + df['close'] + df['high']).div(3).values
+    return df.assign(vwap=(tp * v).cumsum() / v.cumsum())
