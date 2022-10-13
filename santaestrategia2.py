@@ -20,10 +20,10 @@ operandofile = 'operando.txt'
 lista_monedas_filtradas_file = 'lista_monedas_filtradas.txt'
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
-apalancamiento = 10 #siempre en 10 segun la estrategia de santi
+apalancamiento = 10 #(10)
 apalancamientoposta = 25 #este es el apalancamiento de verdad para que permita tradear más de una moneda
-procentajeperdida = 10 #porcentaje de mi capital total maximo a perder
-porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición
+procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
+porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 5
