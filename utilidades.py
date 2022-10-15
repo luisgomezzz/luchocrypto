@@ -266,7 +266,7 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompletasanta(par,lado,porcentajeentrada):   
+def posicionsanta(par,lado,porcentajeentrada):   
    serror = True
    micapital = balancetotal()
    size = (micapital*porcentajeentrada/100)/(currentprice(par))
