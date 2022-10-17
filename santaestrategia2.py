@@ -24,7 +24,7 @@ temporalidad = '1m'
 apalancamiento = 10 #(10)
 apalancamientoposta = 25 #este es el apalancamiento de verdad para que permita tradear más de una moneda
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
+porcentajeentrada = 9 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 5
@@ -32,7 +32,7 @@ cantidadcompensaciones = 3
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+400 #los 400 son los del prestamo del dpto que quiero recuperar
+balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+400 #los 400 son los del prestamo del dpto que quiero recuperar
 lista_monedas_filtradas_nueva = []
 flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
 ###################################################################################################################
@@ -429,7 +429,7 @@ def main() -> None:
                                     maximavariacionpar = par
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
-                                    if variacion > 2.5:
+                                    if 4 > variacion > 2.5:
                                         ut.sound(duration = 200,freq = 800)
                                         ut.sound(duration = 200,freq = 800)
                                         lanzadorscript = "# https://www.binance.com/en/futures/"+par
