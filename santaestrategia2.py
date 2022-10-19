@@ -40,7 +40,7 @@ flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado
 ###################################################################################################################
 
 # MANEJO DE TPs
-def creaactualizatps (par,lado,limitorders=[],divisor=1):
+def creaactualizatps (par,lado,limitorders=[]):
     print("creaactualizatps-limitorders: "+str(limitorders))
     limitordersnuevos=[]
     tp = 1
@@ -51,7 +51,21 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
         #,1.5 : 15
         #,2   : 15
     }
+    profitnormalporc = 1
+    profitmedioporc = 2
+    profitaltoporc = 3    
+    balancetotal=ut.balancetotal() 
+    tamanioactualusdt=ut.get_positionamtusdt(par) 
     try:
+        
+        if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
+            divisor = profitnormalporc
+        else:
+            if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
+                divisor=profitaltoporc
+            else:
+                divisor=profitmedioporc    
+
         #crea los TPs
         for porc, tamanio in dict.items():
             print("tp "+str(tp))
@@ -84,20 +98,15 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
 
 def updating(par,lado):
     
-    profitnormalporc = 1
-    profitmedioporc = 2
-    profitaltoporc = 3
     tamanioposicionguardado = ut.get_positionamt(par)
     tamanioactual = tamanioposicionguardado
-    balancetotal=ut.balancetotal()    
     limitorders = []
-    divisor=1
     creado = False
     orderid = 0
     orderidanterior = 0
     #crea TPs
     print("\nupdating-CREA TPs..."+par)
-    limitorders=creaactualizatps (par,lado,limitorders,divisor)
+    limitorders=creaactualizatps (par,lado,limitorders)
     stopenganancias = 0.0
 
     #actualiza tps y stops
@@ -123,17 +132,7 @@ def updating(par,lado):
             else:
                 # take profit que persigue al precio cuando toma compensaciones 
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
-                tamanioactualusdt=ut.get_positionamtusdt(par) 
-
-                if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
-                    divisor = profitnormalporc
-                else:
-                    if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
-                        divisor=profitaltoporc
-                    else:
-                        divisor=profitmedioporc   
-                                    
-                limitorders=creaactualizatps (par,lado,limitorders,divisor)
+                limitorders=creaactualizatps (par,lado,limitorders)
             
             tamanioposicionguardado = tamanioactual            
     
