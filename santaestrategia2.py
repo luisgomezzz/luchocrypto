@@ -45,7 +45,7 @@ def creaactualizatps (par,lado,limitorders=[],divisor=1):
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-        2 : 50
+        1.4 : 75
         #,1.15: 20
         #,1.3 : 20
         #,1.5 : 15
@@ -125,7 +125,7 @@ def updating(par,lado):
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
                 tamanioactualusdt=ut.get_positionamtusdt(par) 
 
-                if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*3:
+                if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
                     divisor = profitnormalporc
                 else:
                     if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
@@ -433,6 +433,7 @@ def main() -> None:
                                         ut.sound(duration = 200,freq = 800)
                                         ut.sound(duration = 200,freq = 800)
                                         lanzadorscript = "# https://www.binance.com/en/futures/"+par
+                                        lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
                                         lanzadorscript = lanzadorscript+"\nimport sys"
                                         lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
                                         lanzadorscript = lanzadorscript+"\nimport santaestrategia2 as se2"
