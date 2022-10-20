@@ -340,6 +340,8 @@ def main() -> None:
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
+    btcvariacion = 0
+    btcflecha = ''
     ##############START    
     
     ut.clear() #limpia terminal
@@ -444,8 +446,12 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=19)"
                                         lanzadorscript = lanzadorscript+"\n#se2.updating(par,lado)"
                                         ut.printandlog("lanzador.py",lanzadorscript,pal=1,mode='w')
+
+                                if par =='BTCUSDT':
+                                    btcvariacion = variacion
+                                    btcflecha = flecha
                                 
-                                sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"%"+" Hora: "+maximavariacionhora+"\033[K")
+                                sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BTCUSDT:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()       
 
                                 if  variacion >= porcentaje and precioactual >= preciomayor:                                
