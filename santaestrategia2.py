@@ -194,6 +194,8 @@ def updating(par,lado):
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
+    mensajelog="Trade - "+par+" - "+lado
+    ut.printandlog(nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
     hilo = threading.Thread(target=updating, args=(par,lado))
     hilo.start()    
@@ -233,7 +235,7 @@ def formacioninicial(par,lado,porcentajeentrada):
     paso = 1.7
     
     if posicioncreada==True:    
-        ut.printandlog(nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)),1)
+        ut.printandlog(nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
         ut.printandlog(nombrelog,"distancia: "+str(paso))
         #agrego el par al file
         with open(operandofile, 'a') as filehandle:
