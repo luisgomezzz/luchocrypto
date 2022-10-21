@@ -55,7 +55,7 @@ def creaactualizatps (par,lado,limitorders=[]):
     profitmedioporc = 2
     profitaltoporc = 3    
     balancetotal=ut.balancetotal() 
-    tamanioactualusdt=ut.get_positionamtusdt(par) 
+    tamanioactualusdt=abs(ut.get_positionamtusdt(par))
     try:
         
         if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
