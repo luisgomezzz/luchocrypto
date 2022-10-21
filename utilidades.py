@@ -842,3 +842,28 @@ def maximasvariaciones(dias=90):
    ranking= (sorted([(v, k) for k, v in dict.items()]))      
    for index in range(0, len(ranking)):
       print(ranking[index])
+
+def equipoliquidando ():
+   lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+   mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCDOMUSDT','FOOTBALLUSDT'
+   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   lista=[]
+   temporalidad='1d'
+   ventana = 30
+   variacionporc = 10
+   for s in lista_de_monedas:
+      try:
+            par = s['symbol']
+            sys.stdout.write("\r"+par+"\033[K")
+            sys.stdout.flush() 
+            if ('USDT' in par and '_' not in par and par not in mazmorra ):
+               df=calculardf (par,temporalidad,ventana)
+               df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
+               if True in set(df['liquidando']):
+                  lista.append(par)
+      except Exception as ex:
+         pass        
+      except KeyboardInterrupt as ky:
+         print("\nSalida solicitada. ")
+         sys.exit()   
+   return lista      

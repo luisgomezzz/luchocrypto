@@ -331,8 +331,8 @@ def formacioninicial(par,lado,porcentajeentrada):
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    print("Creando Ranking....")
-    toppar=ut.rankingcap() # top n monedas en capitalización
+    print("Equipos liquidando...")
+    listaequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
     mensaje=''
@@ -349,7 +349,7 @@ def main() -> None:
     ut.clear() #limpia terminal
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
-    print("Mejores capitalizadas: "+str(toppar))    
+    print("Equipos liquidando: "+str(listaequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
@@ -435,6 +435,8 @@ def main() -> None:
                                     if 4 > variacion > 2.5:
                                         ut.sound(duration = 200,freq = 800)
                                         ut.sound(duration = 200,freq = 800)
+                                        if par in listaequipoliquidando:
+                                            print("\n"+par+" - PRECAUCIÓN. Equipo liquidando\n")
                                         lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                         lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
                                         lanzadorscript = lanzadorscript+"\nimport sys"
@@ -473,6 +475,8 @@ def main() -> None:
                                     mensaje="Trade - "+par+" - "+lado
                                     mensaje=mensaje+"\nSubió un "+str(ut.truncate(variacion,3))+" %"
                                     mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                    if par in listaequipoliquidando:
+                                        mensaje=mensaje+"\nPRECAUCIÓN. Equipo liquidando"
                                     ut.printandlog(nombrelog,mensaje)
                                     posicioncreada=trading(par,lado,porcentajeentrada) 
                                     if posicioncreada==True:
@@ -497,6 +501,8 @@ def main() -> None:
                                         mensaje="Trade - "+par+" - "+lado
                                         mensaje=mensaje+"\nBajó un "+str(ut.truncate(variacion,3))+" %"
                                         mensaje=mensaje+"\nInicio: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+                                        if par in listaequipoliquidando:
+                                            mensaje=mensaje+"\PRECAUCIÓN. Equipo liquidando"
                                         ut.printandlog(nombrelog,mensaje)
                                         posicioncreada=trading(par,lado,porcentajeentrada) 
                                         if posicioncreada==True:
