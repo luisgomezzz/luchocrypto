@@ -27,7 +27,10 @@ import sys
 from time import sleep
 from binance.helpers import round_step_size
 from binance.client import Client
-import indicadores as ind
+import winsound as ws
+from datetime import timedelta
+from datetime import datetime
+from numerize import numerize
 
 binance_api="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
 binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
@@ -64,10 +67,7 @@ def currentprice(par):
    return current
 
 def binancetakeprofit(pair,side,profitprice):
-
    created=True
-   print('binancetakeprofit',pair,side,profitprice)
-   
    if side=='BUY':
       side='SELL'         
    else:
@@ -84,16 +84,13 @@ def binancetakeprofit(pair,side,profitprice):
 
    return created
 
-def binancecrearlimite(par,fraccionlimit,profitprice,posicionporc,lado):
-   retorno = True   
+def binancecrearlimite(par,preciolimit,posicionporc,lado):
+   creado = True 
+   order = 0  
 
-   precioactual = getentryprice(par)
-   
    if lado=='BUY':
-      preciolimit = precioactual+fraccionlimit*(profitprice-precioactual)
       lado='SELL'
    else:
-      preciolimit = profitprice + fraccionlimit*(precioactual-profitprice)
       lado='BUY'
 
    sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
@@ -102,21 +99,20 @@ def binancecrearlimite(par,fraccionlimit,profitprice,posicionporc,lado):
 
    try:
       limitprice=truncate(preciolimit,get_priceprecision(par))
-      print("Limit. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
-      client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
+      order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
       print("Limit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
-      retorno= True         
+      creado= True
    except BinanceAPIException as a:
       print(a.message,"No se pudo crear el Limit.")
-      retorno= False      
+      creado = False      
+      order = 0
       pass
 
-   return retorno
+   return creado,order
 
-def binancestoploss (pair,side,stopprice)-> int:
-   
-   retorno=0 # 0: creado, 1: problema
-   
+def binancestoploss (pair,side,stopprice):   
+   creado = False
+   stopid = 0
    if side == 'BUY':
       side='SELL'
    else:
@@ -124,14 +120,15 @@ def binancestoploss (pair,side,stopprice)-> int:
 
    try:
       preciostop=truncate(stopprice,get_priceprecision(pair))
-      client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+      order=client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
       print("Stop loss creado. ",preciostop)
+      creado = True
+      stopid = order['orderId']
    except BinanceAPIException as a:
       print(a.message,"no se pudo crear el stop loss.")
-      retorno=1
       pass
 
-   return retorno
+   return creado,stopid
 
 def creobot(tipo):
     if tipo=='amigos':
@@ -190,7 +187,6 @@ def get_priceprecision(par):
 def binancecierrotodo(par,lado) -> bool:   
    print("FUNCION CIERROTODO")
    cerrado = False    
-   mensaje=''
    
    while cerrado == False:
       try:        
@@ -201,16 +197,8 @@ def binancecierrotodo(par,lado) -> bool:
             cerrado = True
             print("Posición cerrada.")
       except BinanceAPIException as a:
-         try:        
-            client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=pos)
-            cerrado = True
-            print("Posición cerrada sin reduceonly.")
-         except BinanceAPIException as a:
-            print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
-            botlaburo = creobot('laburo')
-            mensaje = "QUEDAN POSICIONES ABIERTAS!!! PRESIONE UNA TECLA LUEGO DE ARREGLARLO..."
-            botlaburo.send_text(mensaje)
-            input(mensaje)          
+         print("Error1 FUNCION CIERROTODO",a.status_code,a.message)   
+         pass          
       except Exception as falla:
          print("Error2 FUNCION CIERROTODO: "+str(falla))
          pass     
@@ -256,16 +244,15 @@ def timeindex(df):
     df['time3']=(pd.to_datetime(df['time2'],unit='s')) 
     df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
-def sound():
-    duration = 1000  # milliseconds
-    freq = 440  # Hz
-
-    # for windows
-    if name == 'nt':
-        _ = system('cls')
-    # for mac and linux(here, os.name is 'posix')
-    else:
-        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+def sound(duration = 2000,freq = 440):
+     # milliseconds
+     # Hz
+   # for windows
+   if os.name == 'nt':
+      ws.Beep(freq, duration)
+   # for mac and linux(here, os.name is 'posix')
+   else:
+      _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
 
 def clear():  
     # for windows
@@ -279,81 +266,16 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):   
+def posicionsanta(par,lado,porcentajeentrada):   
    serror = True
-   porcentajeentrada=80
    micapital = balancetotal()
-   size = (micapital*porcentajeentrada/100)/(currentprice(pair))
-   stopdefaultporc = 1
-   profitdefaultporc = 1   
+   size = (micapital*porcentajeentrada/100)/(currentprice(par))
    mensaje=''
 
-   try:
-      if posicionesabiertas()==False: #si no hay posiciones abiertas creo la alertada.
-         if binancecreoposicion (pair,size,side)==True:
-
-            precioactual = getentryprice(pair)
-
-            #valores de stop y profit standard
-            if side =='BUY':
-               stoppricedefault = precioactual-(precioactual*stopdefaultporc/100)
-               profitpricedefault = precioactual+(precioactual*profitdefaultporc/100)
-               if profitprice == 0:
-                  profitprice = ((precioactual-stopprice)/ratio)+precioactual
-            else:
-               stoppricedefault = precioactual+(precioactual*stopdefaultporc/100)
-               profitpricedefault = precioactual-(precioactual*profitdefaultporc/100)
-               if profitprice == 0:
-                  profitprice = precioactual-((stopprice-precioactual)/ratio)
-
-            if stopprice == 0:
-               if binancestoploss (pair,side,stoppricedefault)==0:                  
-                  binancetakeprofit(pair,side,profitpricedefault)
-            else:
-               if binancestoploss (pair,side,stopprice)==0:                  
-                  if binancetakeprofit(pair,side,profitprice)==False:
-                     binancetakeprofit(pair,side,profitpricedefault)
-               else:
-                  if side =='BUY':
-                     stopprice=ind.atrslf(df,14)[1]
-                     profitprice = ((precioactual-stopprice)/ratio)+precioactual
-                  else:
-                     stopprice=ind.atrslf(df,14)[0] 
-                     profitprice = precioactual-((stopprice-precioactual)/ratio)                       
-                  if binancestoploss (pair,side,stopprice)==0:                  
-                     if binancetakeprofit(pair,side,profitprice)==False:
-                        binancetakeprofit(pair,side,profitpricedefault)
-                  else:
-                     print("Cierro todo por no poder crear Stop loss...")
-                     if side =='BUY':
-                        binancecierrotodo(pair,'SELL')
-                     else:   
-                        binancecierrotodo(pair,'BUY')
-                     closeallopenorders(pair)
-            
-            if side =='BUY':
-               fraccionlimit=1/4
-               posicionporc=70
-            else:
-               fraccionlimit=3/4
-               posicionporc=70
-
-            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)
-
-            fraccionlimit=1/2
-            posicionporc=20
-
-            #binancecrearlimite(pair,fraccionlimit,profitprice,posicionporc,side)            
-
-            if stopprice>precioactual:
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
-            else:
-               mensaje=mensaje+"\nProfitprice: "+str(truncate(profitprice,6))
-               mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-               mensaje=mensaje+"\nStopprice: "+str(truncate(stopprice,6))
-
+   try:      
+         if binancecreoposicion (par,size,lado)==True:
+            precioactual = getentryprice(par)
+            mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
          else:
             mensaje="No se pudo crear la posición. "
             print(mensaje)
@@ -365,7 +287,7 @@ def posicioncompleta(pair,side,ratio,df,stopprice=0,profitprice=0):
    except Exception as falla:
       exc_type, exc_obj, exc_tb = sys.exc_info()
       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+pair)
+      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
       serror=False
       pass
 
@@ -713,5 +635,235 @@ def osovago(df):
    enter_short=df['enter_short'].iloc[-1]
    gray=df['gray'].iloc[-1]
    value=df['value'].iloc[-1]
-
    return enter_long,enter_short,gray,value
+
+def compensaciones(par,client,lado,tamanio,distanciaporc):
+   tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
+   
+   if lado =='SELL':
+      preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
+   else:
+      preciolimit = getentryprice(par)*(1-(distanciaporc/100))
+   preciolimit = get_rounded_price(par, preciolimit)  
+   limitprice = truncate(preciolimit,get_priceprecision(par))
+   
+   try:
+      order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
+      return True,float(order['price']),float(order['origQty']),order['orderId']
+   except BinanceAPIException as a:                                       
+      print("Except 8",a.status_code,a.message)
+      return False,0,0,0
+
+def binancetrades(par,ventana):
+   comienzo = datetime.now() - timedelta(minutes=ventana)
+   comienzoms = int(comienzo.timestamp() * 1000)
+   finalms = int(datetime.now().timestamp() * 1000)
+   leido = False
+   while leido == False:
+      try:
+         trades = client.get_aggregate_trades(symbol=par, startTime=comienzoms,endTime=finalms)      
+         leido = True
+      except:
+         pass
+   return trades
+
+def get_positionamtusdt(par):
+   precioactualusdt=currentprice(par)
+   positionamt=get_positionamt(par)
+   tamanioposusdt=positionamt*precioactualusdt
+   return tamanioposusdt
+
+def stoppriceinvalidation (par,lado,porcentajestoploss,porcentajeentrada):
+   
+   totalbalance = balancetotal()
+   entryprice = getentryprice(par)
+   if entryprice == 0:
+      entryprice = currentprice(par)
+      
+   positionamount = abs(get_positionamtusdt(par))
+   if positionamount == 0:
+      positionamount = totalbalance*porcentajeentrada/100   
+
+   if lado =='BUY':
+      stoppriceporc = (entryprice*(positionamount)
+      /
+      ((positionamount)-(entryprice*totalbalance*porcentajestoploss/100))
+      )
+   else:
+      stoppriceporc = (entryprice*(positionamount)
+      /
+      ((positionamount)+(entryprice*totalbalance*porcentajestoploss/100))
+      )
+
+   print("stoppriceporc: "+str(stoppriceporc))
+   return stoppriceporc
+
+def pnl(par):   
+   precioentrada = getentryprice(par)
+   if precioentrada !=0.0:
+      try:
+         tamanio = get_positionamtusdt(par)
+         precioactual = currentprice(par)
+         pnl = ((precioactual/precioentrada)-1)*tamanio
+         #if lado == 'BUY':
+         #   if precioactual<precioentrada:
+         #      pnl=pnl*-1
+         #else:
+         #   if precioactual>precioentrada:
+         #      pnl=pnl*-1
+      except Exception as ex:
+         pnl = 0
+         pass               
+   else:
+      pnl = 0   
+
+   return pnl
+
+def preciostop(par,procentajeperdida):
+   precioentrada = getentryprice(par)
+   if precioentrada !=0.0:
+      try:
+         tamanio = get_positionamtusdt(par)
+         micapital = balancetotal()
+         perdida = (micapital*procentajeperdida/100)*-1
+         preciostop = ((perdida/tamanio)+1)*precioentrada
+      except Exception as ex:
+         preciostop = 0
+         pass
+   else:
+      preciostop = 0
+
+   return preciostop
+
+def preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
+   if lado == 'SELL':
+       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
+   if preciodondequedariaposicionalfinal !=0.0:
+      perdida=abs(perdida)*-1
+      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
+      try:
+         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
+      except Exception as ex:
+         preciostop = 0
+         pass
+   else:
+      preciostop = 0
+
+   return preciostop
+
+def stopvelavela (par,lado,temporalidad):
+   porc=0.2 #porcentaje de distancia 
+   df=calculardf (par,temporalidad,2)
+ 
+   if df.open.iloc[-2]<df.close.iloc[-2]:
+      colorvelaanterior='verde'
+   else:
+      if df.open.iloc[-2]>df.close.iloc[-2]:
+         colorvelaanterior='rojo'
+      else:        
+         colorvelaanterior='nada'
+
+   if lado=='SELL' and colorvelaanterior=='rojo':
+      stopvelavela=df.high.iloc[-2]*(1+porc/100)
+   else:
+      if lado=='BUY' and colorvelaanterior=='verde':
+         stopvelavela=df.low.iloc[-2]*(1-porc/100)
+      else:
+         stopvelavela=0.0
+
+   return stopvelavela
+
+def capitalizacion(par):
+   info = client.get_products()
+   lista=info['data']
+   df = pd.DataFrame(lista)
+   cap=df.c.loc[df['s'] == par]*df.cs.loc[df['s'] == par]
+   return float(cap)
+
+##print(numerize.numerize(100000000)) muestra numero en notacion copada
+
+def printandlog(nombrelog,mensaje,pal=0,mode='a'):
+   if pal==0: #print y log
+      print(mensaje)
+      #escribo file
+      f = open(nombrelog, mode,encoding="utf-8")
+      f.write("\n"+mensaje)
+      f.close()   
+   else:
+      if pal==1: #solo log
+         #escribo file
+         f = open(nombrelog, mode,encoding="utf-8")
+         f.write("\n"+mensaje)
+         f.close()   
+
+def rankingcap (n=30):
+   dict = {        
+        'nada' : 0.0
+   }
+   dict.clear()
+   lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+   mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
+   ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   listanombres=[]
+   for s in lista_de_monedas:
+       try:  
+           par = s['symbol']
+           if ('USDT' in par and par not in mazmorra):
+               dict[par] = capitalizacion(par)
+       except Exception as ex:
+           pass        
+       except KeyboardInterrupt as ky:
+           print("\nSalida solicitada. ")
+           sys.exit()   
+
+   ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
+
+   for index in range(0, n):
+      #print(ranking[index][1])
+      listanombres.append(ranking[index][1])
+
+   return listanombres
+
+def maximasvariaciones(dias=90):
+   lista=['BTCUSDT', 'ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'EOSUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 
+   'ATOMUSDT', 'IOTAUSDT', 'NEOUSDT', 'ALGOUSDT', 'DOGEUSDT', 'DOTUSDT', 'CRVUSDT', 'SOLUSDT', 'UNIUSDT', 'AVAXUSDT', 
+   'HNTUSDT', 'NEARUSDT', 'FILUSDT', 'RSRUSDT', 'MATICUSDT', 'AXSUSDT', 'CHZUSDT', 'SANDUSDT', 'DYDXUSDT', 'GMTUSDT', 
+   'APEUSDT', 'OPUSDT','REEFUSDT','PEOPLEUSDT','ENSUSDT' ]
+   dict = {        
+        'nada' : 0.0
+   }
+   dict.clear()
+   for par in lista:
+      df=calculardf (par,'1d',dias)
+      df['condicion']=(df.high>=(df.low*(1+5/100))) | (df.low <=(df.high*(1-5/100)))
+      df['variacion']=np.where((df.condicion==True),(((df.high/df.low)-1)*100),np.NaN)
+      dict[par] = truncate(df.variacion.max(),2)
+
+   ranking= (sorted([(v, k) for k, v in dict.items()]))      
+   for index in range(0, len(ranking)):
+      print(ranking[index])
+
+def equipoliquidando ():
+   lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
+   mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCDOMUSDT','FOOTBALLUSDT'
+   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   lista=[]
+   temporalidad='1d'
+   ventana = 30
+   variacionporc = 10
+   for s in lista_de_monedas:
+      try:
+            par = s['symbol']
+            sys.stdout.write("\r"+par+"\033[K")
+            sys.stdout.flush() 
+            if ('USDT' in par and '_' not in par and par not in mazmorra ):
+               df=calculardf (par,temporalidad,ventana)
+               df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
+               if True in set(df['liquidando']):
+                  lista.append(par)
+      except Exception as ex:
+         pass        
+      except KeyboardInterrupt as ky:
+         print("\nSalida solicitada. ")
+         sys.exit()   
+   return lista      

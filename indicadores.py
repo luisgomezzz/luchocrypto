@@ -119,10 +119,13 @@ def swingHighLow(df):
     df2=df.copy()
     df2['swinglow'] = (df.low < df.low.shift(1)) & (df.low < df.low.shift(2)) & (df.low < df.low.shift(3)) & (df.low < df.low.shift(4)) & (df.low < df.low.shift(5)) & (df.low < df.low.shift(6)) & (df.low < df.low.shift(7)) & (df.low < df.low.shift(8)) & (df.low < df.low.shift(9))
     df2['swinghigh'] = (df.high > df.high.shift(1)) & (df.high > df.high.shift(2)) & (df.high > df.high.shift(3)) & (df.high > df.high.shift(4)) & (df.high > df.high.shift(5)) & (df.high > df.high.shift(6)) & (df.high > df.high.shift(7)) & (df.high > df.high.shift(8)) & (df.high > df.high.shift(9))
-    df2.insert(loc=0, column='row_num', value=np.arange(len(df2)))
     swinglow=df2.loc[(df2['swinglow'] == True)].iloc[-1].close
     swinghigh=df2.loc[(df2['swinghigh'] == True)].iloc[-1].close
 
     return swinglow, swinghigh
 
-
+# Create VWAP function
+def vwap(df):
+    v = df['volume'].values
+    tp = (df['low'] + df['close'] + df['high']).div(3).values
+    return df.assign(vwap=(tp * v).cumsum() / v.cumsum())
