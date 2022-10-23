@@ -45,7 +45,7 @@ def creaactualizatps (par,lado,limitorders=[]):
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-        1.4 : 75
+        1.4 : 50
         #,1.15: 20
         #,1.3 : 20
         #,1.5 : 15
