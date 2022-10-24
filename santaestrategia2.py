@@ -53,7 +53,6 @@ def creaactualizatps (par,lado,limitorders=[]):
     }
     profitnormalporc = 1
     profitmedioporc = 2
-    profitaltoporc = 3    
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
     try:
@@ -61,10 +60,7 @@ def creaactualizatps (par,lado,limitorders=[]):
         if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
             divisor = profitnormalporc
         else:
-            if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
-                divisor=profitaltoporc
-            else:
-                divisor=profitmedioporc    
+            divisor=profitmedioporc    
 
         #crea los TPs
         for porc, tamanio in dict.items():
