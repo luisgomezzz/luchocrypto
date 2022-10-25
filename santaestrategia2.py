@@ -28,7 +28,7 @@ porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentajevariacionnormal = 5
 porcentajevariacionriesgo = 5
-cantidadcompensaciones = 3
+cantidadcompensaciones = 2
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
@@ -327,7 +327,7 @@ def formacioninicial(par,lado,porcentajeentrada):
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    print("Equipos liquidando...")
+    print("Buscando equipos liquidando...")
     listaequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
@@ -429,10 +429,11 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                     if 4 > variacion > 2.5:
-                                        ut.sound(duration = 200,freq = 800)
-                                        ut.sound(duration = 200,freq = 800)
+                                        if (flecha==" ↑" and precioactual>=preciomayor) or (flecha==" ↓" and precioactual<=preciomenor):
+                                            ut.sound(duration = 200,freq = 800)
+                                            ut.sound(duration = 200,freq = 800)
                                         if par in listaequipoliquidando:
-                                            print("\n"+par+" - PRECAUCIÓN. Equipo liquidando\n")
+                                            print("\n\n"+par+" - PRECAUCIÓN. Equipo liquidando")
                                         lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                         lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
                                         lanzadorscript = lanzadorscript+"\nimport sys"
@@ -443,7 +444,7 @@ def main() -> None:
                                             lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                         else:
                                             lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                        lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=19)"
+                                        lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=26)"
                                         lanzadorscript = lanzadorscript+"\n#se2.updating(par,lado)"
                                         ut.printandlog("lanzador.py",lanzadorscript,pal=1,mode='w')
 
