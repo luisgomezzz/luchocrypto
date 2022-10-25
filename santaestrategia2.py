@@ -22,12 +22,11 @@ lanzadorfile = "lanzador.py"
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
 apalancamiento = 10 #(10)
-apalancamientoposta = 25 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamientoposta = 10 #este es el apalancamiento de verdad para que permita tradear más de una moneda (deberia ser 10 pero con 25 puede tradear mas de una a la vez con mucas compensaciones)
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
-porcentajevariacionnormal = 5
-porcentajevariacionriesgo = 5
+porcentaje = 15 #porcentaje de variacion para el cual se dispara el trade estandar.
 cantidadcompensaciones = 2
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
@@ -360,13 +359,9 @@ def main() -> None:
 
         while True:
             if 1==1: #dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
-                #en operaciones riesgosas las variaciones deben ser mayores
-                if dt.datetime.today().hour == 21:
-                    porcentaje = porcentajevariacionriesgo
-                else:
-                    porcentaje = porcentajevariacionnormal
 
                 res = [x for x in lista_monedas_filtradas + lista_monedas_filtradas_nueva if x not in lista_monedas_filtradas or x not in lista_monedas_filtradas_nueva]
+                
                 if res:
                     print("\nCambios en monedas filtradas: ")     
                     print(res)
