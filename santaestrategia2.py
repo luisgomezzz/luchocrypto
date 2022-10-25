@@ -429,11 +429,11 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                     if 4 > variacion > 2.5:
-                                        if (flecha==" ↑" and precioactual>=preciomayor) or (flecha==" ↓" and precioactual<=preciomenor):
-                                            ut.sound(duration = 200,freq = 800)
-                                            ut.sound(duration = 200,freq = 800)
+                                        
                                         if par in listaequipoliquidando:
                                             print("\n\n"+par+" - PRECAUCIÓN. Equipo liquidando")
+                                        
+                                        #crea archivo lanzador para ejecutarlo manualmente
                                         lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                         lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
                                         lanzadorscript = lanzadorscript+"\nimport sys"
@@ -447,6 +447,20 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=26)"
                                         lanzadorscript = lanzadorscript+"\n#se2.updating(par,lado)"
                                         ut.printandlog("lanzador.py",lanzadorscript,pal=1,mode='w')
+
+                                        #EJECUTA MINITRADE
+                                        if (flecha==" ↑" and precioactual>=preciomayor):
+                                            ut.sound(duration = 200,freq = 800)
+                                            ut.sound(duration = 200,freq = 800)                                            
+                                            if par not in listaequipoliquidando:
+                                                lado='SELL'
+                                                trading(par,lado,porcentajeentrada=26)
+                                        else:
+                                            if (flecha==" ↓" and precioactual<=preciomenor):
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)
+                                                lado='BUY'
+                                                trading(par,lado,porcentajeentrada=26)                                        
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion
