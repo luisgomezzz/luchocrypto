@@ -100,7 +100,7 @@ def binancecrearlimite(par,preciolimit,posicionporc,lado):
    try:
       limitprice=truncate(preciolimit,get_priceprecision(par))
       order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
-      print("Limit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
+      print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
       creado= True
    except BinanceAPIException as a:
       print(a.message,"No se pudo crear el Limit.")
@@ -121,7 +121,7 @@ def binancestoploss (pair,side,stopprice):
    try:
       preciostop=truncate(stopprice,get_priceprecision(pair))
       order=client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
-      print("Stop loss creado. ",preciostop)
+      print("\nStop loss creado. \n",preciostop)
       creado = True
       stopid = order['orderId']
    except BinanceAPIException as a:
@@ -329,7 +329,7 @@ def closeallopenorders (pair):
       
       try:
          client.futures_cancel_all_open_orders(symbol=pair)
-         print("Órdenes cerradas. ")
+         print("\nÓrdenes cerradas. ")
          leido=True
       except:
          pass
