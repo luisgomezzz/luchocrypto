@@ -121,7 +121,7 @@ def binancestoploss (pair,side,stopprice):
    try:
       preciostop=truncate(stopprice,get_priceprecision(pair))
       order=client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
-      print("\nStop loss creado. \n",preciostop)
+      print("\nStop loss creado. ",preciostop)
       creado = True
       stopid = order['orderId']
    except BinanceAPIException as a:

@@ -197,13 +197,13 @@ def updating(par,lado):
                                 try:
                                     exchange.cancel_order(orderidanterior, par)
                                     orderidanterior=orderid
-                                    print("Stopvelavela anterior cancelado. "+par)
+                                    print("\nStopvelavela anterior cancelado. "+par)
                                 except:
                                     orderidanterior=orderid
                                     pass
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
-                        print("crea stopvelavela. "+par)
+                        print("\ncrea stopvelavela. "+par)
                         creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                         if creado==True:
