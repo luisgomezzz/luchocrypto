@@ -266,33 +266,6 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicionsanta(par,lado,porcentajeentrada):   
-   serror = True
-   micapital = balancetotal()
-   size = (micapital*porcentajeentrada/100)/(currentprice(par))
-   mensaje=''
-
-   try:      
-         if binancecreoposicion (par,size,lado)==True:
-            precioactual = getentryprice(par)
-            mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-         else:
-            mensaje="No se pudo crear la posición. "
-            print(mensaje)
-            serror=False
-   except BinanceAPIException as a:
-      print(a.message,"No se pudo crear la posición.")
-      serror=False
-      pass     
-   except Exception as falla:
-      exc_type, exc_obj, exc_tb = sys.exc_info()
-      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
-      serror=False
-      pass
-
-   return serror, mensaje       
-
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.
     :param df: OHLC data
@@ -727,22 +700,6 @@ def preciostop(par,procentajeperdida):
          micapital = balancetotal()
          perdida = (micapital*procentajeperdida/100)*-1
          preciostop = ((perdida/tamanio)+1)*precioentrada
-      except Exception as ex:
-         preciostop = 0
-         pass
-   else:
-      preciostop = 0
-
-   return preciostop
-
-def preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
-   if lado == 'SELL':
-       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
-   if preciodondequedariaposicionalfinal !=0.0:
-      perdida=abs(perdida)*-1
-      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
-      try:
-         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
       except Exception as ex:
          preciostop = 0
          pass

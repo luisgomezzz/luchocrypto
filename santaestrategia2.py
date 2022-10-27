@@ -21,8 +21,8 @@ lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
 lanzadorfile = "lanzador.py"
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
-apalancamiento = 10 #(10)
-apalancamientoposta = 10 #este es el apalancamiento de verdad para que permita tradear más de una moneda (deberia ser 10 pero con 25 puede tradear mas de una a la vez con mucas compensaciones)
+apalancamiento = 10
+margen = 'CROSSED'
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
@@ -37,6 +37,57 @@ flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado
 ###################################################################################################################
 ###################################################################################################################
 ###################################################################################################################
+
+def posicionsanta(par,lado,porcentajeentrada):   
+    serror = True
+    micapital = ut.balancetotal()
+    size = (micapital*porcentajeentrada/100)/(ut.currentprice(par))
+    mensaje=''
+
+    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+    try: 
+        client.futures_change_margin_type(symbol=par, marginType=margen)
+    except BinanceAPIException as a:
+        if a.message!="No need to change margin type.":
+            print("Except 7",a.status_code,a.message)
+        pass   
+
+    try:      
+        if ut.binancecreoposicion (par,size,lado)==True:
+           precioactual = ut.getentryprice(par)
+           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(precioactual,6))
+        else:
+           mensaje="No se pudo crear la posición. "
+           print(mensaje)
+           serror=False
+    except BinanceAPIException as a:
+        print(a.message,"No se pudo crear la posición.")
+        serror=False
+        pass     
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+        serror=False
+        pass
+
+    return serror, mensaje 
+
+def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
+   if lado == 'SELL':
+       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
+   if preciodondequedariaposicionalfinal !=0.0:
+      perdida=abs(perdida)*-1
+      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
+      try:
+         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
+      except Exception as ex:
+         preciostop = 0
+         pass
+   else:
+      preciostop = 0
+
+   return preciostop   
 
 # MANEJO DE TPs
 def creaactualizatps (par,lado,limitorders=[]):
@@ -207,8 +258,6 @@ def filtradodemonedas ():
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
-            #sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
-            #sys.stdout.flush()
             if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
                 and ut.capitalizacion(par)>=mincapitalizacion):
                 lista_monedas_filtradas_aux.append(par)
@@ -226,7 +275,7 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
-    posicioncreada,mensajeposicioncompleta=ut.posicionsanta(par,lado,porcentajeentrada)
+    posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     paso = 1.7
     
     if posicioncreada==True:    
@@ -254,7 +303,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodeataque = precioinicial*(1+paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
 
         i=0
         #CREA COMPENSACIONES         
@@ -282,7 +331,7 @@ def formacioninicial(par,lado,porcentajeentrada):
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
 
             ut.printandlog(nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-            preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
+            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
         
         # CANCELA ÚLTIMA COMPENSACIÓN
         try:
@@ -315,7 +364,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
 
         # STOP LOSS
-        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         ut.printandlog(nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
         ut.binancestoploss (par,lado,preciostopsanta) 
         ut.printandlog(nombrelog,"Precio Stop creado.",pal=1)
@@ -331,9 +380,7 @@ def main() -> None:
     vueltas=0
     minutes_diff=0    
     mensaje=''
-    margen = 'CROSSED'
-    
-    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 3 #Número máximo de operaciones en simultaneo
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -426,9 +473,6 @@ def main() -> None:
                                 
                                 if 4 > variacion > 2.5:
                                     
-                                    if par in listaequipoliquidando:
-                                        print("\n\n"+par+" - PRECAUCIÓN. Equipo liquidando")
-                                    
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                     lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
@@ -454,6 +498,7 @@ def main() -> None:
                                             trading(par,lado,porcentajeentrada=26)
                                         else:
                                             lado='BUY'
+                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando")
                                             trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
@@ -461,6 +506,8 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(nombrelog,"\nVariacion: "+str(variacion),pal=1)
                                             lado='BUY'
+                                            if par in listaequipoliquidando:
+                                                ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando")
                                             trading(par,lado,porcentajeentrada=26)                                        
 
                                 if par =='BTCUSDT':
@@ -476,14 +523,6 @@ def main() -> None:
                                     ############################
                                     ####### POSICION SELL ######
                                     ############################                                    
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamientoposta)
-                                    try: 
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        pass
-
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
@@ -502,14 +541,6 @@ def main() -> None:
                                         ############################
                                         ####### POSICION BUY ######
                                         ############################                                        
-                                        client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-                                        try: 
-                                            client.futures_change_margin_type(symbol=par, marginType=margen)
-                                        except BinanceAPIException as a:
-                                            if a.message!="No need to change margin type.":
-                                                print("Except 7",a.status_code,a.message)
-                                            pass
-
                                         lado='BUY'
                                         print("\n*********************************************************************************************")
                                         mensaje="Trade - "+par+" - "+lado
