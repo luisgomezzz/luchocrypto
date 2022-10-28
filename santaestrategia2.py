@@ -240,7 +240,7 @@ def updating(par,lado):
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
-    mensajelog="Trade - "+par+" - "+lado
+    mensajelog="\n\nTrade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
     ut.printandlog(nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
     hilo = threading.Thread(target=updating, args=(par,lado))
@@ -492,7 +492,7 @@ def main() -> None:
                                     if (flecha==" ↑" and precioactual>=preciomayor):
                                         ut.sound(duration = 200,freq = 800)
                                         ut.sound(duration = 200,freq = 800)         
-                                        ut.printandlog(nombrelog,"\nVariacion: "+str(variacion),pal=1)                                   
+                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2)),pal=1)                                   
                                         if par not in listaequipoliquidando:
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
