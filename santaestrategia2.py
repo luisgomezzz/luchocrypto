@@ -380,7 +380,7 @@ def main() -> None:
     vueltas=0
     minutes_diff=0    
     mensaje=''
-    tradessimultaneos = 3 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 6 #Número máximo de operaciones en simultaneo
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -484,8 +484,8 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=26)"
-                                    lanzadorscript = lanzadorscript+"\n#se2.updating(par,lado)"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,porcentajeentrada=26)"
+                                    lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
                                     ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
 
                                     #EJECUTA MINITRADE                                    
@@ -497,9 +497,9 @@ def main() -> None:
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
                                         else:
-                                            lado='BUY'
-                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando")
-                                            trading(par,lado,porcentajeentrada=26)
+                                            #lado='BUY'
+                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...")
+                                            #trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ut.sound(duration = 200,freq = 800)
