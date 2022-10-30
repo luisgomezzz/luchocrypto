@@ -12,6 +12,7 @@ import datetime as dt
 from datetime import datetime
 import threading
 import numpy as np
+from playsound import playsound
 
 ##CONFIG
 client = ut.client
@@ -159,14 +160,11 @@ def updating(par,lado):
     #actualiza tps y stops
     while tamanioactual!=0.0: 
 
-        if tamanioposicionguardado!=tamanioactual:
-
-            ut.sound(duration = 250,freq = 659)
+        if tamanioposicionguardado!=tamanioactual:            
 
             if ut.pnl(par) > 0.0:
                 try:
                     # stop en ganancias cuando tocó un TP
-                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                     precioactual=ut.currentprice(par)
                     precioposicion=ut.getentryprice(par)
                     if lado=='BUY':
@@ -174,13 +172,16 @@ def updating(par,lado):
                     else:
                         stopenganancias=precioposicion-((precioposicion-precioactual)/2)
                     ut.binancestoploss (par,lado,stopenganancias) 
+                    playsound("./sounds/cash-register-purchase.mp3")
+                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                 except Exception as ex:
                     pass
             else:
                 # take profit que persigue al precio cuando toma compensaciones 
-                print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
                 limitorders=creaactualizatps (par,lado,limitorders)
-            
+                ut.sound(duration = 250,freq = 659)                
+                print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
+
             tamanioposicionguardado = tamanioactual            
     
         else:
@@ -238,10 +239,11 @@ def updating(par,lado):
     with open(operandofile, 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)   
     
+    playsound("./sounds/computer-processing.mp3")
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
-    mensajelog="\nTrade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+    mensajelog="Trade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
     ut.printandlog(nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
     hilo = threading.Thread(target=updating, args=(par,lado))
@@ -497,13 +499,18 @@ def main() -> None:
                                         df2=ut.calculardf (par,'1d',1)
                                         df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                         variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
-                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%\n")
+                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                        #####################################
                                         if par not in listaequipoliquidando:
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
-                                        else:
-                                            #lado='BUY'
+                                            if variaciondiaria>=15:
+                                                playsound("./sounds/call-to-attention.mp3")  
+                                                ut.printandlog(nombrelog,"\nPRECAUCIÓN, VARIACIÓN DIARIA ALTA...")   
+                                        else:                                            
+                                            playsound("./sounds/call-to-attention.mp3")
                                             ut.printandlog(nombrelog,"\nOPORTUNIDAD "+par+". Equipo liquidando. Chequear máximos históricos...")
+                                            #lado='BUY'
                                             #trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
@@ -513,11 +520,16 @@ def main() -> None:
                                             df2=ut.calculardf (par,'1d',1)
                                             df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                             variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
-                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%\n")
+                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            #####################################
                                             lado='BUY'
+                                            trading(par,lado,porcentajeentrada=26)    
                                             if par in listaequipoliquidando:
-                                                ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando")
-                                            trading(par,lado,porcentajeentrada=26)                                        
+                                                playsound("./sounds/call-to-attention.mp3")
+                                                ut.printandlog(nombrelog,"\nOPORTUNIDAD "+par+". Equipo liquidando. Chequear máximos históricos...")                                            
+                                            if variaciondiaria>=15:
+                                                playsound("./sounds/call-to-attention.mp3")  
+                                                ut.printandlog(nombrelog,"\nPRECAUCIÓN, VARIACIÓN DIARIA ALTA...")                                                                               
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion
