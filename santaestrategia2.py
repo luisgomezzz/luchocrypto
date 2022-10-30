@@ -11,6 +11,7 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime
 import threading
+import numpy as np
 
 ##CONFIG
 client = ut.client
@@ -240,7 +241,7 @@ def updating(par,lado):
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
-    mensajelog="\n\nTrade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+    mensajelog="\nTrade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
     ut.printandlog(nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
     hilo = threading.Thread(target=updating, args=(par,lado))
@@ -471,7 +472,7 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                 
-                                if 3 >= variacion >= 2.5:
+                                if 3.5 >= variacion >= 2.5:
                                     
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
@@ -491,20 +492,28 @@ def main() -> None:
                                     #EJECUTA MINITRADE                                    
                                     if (flecha==" ↑" and precioactual>=preciomayor):
                                         ut.sound(duration = 200,freq = 800)
-                                        ut.sound(duration = 200,freq = 800)         
-                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2)),pal=1)                                   
+                                        ut.sound(duration = 200,freq = 800)      
+                                        ###########para la variacion diaria  
+                                        df2=ut.calculardf (par,'1d',1)
+                                        df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
+                                        variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%\n")
                                         if par not in listaequipoliquidando:
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
                                         else:
                                             #lado='BUY'
-                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...")
+                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD "+par+". Equipo liquidando. Chequear máximos históricos...")
                                             #trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)
-                                            ut.printandlog(nombrelog,"\nVariacion: "+str(variacion),pal=1)
+                                            ###########para la variacion diaria  
+                                            df2=ut.calculardf (par,'1d',1)
+                                            df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
+                                            variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%\n")
                                             lado='BUY'
                                             if par in listaequipoliquidando:
                                                 ut.printandlog(nombrelog,"\nOPORTUNIDAD. Equipo liquidando")
@@ -517,6 +526,7 @@ def main() -> None:
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BTCUSDT:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()       
 
+                                '''
                                 ############################# TRADE STANDARD ##################
 
                                 if  variacion >= porcentaje and precioactual >= preciomayor:                                
@@ -553,6 +563,7 @@ def main() -> None:
                                         if posicioncreada==True:
                                             maximavariacion = 0.0 
                                         ut.sound()
+                                '''
                                 
                         except KeyboardInterrupt:
                             print("\nSalida solicitada. ")
