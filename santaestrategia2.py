@@ -498,20 +498,12 @@ def main() -> None:
                                         ###########para la variacion diaria  
                                         df2=ut.calculardf (par,'1d',1)
                                         df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
-                                        variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                        variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
                                         ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                         #####################################
-                                        if par not in listaequipoliquidando:
+                                        if par not in listaequipoliquidando and variaciondiaria <= 15:
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
-                                            if variaciondiaria>=15:
-                                                playsound("./sounds/call-to-attention.mp3")  
-                                                ut.printandlog(nombrelog,"\nPRECAUCIÓN, VARIACIÓN DIARIA ALTA...")   
-                                        else:                                            
-                                            playsound("./sounds/call-to-attention.mp3")
-                                            ut.printandlog(nombrelog,"\nOPORTUNIDAD "+par+". Equipo liquidando. Chequear máximos históricos...")
-                                            #lado='BUY'
-                                            #trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ut.sound(duration = 200,freq = 800)
@@ -519,17 +511,12 @@ def main() -> None:
                                             ###########para la variacion diaria  
                                             df2=ut.calculardf (par,'1d',1)
                                             df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
-                                            variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                            variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
                                             ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             #####################################
-                                            lado='BUY'
-                                            trading(par,lado,porcentajeentrada=26)    
-                                            if par in listaequipoliquidando:
-                                                playsound("./sounds/call-to-attention.mp3")
-                                                ut.printandlog(nombrelog,"\nOPORTUNIDAD "+par+". Equipo liquidando. Chequear máximos históricos...")                                            
-                                            if variaciondiaria>=15:
-                                                playsound("./sounds/call-to-attention.mp3")  
-                                                ut.printandlog(nombrelog,"\nPRECAUCIÓN, VARIACIÓN DIARIA ALTA...")                                                                               
+                                            if variaciondiaria <= 15:
+                                                lado='BUY'
+                                                trading(par,lado,porcentajeentrada=26)  
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion
