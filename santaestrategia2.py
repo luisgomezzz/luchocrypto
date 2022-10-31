@@ -493,28 +493,28 @@ def main() -> None:
 
                                     #EJECUTA MINITRADE                                    
                                     if (flecha==" ↑" and precioactual>=preciomayor):
-                                        ut.sound(duration = 200,freq = 800)
-                                        ut.sound(duration = 200,freq = 800)      
                                         ###########para la variacion diaria  
                                         df2=ut.calculardf (par,'1d',1)
                                         df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                         variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
-                                        ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                         #####################################
                                         if par not in listaequipoliquidando and variaciondiaria <= 15:
+                                            ut.sound(duration = 200,freq = 800)
+                                            ut.sound(duration = 200,freq = 800)   
+                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
                                             trading(par,lado,porcentajeentrada=26)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
-                                            ut.sound(duration = 200,freq = 800)
-                                            ut.sound(duration = 200,freq = 800)
                                             ###########para la variacion diaria  
                                             df2=ut.calculardf (par,'1d',1)
                                             df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
-                                            variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
-                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))                                            
                                             #####################################
                                             if variaciondiaria <= 15:
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
                                                 trading(par,lado,porcentajeentrada=26)  
 
