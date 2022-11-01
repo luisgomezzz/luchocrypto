@@ -13,7 +13,6 @@ import math
 import pandas as pd
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
-from mplfinance.original_flavor import candlestick2_ohlc
 import ccxt
 from os import system, name
 import os
@@ -21,8 +20,6 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
-import talib as tl
-import pandas_ta as ta
 import sys
 from time import sleep
 from binance.helpers import round_step_size
@@ -307,27 +304,6 @@ def closeallopenorders (pair):
       except:
          pass
 
-def komucloud (df):
-   high_9 = df.high.rolling(9).max()
-   low_9 = df.low.rolling(9).min()
-   df['tenkan_sen_line'] = (high_9 + low_9) /2
-   # Calculate Kijun-sen
-   high_26 = df.high.rolling(26).max()
-   low_26 = df.low.rolling(26).min()
-   df['kijun_sen_line'] = (high_26 + low_26) / 2
-   # Calculate Senkou Span A
-   df['senkou_spna_A'] = ((df.tenkan_sen_line + df.kijun_sen_line) / 2).shift(26)
-   # Calculate Senkou Span B
-   high_52 = df.high.rolling(52).max()
-   low_52 = df.high.rolling(52).min()
-   df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
-   # Calculate Chikou Span B
-   df['chikou_span'] = df.close.shift(-26)
-   df['SAR'] = tl.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
-   df['signal'] = 0
-   df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
-   df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
-      
 def calculardf (par,temporalidad,ventana):
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
