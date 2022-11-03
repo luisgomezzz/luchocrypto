@@ -779,7 +779,7 @@ def maximasvariaciones(dias=90):
 def equipoliquidando ():
    lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCDOMUSDT','FOOTBALLUSDT'
-   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT','BLUEBIRDUSDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
    lista=[]
    temporalidad='1d'
    ventana = 30
