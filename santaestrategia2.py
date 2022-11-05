@@ -29,7 +29,8 @@ procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
 porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentaje = 15 #porcentaje de variacion para el cual se dispara el trade estandar.
-cantidadcompensaciones = 2
+cantidadcompensaciones = 3
+
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
@@ -156,7 +157,7 @@ def updating(par,lado):
     print("\nupdating-CREA TPs..."+par)
     limitorders=creaactualizatps (par,lado,limitorders)
     stopenganancias = 0.0
-
+    compensacioncount=0
     #actualiza tps y stops
     while tamanioactual!=0.0: 
 
@@ -178,8 +179,12 @@ def updating(par,lado):
                     pass
             else:
                 # take profit que persigue al precio cuando toma compensaciones 
+                compensacioncount=compensacioncount+1
                 limitorders=creaactualizatps (par,lado,limitorders)
-                ut.sound(duration = 250,freq = 659)                
+                if compensacioncount<=1:
+                    ut.sound(duration = 250,freq = 659)                
+                else:
+                    playsound("./sounds/call-to-attention.mp3")
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
 
             tamanioposicionguardado = tamanioactual            
@@ -487,7 +492,7 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,porcentajeentrada=26)"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,porcentajeentrada=13)"
                                     lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
                                     ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
 
@@ -503,7 +508,7 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            trading(par,lado,porcentajeentrada=26)
+                                            trading(par,lado,porcentajeentrada=13)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -516,7 +521,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                trading(par,lado,porcentajeentrada=26)  
+                                                trading(par,lado,porcentajeentrada=13)  
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion

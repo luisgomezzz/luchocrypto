@@ -6,8 +6,8 @@ from kucoin.client import Client as kucoinClient
 from kucoin_futures.client import Market
 import sys
 import pandas as pd
-
-exchange_name = 'kucoin'
+import variables as var
+exchange_name=var.exchange_name
 
 def clear():  
     # for windows
@@ -100,21 +100,27 @@ def equipoliquidando ():
     variacionporc = 10
     for par in listaequipoliquidando:
         try:            
-                sys.stdout.write("\r"+par+"\033[K")
-                sys.stdout.flush()            
-                
-                if ('USDT' in par and '_' not in par and par not in mazmorra ):
-                    df=calculardf (par,temporalidad,ventana)
-                    df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
-                    if True in set(df['liquidando']):
-                        lista.append(par)
-                    
+            sys.stdout.write("\r"+par+"\033[K")
+            sys.stdout.flush()   
+            if ('USDT' in par and '_' not in par and par not in mazmorra ):
+                df=calculardf (par,temporalidad,ventana)
+                df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
+                if True in set(df['liquidando']):
+                    lista.append(par)                    
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
-            sys.exit()   
-        
-    print(lista)
+            sys.exit()           
     return lista      
 
+def volumeOf24h(par):
+    vol=0.0
+    if exchange_name == 'binance':
+        vol= client.futures_ticker(symbol=par)['quoteVolume']
+    if exchange_name == 'kucoinfutures':
+        datos=exchange.fetch_markets()
+        for i in range(len(datos)):
+            if datos[i]['id']==par:
+                vol=datos[i]['info']['volumeOf24h']            
+    return vol
