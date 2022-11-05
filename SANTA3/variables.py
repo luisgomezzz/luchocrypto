@@ -1,2 +1,2 @@
-exchange_name = 'kucoin'
-#exchange_name = 'binance'
+#exchange_name = 'kucoin'
+exchange_name = 'binance'

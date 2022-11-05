@@ -388,7 +388,7 @@ def main() -> None:
     vueltas=0
     minutes_diff=0    
     mensaje=''
-    tradessimultaneos = 6 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 4 #Número máximo de operaciones en simultaneo
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -492,7 +492,7 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+porcentajeentrada+")"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+str(porcentajeentrada)+")"
                                     lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
                                     ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
 
