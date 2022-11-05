@@ -49,7 +49,7 @@ def filtradodemonedas ():
     ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for par in lista_de_monedas:
         try:  
-            if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
+            if (ut.volumeOf24h(par)>minvolumen24h and 'USDT' in par and par not in mazmorra
                 and ut.capitalizacion(par)>=mincapitalizacion):
                 lista_monedas_filtradas_aux.append(par)
         except Exception as ex:

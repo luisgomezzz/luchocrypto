@@ -124,3 +124,10 @@ def volumeOf24h(par):
             if datos[i]['id']==par:
                 vol=datos[i]['info']['volumeOf24h']            
     return vol
+
+def capitalizacion(par):
+   info = client.get_products()
+   lista=info['data']
+   df = pd.DataFrame(lista)
+   cap=df.c.loc[df['s'] == par]*df.cs.loc[df['s'] == par]
+   return float(cap)    
