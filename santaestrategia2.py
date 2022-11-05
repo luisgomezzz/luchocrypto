@@ -26,10 +26,10 @@ temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
+porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 porcentaje = 15 #porcentaje de variacion para el cual se dispara el trade estandar.
-cantidadcompensaciones = 3
+cantidadcompensaciones = 6
 
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
@@ -492,7 +492,7 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,porcentajeentrada=13)"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+porcentajeentrada+")"
                                     lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
                                     ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
 
@@ -503,12 +503,12 @@ def main() -> None:
                                         df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                         variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
                                         #####################################
-                                        if par not in listaequipoliquidando and variaciondiaria <= 15:
+                                        if par not in listaequipoliquidando and variaciondiaria <= 10:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            trading(par,lado,porcentajeentrada=13)
+                                            trading(par,lado,porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -516,12 +516,12 @@ def main() -> None:
                                             df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                             variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))                                            
                                             #####################################
-                                            if variaciondiaria <= 15:
+                                            if variaciondiaria <= 10:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                trading(par,lado,porcentajeentrada=13)  
+                                                trading(par,lado,porcentajeentrada)  
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion
