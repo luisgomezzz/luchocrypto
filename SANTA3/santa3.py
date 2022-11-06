@@ -12,6 +12,7 @@ from datetime import datetime
 import threading
 import numpy as np
 from playsound import playsound
+import variables as var
 
 ##CONFIG
 client = ut.client
@@ -43,18 +44,18 @@ def filtradodemonedas ():
     
     lista_monedas_filtradas_aux = []
     lista_de_monedas = ut.lista_de_monedas ()
-    minvolumen24h=float(200000000)
-    mincapitalizacion = float(80000000)
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
     ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for par in lista_de_monedas:
         try:  
             if par not in mazmorra:                
-                if (ut.volumeOf24h(par)>minvolumen24h 
-                    and ut.coingeckoinfo (par,dato='market_cap')>=mincapitalizacion
+                if (
+                    ut.volumeOf24h(par)>var.minvolumen24h 
+                    and ut.capitalizacion(par)>=var.mincapitalizacion
                     ):
                     lista_monedas_filtradas_aux.append(par)
         except Exception as ex:
+            print(str(ex))
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")

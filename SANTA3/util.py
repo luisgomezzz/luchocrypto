@@ -21,24 +21,15 @@ def clear():
     else:
         _ = system('clear')
 
-#BINANCE
-binance_key="N7yU75L3CNJg2RW0TcJBAW2cUjhPGvyuSFUgnRHvMSMMiS8WpZ8Yd8yn70evqKl0"
-binance_secret="2HfMkleskGwTb6KQn0AKUQfjBDd5dArBW3Ykd2uTeOiv9VZ6qSU2L1yWM1ZlQ5RH"
-binance_passphares=''
-#KUCOIN
-kucoin_key='63618000e26bf70001e2bd2c'
-kucoin_secret='409d3eff-9622-4488-af21-fa0feabb24ec'
-kucoin_passphares='santakucoin'
-
 if exchange_name == 'binance':
-    api_key = binance_key
-    api_secret = binance_secret
-    api_passphares = binance_passphares
+    api_key = var.binance_key
+    api_secret = var.binance_secret
+    api_passphares = var.binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
 if exchange_name == 'kucoin':
-    api_key = kucoin_key
-    api_secret = kucoin_secret
-    api_passphares = kucoin_passphares
+    api_key = var.kucoin_key
+    api_secret = var.kucoin_secret
+    api_passphares = var.kucoin_passphares
     exchange_name = 'kucoinfutures'
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
@@ -131,15 +122,16 @@ def volumeOf24h(par):
                 vol=datos[i]['info']['volumeOf24h']
     return float(vol)
 
-def coingeckoinfo (par,dato='market_cap'):
-    symbol = (par[0:par.find('USDT')]).lower()
-    url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc' # Coinmarketcap API url
-    parameters = {}# API parameters to pass in for retrieving specific cryptocurrency data
-    session = Session()
-    response = session.get(url, params=parameters)
-    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+def capitalizacion(par):#Para todos los exchanges se usa binance por su mayor estabilidad
+    if exchange_name == 'kucoinfutures':
+        par=par[0:-1]
     cap=0.0
-    for i in range(len(info)):
-        if info[i]['symbol']==symbol:
-            cap=info[i][dato]
-    return float(cap)
+    clientcap = binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
+    info = clientcap.get_products()
+    lista=info['data']
+    df = pd.DataFrame(lista)
+    try:
+        cap=float(df.c.loc[df['s'] == par]*df.cs.loc[df['s'] == par])
+    except:
+        cap=0.0
+    return cap
