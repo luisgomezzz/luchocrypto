@@ -60,7 +60,8 @@ def lista_de_monedas ():
         exchange_info = client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
         for s in exchange_info:
             try:
-                lista_de_monedas.append(s['symbol'])
+                if 'USDT' in s['symbol']:
+                    lista_de_monedas.append(s['symbol'])
             except Exception as ex:
                 pass    
     if exchange_name =='kucoinfutures':
@@ -69,7 +70,8 @@ def lista_de_monedas ():
             try:
                 lista_de_monedas.append(exchange_info[index]['symbol'])
             except Exception as ex:
-                pass    
+                pass   
+
     return lista_de_monedas  
 
 def timeindex(df):
@@ -118,29 +120,26 @@ def equipoliquidando ():
             sys.exit()           
     return lista      
 
-def coinmarketcapgetInfo (simbolo='BTC',dato='market_cap'): 
-    #'fully_diluted_market_cap': 17003944767.9,
-    #'last_updated': '2022-11-05T13:06:00.000Z',
-    #'market_cap': 17003944767.896461,
-    #'market_cap_dominance': 1.6021,
-    #'percent_change_1h': -0.36212297,
-    #'percent_change_24h': 4.06218744,
-    #'percent_change_30d': 96.57331683,
-    #'percent_change_60d': 102.94371962,
-    #'percent_change_7d': 18.32382645,
-    #'percent_change_90d': 85.19554762,
-    #'price': 0.12816647931159944,
-    #'tvl': None,
-    #'volume_24h': 2489967101.284444,
-    #'volume_change_24h': -10.6394
-    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest' # Coinmarketcap API url
-    parameters = { 'symbol': simbolo, 'convert': 'USD' }# API parameters to pass in for retrieving specific cryptocurrency data
-    headers = {
-        'Accepts': 'application/json',
-        'X-CMC_PRO_API_KEY': '4c9c0645-49c7-48c3-9a42-e7a2f94d448f'
-    }
+def volumeOf24h(par):
+    vol=0.0
+    if exchange_name == 'binance':
+        vol= client.futures_ticker(symbol=par)['quoteVolume']
+    if exchange_name == 'kucoinfutures':
+        datos=exchange.fetch_markets()
+        for i in range(len(datos)):
+            if datos[i]['id']==par:
+                vol=datos[i]['info']['volumeOf24h']
+    return float(vol)
+
+def coingeckoinfo (par,dato='market_cap'):
+    symbol = (par[0:par.find('USDT')]).lower()
+    url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc' # Coinmarketcap API url
+    parameters = {}# API parameters to pass in for retrieving specific cryptocurrency data
     session = Session()
-    session.headers.update(headers)
     response = session.get(url, params=parameters)
-    info = json.loads(response.text)['data'][simbolo]['quote']['USD'][dato]
-    return info
+    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+    cap=0.0
+    for i in range(len(info)):
+        if info[i]['symbol']==symbol:
+            cap=info[i][dato]
+    return float(cap)
