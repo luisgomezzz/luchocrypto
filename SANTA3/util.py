@@ -10,8 +10,38 @@ import variables as var
 from requests import Request, Session
 import json
 import pprint
+import os
+import winsound as ws
+import math
+from time import sleep
 
 exchange_name=var.exchange_name
+
+bar = [
+      " [=     ]",
+      " [ =    ]",
+      " [  =   ]",
+      " [   =  ]",
+      " [    = ]",
+      " [     =]",
+      " [    = ]",
+      " [   =  ]",
+      " [  =   ]",
+      " [ =    ]",
+   ]
+
+bar_i = 0
+
+def waiting(segundossleep=0.0):
+    global bar_i   
+    print(bar[bar_i % len(bar)], end="\r")      
+    bar_i += 1
+    if segundossleep>0.0:
+        sleep(segundossleep)
+
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return math.trunc(stepper * number) / stepper
 
 def clear():  
     # for windows
@@ -135,3 +165,42 @@ def capitalizacion(par):#Para todos los exchanges se usa binance por su mayor es
     except:
         cap=0.0
     return cap
+
+def sound(duration = 2000,freq = 440):
+    # milliseconds
+    # Hz
+    # for windows
+    if os.name == 'nt':
+        ws.Beep(freq, duration)
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+
+
+def printandlog(nombrelog,mensaje,pal=0,mode='a'):
+   if pal==0: #print y log
+      print(mensaje)
+      #escribo file
+      f = open(nombrelog, mode,encoding="utf-8")
+      f.write("\n"+mensaje)
+      f.close()   
+   else:
+      if pal==1: #solo log
+         #escribo file
+         f = open(nombrelog, mode,encoding="utf-8")
+         f.write("\n"+mensaje)
+         f.close()   
+
+def currentprice(par):
+    leido = False
+    current=0.0
+    while leido == False:
+        try:
+            if exchange_name=='binance':
+                current=float(client.get_symbol_ticker(symbol=par)["price"])
+            if exchange_name=='kucoinfutures':
+                current=float(clientmarket.get_ticker(par)['price'])
+            leido = True
+        except:
+            pass
+    return current
