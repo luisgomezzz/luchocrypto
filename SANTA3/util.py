@@ -204,3 +204,16 @@ def currentprice(par):
         except:
             pass
     return current
+
+def balancetotal():
+   leido = False
+   while leido == False:
+      try:
+        if exchange_name=='binance':
+            balance=float(exchange.fetch_balance()['info']['totalWalletBalance'])
+        if exchange_name=='kucoinfutures':
+            balance=float(exchange.fetch_balance()['info']['data']['marginBalance'])
+        leido = True
+      except:
+         pass
+   return balance

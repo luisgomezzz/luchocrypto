@@ -195,7 +195,7 @@ def main() -> None:
                                         if par not in listaequipoliquidando and variaciondiaria <= 10:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
-                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            ut.printandlog(nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
                                             #trading(par,lado,porcentajeentrada)
                                     else:
@@ -208,7 +208,7 @@ def main() -> None:
                                             if variaciondiaria <= 10:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
-                                                ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                ut.printandlog(nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
                                                 #trading(par,lado,porcentajeentrada)  
 
