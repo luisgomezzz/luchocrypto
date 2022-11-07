@@ -104,7 +104,7 @@ def creaactualizatps (par,lado,limitorders=[]):
         #,1.5 : 15
         #,2   : 15
     }
-    profitnormalporc = 1
+    profitnormalporc = 2 # probando con 2 (va 1)
     profitmedioporc = 2
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
