@@ -1,9 +1,6 @@
 #****************************************************************************************
 # version 3.0
-#
 #****************************************************************************************
-
-from this import d
 import sys, os
 sys.path.insert(1,'./')
 import util as ut
@@ -15,34 +12,54 @@ from playsound import playsound
 import variables as var
 from binance.exceptions import BinanceAPIException
 
-##CONFIG
-client = ut.client
-exchange = ut.exchange
-nombrelog = "log_santa2.txt"
-operandofile = "operando.txt"
-lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
-lanzadorfile = "lanzador.py"
-## PARAMETROS FUNDAMENTALES 
-temporalidad = '1m'
-apalancamiento = 10
-margen = 'CROSSED'
-procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
-ventana = 30 #Ventana de búsqueda en minutos.   
-porcentaje = 15 #porcentaje de variacion para el cual se dispara el trade estandar.
-cantidadcompensaciones = 2
-## VARIABLES GLOBALES 
-operando=[] #lista de monedas que se están operando
-incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49+400 #los 400 son los del prestamo del dpto que quiero recuperar
-lista_monedas_filtradas_nueva = []
-flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
-###################################################################################################################
-###################################################################################################################
-###################################################################################################################
+def posicionsanta(par,lado,porcentajeentrada):   
+    serror = True
+    micapital = ut.balancetotal()
+    size = (micapital*porcentajeentrada/100)/(ut.currentprice(par))
+    mensaje=''
+    var.client.futures_change_leverage(symbol=par, leverage=var.apalancamiento)
+    try: 
+        var.client.futures_change_margin_type(symbol=par, marginType=var.margen)
+    except BinanceAPIException as a:
+        if a.message!="No need to change margin type.":
+            print("Except 7",a.status_code,a.message)
+        pass  
+    try:      
+        if ut.binancecreoposicion (par,size,lado)==True:
+           precioactual = ut.getentryprice(par)
+           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(precioactual,6))
+        else:
+           mensaje="No se pudo crear la posición. "
+           print(mensaje)
+           serror=False
+    except BinanceAPIException as a:
+        print(a.message,"No se pudo crear la posición.")
+        serror=False
+        pass     
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+        serror=False
+        pass
+    return serror, mensaje 
 
-def filtradodemonedas ():
-    
+def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
+    if lado == 'SELL':
+        cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
+    if preciodondequedariaposicionalfinal !=0.0:
+        perdida=abs(perdida)*-1
+        cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
+        try:
+            preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
+        except Exception as ex:
+            preciostop = 0
+            pass
+    else:
+        preciostop = 0
+    return preciostop   
+
+def filtradodemonedas ():    
     lista_monedas_filtradas_aux = []
     lista_de_monedas = ut.lista_de_monedas ()
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
@@ -56,12 +73,10 @@ def filtradodemonedas ():
                     ):
                     lista_monedas_filtradas_aux.append(par)
         except Exception as ex:
-            print(str(ex))
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit()   
-
     global lista_monedas_filtradas_nueva
     lista_monedas_filtradas_nueva = lista_monedas_filtradas_aux
 
@@ -69,8 +84,248 @@ def loopfiltradodemonedas ():
     while True:
         filtradodemonedas ()
 
-def main() -> None:
+def formacioninicial(par,lado,porcentajeentrada):
+    posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
+    paso = 1.7    
+    if posicioncreada==True:    
+        ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
+        ut.printandlog(var.nombrelog,"distancia: "+str(paso))
+        #agrego el par al file
+        with open(var.operandofile, 'a') as filehandle:
+            filehandle.writelines("%s\n" % place for place in [par])
+        balancetotal = ut.balancetotal()
+        perdida = (balancetotal*var.procentajeperdida/100)*-1
+        hayguita = True
+        distanciaporc = 0.0
+        cantidadtotal = 0.0
+        cantidadtotalusdt = 0.0  
+        precioinicial = ut.getentryprice(par)
+        cantidad = abs(ut.get_positionamt(par))
+        cantidadusdt = cantidad*ut.getentryprice(par)
+        cantidadtotal = cantidadtotal+cantidad
+        cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
+        cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
+        if lado == 'BUY':
+            preciodeataque = precioinicial*(1-paso/2/100)
+        else:
+            preciodeataque = precioinicial*(1+paso/2/100)                                
+        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+        preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        i=0
+        #CREA COMPENSACIONES         
+        while (cantidadtotalconataqueusdt <= balancetotal*var.apalancamiento # pregunta si supera mi capital
+            and (
+            (lado=='BUY' and preciodeataque > preciostopsanta)
+            or 
+            (lado=='SELL' and preciodeataque < preciostopsanta)
+            ) 
+            and i<=var.cantidadcompensaciones
+            ):
+            i=i+1
+            cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##                       
+            distanciaporc = distanciaporc+paso ##                                   
+            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
+            if hayguita == True:
+                cantidadtotal = cantidadtotal+cantidadformateada
+                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
+                cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
+                if lado == 'BUY':                                      
+                    preciodeataque = preciolimit*(1-paso/2/100)                                            
+                else:
+                    preciodeataque = preciolimit*(1+paso/2/100)
+                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
+            ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
+            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
+        # CANCELA ÚLTIMA COMPENSACIÓN
+        try:
+            ut.printandlog(var.nombrelog,"Cancela última compensación ("+str(i)+")")
+            var.exchange.cancel_order(compensacionid, par)  
+            ut.printandlog(var.nombrelog,"Cancelada. ")
+            cantidadtotal = cantidadtotal-cantidadformateada      
+            cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
+        except Exception as ex:
+            print("Error cancela última compensación: "+str(ex)+"\n")
+            pass                                            
+        # PUNTO DE ATAQUE  
+        if var.flagpuntodeataque ==1:
+            cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
+            cantidadtotalconataque = cantidadtotal+cantidad
+            distanciaporc = (distanciaporc-paso)+(paso/3)
+            ut.printandlog(var.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
+            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc)    
+            if hayguita == False:
+                print("No se pudo crear la compensación de ataque.")
+                cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+                preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
+            else:
+                ut.printandlog(var.nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
+                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
+                preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
+        else:
+            cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+            preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
+        # STOP LOSS
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
+        ut.binancestoploss (par,lado,preciostopsanta) 
+        ut.printandlog(var.nombrelog,"Precio Stop creado.",pal=1)
+        ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
+    return posicioncreada        
 
+# MANEJO DE TPs
+def creaactualizatps (par,lado,limitorders=[]):
+    print("creaactualizatps-limitorders: "+str(limitorders))
+    limitordersnuevos=[]
+    tp = 1
+    dict = {     #porcentaje de variacion - porcentaje a desocupar   
+        1.4 : 50
+        #,1.15: 20
+        #,1.3 : 20
+        #,1.5 : 15
+        #,2   : 15
+    }
+    profitnormalporc = 2 # probando con 2 (va 1)
+    profitmedioporc = 2
+    balancetotal=ut.balancetotal() 
+    tamanioactualusdt=abs(ut.get_positionamtusdt(par))
+    try:        
+        if tamanioactualusdt <= (balancetotal*var.procentajeperdida/100)*1.8:
+            divisor = profitnormalporc
+        else:
+            divisor=profitmedioporc
+        #crea los TPs
+        for porc, tamanio in dict.items():
+            print("tp "+str(tp))
+            if lado=='BUY':
+                preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
+            else:
+                preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
+            creado,order=ut.binancecrearlimite(par,preciolimit,tamanio,lado)
+            if creado==True:
+                limitordersnuevos.append(order['orderId'])
+            tp=tp+1
+        #cancela los TPs viejos
+        for id in limitorders:
+            print("Cancela "+str(id))
+            try:
+                var.exchange.cancel_order(id, par)   
+            except Exception as ex:
+                print("Error3 creaactualizatps: "+str(ex)+"\n")
+                pass  
+        limitorders=limitordersnuevos
+        print("limitorders: "+str(limitorders))
+    except BinanceAPIException as bin:
+        print("Error1 creaactualizatps: ",bin.status_code,bin.message+"\n")   
+        pass          
+    except Exception as ex:
+        print("Error2 creaactualizatps: "+str(ex)+"\n")
+        pass    
+    return limitorders
+
+def updating(par,lado):    
+    tamanioposicionguardado = ut.get_positionamt(par)
+    tamanioactual = tamanioposicionguardado
+    limitorders = []
+    creado = False
+    orderid = 0
+    orderidanterior = 0
+    #crea TPs
+    print("\nupdating-CREA TPs..."+par)
+    limitorders=creaactualizatps (par,lado,limitorders)
+    stopenganancias = 0.0
+    compensacioncount=0
+    #actualiza tps y stops
+    while tamanioactual!=0.0: 
+        if tamanioposicionguardado!=tamanioactual:
+            if ut.pnl(par) > 0.0:
+                try:
+                    # stop en ganancias cuando tocó un TP
+                    precioactual=ut.currentprice(par)
+                    precioposicion=ut.getentryprice(par)
+                    if lado=='BUY':
+                        stopenganancias=precioposicion+((precioactual-precioposicion)/2)
+                    else:
+                        stopenganancias=precioposicion-((precioposicion-precioactual)/2)
+                    ut.binancestoploss (par,lado,stopenganancias) 
+                    playsound("./sounds/cash-register-purchase.mp3")
+                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
+                except Exception as ex:
+                    pass
+            else:
+                # take profit que persigue al precio cuando toma compensaciones 
+                compensacioncount=compensacioncount+1
+                limitorders=creaactualizatps (par,lado,limitorders)
+                if compensacioncount<=1:
+                    ut.sound(duration = 250,freq = 659)                
+                else:
+                    playsound("./sounds/call-to-attention.mp3")
+                print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
+            tamanioposicionguardado = tamanioactual    
+        else:
+            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:
+                stopvelavela=ut.stopvelavela (par,lado,var.temporalidad)
+                if lado=='SELL':
+                    if stopvelavela!=0.0 and stopvelavela<stopenganancias:
+                        print("crea stopvelavela. "+par)
+                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
+                        stopenganancias=stopvelavela
+                        if creado==True:
+                            if orderidanterior==0:
+                                orderidanterior=orderid
+                            else:
+                                try:
+                                    var.exchange.cancel_order(orderidanterior, par)
+                                    orderidanterior=orderid
+                                    print("\nStopvelavela anterior cancelado. "+par)
+                                except:
+                                    orderidanterior=orderid
+                                    pass
+                else:
+                    if stopvelavela!=0.0 and stopvelavela>stopenganancias:
+                        print("\ncrea stopvelavela. "+par)
+                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
+                        stopenganancias=stopvelavela
+                        if creado==True:
+                            if orderidanterior==0:
+                                orderidanterior=orderid
+                            else:
+                                try:
+                                    var.exchange.cancel_order(orderidanterior, par)
+                                    orderidanterior=orderid
+                                    print("Stopvelavela anterior cancelado. "+par)
+                                except:
+                                    orderidanterior=orderid
+                                    pass
+        tamanioactual=ut.get_positionamt(par)   
+    #cierra todo porque se terminó el trade
+    ut.closeallopenorders(par)    
+    #se quita la moneda del arhivo ya que no se está operando
+    #leo
+    with open(var.operandofile, 'r') as filehandle:
+        operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+    # remove the item for all its occurrences
+    c = operando.count(par)
+    for i in range(c):
+        operando.remove(par)
+    #borro todo
+    open(var.operandofile, "w").close()
+    ##agrego
+    with open(var.operandofile, 'a') as filehandle:
+        filehandle.writelines("%s\n" % place for place in operando)       
+    playsound("./sounds/computer-processing.mp3")
+    print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2))+"\n") 
+
+def trading(par,lado,porcentajeentrada):
+    mensajelog="Trade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
+    ut.printandlog(var.nombrelog,mensajelog)    
+    posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
+    hilo = threading.Thread(target=updating, args=(par,lado))
+    hilo.start()    
+    return posicioncreada        
+
+def main() -> None:
     ##PARAMETROS##########################################################################################
     print("Buscando equipos liquidando...")
     listaequipoliquidando=ut.equipoliquidando()
@@ -82,18 +337,15 @@ def main() -> None:
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
     btcvariacion = 0
-    btcflecha = ''
-    ##############START    
-    
-    ut.clear() #limpia terminal
+    btcflecha = ''    
+    ##############START        
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
-    print("Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2)))
+    print("Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2)))
     print("Equipos liquidando: "+str(listaequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
-    ut.printandlog(lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
-
+    ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
     try:
 
         #lanza filtrado de monedas paralelo
@@ -110,16 +362,16 @@ def main() -> None:
                     print("\nCambios en monedas filtradas: ")     
                     print(res)
                     lista_monedas_filtradas = lista_monedas_filtradas_nueva
-                    ut.printandlog(lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
+                    ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
                 
                 for par in lista_monedas_filtradas:
                     #leo file
-                    with open(operandofile, 'r') as filehandle:
+                    with open(var.operandofile, 'r') as filehandle:
                         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
                     if len(operando)>=tradessimultaneos:
                         print("\nSe alcanzó el número máximo de trades simultaneos.")
                     while len(operando)>=tradessimultaneos:           
-                        with open(operandofile, 'r') as filehandle:
+                        with open(var.operandofile, 'r') as filehandle:
                             operando = [current_place.rstrip() for current_place in filehandle.readlines()]                         
                         ut.waiting(1)
 
@@ -141,7 +393,7 @@ def main() -> None:
                             
                             if par not in operando:     
 
-                                df=ut.calculardf (par,temporalidad,ventana)
+                                df=ut.calculardf (par,var.temporalidad,var.ventana)
                                 df = df[:-1]
                                 preciomenor=df.close.min()
                                 preciomayor=df.close.max()
@@ -181,9 +433,9 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+str(porcentajeentrada)+")"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+str(var.porcentajeentrada)+")"
                                     lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
-                                    ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
+                                    ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 
                                     #EJECUTA MINITRADE                                    
                                     if (flecha==" ↑" and precioactual>=preciomayor):
@@ -195,9 +447,9 @@ def main() -> None:
                                         if par not in listaequipoliquidando and variaciondiaria <= 10:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
-                                            ut.printandlog(nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            #trading(par,lado,porcentajeentrada)
+                                            #trading(par,lado,var.porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -208,11 +460,11 @@ def main() -> None:
                                             if variaciondiaria <= 10:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
-                                                ut.printandlog(nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                #trading(par,lado,porcentajeentrada)  
+                                                #trading(par,lado,var.porcentajeentrada)  
 
-                                if par[0:6] =='BTCUSDT':
+                                if par[0:7] =='BTCUSDT':
                                     btcvariacion = variacion
                                     btcflecha = flecha
                                 
