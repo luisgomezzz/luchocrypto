@@ -1,0 +1,21 @@
+
+
+Par: SOLUSDT - Variación: 2.65% - Variación diaria: 7.79%
+Trade - SOLUSDT - BUY - Hora:08/Nov/2022 10:59:44
+
+EntryPrice: 27.44
+Quantity: 3.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3.0. preciolimit: 26.97
+Compensación 2 cantidadformateada: 5.0. preciolimit: 26.5
+Compensación 3 cantidadformateada: 6.0. preciolimit: 26.04
+Compensación 4 cantidadformateada: 8.0. preciolimit: 25.57
+Compensación 5 cantidadformateada: 11.0. preciolimit: 25.1
+Compensación 6 cantidadformateada: 14.0. preciolimit: 24.64
+Compensación 7 cantidadformateada: 18.0. preciolimit: 24.17
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 23.541088457480004
+Precio Stop creado.
+
+*********************************************************************************************
