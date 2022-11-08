@@ -5,6 +5,6 @@ import sys
 sys.path.insert(1,'./')
 import santa3 as san
 par='FTTUSDT'
-lado='SELL'
+lado='BUY'
 #san.trading(par,lado,10)
 san.updating(par,lado)
