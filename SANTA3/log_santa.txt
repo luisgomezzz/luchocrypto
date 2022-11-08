@@ -19,3 +19,43 @@ Precio Stop sugerido: 23.541088457480004
 Precio Stop creado.
 
 *********************************************************************************************
+
+Par: SOLUSDT - Variación: 2.98% - Variación diaria: 10.0%
+Trade - SOLUSDT - BUY - Hora:08/Nov/2022 11:37:40
+
+EntryPrice: 26.89
+Quantity: 3.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3.0. preciolimit: 26.43
+Compensación 2 cantidadformateada: 5.0. preciolimit: 25.97
+Compensación 3 cantidadformateada: 6.0. preciolimit: 25.51
+Compensación 4 cantidadformateada: 8.0. preciolimit: 25.06
+Compensación 5 cantidadformateada: 11.0. preciolimit: 24.6
+Compensación 6 cantidadformateada: 14.0. preciolimit: 24.14
+Compensación 7 cantidadformateada: 18.0. preciolimit: 23.69
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 23.026788125479996
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: LINKUSDT - Variación: 2.52% - Variación diaria: 6.37%
+Trade - LINKUSDT - BUY - Hora:08/Nov/2022 11:39:07
+
+EntryPrice: 8.392
+Quantity: 11.94
+distancia: 1.7
+Compensación 1 cantidadformateada: 15.52. preciolimit: 8.249
+Compensación 2 cantidadformateada: 20.17. preciolimit: 8.106
+Compensación 3 cantidadformateada: 26.23. preciolimit: 7.964
+Compensación 4 cantidadformateada: 34.1. preciolimit: 7.821
+Compensación 5 cantidadformateada: 44.33. preciolimit: 7.678
+Compensación 6 cantidadformateada: 57.63. preciolimit: 7.536
+Compensación 7 cantidadformateada: 74.92. preciolimit: 7.393
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 7.342862206045158
+Precio Stop creado.
+
+*********************************************************************************************
