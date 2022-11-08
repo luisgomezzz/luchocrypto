@@ -1,0 +1,3707 @@
+*********************************************************************************************
+
+Variacion: 3.021718602455148
+Trade - OPUSDT - SELL
+
+EntryPrice: 1.093616
+Quantity: -214.5
+distancia: 1.7
+Compensación 1 cantidadformateada: 278.8. preciolimit: 1.1122
+Compensación 2 cantidadformateada: 362.5. preciolimit: 1.1308
+Compensación 3 cantidadformateada: 471.2. preciolimit: 1.1494
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.2207900491224897
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.5429583702391465
+Trade - DOGEUSDT - SELL
+
+EntryPrice: 0.08164
+Quantity: -2864.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3723.0. preciolimit: 0.08303
+Compensación 2 cantidadformateada: 4840.0. preciolimit: 0.08442
+Compensación 3 cantidadformateada: 6292.0. preciolimit: 0.0858
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09116093824814038
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.899091700883405
+Trade - DOGEUSDT - SELL
+
+EntryPrice: 0.0828
+Quantity: -2847.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3701.0. preciolimit: 0.08421
+Compensación 2 cantidadformateada: 4811.0. preciolimit: 0.08562
+Compensación 3 cantidadformateada: 6254.0. preciolimit: 0.08702
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09243648252821551
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.135498320268759
+Trade - DOGEUSDT - SELL
+
+EntryPrice: 0.0829
+Quantity: -2847.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3701.0. preciolimit: 0.08431
+Compensación 2 cantidadformateada: 4811.0. preciolimit: 0.08572
+Compensación 3 cantidadformateada: 6254.0. preciolimit: 0.08713
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09254518066898496
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.843315184513018
+Trade - DOGEUSDT - BUY
+
+EntryPrice: 0.07959
+Quantity: 2961.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3849.0. preciolimit: 0.07824
+Compensación 2 cantidadformateada: 5004.0. preciolimit: 0.07688
+Compensación 3 cantidadformateada: 6505.0. preciolimit: 0.07553
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.07030997218761638
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.019921329780484
+Trade - DOGEUSDT - SELL
+
+EntryPrice: 0.08124
+Quantity: -2914.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3788.0. preciolimit: 0.08262
+Compensación 2 cantidadformateada: 4924.0. preciolimit: 0.084
+Compensación 3 cantidadformateada: 6402.0. preciolimit: 0.08538
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09069400511547396
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.19
+Trade - DOGEUSDT - SELL - Hora:28/Oct/2022 10:02:04
+
+EntryPrice: 0.08434
+Quantity: -2822.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3668.0. preciolimit: 0.08577
+Compensación 2 cantidadformateada: 4769.0. preciolimit: 0.08721
+Compensación 3 cantidadformateada: 6199.0. preciolimit: 0.08864
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09412562741029397
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.67
+Trade - OPUSDT - SELL - Hora:28/Oct/2022 10:09:17
+
+EntryPrice: 1.112493
+Quantity: -212.9
+distancia: 1.7
+Compensación 1 cantidadformateada: 276.7. preciolimit: 1.1314
+Compensación 2 cantidadformateada: 359.8. preciolimit: 1.1503
+Compensación 3 cantidadformateada: 467.7. preciolimit: 1.1692
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.2420778373180352
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.97
+Trade - SUSHIUSDT - SELL - Hora:28/Oct/2022 10:13:04
+
+EntryPrice: 1.664
+Quantity: -142.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 184.0. preciolimit: 1.692
+Compensación 2 cantidadformateada: 239.0. preciolimit: 1.721
+Compensación 3 cantidadformateada: 311.0. preciolimit: 1.749
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.8586905902637165
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.55
+Trade - DOGEUSDT - SELL - Hora:28/Oct/2022 10:19:33
+
+EntryPrice: 0.08502
+Quantity: -2788.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3624.0. preciolimit: 0.08647
+Compensación 2 cantidadformateada: 4711.0. preciolimit: 0.08791
+Compensación 3 cantidadformateada: 6125.0. preciolimit: 0.08936
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09492552485206328
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71
+Trade - DYDXUSDT - SELL - Hora:28/Oct/2022 11:30:11
+
+EntryPrice: 1.739
+Quantity: -137.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 178.8. preciolimit: 1.769
+Compensación 2 cantidadformateada: 232.5. preciolimit: 1.798
+Compensación 3 cantidadformateada: 302.3. preciolimit: 1.828
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9417094350865365
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59
+Trade - DOGEUSDT - SELL - Hora:28/Oct/2022 11:32:00
+
+EntryPrice: 0.08478
+Quantity: -2824.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3671.0. preciolimit: 0.08622
+Compensación 2 cantidadformateada: 4772.0. preciolimit: 0.08766
+Compensación 3 cantidadformateada: 6204.0. preciolimit: 0.0891
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09465003924505193
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.64
+Trade - OPUSDT - SELL - Hora:28/Oct/2022 13:21:55
+
+EntryPrice: 1.1677
+Quantity: -205.7
+distancia: 1.7
+Compensación 1 cantidadformateada: 267.4. preciolimit: 1.1876
+Compensación 2 cantidadformateada: 347.6. preciolimit: 1.2074
+Compensación 3 cantidadformateada: 451.9. preciolimit: 1.2273
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.3035915854508344
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.74
+Trade - ATOMUSDT - SELL - Hora:28/Oct/2022 13:22:54
+
+EntryPrice: 13.656826
+Quantity: -17.65
+distancia: 1.7
+Compensación 1 cantidadformateada: 22.94. preciolimit: 13.889
+Compensación 2 cantidadformateada: 29.82. preciolimit: 14.121
+Compensación 3 cantidadformateada: 38.77. preciolimit: 14.353
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 15.246070977930481
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.9
+Trade - DOGEUSDT - SELL - Hora:28/Oct/2022 13:25:23
+
+EntryPrice: 0.08783
+Quantity: -2747.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3571.0. preciolimit: 0.08932
+Compensación 2 cantidadformateada: 4642.0. preciolimit: 0.09082
+Compensación 3 cantidadformateada: 6035.0. preciolimit: 0.09231
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.09805042903818433
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.91
+
+OPORTUNIDAD. Equipo liquidando
+Trade - APTUSDT - BUY - Hora:28/Oct/2022 13:31:32
+
+EntryPrice: 8.379
+Quantity: 28.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 37.4. preciolimit: 8.237
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 63.2. preciolimit: 7.952
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 6.89482604102719
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51
+Trade - APEUSDT - SELL - Hora:28/Oct/2022 13:44:36
+
+EntryPrice: 4.847
+Quantity: -49.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 63.0. preciolimit: 4.929
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 107.0. preciolimit: 5.094
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 5.723891279647324
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.551217626594504
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - KLAYUSDT - BUY - Hora:28/Oct/2022 21:48:04
+
+EntryPrice: 0.251
+Quantity: 971.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 1262.5. preciolimit: 0.2467
+Compensación 2 cantidadformateada: 1641.3. preciolimit: 0.2425
+Compensación 3 cantidadformateada: 2133.7. preciolimit: 0.2382
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.22172727779858065
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.84
+
+
+Trade - OPUSDT - SELL - Hora:29/Oct/2022 05:20:01
+
+EntryPrice: 1.155
+Quantity: -211.5
+distancia: 1.7
+Compensación 1 cantidadformateada: 274.9. preciolimit: 1.1746
+Compensación 2 cantidadformateada: 357.4. preciolimit: 1.1943
+Compensación 3 cantidadformateada: 464.6. preciolimit: 1.2139
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.2894821575521447
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.73
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - KLAYUSDT - BUY - Hora:29/Oct/2022 05:28:25
+
+EntryPrice: 0.2521
+Quantity: 969.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 1260.7. preciolimit: 0.2478
+Compensación 2 cantidadformateada: 1638.9. preciolimit: 0.2435
+Compensación 3 cantidadformateada: 2130.6. preciolimit: 0.2392
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.22275656248203854
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71
+
+
+Trade - ETHUSDT - SELL - Hora:29/Oct/2022 05:31:11
+
+EntryPrice: 1636.77
+Quantity: -0.149
+distancia: 1.7
+Compensación 1 cantidadformateada: 0.193. preciolimit: 1664.6
+Compensación 2 cantidadformateada: 0.251. preciolimit: 1692.42
+Compensación 3 cantidadformateada: 0.327. preciolimit: 1720.25
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1827.9260404494103
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.38
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 06:17:07
+
+EntryPrice: 1.744
+Quantity: -140.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 182.0. preciolimit: 1.774
+Compensación 2 cantidadformateada: 236.0. preciolimit: 1.803
+Compensación 3 cantidadformateada: 307.0. preciolimit: 1.833
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9475813674784945
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.06
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 06:24:57
+
+EntryPrice: 1.745
+Quantity: -140.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 182.0. preciolimit: 1.775
+Compensación 2 cantidadformateada: 236.0. preciolimit: 1.804
+Compensación 3 cantidadformateada: 307.0. preciolimit: 1.834
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9486963474453407
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.0161206448258038
+
+
+Trade - ENSUSDT - BUY - Hora:29/Oct/2022 06:52:37
+
+EntryPrice: 18.627
+Quantity: 13.1
+distancia: 1.7
+Compensación 1 cantidadformateada: 17.0. preciolimit: 18.31
+Compensación 2 cantidadformateada: 22.1. preciolimit: 17.994
+Compensación 3 cantidadformateada: 28.7. preciolimit: 17.677
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 16.44771258380268
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.61
+
+
+Trade - PEOPLEUSDT - SELL - Hora:29/Oct/2022 12:58:17
+
+EntryPrice: 0.02129
+Quantity: -11288.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 14674.0. preciolimit: 0.02165
+Compensación 2 cantidadformateada: 19076.0. preciolimit: 0.02201
+Compensación 3 cantidadformateada: 24799.0. preciolimit: 0.02238
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.023765393098783248
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.95
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 13:00:11
+
+EntryPrice: 1.779
+Quantity: -134.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 174.0. preciolimit: 1.809
+Compensación 2 cantidadformateada: 226.0. preciolimit: 1.839
+Compensación 3 cantidadformateada: 294.0. preciolimit: 1.87
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9873054393885765
+Precio Stop creado.
+
+*********************************************************************************************
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 13:04:30
+
+EntryPrice: 1.777996
+Quantity: -269.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 349.0. preciolimit: 1.808
+Compensación 2 cantidadformateada: 454.0. preciolimit: 1.838
+Compensación 3 cantidadformateada: 590.0. preciolimit: 1.869
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.8999502839893025
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.576048086433825
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 17:31:27
+
+EntryPrice: 0.125823
+Quantity: 1917.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2492.0. preciolimit: 0.12368
+Compensación 2 cantidadformateada: 3239.0. preciolimit: 0.12155
+Compensación 3 cantidadformateada: 4211.0. preciolimit: 0.11941
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.11118546501234892
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.01
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 17:47:27
+
+EntryPrice: 0.129819
+Quantity: -1862.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2420.0. preciolimit: 0.13203
+Compensación 2 cantidadformateada: 3146.0. preciolimit: 0.13423
+Compensación 3 cantidadformateada: 4090.0. preciolimit: 0.13644
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.14492429352780023
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.88
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 18:45:55
+
+EntryPrice: 0.130569
+Quantity: -1855.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2411.0. preciolimit: 0.13279
+Compensación 2 cantidadformateada: 3134.0. preciolimit: 0.13501
+Compensación 3 cantidadformateada: 4075.0. preciolimit: 0.13723
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.14575912836763513
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.01633850020947
+
+
+Trade - INJUSDT - BUY - Hora:29/Oct/2022 18:46:51
+
+EntryPrice: 2.293
+Quantity: 105.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 137.2. preciolimit: 2.254
+Compensación 2 cantidadformateada: 178.4. preciolimit: 2.215
+Compensación 3 cantidadformateada: 232.0. preciolimit: 2.176
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.0261707400557922
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.686635944700467
+
+
+Trade - INJUSDT - BUY - Hora:29/Oct/2022 19:06:25
+
+EntryPrice: 2.304
+Quantity: 105.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 137.0. preciolimit: 2.265
+Compensación 2 cantidadformateada: 178.1. preciolimit: 2.226
+Compensación 3 cantidadformateada: 231.5. preciolimit: 2.186
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.0362069269726515
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.7486409922670596
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 19:12:23
+
+EntryPrice: 0.127
+Quantity: 1913.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2486.0. preciolimit: 0.12484
+Compensación 2 cantidadformateada: 3232.0. preciolimit: 0.12268
+Compensación 3 cantidadformateada: 4202.0. preciolimit: 0.12052
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.11223201819355258
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.5723719573063186
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 19:17:48
+
+EntryPrice: 0.1267
+Quantity: 1918.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2493.0. preciolimit: 0.12455
+Compensación 2 cantidadformateada: 3241.0. preciolimit: 0.12239
+Compensación 3 cantidadformateada: 4213.0. preciolimit: 0.12024
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1119600891692368
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.28700811992505
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 19:39:17
+
+EntryPrice: 0.123127
+Quantity: 1973.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2564.0. preciolimit: 0.12103
+Compensación 2 cantidadformateada: 3334.0. preciolimit: 0.11894
+Compensación 3 cantidadformateada: 4334.0. preciolimit: 0.11685
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10878412621870827
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.560274828232346
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 19:40:34
+
+EntryPrice: 0.12307
+Quantity: 1979.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2572.0. preciolimit: 0.12098
+Compensación 2 cantidadformateada: 3344.0. preciolimit: 0.11889
+Compensación 3 cantidadformateada: 4347.0. preciolimit: 0.11679
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10875757804388854
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.7164272329793913
+
+
+Trade - DOGEUSDT - BUY - Hora:29/Oct/2022 19:43:49
+
+EntryPrice: 0.12229
+Quantity: 1989.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2585.0. preciolimit: 0.12021
+Compensación 2 cantidadformateada: 3361.0. preciolimit: 0.11813
+Compensación 3 cantidadformateada: 4369.0. preciolimit: 0.11605
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10803427079483302
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.76
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 19:57:40
+
+EntryPrice: 1.816
+Quantity: -134.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 174.0. preciolimit: 1.847
+Compensación 2 cantidadformateada: 226.0. preciolimit: 1.878
+Compensación 3 cantidadformateada: 294.0. preciolimit: 1.909
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.0283901647911984
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 3.5082458770614777
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - KLAYUSDT - BUY - Hora:29/Oct/2022 20:00:10
+
+EntryPrice: 0.3206
+Quantity: 762.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 991.6. preciolimit: 0.3151
+Compensación 2 cantidadformateada: 1289.1. preciolimit: 0.3096
+Compensación 3 cantidadformateada: 1675.8. preciolimit: 0.3042
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.28326322791128633
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 20:13:58
+
+EntryPrice: 1.845
+Quantity: -132.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 171.0. preciolimit: 1.876
+Compensación 2 cantidadformateada: 223.0. preciolimit: 1.908
+Compensación 3 cantidadformateada: 290.0. preciolimit: 1.939
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.0609555060475286
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.77
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 20:52:32
+
+EntryPrice: 0.120413
+Quantity: -2046.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2659.0. preciolimit: 0.12246
+Compensación 2 cantidadformateada: 3457.0. preciolimit: 0.12451
+Compensación 3 cantidadformateada: 4495.0. preciolimit: 0.12656
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.13441893271305821
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 2.73
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 2.53
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 2.61
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 3.24
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 3.4
+
+OPORTUNIDAD. Equipo liquidando. Chequear máximos históricos...
+
+
+Trade - APTUSDT - BUY - Hora:29/Oct/2022 21:17:55
+
+EntryPrice: 8.228
+Quantity: 30.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 0. preciolimit: 0
+Compensación 2 cantidadformateada: 50.7. preciolimit: 7.948
+Compensación 3 cantidadformateada: 65.9. preciolimit: 7.808
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 6.874174122032217
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.816020025031296
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - KLAYUSDT - BUY - Hora:29/Oct/2022 21:18:25
+
+EntryPrice: 0.3096
+Quantity: 798.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1037.4. preciolimit: 0.3043
+Compensación 2 cantidadformateada: 1348.6. preciolimit: 0.299
+Compensación 3 cantidadformateada: 1753.2. preciolimit: 0.2938
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2735317694973304
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.5674499564839026
+
+
+Trade - INJUSDT - BUY - Hora:29/Oct/2022 21:27:25
+
+EntryPrice: 2.239
+Quantity: 110.5
+distancia: 1.7
+Compensación 1 cantidadformateada: 143.6. preciolimit: 2.201
+Compensación 2 cantidadformateada: 186.7. preciolimit: 2.163
+Compensación 3 cantidadformateada: 242.7. preciolimit: 2.125
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9784328286343014
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.7221777421937543
+
+
+Trade - THETAUSDT - BUY - Hora:29/Oct/2022 21:34:30
+
+EntryPrice: 1.211
+Quantity: 204.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 265.7. preciolimit: 1.19
+Compensación 2 cantidadformateada: 345.4. preciolimit: 1.17
+Compensación 3 cantidadformateada: 449.0. preciolimit: 1.149
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.0700596116155732
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.504725897920612
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - PEOPLEUSDT - BUY - Hora:29/Oct/2022 21:38:25
+
+EntryPrice: 0.02063
+Quantity: 11997.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15596.0. preciolimit: 0.02028
+Compensación 2 cantidadformateada: 20274.0. preciolimit: 0.01993
+Compensación 3 cantidadformateada: 26357.0. preciolimit: 0.01958
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.01823092993497608
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.7
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 21:46:27
+
+EntryPrice: 0.11942
+Quantity: -2073.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2694.0. preciolimit: 0.12145
+Compensación 2 cantidadformateada: 3503.0. preciolimit: 0.12348
+Compensación 3 cantidadformateada: 4554.0. preciolimit: 0.12551
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1333167816824063
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variacion: 2.51130085384228
+
+OPORTUNIDAD. Equipo liquidando
+
+
+Trade - APTUSDT - BUY - Hora:29/Oct/2022 21:49:28
+
+EntryPrice: 8.141835
+Quantity: 30.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 39.5. preciolimit: 8.003
+Compensación 2 cantidadformateada: 51.3. preciolimit: 7.865
+Compensación 3 cantidadformateada: 66.7. preciolimit: 7.727
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 7.19277338708751
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.9
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 22:07:21
+
+EntryPrice: 0.12115
+Quantity: -2054.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2670.0. preciolimit: 0.12321
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 4512.0. preciolimit: 0.12733
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1425845936206605
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.1
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 22:14:43
+
+EntryPrice: 0.12155
+Quantity: -2051.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2666.0. preciolimit: 0.12362
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 4506.0. preciolimit: 0.12775
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.14307113393661222
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.44
+
+
+Trade - DOGEUSDT - SELL - Hora:29/Oct/2022 22:23:43
+
+EntryPrice: 0.12165
+Quantity: -2052.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2667.0. preciolimit: 0.12372
+Compensación 2 cantidadformateada: 3467.0. preciolimit: 0.12579
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 0.13581829781797128
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71
+
+
+Trade - UNIUSDT - SELL - Hora:29/Oct/2022 22:26:20
+
+EntryPrice: 7.193588
+Quantity: -34.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 44.0. preciolimit: 7.316
+Compensación 2 cantidadformateada: 57.0. preciolimit: 7.438
+Compensación 3 cantidadformateada: 74.0. preciolimit: 7.56
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 8.048458469896266
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.75
+
+
+Trade - SUSHIUSDT - SELL - Hora:29/Oct/2022 22:33:08
+
+EntryPrice: 1.86
+Quantity: -134.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 174.0. preciolimit: 1.892
+Compensación 2 cantidadformateada: 226.0. preciolimit: 1.923
+Compensación 3 cantidadformateada: 294.0. preciolimit: 1.955
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.0771550055000003
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.79% - Variación diaria: -3.47%
+
+
+Trade - DOGEUSDT - SELL - Hora:30/Oct/2022 17:47:27
+
+EntryPrice: 0.11748
+Quantity: -2018.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2623.0. preciolimit: 0.11948
+Compensación 2 cantidadformateada: 3410.0. preciolimit: 0.12147
+Compensación 3 cantidadformateada: 4433.0. preciolimit: 0.12347
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.13116444235411748
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.22% - Variación diaria: -5.08
+Trade - DOGEUSDT - BUY - Hora:30/Oct/2022 18:53:01
+
+EntryPrice: 0.11569
+Quantity: 2060.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2678.0. preciolimit: 0.11372
+Compensación 2 cantidadformateada: 3481.0. preciolimit: 0.11176
+Compensación 3 cantidadformateada: 4525.0. preciolimit: 0.10979
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10222267331755687
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51% - Variación diaria: 4.95
+Trade - SANDUSDT - BUY - Hora:30/Oct/2022 19:18:18
+
+EntryPrice: 0.8505
+Quantity: 280.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 364.0. preciolimit: 0.836
+Compensación 2 cantidadformateada: 473.0. preciolimit: 0.8216
+Compensación 3 cantidadformateada: 615.0. preciolimit: 0.8071
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.7513002487273948
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.57% - Variación diaria: -6.58
+Trade - OPUSDT - BUY - Hora:30/Oct/2022 19:18:47
+
+EntryPrice: 1.018799
+Quantity: 234.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 304.9. preciolimit: 1.0015
+Compensación 2 cantidadformateada: 396.4. preciolimit: 0.9842
+Compensación 3 cantidadformateada: 515.4. preciolimit: 0.9668
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.9003695354701357
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 17.31
+Trade - GALAUSDT - BUY - Hora:30/Oct/2022 19:19:40
+
+EntryPrice: 0.043044
+Quantity: 5558.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 7225.0. preciolimit: 0.04231
+Compensación 2 cantidadformateada: 9393.0. preciolimit: 0.04158
+Compensación 3 cantidadformateada: 12210.0. preciolimit: 0.04084
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.03804356367020707
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 2.29
+Trade - GMTUSDT - BUY - Hora:30/Oct/2022 19:20:04
+
+EntryPrice: 0.529192
+Quantity: 451.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 586.0. preciolimit: 0.5202
+Compensación 2 cantidadformateada: 762.0. preciolimit: 0.5112
+Compensación 3 cantidadformateada: 990.0. preciolimit: 0.5022
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.46759747336797736
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.6% - Variación diaria: -9.83
+Trade - SUSHIUSDT - BUY - Hora:30/Oct/2022 19:20:52
+
+EntryPrice: 1.675
+Quantity: 142.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 184.0. preciolimit: 1.647
+Compensación 2 cantidadformateada: 239.0. preciolimit: 1.618
+Compensación 3 cantidadformateada: 311.0. preciolimit: 1.59
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.4792562275920358
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.67% - Variación diaria: -2.64
+Trade - AXSUSDT - BUY - Hora:30/Oct/2022 19:22:09
+
+EntryPrice: 9.07
+Quantity: 26.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 33.0. preciolimit: 8.92
+Compensación 2 cantidadformateada: 43.0. preciolimit: 8.76
+Compensación 3 cantidadformateada: 57.0. preciolimit: 8.61
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 7.990678445009806
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.97% - Variación diaria: -4.03
+Trade - OPUSDT - SELL - Hora:30/Oct/2022 19:48:44
+
+EntryPrice: 1.040899
+Quantity: -231.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 300.3. preciolimit: 1.0586
+Compensación 2 cantidadformateada: 390.3. preciolimit: 1.0763
+Compensación 3 cantidadformateada: 507.5. preciolimit: 1.094
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.1621166235194227
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71% - Variación diaria: 13.07
+Trade - CHZUSDT - SELL - Hora:30/Oct/2022 19:50:08
+
+EntryPrice: 0.22286
+Quantity: -1079.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1402.0. preciolimit: 0.22665
+Compensación 2 cantidadformateada: 1823.0. preciolimit: 0.23044
+Compensación 3 cantidadformateada: 2370.0. preciolimit: 0.23423
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.24881344135652878
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.53% - Variación diaria: 19.36
+Trade - GALAUSDT - SELL - Hora:30/Oct/2022 19:51:03
+
+EntryPrice: 0.04365
+Quantity: -5510.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 7163.0. preciolimit: 0.04439
+Compensación 2 cantidadformateada: 9311.0. preciolimit: 0.04513
+Compensación 3 cantidadformateada: 12105.0. preciolimit: 0.04588
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.048728373869132105
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: -7.18
+Trade - DOGEUSDT - BUY - Hora:30/Oct/2022 20:17:26
+
+EntryPrice: 0.11362
+Quantity: 2130.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2769.0. preciolimit: 0.11169
+Compensación 2 cantidadformateada: 3599.0. preciolimit: 0.10976
+Compensación 3 cantidadformateada: 4679.0. preciolimit: 0.10783
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10040479399029184
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.82% - Variación diaria: -3.72
+Trade - DOGEUSDT - SELL - Hora:30/Oct/2022 20:36:17
+
+EntryPrice: 0.11727
+Quantity: -2065.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2684.0. preciolimit: 0.11926
+Compensación 2 cantidadformateada: 3489.0. preciolimit: 0.12126
+Compensación 3 cantidadformateada: 4536.0. preciolimit: 0.12325
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1309390547856276
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.53% - Variación diaria: 2.08%
+Trade - DOGEUSDT - SELL - Hora:30/Oct/2022 21:06:12
+
+EntryPrice: 0.11985
+Quantity: -2018.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2623.0. preciolimit: 0.12189
+Compensación 2 cantidadformateada: 3410.0. preciolimit: 0.12392
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 0.13383120728524406
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.69% - Variación diaria: 2.3%
+Trade - OPUSDT - SELL - Hora:30/Oct/2022 21:14:09
+
+EntryPrice: 1.0663
+Quantity: -227.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 295.8. preciolimit: 1.0844
+Compensación 2 cantidadformateada: 384.6. preciolimit: 1.1026
+Compensación 3 cantidadformateada: 500.0. preciolimit: 1.1207
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.1904708601387668
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: -1.73%
+Trade - GALAUSDT - BUY - Hora:30/Oct/2022 21:17:11
+
+EntryPrice: 0.0431
+Quantity: 5632.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 7321.0. preciolimit: 0.04237
+Compensación 2 cantidadformateada: 9518.0. preciolimit: 0.04163
+Compensación 3 cantidadformateada: 12373.0. preciolimit: 0.0409
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.03808205413920164
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.29% - Variación diaria: 2.72%
+Trade - DOGEUSDT - SELL - Hora:30/Oct/2022 21:18:37
+
+EntryPrice: 0.12088
+Quantity: -2007.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2609.0. preciolimit: 0.12293
+Compensación 2 cantidadformateada: 3391.0. preciolimit: 0.12499
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 0.1349549628067316
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.86% - Variación diaria: 0.76%
+Trade - OPUSDT - BUY - Hora:30/Oct/2022 21:38:32
+
+EntryPrice: 1.0511
+Quantity: 233.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 0. preciolimit: 0
+Compensación 2 cantidadformateada: 394.7. preciolimit: 1.0154
+Compensación 3 cantidadformateada: 513.2. preciolimit: 0.9975
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.8783485416305903
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.5% - Variación diaria: -1.17%
+Trade - KLAYUSDT - BUY - Hora:30/Oct/2022 21:45:26
+
+EntryPrice: 0.2645
+Quantity: 930.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 1209.2. preciolimit: 0.26
+Compensación 2 cantidadformateada: 1572.0. preciolimit: 0.2555
+Compensación 3 cantidadformateada: 2043.6. preciolimit: 0.251
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.23372651889623858
+Precio Stop creado.
+
+*********************************************************************************************
+
+OPORTUNIDAD KLAYUSDT. Equipo liquidando. Chequear máximos históricos...
+
+Variación: 3.18% - Variación diaria: 1.62%
+Trade - CHZUSDT - SELL - Hora:30/Oct/2022 21:49:37
+
+EntryPrice: 0.2302
+Quantity: -1067.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1387.0. preciolimit: 0.23411
+Compensación 2 cantidadformateada: 1803.0. preciolimit: 0.23803
+Compensación 3 cantidadformateada: 2344.0. preciolimit: 0.24194
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2570331971235612
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.23% - Variación diaria: 1.36%
+Trade - CHZUSDT - SELL - Hora:30/Oct/2022 21:51:13
+
+EntryPrice: 0.2301
+Quantity: -1070.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1391.0. preciolimit: 0.23401
+Compensación 2 cantidadformateada: 1808.0. preciolimit: 0.23792
+Compensación 3 cantidadformateada: 2350.0. preciolimit: 0.24184
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2568937035031623
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.69% - Variación diaria: -1.23%
+Trade - WAVESUSDT - BUY - Hora:30/Oct/2022 21:53:44
+
+EntryPrice: 3.467
+Quantity: 71.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 92.3. preciolimit: 3.408
+Compensación 2 cantidadformateada: 119.9. preciolimit: 3.349
+Compensación 3 cantidadformateada: 155.9. preciolimit: 3.29
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 3.0630840255137706
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.96% - Variación diaria: -5.2%
+Trade - GALAUSDT - BUY - Hora:30/Oct/2022 21:54:47
+
+EntryPrice: 0.04168
+Quantity: 5911.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 7684.0. preciolimit: 0.04097
+Compensación 2 cantidadformateada: 9989.0. preciolimit: 0.04025
+Compensación 3 cantidadformateada: 12986.0. preciolimit: 0.03955
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.03682394677944792
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.89% - Variación diaria: 2.57%
+
+Variación: 2.67% - Variación diaria: 1.31%
+Trade - SANDUSDT - SELL - Hora:30/Oct/2022 22:19:04
+
+EntryPrice: 0.8726
+Quantity: -283.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 367.0. preciolimit: 0.8874
+Compensación 2 cantidadformateada: 478.0. preciolimit: 0.9023
+Compensación 3 cantidadformateada: 621.0. preciolimit: 0.9171
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.9743224258820921
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.19% - Variación diaria: 2.92%
+
+Variación: 2.77% - Variación diaria: 1.34%
+Trade - DOGEUSDT - BUY - Hora:30/Oct/2022 22:43:16
+
+EntryPrice: 0.11848
+Quantity: 2095.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2723.0. preciolimit: 0.11647
+Compensación 2 cantidadformateada: 3540.0. preciolimit: 0.11445
+Compensación 3 cantidadformateada: 4602.0. preciolimit: 0.11244
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1047069001599665
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.7% - Variación diaria: 2.59%
+Trade - CHZUSDT - BUY - Hora:30/Oct/2022 22:51:27
+
+EntryPrice: 0.23277
+Quantity: 1071.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1392.0. preciolimit: 0.22881
+Compensación 2 cantidadformateada: 1809.0. preciolimit: 0.22486
+Compensación 3 cantidadformateada: 2352.0. preciolimit: 0.2209
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2056749869474485
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.53% - Variación diaria: 0.48%
+Trade - DOGEUSDT - BUY - Hora:30/Oct/2022 23:03:44
+
+EntryPrice: 0.11834
+Quantity: 2107.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2739.0. preciolimit: 0.11633
+Compensación 2 cantidadformateada: 3560.0. preciolimit: 0.11432
+Compensación 3 cantidadformateada: 4629.0. preciolimit: 0.1123
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.10456805371585771
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 0.24%
+Trade - SANDUSDT - BUY - Hora:30/Oct/2022 23:15:04
+
+EntryPrice: 0.858
+Quantity: 290.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 377.0. preciolimit: 0.8434
+Compensación 2 cantidadformateada: 490.0. preciolimit: 0.8288
+Compensación 3 cantidadformateada: 637.0. preciolimit: 0.8142
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.7579600107286084
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.66% - Variación diaria: 5.92%
+Trade - SUSHIUSDT - BUY - Hora:31/Oct/2022 17:57:40
+
+EntryPrice: 1.596
+Quantity: 157.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 204.0. preciolimit: 1.569
+Compensación 2 cantidadformateada: 265.0. preciolimit: 1.542
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 1.4099817473610223
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.81% - Variación diaria: 3.56%
+Trade - SANDUSDT - SELL - Hora:31/Oct/2022 21:48:26
+
+EntryPrice: 0.903202
+Quantity: -278.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 361.0. preciolimit: 0.9186
+Compensación 2 cantidadformateada: 469.0. preciolimit: 0.9339
+Compensación 3 cantidadformateada: 610.0. preciolimit: 0.9493
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.0085207729787953
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.57% - Variación diaria: 1.2%
+Trade - DOGEUSDT - SELL - Hora:31/Oct/2022 22:30:29
+
+EntryPrice: 0.12794
+Quantity: -1963.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2551.0. preciolimit: 0.13011
+Compensación 2 cantidadformateada: 3317.0. preciolimit: 0.13229
+Compensación 3 cantidadformateada: 4312.0. preciolimit: 0.13446
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1428591162507981
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.65% - Variación diaria: 3.43%
+Trade - CHZUSDT - SELL - Hora:01/Nov/2022 06:40:34
+
+EntryPrice: 0.22868
+Quantity: -1103.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1433.0. preciolimit: 0.23257
+Compensación 2 cantidadformateada: 1864.0. preciolimit: 0.23646
+Compensación 3 cantidadformateada: 2423.0. preciolimit: 0.24034
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2553155375102273
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 5.1%
+Trade - SANDUSDT - SELL - Hora:01/Nov/2022 07:22:09
+
+EntryPrice: 0.9157
+Quantity: -276.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 358.0. preciolimit: 0.9313
+Compensación 2 cantidadformateada: 466.0. preciolimit: 0.9468
+Compensación 3 cantidadformateada: 606.0. preciolimit: 0.9624
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.0223433944918183
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.83% - Variación diaria: 13.24%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 08:05:19
+
+EntryPrice: 0.14395
+Quantity: 1758.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2285.0. preciolimit: 0.1415
+Compensación 2 cantidadformateada: 2971.0. preciolimit: 0.13906
+Compensación 3 cantidadformateada: 3862.0. preciolimit: 0.13661
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.12719140947205584
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.79% - Variación diaria: 3.25%
+Trade - CHZUSDT - SELL - Hora:01/Nov/2022 08:27:08
+
+EntryPrice: 0.22784
+Quantity: -1109.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1441.0. preciolimit: 0.23171
+Compensación 2 cantidadformateada: 1874.0. preciolimit: 0.23559
+Compensación 3 cantidadformateada: 2436.0. preciolimit: 0.23946
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.25442944878447105
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.13% - Variación diaria: 8.65%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 09:05:24
+
+EntryPrice: 0.13786
+Quantity: 1848.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2402.0. preciolimit: 0.13552
+Compensación 2 cantidadformateada: 3123.0. preciolimit: 0.13317
+Compensación 3 cantidadformateada: 4060.0. preciolimit: 0.13083
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1218678715431982
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: 3.61%
+Trade - CHZUSDT - SELL - Hora:01/Nov/2022 09:15:47
+
+EntryPrice: 0.22888
+Quantity: -1109.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1441.0. preciolimit: 0.23277
+Compensación 2 cantidadformateada: 1874.0. preciolimit: 0.23666
+Compensación 3 cantidadformateada: 2436.0. preciolimit: 0.24055
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.25553873182414105
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: 3.61%
+Trade - CHZUSDT - SELL - Hora:01/Nov/2022 09:18:42
+
+EntryPrice: 0.228765
+Quantity: -1110.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1443.0. preciolimit: 0.23265
+Compensación 2 cantidadformateada: 1875.0. preciolimit: 0.23654
+Compensación 3 cantidadformateada: 2438.0. preciolimit: 0.24043
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2554246316579691
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.85% - Variación diaria: 3.07%
+Trade - CHZUSDT - BUY - Hora:01/Nov/2022 10:23:22
+
+EntryPrice: 0.22768
+Quantity: 1119.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1454.0. preciolimit: 0.22381
+Compensación 2 cantidadformateada: 1891.0. preciolimit: 0.21994
+Compensación 3 cantidadformateada: 2458.0. preciolimit: 0.21607
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.20116502121673388
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.69% - Variación diaria: 6.83%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 10:46:32
+
+EntryPrice: 0.13581
+Quantity: 1883.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2447.0. preciolimit: 0.1335
+Compensación 2 cantidadformateada: 3182.0. preciolimit: 0.13119
+Compensación 3 cantidadformateada: 4136.0. preciolimit: 0.12888
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.12004286394156019
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51% - Variación diaria: 0.21%
+Trade - SANDUSDT - BUY - Hora:01/Nov/2022 10:51:18
+
+EntryPrice: 0.8684
+Quantity: 293.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 380.0. preciolimit: 0.8536
+Compensación 2 cantidadformateada: 495.0. preciolimit: 0.8389
+Compensación 3 cantidadformateada: 643.0. preciolimit: 0.8241
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.7670304226506848
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.5% - Variación diaria: 0.05%
+Trade - SANDUSDT - BUY - Hora:01/Nov/2022 11:01:56
+
+EntryPrice: 0.87
+Quantity: 294.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 382.0. preciolimit: 0.8552
+Compensación 2 cantidadformateada: 496.0. preciolimit: 0.8404
+Compensación 3 cantidadformateada: 645.0. preciolimit: 0.8256
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.7685426727598125
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.74% - Variación diaria: 3.25%
+Trade - SUSHIUSDT - SELL - Hora:01/Nov/2022 11:33:20
+
+EntryPrice: 1.646
+Quantity: -155.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 201.0. preciolimit: 1.674
+Compensación 2 cantidadformateada: 261.0. preciolimit: 1.702
+Compensación 3 cantidadformateada: 340.0. preciolimit: 1.73
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.8385552387787683
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 11.58%
+Trade - DOGEUSDT - SELL - Hora:01/Nov/2022 12:28:49
+
+EntryPrice: 0.14121
+Quantity: -1816.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2360.0. preciolimit: 0.14361
+Compensación 2 cantidadformateada: 3069.0. preciolimit: 0.14601
+Compensación 3 cantidadformateada: 3989.0. preciolimit: 0.14841
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1576631489930297
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.87% - Variación diaria: 6.36%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 13:30:24
+
+EntryPrice: 0.13487
+Quantity: 1910.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2483.0. preciolimit: 0.13258
+Compensación 2 cantidadformateada: 3227.0. preciolimit: 0.13028
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 0.11917322705275589
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.06% - Variación diaria: 6.22%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 13:34:36
+
+EntryPrice: 0.13467
+Quantity: 1914.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2488.0. preciolimit: 0.13238
+Compensación 2 cantidadformateada: 3234.0. preciolimit: 0.13009
+Compensación 3 cantidadformateada: 4205.0. preciolimit: 0.1278
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.11898925285758255
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.72% - Variación diaria: 10.15%
+Trade - DOGEUSDT - SELL - Hora:01/Nov/2022 14:52:28
+
+EntryPrice: 0.14071
+Quantity: -1845.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2398.0. preciolimit: 0.1431
+Compensación 2 cantidadformateada: 3118.0. preciolimit: 0.14549
+Compensación 3 cantidadformateada: 4053.0. preciolimit: 0.14789
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1570169577852194
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.06% - Variación diaria: 10.24%
+Trade - DOGEUSDT - SELL - Hora:01/Nov/2022 14:54:35
+
+EntryPrice: 0.1399
+Quantity: -1854.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2410.0. preciolimit: 0.14228
+Compensación 2 cantidadformateada: 3133.0. preciolimit: 0.14466
+Compensación 3 cantidadformateada: 4073.0. preciolimit: 0.14703
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.15616068454778964
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: 10.27%
+Trade - DOGEUSDT - SELL - Hora:01/Nov/2022 15:06:20
+
+EntryPrice: 0.1396
+Quantity: -1856.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2412.0. preciolimit: 0.14197
+Compensación 2 cantidadformateada: 3136.0. preciolimit: 0.14435
+Compensación 3 cantidadformateada: 4077.0. preciolimit: 0.14672
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.15585522115829284
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.57% - Variación diaria: 2.89%
+Trade - CHZUSDT - SELL - Hora:01/Nov/2022 15:22:08
+
+EntryPrice: 0.2276
+Quantity: -1141.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1483.0. preciolimit: 0.23147
+Compensación 2 cantidadformateada: 1928.0. preciolimit: 0.23534
+Compensación 3 cantidadformateada: 2506.0. preciolimit: 0.23921
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.25407801797934976
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 2.14%
+Trade - DOGEUSDT - BUY - Hora:01/Nov/2022 22:53:35
+
+EntryPrice: 0.13942
+Quantity: 1865.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2424.0. preciolimit: 0.13704
+Compensación 2 cantidadformateada: 3151.0. preciolimit: 0.13467
+Compensación 3 cantidadformateada: 4097.0. preciolimit: 0.1323
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.12319461975685483
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.01% - Variación diaria: 9.56%
+Trade - LTCUSDT - BUY - Hora:02/Nov/2022 06:33:14
+
+Variación: 2.62% - Variación diaria: 1.39%
+Trade - ETCUSDT - BUY - Hora:02/Nov/2022 06:33:57
+
+EntryPrice: 23.698945
+Quantity: 11.1
+distancia: 1.7
+Compensación 1 cantidadformateada: 14.43. preciolimit: 23.296
+Compensación 2 cantidadformateada: 18.75. preciolimit: 22.893
+Compensación 3 cantidadformateada: 24.38. preciolimit: 22.49
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 20.939747869197042
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.44% - Variación diaria: 8.2%
+Trade - LTCUSDT - BUY - Hora:02/Nov/2022 06:42:30
+
+EntryPrice: 59.55
+Quantity: 4.424
+distancia: 1.7
+Compensación 1 cantidadformateada: 5.751. preciolimit: 58.53
+Compensación 2 cantidadformateada: 7.476. preciolimit: 57.52
+Compensación 3 cantidadformateada: 9.719. preciolimit: 56.51
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 52.61485337391649
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 8.33%
+Trade - LTCUSDT - BUY - Hora:02/Nov/2022 06:51:01
+
+EntryPrice: 59.61
+Quantity: 4.421
+distancia: 1.7
+Compensación 1 cantidadformateada: 5.747. preciolimit: 58.59
+Compensación 2 cantidadformateada: 7.471. preciolimit: 57.58
+Compensación 3 cantidadformateada: 9.712. preciolimit: 56.56
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 52.66459084267817
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.74% - Variación diaria: 11.7%
+Trade - PEOPLEUSDT - BUY - Hora:02/Nov/2022 06:52:26
+
+EntryPrice: 0.02179
+Quantity: 12075.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15697.0. preciolimit: 0.02141
+Compensación 2 cantidadformateada: 20406.0. preciolimit: 0.02104
+Compensación 3 cantidadformateada: 26528.0. preciolimit: 0.02067
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.019242346765037985
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.32% - Variación diaria: 10.58%
+Trade - PEOPLEUSDT - BUY - Hora:02/Nov/2022 06:56:31
+
+EntryPrice: 0.02163
+Quantity: 12200.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15860.0. preciolimit: 0.02126
+Compensación 2 cantidadformateada: 20618.0. preciolimit: 0.02089
+Compensación 3 cantidadformateada: 26803.0. preciolimit: 0.02052
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.019109121277589465
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.91% - Variación diaria: 10.58%
+Trade - PEOPLEUSDT - BUY - Hora:02/Nov/2022 07:03:34
+
+EntryPrice: 0.02157
+Quantity: 12219.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15884.0. preciolimit: 0.0212
+Compensación 2 cantidadformateada: 20650.0. preciolimit: 0.02083
+Compensación 3 cantidadformateada: 26845.0. preciolimit: 0.02046
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.01905009628965397
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.8% - Variación diaria: 13.6%
+Trade - APTUSDT - BUY - Hora:02/Nov/2022 07:04:01
+
+EntryPrice: 7.21
+Quantity: 36.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 47.5. preciolimit: 7.087
+Compensación 2 cantidadformateada: 61.8. preciolimit: 6.964
+Compensación 3 cantidadformateada: 80.4. preciolimit: 6.842
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 6.368810622673065
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.65% - Variación diaria: 3.5%
+Trade - CHZUSDT - SELL - Hora:02/Nov/2022 08:16:07
+
+EntryPrice: 0.23625
+Quantity: -1123.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1459.0. preciolimit: 0.24026
+Compensación 2 cantidadformateada: 1897.0. preciolimit: 0.24428
+Compensación 3 cantidadformateada: 2467.0. preciolimit: 0.24829
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2637366994958696
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.91% - Variación diaria: 3.9%
+Trade - CHZUSDT - SELL - Hora:02/Nov/2022 08:20:11
+
+EntryPrice: 0.236853
+Quantity: -1121.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1457.0. preciolimit: 0.24087
+Compensación 2 cantidadformateada: 1894.0. preciolimit: 0.2449
+Compensación 3 cantidadformateada: 2462.0. preciolimit: 0.24893
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2644103043009865
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.98% - Variación diaria: 0.55%
+Trade - PEOPLEUSDT - BUY - Hora:02/Nov/2022 21:02:34
+
+EntryPrice: 0.02339
+Quantity: 11395.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 14813.0. preciolimit: 0.02299
+Compensación 2 cantidadformateada: 19257.0. preciolimit: 0.02259
+Compensación 3 cantidadformateada: 25034.0. preciolimit: 0.02219
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.020664219502617397
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 1.57%
+Trade - LTCUSDT - SELL - Hora:02/Nov/2022 21:41:40
+
+EntryPrice: 61.85
+Quantity: -4.319
+distancia: 1.7
+Compensación 1 cantidadformateada: 5.614. preciolimit: 62.9
+Compensación 2 cantidadformateada: 7.299. preciolimit: 63.95
+Compensación 3 cantidadformateada: 9.488. preciolimit: 65.0
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 69.04823302620126
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.81% - Variación diaria: 2.54%
+Trade - MATICUSDT - SELL - Hora:02/Nov/2022 21:43:28
+
+EntryPrice: 0.8944
+Quantity: -298.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 387.0. preciolimit: 0.9096
+Compensación 2 cantidadformateada: 503.0. preciolimit: 0.9248
+Compensación 3 cantidadformateada: 654.0. preciolimit: 0.94
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.9987605136881315
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.14% - Variación diaria: 2.53%
+Trade - CHZUSDT - SELL - Hora:02/Nov/2022 22:02:36
+
+EntryPrice: 0.24561
+Quantity: -1086.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1411.0. preciolimit: 0.24978
+Compensación 2 cantidadformateada: 1835.0. preciolimit: 0.25396
+Compensación 3 cantidadformateada: 2385.0. preciolimit: 0.25813
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.274233055989843
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.82% - Variación diaria: 8.44%
+Trade - MASKUSDT - SELL - Hora:02/Nov/2022 22:08:30
+
+EntryPrice: 3.966
+Quantity: -66.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 85.0. preciolimit: 4.033
+Compensación 2 cantidadformateada: 111.0. preciolimit: 4.1
+Compensación 3 cantidadformateada: 145.0. preciolimit: 4.168
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 4.436756308740458
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.89% - Variación diaria: 1.23%
+Trade - PEOPLEUSDT - SELL - Hora:02/Nov/2022 22:54:07
+
+EntryPrice: 0.02377
+Quantity: -11268.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 14648.0. preciolimit: 0.02417
+Compensación 2 cantidadformateada: 19042.0. preciolimit: 0.02457
+Compensación 3 cantidadformateada: 24755.0. preciolimit: 0.02498
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.026534277560912402
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.21% - Variación diaria: 5.14%
+Trade - PEOPLEUSDT - SELL - Hora:02/Nov/2022 23:36:54
+
+EntryPrice: 0.02478
+Quantity: -10311.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 13404.0. preciolimit: 0.0252
+Compensación 2 cantidadformateada: 17425.0. preciolimit: 0.02562
+Compensación 3 cantidadformateada: 22653.0. preciolimit: 0.02604
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.027660188311533777
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.6% - Variación diaria: 3.79%
+Trade - OPUSDT - SELL - Hora:02/Nov/2022 23:47:53
+
+EntryPrice: 1.067
+Quantity: -238.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 310.4. preciolimit: 1.0851
+Compensación 2 cantidadformateada: 403.5. preciolimit: 1.1032
+Compensación 3 cantidadformateada: 524.6. preciolimit: 1.1214
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.1912954662149682
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.66% - Variación diaria: 4.85%
+Trade - OPUSDT - SELL - Hora:03/Nov/2022 00:50:35
+
+EntryPrice: 1.0781
+Quantity: -213.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 277.2. preciolimit: 1.0964
+Compensación 2 cantidadformateada: 360.4. preciolimit: 1.1147
+Compensación 3 cantidadformateada: 468.6. preciolimit: 1.133
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.203598977401575
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.84% - Variación diaria: 10.59%
+Trade - INJUSDT - BUY - Hora:03/Nov/2022 08:09:25
+
+EntryPrice: 2.780485
+Quantity: 75.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 98.5. preciolimit: 2.733
+Compensación 2 cantidadformateada: 128.1. preciolimit: 2.685
+Compensación 3 cantidadformateada: 166.5. preciolimit: 2.638
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.456242340886331
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.14% - Variación diaria: 7.39%
+Trade - PEOPLEUSDT - BUY - Hora:03/Nov/2022 08:11:33
+
+EntryPrice: 0.02528
+Quantity: 8351.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 10856.0. preciolimit: 0.02485
+Compensación 2 cantidadformateada: 14113.0. preciolimit: 0.02442
+Compensación 3 cantidadformateada: 18347.0. preciolimit: 0.02399
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.02234065631497599
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.56% - Variación diaria: 4.58%
+Trade - NEARUSDT - BUY - Hora:03/Nov/2022 08:20:57
+
+EntryPrice: 3.032
+Quantity: 69.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 89.0. preciolimit: 2.98
+Compensación 2 cantidadformateada: 116.0. preciolimit: 2.928
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 2.6742650434324817
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.92% - Variación diaria: 3.96%
+Trade - NEARUSDT - BUY - Hora:03/Nov/2022 08:38:52
+
+EntryPrice: 3.012
+Quantity: 79.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 102.0. preciolimit: 2.96
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 173.0. preciolimit: 2.858
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 2.4760943970607743
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: 1.08%
+Trade - DOGEUSDT - BUY - Hora:03/Nov/2022 08:48:41
+
+EntryPrice: 0.12849
+Quantity: 1847.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2401.0. preciolimit: 0.1263
+Compensación 2 cantidadformateada: 3121.0. preciolimit: 0.12412
+Compensación 3 cantidadformateada: 4057.0. preciolimit: 0.12193
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.11348357018849231
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.64% - Variación diaria: 12.56%
+Trade - MASKUSDT - BUY - Hora:03/Nov/2022 09:38:13
+
+EntryPrice: 4.868
+Quantity: 48.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 62.0. preciolimit: 4.785
+Compensación 2 cantidadformateada: 81.0. preciolimit: 4.702
+Compensación 3 cantidadformateada: 105.0. preciolimit: 4.619
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 4.2888134415733
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51% - Variación diaria: 3.3%
+Trade - OPUSDT - SELL - Hora:03/Nov/2022 10:13:54
+
+EntryPrice: 1.0618
+Quantity: -225.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 293.2. preciolimit: 1.0798
+Compensación 2 cantidadformateada: 381.2. preciolimit: 1.0979
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (3)
+Precio Stop sugerido: 1.185460979307778
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.73% - Variación diaria: 5.73%
+Trade - OPUSDT - SELL - Hora:03/Nov/2022 11:06:32
+
+EntryPrice: 1.0902
+Quantity: -221.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 287.3. preciolimit: 1.1087
+Compensación 2 cantidadformateada: 373.4. preciolimit: 1.1272
+Compensación 3 cantidadformateada: 485.5. preciolimit: 1.1458
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.2169758740869907
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.52% - Variación diaria: 5.36%
+Trade - SUSHIUSDT - SELL - Hora:03/Nov/2022 11:16:39
+
+EntryPrice: 1.706
+Quantity: -140.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 182.0. preciolimit: 1.735
+Compensación 2 cantidadformateada: 236.0. preciolimit: 1.764
+Compensación 3 cantidadformateada: 307.0. preciolimit: 1.793
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.9060069616353046
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.9% - Variación diaria: 4.42%
+Trade - ATOMUSDT - SELL - Hora:03/Nov/2022 11:37:16
+
+EntryPrice: 13.884
+Quantity: -17.37
+distancia: 1.7
+Compensación 1 cantidadformateada: 22.58. preciolimit: 14.12
+Compensación 2 cantidadformateada: 29.35. preciolimit: 14.356
+Compensación 3 cantidadformateada: 38.16. preciolimit: 14.592
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 15.499042722842711
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.87% - Variación diaria: 7.96%
+Trade - OPUSDT - SELL - Hora:03/Nov/2022 11:58:47
+
+EntryPrice: 1.111
+Quantity: -217.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 282.4. preciolimit: 1.1298
+Compensación 2 cantidadformateada: 367.2. preciolimit: 1.1487
+Compensación 3 cantidadformateada: 477.4. preciolimit: 1.1676
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 1.2402255135678855
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 8.64%
+Trade - CRVUSDT - BUY - Hora:04/Nov/2022 08:52:15
+
+EntryPrice: 0.98
+Quantity: 245.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 319.0. preciolimit: 0.963
+Compensación 2 cantidadformateada: 414.7. preciolimit: 0.946
+Compensación 3 cantidadformateada: 539.1. preciolimit: 0.93
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.8655661030839549
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71% - Variación diaria: 8.65%
+Trade - OCEANUSDT - BUY - Hora:04/Nov/2022 12:42:43
+
+EntryPrice: 0.21138
+Quantity: 1138.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1479.0. preciolimit: 0.20778
+Compensación 2 cantidadformateada: 1923.0. preciolimit: 0.20419
+Compensación 3 cantidadformateada: 2500.0. preciolimit: 0.20059
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.18675972965506613
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 0.49%
+Trade - DOGEUSDT - BUY - Hora:04/Nov/2022 12:58:11
+
+EntryPrice: 0.12319
+Quantity: 1954.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 2540.0. preciolimit: 0.12109
+Compensación 2 cantidadformateada: 3302.0. preciolimit: 0.119
+Compensación 3 cantidadformateada: 4292.0. preciolimit: 0.1169
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.1088512353993715
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.73% - Variación diaria: 5.17%
+Trade - FTMUSDT - BUY - Hora:04/Nov/2022 13:05:59
+
+EntryPrice: 0.2702
+Quantity: 892.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1159.0. preciolimit: 0.2656
+Compensación 2 cantidadformateada: 1507.0. preciolimit: 0.261
+Compensación 3 cantidadformateada: 1959.0. preciolimit: 0.2564
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.23872642203499153
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.44% - Variación diaria: 6.14%
+Trade - OCEANUSDT - SELL - Hora:04/Nov/2022 13:10:54
+
+EntryPrice: 0.21644
+Quantity: -1117.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1452.0. preciolimit: 0.22012
+Compensación 2 cantidadformateada: 1887.0. preciolimit: 0.22379
+Compensación 3 cantidadformateada: 2454.0. preciolimit: 0.22747
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.24161411601515792
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 4.47%
+Trade - CHZUSDT - SELL - Hora:04/Nov/2022 13:26:30
+
+EntryPrice: 0.24982
+Quantity: -970.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1261.0. preciolimit: 0.25406
+Compensación 2 cantidadformateada: 1639.0. preciolimit: 0.25831
+Compensación 3 cantidadformateada: 2131.0. preciolimit: 0.26256
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.27890731715387596
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.22% - Variación diaria: 3.32%
+Trade - OCEANUSDT - SELL - Hora:04/Nov/2022 13:36:45
+
+EntryPrice: 0.222103
+Quantity: -1094.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1422.0. preciolimit: 0.22587
+Compensación 2 cantidadformateada: 1848.0. preciolimit: 0.22965
+Compensación 3 cantidadformateada: 2403.0. preciolimit: 0.23343
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.24794762439666418
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.0% - Variación diaria: 3.31%
+Trade - ARUSDT - BUY - Hora:04/Nov/2022 13:45:41
+
+EntryPrice: 14.178
+Quantity: 17.1
+distancia: 1.7
+Compensación 1 cantidadformateada: 22.2. preciolimit: 13.936
+Compensación 2 cantidadformateada: 28.8. preciolimit: 13.695
+Compensación 3 cantidadformateada: 37.5. preciolimit: 13.454
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 12.518911445418503
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.24% - Variación diaria: 0.61%
+Trade - OCEANUSDT - SELL - Hora:04/Nov/2022 14:12:51
+
+EntryPrice: 0.22775
+Quantity: -1067.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 1387.0. preciolimit: 0.23162
+Compensación 2 cantidadformateada: 1803.0. preciolimit: 0.23549
+Compensación 3 cantidadformateada: 2344.0. preciolimit: 0.23936
+Cancela última compensación (3)
+Cancelada. 
+Precio Stop sugerido: 0.2543630245744656
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.59% - Variación diaria: 1.93%
+Trade - NEARUSDT - SELL - Hora:04/Nov/2022 21:28:26
+
+EntryPrice: 3.367
+Quantity: -37.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 48.0. preciolimit: 3.424
+Compensación 2 cantidadformateada: 62.0. preciolimit: 3.481
+Compensación 3 cantidadformateada: 81.0. preciolimit: 3.538
+Compensación 4 cantidadformateada: 105.0. preciolimit: 3.595
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 3.902559315024123
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.4% - Variación diaria: 3.61%
+Trade - AXSUSDT - SELL - Hora:04/Nov/2022 21:28:57
+
+Variación: 2.75% - Variación diaria: 4.54%
+Trade - AXSUSDT - SELL - Hora:04/Nov/2022 21:32:52
+
+EntryPrice: 10.1
+Quantity: -12.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15.0. preciolimit: 10.27
+Compensación 2 cantidadformateada: 20.0. preciolimit: 10.44
+Compensación 3 cantidadformateada: 26.0. preciolimit: 10.61
+Compensación 4 cantidadformateada: 34.0. preciolimit: 10.78
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 11.75832432637671
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.56% - Variación diaria: 0.85%
+Trade - ARUSDT - SELL - Hora:04/Nov/2022 21:35:28
+
+EntryPrice: 15.263
+Quantity: -8.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 10.7. preciolimit: 15.522
+Compensación 2 cantidadformateada: 14.0. preciolimit: 15.781
+Compensación 3 cantidadformateada: 18.2. preciolimit: 16.041
+Compensación 4 cantidadformateada: 23.7. preciolimit: 16.3
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 17.658029463164063
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.89% - Variación diaria: 0.03%
+Trade - BANDUSDT - SELL - Hora:04/Nov/2022 21:44:45
+
+EntryPrice: 2.738
+Quantity: -46.7
+distancia: 1.7
+Compensación 1 cantidadformateada: 60.7. preciolimit: 2.7845
+Compensación 2 cantidadformateada: 78.9. preciolimit: 2.831
+Compensación 3 cantidadformateada: 102.5. preciolimit: 2.8776
+Compensación 4 cantidadformateada: 133.3. preciolimit: 2.9241
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 3.1641047687794313
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.72% - Variación diaria: 5.05%
+Trade - AXSUSDT - SELL - Hora:04/Nov/2022 21:49:29
+
+EntryPrice: 10.17
+Quantity: -12.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 15.0. preciolimit: 10.34
+Compensación 2 cantidadformateada: 20.0. preciolimit: 10.51
+Compensación 3 cantidadformateada: 26.0. preciolimit: 10.68
+Compensación 4 cantidadformateada: 34.0. preciolimit: 10.86
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 11.832894574383563
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.89% - Variación diaria: 8.62%
+Trade - SANDUSDT - SELL - Hora:04/Nov/2022 21:51:50
+
+EntryPrice: 0.964275
+Quantity: -133.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 172.0. preciolimit: 0.9806
+Compensación 2 cantidadformateada: 224.0. preciolimit: 0.997
+Compensación 3 cantidadformateada: 292.0. preciolimit: 1.0134
+Compensación 4 cantidadformateada: 379.0. preciolimit: 1.0298
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 1.1144041071632118
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.84% - Variación diaria: 6.23%
+Trade - MATICUSDT - BUY - Hora:04/Nov/2022 21:57:02
+
+EntryPrice: 1.2447
+Quantity: 103.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 133.0. preciolimit: 1.2235
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 226.0. preciolimit: 1.1812
+Compensación 4 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (4)
+Precio Stop sugerido: 0.9937792081482685
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 3.08%
+Trade - ALGOUSDT - SELL - Hora:04/Nov/2022 21:58:08
+
+EntryPrice: 0.4279
+Quantity: -299.8
+distancia: 1.7
+Compensación 1 cantidadformateada: 389.7. preciolimit: 0.4351
+Compensación 2 cantidadformateada: 506.6. preciolimit: 0.4424
+Compensación 3 cantidadformateada: 658.6. preciolimit: 0.4497
+Compensación 4 cantidadformateada: 856.2. preciolimit: 0.4569
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 0.4943574834002805
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 2.31%
+Trade - ARUSDT - SELL - Hora:04/Nov/2022 21:59:04
+
+EntryPrice: 15.47
+Quantity: -8.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 10.6. preciolimit: 15.732
+Compensación 2 cantidadformateada: 13.8. preciolimit: 15.995
+Compensación 3 cantidadformateada: 18.0. preciolimit: 16.258
+Compensación 4 cantidadformateada: 23.4. preciolimit: 16.521
+Cancela última compensación (4)
+Cancelada. 
+Precio Stop sugerido: 17.899857713478262
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 3.25%
+Trade - OPUSDT - BUY - Hora:04/Nov/2022 22:09:24
+
+Variación: 3.07% - Variación diaria: 1.79%
+Trade - OPUSDT - SELL - Hora:05/Nov/2022 08:32:46
+
+EntryPrice: 1.338
+Quantity: -75.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 98.2. preciolimit: 1.3607
+Compensación 2 cantidadformateada: 127.7. preciolimit: 1.3834
+Compensación 3 cantidadformateada: 0. preciolimit: 0
+Compensación 4 cantidadformateada: 215.9. preciolimit: 1.4289
+Compensación 5 cantidadformateada: 280.6. preciolimit: 1.4517
+Compensación 6 cantidadformateada: 364.9. preciolimit: 1.4744
+Compensación 7 cantidadformateada: 474.3. preciolimit: 1.4972
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.5191047405258407
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.62% - Variación diaria: 4.8%
+Trade - LTCUSDT - SELL - Hora:05/Nov/2022 08:40:59
+
+EntryPrice: 70.87
+Quantity: -1.428
+distancia: 1.7
+Compensación 1 cantidadformateada: 1.856. preciolimit: 72.06
+Compensación 2 cantidadformateada: 2.413. preciolimit: 73.27
+Compensación 3 cantidadformateada: 3.137. preciolimit: 74.48
+Compensación 4 cantidadformateada: 4.078. preciolimit: 75.68
+Compensación 5 cantidadformateada: 5.302. preciolimit: 76.89
+Compensación 6 cantidadformateada: 6.892. preciolimit: 78.09
+Compensación 7 cantidadformateada: 8.96. preciolimit: 79.3
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 79.7082026074444
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 6.86%
+Trade - MASKUSDT - BUY - Hora:05/Nov/2022 08:51:40
+
+EntryPrice: 4.892
+Quantity: 20.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 26.0. preciolimit: 4.808
+Compensación 2 cantidadformateada: 33.0. preciolimit: 4.725
+Compensación 3 cantidadformateada: 43.0. preciolimit: 4.642
+Compensación 4 cantidadformateada: 57.0. preciolimit: 4.559
+Compensación 5 cantidadformateada: 74.0. preciolimit: 4.476
+Compensación 6 cantidadformateada: 96.0. preciolimit: 4.393
+Compensación 7 cantidadformateada: 125.0. preciolimit: 4.309
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 4.269140614759313
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51% - Variación diaria: 6.34%
+Trade - OCEANUSDT - SELL - Hora:05/Nov/2022 08:57:21
+
+EntryPrice: 0.24943
+Quantity: -406.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 527.0. preciolimit: 0.25367
+Compensación 2 cantidadformateada: 686.0. preciolimit: 0.2579
+Compensación 3 cantidadformateada: 891.0. preciolimit: 0.26215
+Compensación 4 cantidadformateada: 1159.0. preciolimit: 0.26639
+Compensación 5 cantidadformateada: 1507.0. preciolimit: 0.27062
+Compensación 6 cantidadformateada: 1959.0. preciolimit: 0.27487
+Compensación 7 cantidadformateada: 2547.0. preciolimit: 0.27911
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.280591116692642
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71% - Variación diaria: 6.51%
+Trade - OCEANUSDT - SELL - Hora:05/Nov/2022 09:07:46
+
+EntryPrice: 0.250552
+Quantity: -405.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 526.0. preciolimit: 0.2548
+Compensación 2 cantidadformateada: 684.0. preciolimit: 0.25907
+Compensación 3 cantidadformateada: 889.0. preciolimit: 0.26333
+Compensación 4 cantidadformateada: 1156.0. preciolimit: 0.26758
+Compensación 5 cantidadformateada: 1503.0. preciolimit: 0.27184
+Compensación 6 cantidadformateada: 1954.0. preciolimit: 0.2761
+Compensación 7 cantidadformateada: 2541.0. preciolimit: 0.28036
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.28183569751398124
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.51% - Variación diaria: 9.63%
+Trade - GALAUSDT - BUY - Hora:05/Nov/2022 09:10:41
+
+EntryPrice: 0.04235
+Quantity: 2404.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3125.0. preciolimit: 0.04163
+Compensación 2 cantidadformateada: 4062.0. preciolimit: 0.04091
+Compensación 3 cantidadformateada: 5281.0. preciolimit: 0.04018
+Compensación 4 cantidadformateada: 6866.0. preciolimit: 0.03947
+Compensación 5 cantidadformateada: 8925.0. preciolimit: 0.03875
+Compensación 6 cantidadformateada: 11603.0. preciolimit: 0.03803
+Compensación 7 cantidadformateada: 15084.0. preciolimit: 0.03731
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.03706638459352671
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.91% - Variación diaria: 5.53%
+Trade - ALGOUSDT - SELL - Hora:05/Nov/2022 09:17:03
+
+EntryPrice: 0.4379
+Quantity: -232.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 301.8. preciolimit: 0.4453
+Compensación 2 cantidadformateada: 392.4. preciolimit: 0.4527
+Compensación 3 cantidadformateada: 510.1. preciolimit: 0.4602
+Compensación 4 cantidadformateada: 663.1. preciolimit: 0.4676
+Compensación 5 cantidadformateada: 862.1. preciolimit: 0.4751
+Compensación 6 cantidadformateada: 1120.7. preciolimit: 0.4825
+Compensación 7 cantidadformateada: 1457.0. preciolimit: 0.49
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.49251457926869013
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.72% - Variación diaria: 7.58%
+Trade - OCEANUSDT - SELL - Hora:05/Nov/2022 09:33:51
+
+EntryPrice: 0.25234
+Quantity: -403.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 523.0. preciolimit: 0.25662
+Compensación 2 cantidadformateada: 681.0. preciolimit: 0.2609
+Compensación 3 cantidadformateada: 885.0. preciolimit: 0.2652
+Compensación 4 cantidadformateada: 1151.0. preciolimit: 0.26949
+Compensación 5 cantidadformateada: 1496.0. preciolimit: 0.27378
+Compensación 6 cantidadformateada: 1945.0. preciolimit: 0.27807
+Compensación 7 cantidadformateada: 2528.0. preciolimit: 0.28236
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.2838404011287408
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.53% - Variación diaria: 5.18%
+Trade - APEUSDT - SELL - Hora:05/Nov/2022 09:44:12
+
+EntryPrice: 4.971
+Quantity: -20.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 26.0. preciolimit: 5.055
+Compensación 2 cantidadformateada: 33.0. preciolimit: 5.14
+Compensación 3 cantidadformateada: 43.0. preciolimit: 5.224
+Compensación 4 cantidadformateada: 57.0. preciolimit: 5.309
+Compensación 5 cantidadformateada: 74.0. preciolimit: 5.393
+Compensación 6 cantidadformateada: 96.0. preciolimit: 5.478
+Compensación 7 cantidadformateada: 125.0. preciolimit: 5.562
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 5.6003400344025795
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.64% - Variación diaria: 1.96%
+Trade - LRCUSDT - SELL - Hora:05/Nov/2022 09:48:55
+
+EntryPrice: 0.3609
+Quantity: -282.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 366.0. preciolimit: 0.367
+Compensación 2 cantidadformateada: 476.0. preciolimit: 0.3731
+Compensación 3 cantidadformateada: 619.0. preciolimit: 0.3793
+Compensación 4 cantidadformateada: 805.0. preciolimit: 0.3854
+Compensación 5 cantidadformateada: 1047.0. preciolimit: 0.3915
+Compensación 6 cantidadformateada: 1361.0. preciolimit: 0.3977
+Compensación 7 cantidadformateada: 1769.0. preciolimit: 0.4038
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.40595810463851895
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 5.27%
+Trade - ALGOUSDT - BUY - Hora:05/Nov/2022 10:00:55
+
+EntryPrice: 0.4376
+Quantity: 233.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 303.2. preciolimit: 0.4301
+Compensación 2 cantidadformateada: 394.2. preciolimit: 0.4227
+Compensación 3 cantidadformateada: 512.5. preciolimit: 0.4152
+Compensación 4 cantidadformateada: 666.3. preciolimit: 0.4078
+Compensación 5 cantidadformateada: 866.2. preciolimit: 0.4004
+Compensación 6 cantidadformateada: 0. preciolimit: 0
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 0.3791954560377391
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.79% - Variación diaria: 0.99%
+Trade - ARUSDT - BUY - Hora:05/Nov/2022 10:18:30
+
+EntryPrice: 15.285
+Quantity: 6.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 8.5. preciolimit: 15.025
+Compensación 2 cantidadformateada: 11.1. preciolimit: 14.765
+Compensación 3 cantidadformateada: 14.5. preciolimit: 14.505
+Compensación 4 cantidadformateada: 18.8. preciolimit: 14.245
+Compensación 5 cantidadformateada: 24.5. preciolimit: 13.985
+Compensación 6 cantidadformateada: 31.8. preciolimit: 13.725
+Compensación 7 cantidadformateada: 41.4. preciolimit: 13.466
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 13.362119906722796
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.74% - Variación diaria: 6.62%
+Trade - CHZUSDT - SELL - Hora:05/Nov/2022 10:33:53
+
+Variación: 2.81% - Variación diaria: 6.5%
+Trade - CHZUSDT - SELL - Hora:05/Nov/2022 10:37:55
+
+EntryPrice: 0.27361
+Quantity: -375.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 487.0. preciolimit: 0.27826
+Compensación 2 cantidadformateada: 633.0. preciolimit: 0.28291
+Compensación 3 cantidadformateada: 823.0. preciolimit: 0.28756
+Compensación 4 cantidadformateada: 1071.0. preciolimit: 0.29221
+Compensación 5 cantidadformateada: 1392.0. preciolimit: 0.29686
+Compensación 6 cantidadformateada: 1810.0. preciolimit: 0.30151
+Compensación 7 cantidadformateada: 2353.0. preciolimit: 0.30616
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.3077351266895767
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.96% - Variación diaria: 6.96%
+Trade - PEOPLEUSDT - BUY - Hora:05/Nov/2022 10:42:09
+
+EntryPrice: 0.02979
+Quantity: 3442.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 4474.0. preciolimit: 0.02928
+Compensación 2 cantidadformateada: 5816.0. preciolimit: 0.02877
+Compensación 3 cantidadformateada: 7562.0. preciolimit: 0.02827
+Compensación 4 cantidadformateada: 9830.0. preciolimit: 0.02776
+Compensación 5 cantidadformateada: 12779.0. preciolimit: 0.02725
+Compensación 6 cantidadformateada: 16613.0. preciolimit: 0.02675
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 0.02606992450711382
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.36% - Variación diaria: 5.76%
+Trade - BANDUSDT - BUY - Hora:06/Nov/2022 08:12:15
+
+EntryPrice: 2.634948
+Quantity: 39.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 51.0. preciolimit: 2.5901
+Compensación 2 cantidadformateada: 66.4. preciolimit: 2.5453
+Compensación 3 cantidadformateada: 86.3. preciolimit: 2.5005
+Compensación 4 cantidadformateada: 112.2. preciolimit: 2.4557
+Compensación 5 cantidadformateada: 145.9. preciolimit: 2.4109
+Compensación 6 cantidadformateada: 189.6. preciolimit: 2.3661
+Compensación 7 cantidadformateada: 246.6. preciolimit: 2.3213
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 2.305618322051543
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.57% - Variación diaria: 3.36%
+Trade - MASKUSDT - SELL - Hora:06/Nov/2022 08:50:05
+
+EntryPrice: 4.81
+Quantity: -21.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 27.0. preciolimit: 4.891
+Compensación 2 cantidadformateada: 35.0. preciolimit: 4.973
+Compensación 3 cantidadformateada: 46.0. preciolimit: 5.055
+Compensación 4 cantidadformateada: 0. preciolimit: 0
+Compensación 5 cantidadformateada: 77.0. preciolimit: 5.218
+Compensación 6 cantidadformateada: 101.0. preciolimit: 5.3
+Compensación 7 cantidadformateada: 131.0. preciolimit: 5.382
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 5.474579789195439
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.56% - Variación diaria: 4.94%
+Trade - OPUSDT - BUY - Hora:06/Nov/2022 08:57:51
+
+EntryPrice: 1.2541
+Quantity: 82.7
+distancia: 1.7
+Compensación 1 cantidadformateada: 107.5. preciolimit: 1.2327
+Compensación 2 cantidadformateada: 139.7. preciolimit: 1.2114
+Compensación 3 cantidadformateada: 181.6. preciolimit: 1.1901
+Compensación 4 cantidadformateada: 236.1. preciolimit: 1.1688
+Compensación 5 cantidadformateada: 307.0. preciolimit: 1.1475
+Compensación 6 cantidadformateada: 399.1. preciolimit: 1.1261
+Compensación 7 cantidadformateada: 518.9. preciolimit: 1.1048
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.0974017357656327
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 4.53%
+Trade - ARUSDT - SELL - Hora:06/Nov/2022 11:29:52
+
+EntryPrice: 15.626
+Quantity: -6.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 8.5. preciolimit: 15.891
+Compensación 2 cantidadformateada: 11.1. preciolimit: 16.157
+Compensación 3 cantidadformateada: 14.5. preciolimit: 16.422
+Compensación 4 cantidadformateada: 18.8. preciolimit: 16.688
+Compensación 5 cantidadformateada: 24.5. preciolimit: 16.954
+Compensación 6 cantidadformateada: 31.8. preciolimit: 17.219
+Compensación 7 cantidadformateada: 41.4. preciolimit: 17.485
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 17.585525916705528
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.5% - Variación diaria: 6.43%
+Trade - MASKUSDT - SELL - Hora:06/Nov/2022 11:31:36
+
+EntryPrice: 4.955
+Quantity: -20.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 26.0. preciolimit: 5.039
+Compensación 2 cantidadformateada: 33.0. preciolimit: 5.123
+Compensación 3 cantidadformateada: 43.0. preciolimit: 5.207
+Compensación 4 cantidadformateada: 57.0. preciolimit: 5.291
+Compensación 5 cantidadformateada: 74.0. preciolimit: 5.376
+Compensación 6 cantidadformateada: 96.0. preciolimit: 5.46
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 5.589417011901147
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.58% - Variación diaria: 0.45%
+Trade - OPUSDT - SELL - Hora:06/Nov/2022 11:44:31
+
+EntryPrice: 1.3097
+Quantity: -79.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 103.2. preciolimit: 1.3319
+Compensación 2 cantidadformateada: 134.1. preciolimit: 1.3542
+Compensación 3 cantidadformateada: 174.4. preciolimit: 1.3764
+Compensación 4 cantidadformateada: 226.7. preciolimit: 1.3987
+Compensación 5 cantidadformateada: 294.8. preciolimit: 1.421
+Compensación 6 cantidadformateada: 383.2. preciolimit: 1.4432
+Compensación 7 cantidadformateada: 498.2. preciolimit: 1.4655
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.473111998333214
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71% - Variación diaria: 5.94%
+Trade - MASKUSDT - BUY - Hora:06/Nov/2022 12:13:50
+
+EntryPrice: 4.931
+Quantity: 21.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 27.0. preciolimit: 4.847
+Compensación 2 cantidadformateada: 35.0. preciolimit: 4.763
+Compensación 3 cantidadformateada: 46.0. preciolimit: 4.679
+Compensación 4 cantidadformateada: 59.0. preciolimit: 4.595
+Compensación 5 cantidadformateada: 77.0. preciolimit: 4.511
+Compensación 6 cantidadformateada: 101.0. preciolimit: 4.428
+Compensación 7 cantidadformateada: 131.0. preciolimit: 4.344
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 4.311022787277323
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.05% - Variación diaria: 4.69%
+Trade - BANDUSDT - SELL - Hora:06/Nov/2022 12:29:18
+
+Variación: 2.66% - Variación diaria: 6.17%
+Trade - CHZUSDT - SELL - Hora:06/Nov/2022 12:30:25
+
+EntryPrice: 0.28565
+Quantity: -366.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 475.0. preciolimit: 0.29049
+Compensación 2 cantidadformateada: 618.0. preciolimit: 0.29536
+Compensación 3 cantidadformateada: 804.0. preciolimit: 0.3002
+Compensación 4 cantidadformateada: 1045.0. preciolimit: 0.30507
+Compensación 5 cantidadformateada: 1358.0. preciolimit: 0.30993
+Compensación 6 cantidadformateada: 1766.0. preciolimit: 0.31478
+Compensación 7 cantidadformateada: 2296.0. preciolimit: 0.31963
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.32130402611986936
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.76% - Variación diaria: 0.79%
+Trade - FTTUSDT - BUY - Hora:06/Nov/2022 12:32:32
+
+EntryPrice: 23.883
+Quantity: 4.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 5.5. preciolimit: 23.476
+Compensación 2 cantidadformateada: 7.2. preciolimit: 23.07
+Compensación 3 cantidadformateada: 9.4. preciolimit: 22.664
+Compensación 4 cantidadformateada: 12.2. preciolimit: 22.258
+Compensación 5 cantidadformateada: 15.9. preciolimit: 21.852
+Compensación 6 cantidadformateada: 20.7. preciolimit: 21.446
+Compensación 7 cantidadformateada: 26.9. preciolimit: 21.04
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 20.86798154087766
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.54% - Variación diaria: 2.09%
+Trade - ALGOUSDT - BUY - Hora:06/Nov/2022 13:01:08
+
+EntryPrice: 0.4324
+Quantity: 244.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 317.4. preciolimit: 0.425
+Compensación 2 cantidadformateada: 412.6. preciolimit: 0.4176
+Compensación 3 cantidadformateada: 536.5. preciolimit: 0.4103
+Compensación 4 cantidadformateada: 697.4. preciolimit: 0.4029
+Compensación 5 cantidadformateada: 906.6. preciolimit: 0.3956
+Compensación 6 cantidadformateada: 1178.7. preciolimit: 0.3882
+Compensación 7 cantidadformateada: 1532.3. preciolimit: 0.3809
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.3783524286667909
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.86% - Variación diaria: 6.06%
+Trade - SOLUSDT - BUY - Hora:06/Nov/2022 13:01:46
+
+EntryPrice: 34.75
+Quantity: 3.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3.0. preciolimit: 34.15
+Compensación 2 cantidadformateada: 5.0. preciolimit: 33.56
+Compensación 3 cantidadformateada: 6.0. preciolimit: 32.97
+Compensación 4 cantidadformateada: 8.0. preciolimit: 32.38
+Compensación 5 cantidadformateada: 11.0. preciolimit: 31.79
+Compensación 6 cantidadformateada: 14.0. preciolimit: 31.2
+Compensación 7 cantidadformateada: 18.0. preciolimit: 30.61
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 30.24305874481
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.22% - Variación diaria: 1.4%
+Trade - APTUSDT - BUY - Hora:06/Nov/2022 13:02:32
+
+EntryPrice: 7.725948
+Quantity: 13.6
+distancia: 1.7
+Compensación 1 cantidadformateada: 17.6. preciolimit: 7.594
+Compensación 2 cantidadformateada: 22.9. preciolimit: 7.463
+Compensación 3 cantidadformateada: 29.8. preciolimit: 7.331
+Compensación 4 cantidadformateada: 38.8. preciolimit: 7.2
+Compensación 5 cantidadformateada: 50.4. preciolimit: 7.069
+Compensación 6 cantidadformateada: 65.6. preciolimit: 6.937
+Compensación 7 cantidadformateada: 85.3. preciolimit: 6.806
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 6.757879095762477
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.5% - Variación diaria: 4.57%
+Trade - BANDUSDT - SELL - Hora:06/Nov/2022 13:29:09
+
+EntryPrice: 2.6543
+Quantity: -39.7
+distancia: 1.7
+Compensación 1 cantidadformateada: 51.6. preciolimit: 2.6993
+Compensación 2 cantidadformateada: 67.0. preciolimit: 2.7445
+Compensación 3 cantidadformateada: 87.2. preciolimit: 2.7896
+Compensación 4 cantidadformateada: 113.3. preciolimit: 2.8347
+Compensación 5 cantidadformateada: 147.4. preciolimit: 2.8799
+Compensación 6 cantidadformateada: 191.6. preciolimit: 2.925
+Compensación 7 cantidadformateada: 249.1. preciolimit: 2.9701
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 2.9862969800143304
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.65% - Variación diaria: 0.37%
+Trade - OPUSDT - BUY - Hora:06/Nov/2022 14:00:36
+
+EntryPrice: 1.3215
+Quantity: 80.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 104.2. preciolimit: 1.299
+Compensación 2 cantidadformateada: 135.5. preciolimit: 1.2765
+Compensación 3 cantidadformateada: 176.1. preciolimit: 1.2541
+Compensación 4 cantidadformateada: 229.0. preciolimit: 1.2316
+Compensación 5 cantidadformateada: 297.7. preciolimit: 1.2091
+Compensación 6 cantidadformateada: 387.1. preciolimit: 1.1867
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 1.1565120228284151
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.25% - Variación diaria: 6.23%
+
+Variación: 3.25% - Variación diaria: 6.22%
+
+Par: PEOPLEUSDTM - Variación: 2.62% - Variación diaria: 3.17%
+
+Par: PEOPLEUSDTM - Variación: 2.62% - Variación diaria: 3.32%
+
+Par: PEOPLEUSDTM - Variación: 2.69% - Variación diaria: 3.28%
+
+Par: PEOPLEUSDTM - Variación: 2.69% - Variación diaria: 3.32%
+
+Variación: 2.78% - Variación diaria: 7.07%
+Trade - MASKUSDT - BUY - Hora:06/Nov/2022 19:44:11
+
+EntryPrice: 4.995
+Quantity: 21.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 27.0. preciolimit: 4.91
+Compensación 2 cantidadformateada: 35.0. preciolimit: 4.825
+Compensación 3 cantidadformateada: 46.0. preciolimit: 4.74
+Compensación 4 cantidadformateada: 59.0. preciolimit: 4.655
+Compensación 5 cantidadformateada: 77.0. preciolimit: 4.57
+Compensación 6 cantidadformateada: 101.0. preciolimit: 4.485
+Compensación 7 cantidadformateada: 131.0. preciolimit: 4.4
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 4.365509674974044
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: ZILUSDTM - Variación: 2.8% - Variación diaria: 1.66%
+
+Par: RSRUSDTM - Variación: 3.19% - Variación diaria: 2.61%
+
+Par: SHIBUSDTM - Variación: 2.53% - Variación diaria: 4.62%
+
+Par: GALAUSDTM - Variación: 2.89% - Variación diaria: 7.78%
+
+Par: ZILUSDTM - Variación: 2.8% - Variación diaria: 1.97%
+
+Par: RSRUSDTM - Variación: 3.19% - Variación diaria: 2.7%
+
+Variación: 2.55% - Variación diaria: 4.76%
+Trade - ALGOUSDT - BUY - Hora:06/Nov/2022 20:13:22
+
+Par: SHIBUSDTM - Variación: 2.53% - Variación diaria: 4.7%
+
+Par: GALAUSDTM - Variación: 2.89% - Variación diaria: 8.08%
+
+EntryPrice: 0.4046
+Quantity: 262.2
+distancia: 1.7
+
+Par: ZILUSDTM - Variación: 2.8% - Variación diaria: 1.88%
+
+Par: LUNCUSDTM - Variación: 2.9% - Variación diaria: 5.79%
+
+Par: RSRUSDTM - Variación: 3.19% - Variación diaria: 2.77%
+Compensación 1 cantidadformateada: 340.8. preciolimit: 0.3977
+
+Par: SHIBUSDTM - Variación: 2.53% - Variación diaria: 4.44%
+Compensación 2 cantidadformateada: 443.1. preciolimit: 0.3908
+
+Par: GALAUSDTM - Variación: 2.89% - Variación diaria: 7.99%
+Compensación 3 cantidadformateada: 576.0. preciolimit: 0.3839
+
+Par: ZILUSDTM - Variación: 2.8% - Variación diaria: 1.75%
+
+Par: LUNCUSDTM - Variación: 2.9% - Variación diaria: 5.82%
+Compensación 4 cantidadformateada: 748.8. preciolimit: 0.377
+
+Par: RSRUSDTM - Variación: 3.19% - Variación diaria: 2.91%
+Compensación 5 cantidadformateada: 973.5. preciolimit: 0.3701
+Compensación 6 cantidadformateada: 1265.5. preciolimit: 0.3633
+Compensación 7 cantidadformateada: 1645.2. preciolimit: 0.3564
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.35405085674526565
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 6.2%
+Trade - FILUSDT - BUY - Hora:06/Nov/2022 20:14:09
+
+EntryPrice: 5.794
+Quantity: 18.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 23.6. preciolimit: 5.695
+Compensación 2 cantidadformateada: 30.7. preciolimit: 5.597
+Compensación 3 cantidadformateada: 39.9. preciolimit: 5.498
+Compensación 4 cantidadformateada: 51.9. preciolimit: 5.4
+Compensación 5 cantidadformateada: 67.5. preciolimit: 5.301
+Compensación 6 cantidadformateada: 87.8. preciolimit: 5.203
+Compensación 7 cantidadformateada: 114.2. preciolimit: 5.104
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 5.068333710713391
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.83% - Variación diaria: 6.77%
+Trade - ARUSDT - BUY - Hora:06/Nov/2022 20:14:55
+
+EntryPrice: 14.018026
+Quantity: 7.5
+distancia: 1.7
+Compensación 1 cantidadformateada: 9.7. preciolimit: 13.779
+Compensación 2 cantidadformateada: 12.6. preciolimit: 13.541
+Compensación 3 cantidadformateada: 16.4. preciolimit: 13.303
+Compensación 4 cantidadformateada: 21.4. preciolimit: 13.064
+Compensación 5 cantidadformateada: 27.8. preciolimit: 12.826
+Compensación 6 cantidadformateada: 36.2. preciolimit: 12.588
+Compensación 7 cantidadformateada: 47.0. preciolimit: 12.349
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 12.259020967728155
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.98% - Variación diaria: 3.16%
+Trade - MATICUSDT - BUY - Hora:06/Nov/2022 20:23:38
+
+EntryPrice: 1.1473
+Quantity: 92.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 0. preciolimit: 0
+Compensación 2 cantidadformateada: 155.0. preciolimit: 1.1082
+Compensación 3 cantidadformateada: 202.0. preciolimit: 1.0887
+Compensación 4 cantidadformateada: 262.0. preciolimit: 1.0692
+Compensación 5 cantidadformateada: 341.0. preciolimit: 1.0497
+Compensación 6 cantidadformateada: 444.0. preciolimit: 1.0302
+Compensación 7 cantidadformateada: 577.0. preciolimit: 1.0107
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.9936543459588902
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.35% - Variación diaria: 3.22%
+Trade - BANDUSDT - SELL - Hora:06/Nov/2022 20:33:25
+
+EntryPrice: 2.7051
+Quantity: -39.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 51.0. preciolimit: 2.751
+Compensación 2 cantidadformateada: 66.4. preciolimit: 2.797
+Compensación 3 cantidadformateada: 86.3. preciolimit: 2.843
+Compensación 4 cantidadformateada: 112.2. preciolimit: 2.8889
+Compensación 5 cantidadformateada: 145.9. preciolimit: 2.935
+Compensación 6 cantidadformateada: 189.6. preciolimit: 2.981
+Compensación 7 cantidadformateada: 246.6. preciolimit: 3.027
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 3.042688945309107
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.69% - Variación diaria: 3.09%
+Trade - GMTUSDT - BUY - Hora:06/Nov/2022 20:34:12
+
+EntryPrice: 0.551
+Quantity: 192.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 249.0. preciolimit: 0.5416
+Compensación 2 cantidadformateada: 324.0. preciolimit: 0.5322
+Compensación 3 cantidadformateada: 421.0. preciolimit: 0.5228
+Compensación 4 cantidadformateada: 0. preciolimit: 0
+Compensación 5 cantidadformateada: 712.0. preciolimit: 0.5041
+Compensación 6 cantidadformateada: 926.0. preciolimit: 0.4947
+Compensación 7 cantidadformateada: 1204.0. preciolimit: 0.4854
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.475837023706976
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.05% - Variación diaria: 2.49%
+Trade - OPUSDT - SELL - Hora:06/Nov/2022 21:18:57
+
+EntryPrice: 1.3185
+Quantity: -81.3
+distancia: 1.7
+Compensación 1 cantidadformateada: 105.6. preciolimit: 1.3409
+Compensación 2 cantidadformateada: 137.3. preciolimit: 1.3633
+Compensación 3 cantidadformateada: 178.6. preciolimit: 1.3857
+Compensación 4 cantidadformateada: 232.2. preciolimit: 1.4081
+Compensación 5 cantidadformateada: 301.8. preciolimit: 1.4305
+Compensación 6 cantidadformateada: 392.4. preciolimit: 1.4529
+Compensación 7 cantidadformateada: 510.1. preciolimit: 1.4754
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.4828523893695775
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 3.04% - Variación diaria: 2.17%
+Trade - MASKUSDT - SELL - Hora:06/Nov/2022 21:21:38
+
+EntryPrice: 4.836
+Quantity: -22.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 28.0. preciolimit: 4.918
+Compensación 2 cantidadformateada: 37.0. preciolimit: 5.0
+Compensación 3 cantidadformateada: 48.0. preciolimit: 5.082
+Compensación 4 cantidadformateada: 62.0. preciolimit: 5.164
+Compensación 5 cantidadformateada: 81.0. preciolimit: 5.247
+Compensación 6 cantidadformateada: 106.0. preciolimit: 5.329
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 5.442983070829427
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.64% - Variación diaria: 6.34%
+Trade - SUSHIUSDT - SELL - Hora:07/Nov/2022 09:07:34
+
+EntryPrice: 1.825
+Quantity: -58.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 75.0. preciolimit: 1.856
+Compensación 2 cantidadformateada: 98.0. preciolimit: 1.887
+Compensación 3 cantidadformateada: 127.0. preciolimit: 1.918
+Compensación 4 cantidadformateada: 165.0. preciolimit: 1.949
+Compensación 5 cantidadformateada: 215.0. preciolimit: 1.98
+Compensación 6 cantidadformateada: 279.0. preciolimit: 2.011
+Compensación 7 cantidadformateada: 0. preciolimit: 0
+Cancela última compensación (7)
+Precio Stop sugerido: 2.05434493529941
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.5% - Variación diaria: 9.21%
+Trade - MASKUSDT - BUY - Hora:07/Nov/2022 09:33:56
+
+EntryPrice: 4.338
+Quantity: 24.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 31.0. preciolimit: 4.264
+Compensación 2 cantidadformateada: 40.0. preciolimit: 4.19
+Compensación 3 cantidadformateada: 52.0. preciolimit: 4.116
+Compensación 4 cantidadformateada: 68.0. preciolimit: 4.043
+Compensación 5 cantidadformateada: 89.0. preciolimit: 3.969
+Compensación 6 cantidadformateada: 115.0. preciolimit: 3.895
+Compensación 7 cantidadformateada: 150.0. preciolimit: 3.821
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 3.786579498922434
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.71% - Variación diaria: 2.9%
+Trade - CHZUSDT - SELL - Hora:07/Nov/2022 11:31:36
+
+EntryPrice: 0.26514
+Quantity: -405.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 526.0. preciolimit: 0.26964
+Compensación 2 cantidadformateada: 684.0. preciolimit: 0.27415
+Compensación 3 cantidadformateada: 889.0. preciolimit: 0.27866
+Compensación 4 cantidadformateada: 1156.0. preciolimit: 0.28316
+Compensación 5 cantidadformateada: 1503.0. preciolimit: 0.28766
+Compensación 6 cantidadformateada: 1954.0. preciolimit: 0.29218
+Compensación 7 cantidadformateada: 2541.0. preciolimit: 0.29669
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.2982375573242237
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.52% - Variación diaria: 8.5%
+Trade - MATICUSDT - SELL - Hora:07/Nov/2022 11:46:48
+
+EntryPrice: 1.2312
+Quantity: -87.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 113.0. preciolimit: 1.2521
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 191.0. preciolimit: 1.2939
+Compensación 4 cantidadformateada: 248.0. preciolimit: 1.3149
+Compensación 5 cantidadformateada: 323.0. preciolimit: 1.3358
+Compensación 6 cantidadformateada: 419.0. preciolimit: 1.3567
+Compensación 7 cantidadformateada: 545.0. preciolimit: 1.3777
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.3970640194757422
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.79% - Variación diaria: 9.89%
+Trade - MASKUSDT - BUY - Hora:07/Nov/2022 11:50:11
+
+EntryPrice: 4.308
+Quantity: 24.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 31.0. preciolimit: 4.234
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 52.0. preciolimit: 4.088
+Compensación 4 cantidadformateada: 68.0. preciolimit: 4.015
+Compensación 5 cantidadformateada: 89.0. preciolimit: 3.941
+Compensación 6 cantidadformateada: 115.0. preciolimit: 3.868
+Compensación 7 cantidadformateada: 150.0. preciolimit: 3.795
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 3.715625922922163
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.52% - Variación diaria: 1.98%
+Trade - OPUSDT - SELL - Hora:07/Nov/2022 12:03:30
+
+EntryPrice: 1.2586
+Quantity: -85.4
+distancia: 1.7
+Compensación 1 cantidadformateada: 111.0. preciolimit: 1.2799
+Compensación 2 cantidadformateada: 0. preciolimit: 0
+Compensación 3 cantidadformateada: 187.6. preciolimit: 1.3227
+Compensación 4 cantidadformateada: 243.9. preciolimit: 1.3441
+Compensación 5 cantidadformateada: 317.0. preciolimit: 1.3655
+Compensación 6 cantidadformateada: 412.2. preciolimit: 1.3869
+Compensación 7 cantidadformateada: 535.8. preciolimit: 1.4083
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.4278199768933755
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.95% - Variación diaria: 8.19%
+Trade - ALGOUSDT - SELL - Hora:07/Nov/2022 12:06:04
+
+EntryPrice: 0.4354
+Quantity: -247.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 321.3. preciolimit: 0.4428
+Compensación 2 cantidadformateada: 417.7. preciolimit: 0.4502
+Compensación 3 cantidadformateada: 543.0. preciolimit: 0.4576
+Compensación 4 cantidadformateada: 706.0. preciolimit: 0.465
+Compensación 5 cantidadformateada: 917.8. preciolimit: 0.4724
+Compensación 6 cantidadformateada: 1193.1. preciolimit: 0.4798
+Compensación 7 cantidadformateada: 1551.1. preciolimit: 0.4872
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.4897182797007662
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.85% - Variación diaria: 7.33%
+Trade - SUSHIUSDT - SELL - Hora:07/Nov/2022 12:16:29
+
+EntryPrice: 1.844
+Quantity: -58.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 75.0. preciolimit: 1.875
+Compensación 2 cantidadformateada: 98.0. preciolimit: 1.906
+Compensación 3 cantidadformateada: 127.0. preciolimit: 1.938
+Compensación 4 cantidadformateada: 165.0. preciolimit: 1.969
+Compensación 5 cantidadformateada: 215.0. preciolimit: 2.0
+Compensación 6 cantidadformateada: 279.0. preciolimit: 2.032
+Compensación 7 cantidadformateada: 363.0. preciolimit: 2.063
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 2.0747232997910525
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.64% - Variación diaria: 9.33%
+Trade - BANDUSDT - SELL - Hora:07/Nov/2022 12:19:45
+
+EntryPrice: 2.4392
+Quantity: -44.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 57.2. preciolimit: 2.4806
+Compensación 2 cantidadformateada: 74.3. preciolimit: 2.5221
+Compensación 3 cantidadformateada: 96.6. preciolimit: 2.5635
+Compensación 4 cantidadformateada: 125.6. preciolimit: 2.605
+Compensación 5 cantidadformateada: 163.3. preciolimit: 2.6465
+Compensación 6 cantidadformateada: 212.3. preciolimit: 2.6879
+Compensación 7 cantidadformateada: 276.0. preciolimit: 2.7294
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 2.7439922059931474
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.82% - Variación diaria: 0.03%
+Trade - CHZUSDT - SELL - Hora:07/Nov/2022 12:31:29
+
+EntryPrice: 0.27312
+Quantity: -394.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 512.0. preciolimit: 0.27776
+Compensación 2 cantidadformateada: 665.0. preciolimit: 0.2824
+Compensación 3 cantidadformateada: 865.0. preciolimit: 0.28704
+Compensación 4 cantidadformateada: 1125.0. preciolimit: 0.29169
+Compensación 5 cantidadformateada: 1462.0. preciolimit: 0.29633
+Compensación 6 cantidadformateada: 1901.0. preciolimit: 0.30097
+Compensación 7 cantidadformateada: 2472.0. preciolimit: 0.30562
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.30723458344345755
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.75% - Variación diaria: 0.4%
+Trade - SOLUSDT - SELL - Hora:07/Nov/2022 12:52:11
+
+EntryPrice: 32.49
+Quantity: -3.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3.0. preciolimit: 33.04
+Compensación 2 cantidadformateada: 5.0. preciolimit: 33.59
+Compensación 3 cantidadformateada: 6.0. preciolimit: 34.14
+Compensación 4 cantidadformateada: 8.0. preciolimit: 34.69
+Compensación 5 cantidadformateada: 11.0. preciolimit: 35.25
+Compensación 6 cantidadformateada: 14.0. preciolimit: 35.8
+Compensación 7 cantidadformateada: 18.0. preciolimit: 36.35
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 36.876177188869995
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.65% - Variación diaria: 0.54%
+Trade - OPUSDT - SELL - Hora:07/Nov/2022 12:53:45
+
+EntryPrice: 1.2771
+Quantity: -84.5
+distancia: 1.7
+Compensación 1 cantidadformateada: 109.8. preciolimit: 1.2988
+Compensación 2 cantidadformateada: 142.8. preciolimit: 1.3205
+Compensación 3 cantidadformateada: 185.6. preciolimit: 1.3422
+Compensación 4 cantidadformateada: 0. preciolimit: 0
+Compensación 5 cantidadformateada: 313.7. preciolimit: 1.3856
+Compensación 6 cantidadformateada: 407.8. preciolimit: 1.4073
+Compensación 7 cantidadformateada: 530.2. preciolimit: 1.429
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.4505040289708242
+Precio Stop creado.
+
+*********************************************************************************************
+
+Variación: 2.68% - Variación diaria: 5.12%
+Trade - CHZUSDT - SELL - Hora:07/Nov/2022 15:09:24
+
+EntryPrice: 0.2867
+Quantity: -378.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 491.0. preciolimit: 0.29157
+Compensación 2 cantidadformateada: 638.0. preciolimit: 0.29643
+Compensación 3 cantidadformateada: 830.0. preciolimit: 0.30131
+Compensación 4 cantidadformateada: 1079.0. preciolimit: 0.30619
+Compensación 5 cantidadformateada: 1403.0. preciolimit: 0.31106
+Compensación 6 cantidadformateada: 1824.0. preciolimit: 0.31594
+Compensación 7 cantidadformateada: 2371.0. preciolimit: 0.32081
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.3224878095624717
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: OPUSDT - Variación: 2.53% - Variación diaria: 1.48%
+
+Par: OPUSDT - Variación: 2.53% - Variación diaria: 1.46%
+
+Variación: 2.67% - Variación diaria: 1.47%
+Trade - OPUSDT - SELL - Hora:07/Nov/2022 16:28:27
+
+EntryPrice: 1.3032
+Quantity: -83.2
+distancia: 1.7
+Compensación 1 cantidadformateada: 108.1. preciolimit: 1.3253
+Compensación 2 cantidadformateada: 140.6. preciolimit: 1.3475
+Compensación 3 cantidadformateada: 182.7. preciolimit: 1.3696
+Compensación 4 cantidadformateada: 237.6. preciolimit: 1.3918
+Compensación 5 cantidadformateada: 308.9. preciolimit: 1.4139
+Compensación 6 cantidadformateada: 401.5. preciolimit: 1.4361
+Compensación 7 cantidadformateada: 522.0. preciolimit: 1.4582
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.4658440677222067
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: CHZUSDT - Variación: 2.73% - Variación diaria: 7.25%
+
+Par: CHZUSDT - Variación: 2.73% - Variación diaria: 7.43%
+
+Variación: 2.77% - Variación diaria: 7.65%
+Trade - CHZUSDT - SELL - Hora:07/Nov/2022 16:48:40
+
+Par: CHZUSDT - Variación: 2.73% - Variación diaria: 7.66%
+
+EntryPrice: 0.29352
+Quantity: -369.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 479.0. preciolimit: 0.2985
+Compensación 2 cantidadformateada: 623.0. preciolimit: 0.30349
+Compensación 3 cantidadformateada: 810.0. preciolimit: 0.30847
+Compensación 4 cantidadformateada: 1053.0. preciolimit: 0.31347
+Compensación 5 cantidadformateada: 1370.0. preciolimit: 0.31846
+Compensación 6 cantidadformateada: 1781.0. preciolimit: 0.32345
+Compensación 7 cantidadformateada: 2315.0. preciolimit: 0.32844
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.3301750371329222
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: OPUSDT - Variación: 2.74% - Variación diaria: 4.0%
+
+Par: ALGOUSDT - Variación: 2.66% - Variación diaria: 7.78%
+Trade - ALGOUSDT - BUY - Hora:07/Nov/2022 17:54:21
+
+EntryPrice: 0.4335
+Quantity: 251.9
+distancia: 1.7
+Compensación 1 cantidadformateada: 327.4. preciolimit: 0.4261
+Compensación 2 cantidadformateada: 425.7. preciolimit: 0.4187
+Compensación 3 cantidadformateada: 553.4. preciolimit: 0.4113
+Compensación 4 cantidadformateada: 719.4. preciolimit: 0.404
+Compensación 5 cantidadformateada: 935.2. preciolimit: 0.3966
+Compensación 6 cantidadformateada: 1215.8. preciolimit: 0.3892
+Compensación 7 cantidadformateada: 1580.6. preciolimit: 0.3819
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 0.3793296172893335
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: OPUSDT - Variación: 2.72% - Variación diaria: 3.63%
+Trade - OPUSDT - BUY - Hora:07/Nov/2022 17:55:08
+
+EntryPrice: 1.3293
+Quantity: 82.1
+distancia: 1.7
+Compensación 1 cantidadformateada: 106.7. preciolimit: 1.3067
+Compensación 2 cantidadformateada: 138.7. preciolimit: 1.2841
+Compensación 3 cantidadformateada: 180.3. preciolimit: 1.2615
+Compensación 4 cantidadformateada: 0. preciolimit: 0
+Compensación 5 cantidadformateada: 304.8. preciolimit: 1.2163
+Compensación 6 cantidadformateada: 396.2. preciolimit: 1.1937
+Compensación 7 cantidadformateada: 515.1. preciolimit: 1.1711
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.1486432945665122
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: SOLUSDT - Variación: 2.75% - Variación diaria: 5.15%
+Trade - SOLUSDT - BUY - Hora:07/Nov/2022 18:40:31
+
+EntryPrice: 30.98
+Quantity: 3.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 3.0. preciolimit: 30.45
+Compensación 2 cantidadformateada: 5.0. preciolimit: 29.92
+Compensación 3 cantidadformateada: 6.0. preciolimit: 29.4
+Compensación 4 cantidadformateada: 8.0. preciolimit: 28.87
+Compensación 5 cantidadformateada: 11.0. preciolimit: 28.34
+Compensación 6 cantidadformateada: 14.0. preciolimit: 27.82
+Compensación 7 cantidadformateada: 18.0. preciolimit: 27.29
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 26.66146431158
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: ALGOUSDT - Variación: 2.53% - Variación diaria: 3.15%
+
+Par: ALGOUSDT - Variación: 2.53% - Variación diaria: 3.1%
+
+Par: ALGOUSDT - Variación: 2.54% - Variación diaria: 2.88%
+
+Par: ALGOUSDT - Variación: 2.66% - Variación diaria: 2.61%
+
+Par: ALGOUSDT - Variación: 2.66% - Variación diaria: 2.48%

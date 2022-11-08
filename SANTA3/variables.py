@@ -1,11 +1,14 @@
+from os import system, name
+import sys, os
 import sys
-sys.path.insert(1,'./')
 from kucoin_futures.client import Trade as kucoinTrade
 from kucoin.client import Client as kucoinClient
 from kucoin_futures.client import Market
 import ccxt as ccxt
 from binance.client import Client as binanceClient
-from os import system, name
+
+pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
+pathsound=pathroot+'sounds/' 
 
 def clear():  
     # for windows
@@ -20,8 +23,12 @@ def clear():
 exchange_name = 'binance'
 
 ##FILES
-nombrelog = "log_santa2.txt"
+nombrelog = "log_santa.txt"
+f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
+f.close() 
 operandofile = "operando.txt"
+f = open(os.path.join(pathroot, operandofile), 'a',encoding="utf-8")
+f.close() 
 lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
 lanzadorfile = "lanzador.py"
 ##PARAMETROS ESTRATEGIA 

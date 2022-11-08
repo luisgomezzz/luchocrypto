@@ -53,7 +53,6 @@ def lista_de_monedas ():
                 lista_de_monedas.append(exchange_info[index]['symbol'])
             except Exception as ex:
                 pass   
-
     return lista_de_monedas  
 
 def timeindex(df):
@@ -143,13 +142,13 @@ def printandlog(nombrelog,mensaje,pal=0,mode='a'):
    if pal==0: #print y log
       print(mensaje)
       #escribo file
-      f = open(nombrelog, mode,encoding="utf-8")
+      f = open(os.path.join(var.pathroot,nombrelog), mode,encoding="utf-8")
       f.write("\n"+mensaje)
       f.close()   
    else:
       if pal==1: #solo log
          #escribo file
-         f = open(nombrelog, mode,encoding="utf-8")
+         f = open(os.path.join(var.pathroot,nombrelog), mode,encoding="utf-8")
          f.write("\n"+mensaje)
          f.close()   
 

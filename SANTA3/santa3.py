@@ -2,7 +2,6 @@
 # version 3.0
 #****************************************************************************************
 import sys, os
-sys.path.insert(1,'./')
 import util as ut
 import datetime as dt
 from datetime import datetime
@@ -91,7 +90,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
         ut.printandlog(var.nombrelog,"distancia: "+str(paso))
         #agrego el par al file
-        with open(var.operandofile, 'a') as filehandle:
+        with open(os.path.join(var.pathroot, var.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
         balancetotal = ut.balancetotal()
         perdida = (balancetotal*var.procentajeperdida/100)*-1
@@ -249,7 +248,7 @@ def updating(par,lado):
                     else:
                         stopenganancias=precioposicion-((precioposicion-precioactual)/2)
                     ut.binancestoploss (par,lado,stopenganancias) 
-                    playsound("./sounds/cash-register-purchase.mp3")
+                    playsound(var.pathsound+"cash-register-purchase.mp3")
                     print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                 except Exception as ex:
                     pass
@@ -260,7 +259,7 @@ def updating(par,lado):
                 if compensacioncount<=1:
                     ut.sound(duration = 250,freq = 659)                
                 else:
-                    playsound("./sounds/call-to-attention.mp3")
+                    playsound(var.pathsound+"call-to-attention.mp3")
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
             tamanioposicionguardado = tamanioactual    
         else:
@@ -303,18 +302,18 @@ def updating(par,lado):
     ut.closeallopenorders(par)    
     #se quita la moneda del arhivo ya que no se está operando
     #leo
-    with open(var.operandofile, 'r') as filehandle:
+    with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
     # remove the item for all its occurrences
     c = operando.count(par)
     for i in range(c):
         operando.remove(par)
     #borro todo
-    open(var.operandofile, "w").close()
+    open(os.path.join(var.pathroot,var.operandofile), "w").close()
     ##agrego
-    with open(var.operandofile, 'a') as filehandle:
+    with open(os.path.join(var.pathroot,var.operandofile), 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)       
-    playsound("./sounds/computer-processing.mp3")
+    playsound(var.pathsound+"computer-processing.mp3")
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
@@ -366,12 +365,12 @@ def main() -> None:
                 
                 for par in lista_monedas_filtradas:
                     #leo file
-                    with open(var.operandofile, 'r') as filehandle:
+                    with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
                         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
                     if len(operando)>=tradessimultaneos:
                         print("\nSe alcanzó el número máximo de trades simultaneos.")
                     while len(operando)>=tradessimultaneos:           
-                        with open(var.operandofile, 'r') as filehandle:
+                        with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
                             operando = [current_place.rstrip() for current_place in filehandle.readlines()]                         
                         ut.waiting(1)
 
@@ -427,14 +426,14 @@ def main() -> None:
                                     lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
                                     lanzadorscript = lanzadorscript+"\nimport sys"
                                     lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
-                                    lanzadorscript = lanzadorscript+"\nimport santaestrategia2 as se2"
+                                    lanzadorscript = lanzadorscript+"\nimport santa3 as san"
                                     lanzadorscript = lanzadorscript+"\npar='"+par+"'"
                                     if flecha == " ↑":
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+str(var.porcentajeentrada)+")"
-                                    lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
+                                    lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(var.porcentajeentrada)+")"
+                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado)"
                                     ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 
                                     #EJECUTA MINITRADE                                    
@@ -449,7 +448,7 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            #trading(par,lado,var.porcentajeentrada)
+                                            trading(par,lado,var.porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -462,7 +461,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                #trading(par,lado,var.porcentajeentrada)  
+                                                trading(par,lado,var.porcentajeentrada)  
 
                                 if par[0:7] =='BTCUSDT':
                                     btcvariacion = variacion
