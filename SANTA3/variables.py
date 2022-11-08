@@ -19,8 +19,8 @@ def clear():
         _ = system('clear')
 
 #EXCHANGE SELECT
-#exchange_name = 'kucoin'
-exchange_name = 'binance'
+exchange_name = 'kucoin'
+#exchange_name = 'binance'
 
 ##FILES
 nombrelog = "log_santa.txt"

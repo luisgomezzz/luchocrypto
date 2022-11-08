@@ -448,7 +448,7 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            trading(par,lado,var.porcentajeentrada)
+                                            #trading(par,lado,var.porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -461,7 +461,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                trading(par,lado,var.porcentajeentrada)  
+                                                #trading(par,lado,var.porcentajeentrada)  
 
                                 if par[0:7] =='BTCUSDT':
                                     btcvariacion = variacion
