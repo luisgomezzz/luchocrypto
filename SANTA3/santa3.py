@@ -436,6 +436,10 @@ def main() -> None:
                                     lanzadorscript = lanzadorscript+"\nsan.updating(par,lado)"
                                     ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 
+                                    f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")
+                                    f.write(lanzadorscript)
+                                    f.close() 
+
                                     #EJECUTA MINITRADE                                    
                                     if (flecha==" ↑" and precioactual>=preciomayor):
                                         ###########para la variacion diaria  

@@ -9,5 +9,6 @@ pathsound=pathroot+'sounds/'
 print(pathroot)
 
 
-with open(os.path.join(pathroot, var.operandofile), 'r') as filehandle:
-    operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")
+f.write('prueba')
+f.close() 

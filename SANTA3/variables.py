@@ -30,7 +30,11 @@ operandofile = "operando.txt"
 f = open(os.path.join(pathroot, operandofile), 'a',encoding="utf-8")
 f.close() 
 lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
+f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+f.close() 
 lanzadorfile = "lanzador.py"
+f = open(os.path.join(pathroot, lanzadorfile), 'a',encoding="utf-8")
+f.close() 
 ##PARAMETROS ESTRATEGIA 
 temporalidad = '1m'
 apalancamiento = 10

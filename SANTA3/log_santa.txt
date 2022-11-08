@@ -59,3 +59,63 @@ Precio Stop sugerido: 7.342862206045158
 Precio Stop creado.
 
 *********************************************************************************************
+
+Par: SUSHIUSDT - Variación: 2.5% - Variación diaria: 7.52%
+Trade - SUSHIUSDT - SELL - Hora:08/Nov/2022 11:52:21
+
+EntryPrice: 1.604
+Quantity: -62.0
+distancia: 1.7
+Compensación 1 cantidadformateada: 80.0. preciolimit: 1.631
+Compensación 2 cantidadformateada: 104.0. preciolimit: 1.658
+Compensación 3 cantidadformateada: 136.0. preciolimit: 1.685
+Compensación 4 cantidadformateada: 177.0. preciolimit: 1.713
+Compensación 5 cantidadformateada: 230.0. preciolimit: 1.74
+Compensación 6 cantidadformateada: 299.0. preciolimit: 1.767
+Compensación 7 cantidadformateada: 389.0. preciolimit: 1.794
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 1.805040004647978
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: LTCUSDT - Variación: 2.58% - Variación diaria: 4.1%
+Trade - LTCUSDT - SELL - Hora:08/Nov/2022 11:54:09
+
+EntryPrice: 64.712258
+Quantity: -1.554
+distancia: 1.7
+Compensación 1 cantidadformateada: 2.02. preciolimit: 65.81
+Compensación 2 cantidadformateada: 2.626. preciolimit: 66.91
+Compensación 3 cantidadformateada: 3.414. preciolimit: 68.01
+Compensación 4 cantidadformateada: 4.438. preciolimit: 69.11
+Compensación 5 cantidadformateada: 5.769. preciolimit: 70.2
+Compensación 6 cantidadformateada: 7.5. preciolimit: 71.31
+Compensación 7 cantidadformateada: 9.751. preciolimit: 72.41
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 72.78413427561226
+Precio Stop creado.
+
+*********************************************************************************************
+
+Par: FILUSDT - Variación: 2.5% - Variación diaria: 6.8%
+Trade - FILUSDT - SELL - Hora:08/Nov/2022 11:54:47
+
+EntryPrice: 5.366
+Quantity: -18.7
+distancia: 1.7
+Compensación 1 cantidadformateada: 24.3. preciolimit: 5.457
+Compensación 2 cantidadformateada: 31.6. preciolimit: 5.548
+Compensación 3 cantidadformateada: 41.0. preciolimit: 5.639
+Compensación 4 cantidadformateada: 53.4. preciolimit: 5.73
+Compensación 5 cantidadformateada: 69.4. preciolimit: 5.822
+Compensación 6 cantidadformateada: 90.2. preciolimit: 5.913
+Compensación 7 cantidadformateada: 117.3. preciolimit: 6.004
+Cancela última compensación (7)
+Cancelada. 
+Precio Stop sugerido: 6.036116825246501
+Precio Stop creado.
+
+*********************************************************************************************
