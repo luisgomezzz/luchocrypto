@@ -7,6 +7,10 @@ from kucoin_futures.client import Market
 import ccxt as ccxt
 from binance.client import Client as binanceClient
 
+#EXCHANGE SELECT
+#exchange_name = 'kucoin'
+exchange_name = 'binance'
+
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
 
@@ -17,10 +21,6 @@ def clear():
     # for mac and linux(here, os.name is 'posix')
     else:
         _ = system('clear')
-
-#EXCHANGE SELECT
-exchange_name = 'kucoin'
-#exchange_name = 'binance'
 
 ##FILES
 nombrelog = "log_santa.txt"
@@ -35,6 +35,7 @@ f.close()
 lanzadorfile = "lanzador.py"
 f = open(os.path.join(pathroot, lanzadorfile), 'a',encoding="utf-8")
 f.close() 
+
 ##PARAMETROS ESTRATEGIA 
 temporalidad = '1m'
 apalancamiento = 10
@@ -43,6 +44,7 @@ procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
 porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 cantidadcompensaciones = 6
+variaciondiaria = 10 #maxima variacion diaria de una moneda
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior

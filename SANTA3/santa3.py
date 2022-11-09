@@ -331,7 +331,7 @@ def main() -> None:
     vueltas=0
     minutes_diff=0    
     mensaje=''
-    tradessimultaneos = 4 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 3 #Número máximo de operaciones en simultaneo
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -447,12 +447,12 @@ def main() -> None:
                                         df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                         variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
                                         #####################################
-                                        if par not in listaequipoliquidando and variaciondiaria <= 10:
+                                        if par not in listaequipoliquidando and variaciondiaria <= var.variaciondiaria:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            #trading(par,lado,var.porcentajeentrada)
+                                            trading(par,lado,var.porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
@@ -460,12 +460,12 @@ def main() -> None:
                                             df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
                                             variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))                                            
                                             #####################################
-                                            if variaciondiaria <= 10:
+                                            if variaciondiaria <= var.variaciondiaria:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                #trading(par,lado,var.porcentajeentrada)  
+                                                trading(par,lado,var.porcentajeentrada)  
 
                                 if par[0:7] =='BTCUSDT':
                                     btcvariacion = variacion
