@@ -14,17 +14,10 @@ from binance.exceptions import BinanceAPIException
 def posicionsanta(par,lado,porcentajeentrada):   
     serror = True
     micapital = ut.balancetotal()
-    size = (micapital*porcentajeentrada/100)/(ut.currentprice(par))
+    size = float(micapital*porcentajeentrada/100)
     mensaje=''
-    var.client.futures_change_leverage(symbol=par, leverage=var.apalancamiento)
-    try: 
-        var.client.futures_change_margin_type(symbol=par, marginType=var.margen)
-    except BinanceAPIException as a:
-        if a.message!="No need to change margin type.":
-            print("Except 7",a.status_code,a.message)
-        pass  
     try:      
-        if ut.binancecreoposicion (par,size,lado)==True:
+        if ut.creoposicion (par,size,lado)==True:
            precioactual = ut.getentryprice(par)
            mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(precioactual,6))
         else:
@@ -330,8 +323,7 @@ def main() -> None:
     listaequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
-    mensaje=''
-    tradessimultaneos = 3 #Número máximo de operaciones en simultaneo
+    mensaje=''    
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -367,9 +359,9 @@ def main() -> None:
                     #leo file
                     with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
                         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
-                    if len(operando)>=tradessimultaneos:
+                    if len(operando)>=var.tradessimultaneos:
                         print("\nSe alcanzó el número máximo de trades simultaneos.")
-                    while len(operando)>=tradessimultaneos:           
+                    while len(operando)>=var.tradessimultaneos:           
                         with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
                             operando = [current_place.rstrip() for current_place in filehandle.readlines()]                         
                         ut.waiting(1)

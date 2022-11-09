@@ -180,15 +180,26 @@ def balancetotal():
    return balance
 
 def getentryprice(par):
-   leido = False
-   while leido == False:
-      try:
-         all_positions = var.exchange.fetch_balance()['info']['positions']
-         current_positions = [position for position in all_positions if (position['symbol']) == par]
-         leido = True
-      except:
-         pass
-   return float(current_positions[0]['entryPrice'])
+    leido = False
+    entryprice=0.0
+    while leido == False:
+        try:
+            if exchange_name=='binance':
+                positions=var.exchange.fetch_balance()['info']['positions']
+                for index in range(len(positions)):
+                    if positions[index]['symbol']==par:
+                        entryprice=float(positions[index]['entryPrice'])
+                        break
+            if exchange_name=='kucoinfutures':
+                positions=var.clienttrade.get_all_position()
+                for index in range(len(positions)):
+                    if positions[index]['symbol']==par:
+                        entryprice=float(positions[index]['avgEntryPrice'])
+                        break
+            leido = True
+        except:
+            pass
+    return entryprice
 
 def get_quantityprecision(par):
     leido=False
@@ -205,14 +216,26 @@ def get_quantityprecision(par):
             break
     return quantityprecision
 
-def binancecreoposicion (par,size,lado) -> bool:         
+def creoposicion (par,size,lado)->bool:         
     serror=True            
-    try:            
-        tamanio=truncate(size,get_quantityprecision(par))
-        var.client.futures_create_order(symbol=par, side=lado, type='MARKET', quantity=tamanio)
+    try:
+        if  exchange_name=='binance':      
+            var.client.futures_change_leverage(symbol=par, leverage=var.apalancamiento)
+            try: 
+                var.client.futures_change_margin_type(symbol=par, marginType=var.margen)
+            except BinanceAPIException as a:
+                if a.message!="No need to change margin type.":
+                    print("Except 7",a.status_code,a.message)
+                pass                    
+            tamanio=truncate((size/currentprice(par)),get_quantityprecision(par))
+            var.client.futures_create_order(symbol=par,side=lado,type='MARKET',quantity=tamanio)
+        if exchange_name=='kucoinfutures':
+            multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
+            tamanio=str(int(size/(multiplier*currentprice(par))))
+            var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=int(var.apalancamiento))
         print("Posición creada. ",tamanio)
     except BinanceAPIException as a:
-        print("Falla al crear la posición.",tamanio, ". Error: ",a.message) 
+        print("Falla al crear la posición. Error: ",a.message) 
         serror=False
         pass
     return serror

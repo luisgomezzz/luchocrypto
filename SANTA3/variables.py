@@ -8,8 +8,8 @@ import ccxt as ccxt
 from binance.client import Client as binanceClient
 
 #EXCHANGE SELECT
-#exchange_name = 'kucoin'
-exchange_name = 'binance'
+exchange_name = 'kucoin'
+#exchange_name = 'binance'
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
@@ -45,10 +45,11 @@ porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
 cantidadcompensaciones = 6
 variaciondiaria = 10 #maxima variacion diaria de una moneda
+tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49+400 #los 400 son los del prestamo del dpto que quiero recuperar
+
 lista_monedas_filtradas_nueva = []
 flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
 
@@ -73,6 +74,7 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400 #los 400 son los del prestamo del dpto que quiero recuperar. los -100 son lo enviado a kucoin.
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
@@ -81,6 +83,7 @@ if exchange_name == 'kucoin':
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
     clientmarket = Market(url='https://api-futures.kucoin.com')
+    balanceobjetivo = 100 #100 iniciales q transeferí desde binance
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
