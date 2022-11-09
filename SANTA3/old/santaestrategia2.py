@@ -11,6 +11,8 @@ import utilidades as ut
 import datetime as dt
 from datetime import datetime
 import threading
+import numpy as np
+from playsound import playsound
 
 ##CONFIG
 client = ut.client
@@ -21,23 +23,74 @@ lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
 lanzadorfile = "lanzador.py"
 ## PARAMETROS FUNDAMENTALES 
 temporalidad = '1m'
-apalancamiento = 10 #(10)
-apalancamientoposta = 25 #este es el apalancamiento de verdad para que permita tradear más de una moneda
+apalancamiento = 10
+margen = 'CROSSED'
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 6 #porcentaje de la cuenta para crear la posición (6)
+porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
 ventana = 30 #Ventana de búsqueda en minutos.   
-porcentajevariacionnormal = 5
-porcentajevariacionriesgo = 5
-cantidadcompensaciones = 3
+porcentaje = 15 #porcentaje de variacion para el cual se dispara el trade estandar.
+cantidadcompensaciones = 6
+
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+400 #los 400 son los del prestamo del dpto que quiero recuperar
+balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49+400 #los 400 son los del prestamo del dpto que quiero recuperar
 lista_monedas_filtradas_nueva = []
 flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
 ###################################################################################################################
 ###################################################################################################################
 ###################################################################################################################
+
+def posicionsanta(par,lado,porcentajeentrada):   
+    serror = True
+    micapital = ut.balancetotal()
+    size = (micapital*porcentajeentrada/100)/(ut.currentprice(par))
+    mensaje=''
+
+    client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+    try: 
+        client.futures_change_margin_type(symbol=par, marginType=margen)
+    except BinanceAPIException as a:
+        if a.message!="No need to change margin type.":
+            print("Except 7",a.status_code,a.message)
+        pass   
+
+    try:      
+        if ut.binancecreoposicion (par,size,lado)==True:
+           precioactual = ut.getentryprice(par)
+           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(precioactual,6))
+        else:
+           mensaje="No se pudo crear la posición. "
+           print(mensaje)
+           serror=False
+    except BinanceAPIException as a:
+        print(a.message,"No se pudo crear la posición.")
+        serror=False
+        pass     
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+        serror=False
+        pass
+
+    return serror, mensaje 
+
+def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
+   if lado == 'SELL':
+       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
+   if preciodondequedariaposicionalfinal !=0.0:
+      perdida=abs(perdida)*-1
+      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
+      try:
+         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
+      except Exception as ex:
+         preciostop = 0
+         pass
+   else:
+      preciostop = 0
+
+   return preciostop   
 
 # MANEJO DE TPs
 def creaactualizatps (par,lado,limitorders=[]):
@@ -45,15 +98,14 @@ def creaactualizatps (par,lado,limitorders=[]):
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-        1.4 : 75
+        1.4 : 50
         #,1.15: 20
         #,1.3 : 20
         #,1.5 : 15
         #,2   : 15
     }
-    profitnormalporc = 1
+    profitnormalporc = 2 # probando con 2 (va 1)
     profitmedioporc = 2
-    profitaltoporc = 3    
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
     try:
@@ -61,10 +113,7 @@ def creaactualizatps (par,lado,limitorders=[]):
         if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
             divisor = profitnormalporc
         else:
-            if tamanioactualusdt >= (balancetotal*procentajeperdida/100)*4:
-                divisor=profitaltoporc
-            else:
-                divisor=profitmedioporc    
+            divisor=profitmedioporc    
 
         #crea los TPs
         for porc, tamanio in dict.items():
@@ -108,18 +157,15 @@ def updating(par,lado):
     print("\nupdating-CREA TPs..."+par)
     limitorders=creaactualizatps (par,lado,limitorders)
     stopenganancias = 0.0
-
+    compensacioncount=0
     #actualiza tps y stops
     while tamanioactual!=0.0: 
 
-        if tamanioposicionguardado!=tamanioactual:
-
-            ut.sound(duration = 250,freq = 659)
+        if tamanioposicionguardado!=tamanioactual:            
 
             if ut.pnl(par) > 0.0:
                 try:
                     # stop en ganancias cuando tocó un TP
-                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                     precioactual=ut.currentprice(par)
                     precioposicion=ut.getentryprice(par)
                     if lado=='BUY':
@@ -127,13 +173,20 @@ def updating(par,lado):
                     else:
                         stopenganancias=precioposicion-((precioposicion-precioactual)/2)
                     ut.binancestoploss (par,lado,stopenganancias) 
+                    playsound("./sounds/cash-register-purchase.mp3")
+                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                 except Exception as ex:
                     pass
             else:
                 # take profit que persigue al precio cuando toma compensaciones 
-                print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
+                compensacioncount=compensacioncount+1
                 limitorders=creaactualizatps (par,lado,limitorders)
-            
+                if compensacioncount<=1:
+                    ut.sound(duration = 250,freq = 659)                
+                else:
+                    playsound("./sounds/call-to-attention.mp3")
+                print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
+
             tamanioposicionguardado = tamanioactual            
     
         else:
@@ -151,13 +204,13 @@ def updating(par,lado):
                                 try:
                                     exchange.cancel_order(orderidanterior, par)
                                     orderidanterior=orderid
-                                    print("Stopvelavela anterior cancelado. "+par)
+                                    print("\nStopvelavela anterior cancelado. "+par)
                                 except:
                                     orderidanterior=orderid
                                     pass
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
-                        print("crea stopvelavela. "+par)
+                        print("\ncrea stopvelavela. "+par)
                         creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                         if creado==True:
@@ -191,10 +244,11 @@ def updating(par,lado):
     with open(operandofile, 'a') as filehandle:
         filehandle.writelines("%s\n" % place for place in operando)   
     
+    playsound("./sounds/computer-processing.mp3")
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
 def trading(par,lado,porcentajeentrada):
-    mensajelog="Trade - "+par+" - "+lado
+    mensajelog="Trade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
     ut.printandlog(nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
     hilo = threading.Thread(target=updating, args=(par,lado))
@@ -205,15 +259,13 @@ def filtradodemonedas ():
     
     lista_monedas_filtradas_aux = []
     lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
-    minvolumen24h=float(100000000)
+    minvolumen24h=float(200000000)
     mincapitalizacion = float(80000000)    
     mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
     ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for s in lista_de_monedas:
         try:  
             par = s['symbol']
-            #sys.stdout.write("\rFiltrando monedas: "+par+"\033[K")
-            #sys.stdout.flush()
             if (float(client.futures_ticker(symbol=par)['quoteVolume'])>minvolumen24h and 'USDT' in par and par not in mazmorra
                 and ut.capitalizacion(par)>=mincapitalizacion):
                 lista_monedas_filtradas_aux.append(par)
@@ -231,7 +283,7 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
-    posicioncreada,mensajeposicioncompleta=ut.posicionsanta(par,lado,porcentajeentrada)
+    posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     paso = 1.7
     
     if posicioncreada==True:    
@@ -259,7 +311,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodeataque = precioinicial*(1+paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
 
         i=0
         #CREA COMPENSACIONES         
@@ -287,7 +339,7 @@ def formacioninicial(par,lado,porcentajeentrada):
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
 
             ut.printandlog(nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-            preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
+            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)                                        
         
         # CANCELA ÚLTIMA COMPENSACIÓN
         try:
@@ -320,7 +372,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
 
         # STOP LOSS
-        preciostopsanta= ut.preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         ut.printandlog(nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
         ut.binancestoploss (par,lado,preciostopsanta) 
         ut.printandlog(nombrelog,"Precio Stop creado.",pal=1)
@@ -331,14 +383,12 @@ def formacioninicial(par,lado,porcentajeentrada):
 def main() -> None:
 
     ##PARAMETROS##########################################################################################
-    print("Equipos liquidando...")
+    print("Buscando equipos liquidando...")
     listaequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
     mensaje=''
-    margen = 'CROSSED'
-    
-    tradessimultaneos = 2 #Número máximo de operaciones en simultaneo
+    tradessimultaneos = 4 #Número máximo de operaciones en simultaneo
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -364,13 +414,9 @@ def main() -> None:
 
         while True:
             if 1==1: #dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
-                #en operaciones riesgosas las variaciones deben ser mayores
-                if dt.datetime.today().hour == 21:
-                    porcentaje = porcentajevariacionriesgo
-                else:
-                    porcentaje = porcentajevariacionnormal
 
                 res = [x for x in lista_monedas_filtradas + lista_monedas_filtradas_nueva if x not in lista_monedas_filtradas or x not in lista_monedas_filtradas_nueva]
+                
                 if res:
                     print("\nCambios en monedas filtradas: ")     
                     print(res)
@@ -432,24 +478,50 @@ def main() -> None:
                                     maximavariacionpar = par
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
-                                    if 4 > variacion > 2.5:
-                                        ut.sound(duration = 200,freq = 800)
-                                        ut.sound(duration = 200,freq = 800)
-                                        if par in listaequipoliquidando:
-                                            print("\n"+par+" - PRECAUCIÓN. Equipo liquidando\n")
-                                        lanzadorscript = "# https://www.binance.com/en/futures/"+par
-                                        lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
-                                        lanzadorscript = lanzadorscript+"\nimport sys"
-                                        lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
-                                        lanzadorscript = lanzadorscript+"\nimport santaestrategia2 as se2"
-                                        lanzadorscript = lanzadorscript+"\npar='"+par+"'"
-                                        if flecha == " ↑":
-                                            lanzadorscript = lanzadorscript+"\nlado='SELL'"
-                                        else:
-                                            lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                        lanzadorscript = lanzadorscript+"\nse2.trading(par,lado,porcentajeentrada=19)"
-                                        lanzadorscript = lanzadorscript+"\n#se2.updating(par,lado)"
-                                        ut.printandlog("lanzador.py",lanzadorscript,pal=1,mode='w')
+                                
+                                if 3.5 >= variacion >= 2.5:
+                                    
+                                    #crea archivo lanzador por si quiero ejecutarlo manualmente
+                                    lanzadorscript = "# https://www.binance.com/en/futures/"+par
+                                    lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
+                                    lanzadorscript = lanzadorscript+"\nimport sys"
+                                    lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
+                                    lanzadorscript = lanzadorscript+"\nimport santaestrategia2 as se2"
+                                    lanzadorscript = lanzadorscript+"\npar='"+par+"'"
+                                    if flecha == " ↑":
+                                        lanzadorscript = lanzadorscript+"\nlado='SELL'"
+                                    else:
+                                        lanzadorscript = lanzadorscript+"\nlado='BUY'"
+                                    lanzadorscript = lanzadorscript+"\n#se2.trading(par,lado,"+str(porcentajeentrada)+")"
+                                    lanzadorscript = lanzadorscript+"\nse2.updating(par,lado)"
+                                    ut.printandlog(lanzadorfile,lanzadorscript,pal=1,mode='w')
+
+                                    #EJECUTA MINITRADE                                    
+                                    if (flecha==" ↑" and precioactual>=preciomayor):
+                                        ###########para la variacion diaria  
+                                        df2=ut.calculardf (par,'1d',1)
+                                        df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
+                                        variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
+                                        #####################################
+                                        if par not in listaequipoliquidando and variaciondiaria <= 10:
+                                            ut.sound(duration = 200,freq = 800)
+                                            ut.sound(duration = 200,freq = 800)   
+                                            ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            lado='SELL'
+                                            trading(par,lado,porcentajeentrada)
+                                    else:
+                                        if (flecha==" ↓" and precioactual<=preciomenor):
+                                            ###########para la variacion diaria  
+                                            df2=ut.calculardf (par,'1d',1)
+                                            df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
+                                            variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))                                            
+                                            #####################################
+                                            if variaciondiaria <= 10:
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.printandlog(nombrelog,"\nVariación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                lado='BUY'
+                                                trading(par,lado,porcentajeentrada)  
 
                                 if par =='BTCUSDT':
                                     btcvariacion = variacion
@@ -458,18 +530,13 @@ def main() -> None:
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BTCUSDT:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()       
 
+                                '''
+                                ############################# TRADE STANDARD ##################
+
                                 if  variacion >= porcentaje and precioactual >= preciomayor:                                
                                     ############################
                                     ####### POSICION SELL ######
                                     ############################                                    
-                                    client.futures_change_leverage(symbol=par, leverage=apalancamientoposta)
-                                    try: 
-                                        client.futures_change_margin_type(symbol=par, marginType=margen)
-                                    except BinanceAPIException as a:
-                                        if a.message!="No need to change margin type.":
-                                            print("Except 7",a.status_code,a.message)
-                                        pass
-
                                     lado='SELL'
                                     print("\n*********************************************************************************************")
                                     mensaje="Trade - "+par+" - "+lado
@@ -488,14 +555,6 @@ def main() -> None:
                                         ############################
                                         ####### POSICION BUY ######
                                         ############################                                        
-                                        client.futures_change_leverage(symbol=par, leverage=apalancamiento)
-                                        try: 
-                                            client.futures_change_margin_type(symbol=par, marginType=margen)
-                                        except BinanceAPIException as a:
-                                            if a.message!="No need to change margin type.":
-                                                print("Except 7",a.status_code,a.message)
-                                            pass
-
                                         lado='BUY'
                                         print("\n*********************************************************************************************")
                                         mensaje="Trade - "+par+" - "+lado
@@ -508,6 +567,7 @@ def main() -> None:
                                         if posicioncreada==True:
                                             maximavariacion = 0.0 
                                         ut.sound()
+                                '''
                                 
                         except KeyboardInterrupt:
                             print("\nSalida solicitada. ")

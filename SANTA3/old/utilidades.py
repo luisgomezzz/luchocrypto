@@ -13,7 +13,6 @@ import math
 import pandas as pd
 import yfinance as yahoo_finance
 yahoo_finance.pdr_override()
-from mplfinance.original_flavor import candlestick2_ohlc
 import ccxt
 from os import system, name
 import os
@@ -21,8 +20,6 @@ from binance.exceptions import BinanceAPIException
 from bob_telegram_tools.bot import TelegramBot
 from typing import Tuple
 import numpy as np
-import talib as tl
-import pandas_ta as ta
 import sys
 from time import sleep
 from binance.helpers import round_step_size
@@ -100,7 +97,7 @@ def binancecrearlimite(par,preciolimit,posicionporc,lado):
    try:
       limitprice=truncate(preciolimit,get_priceprecision(par))
       order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
-      print("Limit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
+      print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
       creado= True
    except BinanceAPIException as a:
       print(a.message,"No se pudo crear el Limit.")
@@ -121,7 +118,7 @@ def binancestoploss (pair,side,stopprice):
    try:
       preciostop=truncate(stopprice,get_priceprecision(pair))
       order=client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
-      print("Stop loss creado. ",preciostop)
+      print("\nStop loss creado. ",preciostop)
       creado = True
       stopid = order['orderId']
    except BinanceAPIException as a:
@@ -266,33 +263,6 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
-def posicionsanta(par,lado,porcentajeentrada):   
-   serror = True
-   micapital = balancetotal()
-   size = (micapital*porcentajeentrada/100)/(currentprice(par))
-   mensaje=''
-
-   try:      
-         if binancecreoposicion (par,size,lado)==True:
-            precioactual = getentryprice(par)
-            mensaje=mensaje+"\nEntryPrice: "+str(truncate(precioactual,6))
-         else:
-            mensaje="No se pudo crear la posición. "
-            print(mensaje)
-            serror=False
-   except BinanceAPIException as a:
-      print(a.message,"No se pudo crear la posición.")
-      serror=False
-      pass     
-   except Exception as falla:
-      exc_type, exc_obj, exc_tb = sys.exc_info()
-      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-      print("\nError3: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
-      serror=False
-      pass
-
-   return serror, mensaje       
-
 def will_frac_roll(df: pd.DataFrame, period: int = 2) -> Tuple[pd.Series, pd.Series]:
     """Indicate bearish and bullish fractal patterns using rolling windows.
     :param df: OHLC data
@@ -329,32 +299,11 @@ def closeallopenorders (pair):
       
       try:
          client.futures_cancel_all_open_orders(symbol=pair)
-         print("Órdenes cerradas. ")
+         print("\nÓrdenes cerradas. ")
          leido=True
       except:
          pass
 
-def komucloud (df):
-   high_9 = df.high.rolling(9).max()
-   low_9 = df.low.rolling(9).min()
-   df['tenkan_sen_line'] = (high_9 + low_9) /2
-   # Calculate Kijun-sen
-   high_26 = df.high.rolling(26).max()
-   low_26 = df.low.rolling(26).min()
-   df['kijun_sen_line'] = (high_26 + low_26) / 2
-   # Calculate Senkou Span A
-   df['senkou_spna_A'] = ((df.tenkan_sen_line + df.kijun_sen_line) / 2).shift(26)
-   # Calculate Senkou Span B
-   high_52 = df.high.rolling(52).max()
-   low_52 = df.high.rolling(52).min()
-   df['senkou_spna_B'] = ((high_52 + low_52) / 2).shift(26)
-   # Calculate Chikou Span B
-   df['chikou_span'] = df.close.shift(-26)
-   df['SAR'] = tl.SAR(df.high, df.low, acceleration=0.02, maximum=0.2)
-   df['signal'] = 0
-   df.loc[(df.close > df.senkou_spna_A) & (df.close > df.senkou_spna_B) & (df.close > df.SAR), 'signal'] = 1
-   df.loc[(df.close < df.senkou_spna_A) & (df.close < df.senkou_spna_B) & (df.close < df.SAR), 'signal'] = -1
-      
 def calculardf (par,temporalidad,ventana):
    df=binancehistoricdf(par,timeframe=temporalidad,limit=ventana) # para fractales.
    timeindex(df) #Formatea el campo time para luego calcular las señales
@@ -735,22 +684,6 @@ def preciostop(par,procentajeperdida):
 
    return preciostop
 
-def preciostopsanta(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida):  
-   if lado == 'SELL':
-       cantidadtotalconataqueusdt=cantidadtotalconataqueusdt*-1
-   if preciodondequedariaposicionalfinal !=0.0:
-      perdida=abs(perdida)*-1
-      cantidadtotalconataqueusdt = cantidadtotalconataqueusdt
-      try:
-         preciostop = ((perdida/cantidadtotalconataqueusdt)+1)*preciodondequedariaposicionalfinal
-      except Exception as ex:
-         preciostop = 0
-         pass
-   else:
-      preciostop = 0
-
-   return preciostop
-
 def stopvelavela (par,lado,temporalidad):
    porc=0.2 #porcentaje de distancia 
    df=calculardf (par,temporalidad,2)
@@ -846,7 +779,7 @@ def maximasvariaciones(dias=90):
 def equipoliquidando ():
    lista_de_monedas = client.futures_exchange_info()['symbols'] #obtiene lista de monedas
    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCDOMUSDT','FOOTBALLUSDT'
-   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
+   ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT','BLUEBIRDUSDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
    lista=[]
    temporalidad='1d'
    ventana = 30
