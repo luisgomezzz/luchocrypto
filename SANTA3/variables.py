@@ -74,7 +74,8 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400 #los 400 son los del prestamo del dpto que quiero recuperar. los -100 son lo enviado a kucoin.
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400
+    #los 400 son los que puse la primera vez para aprender.
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
