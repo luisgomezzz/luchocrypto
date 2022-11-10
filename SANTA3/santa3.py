@@ -345,7 +345,7 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if 1==1: #dt.datetime.today().hour >=5 and dt.datetime.today().hour <=23: 
+            if dt.datetime.today().hour !=18: #se detecta q a esa hora (utc-3) existen variaciones altas.
 
                 res = [x for x in lista_monedas_filtradas + lista_monedas_filtradas_nueva if x not in lista_monedas_filtradas or x not in lista_monedas_filtradas_nueva]
                 
@@ -436,10 +436,10 @@ def main() -> None:
                                     if (flecha==" ↑" and precioactual>=preciomayor):
                                         ###########para la variacion diaria  
                                         df2=ut.calculardf (par,'1d',1)
-                                        df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
-                                        variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))
+                                        df2['variaciondiaria']=((df2.high/df2.low)-1)*100 # se toma como si siempre fuese vela verde ya que sería el caso más alto
+                                        variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
                                         #####################################
-                                        if par not in listaequipoliquidando and variaciondiaria <= var.variaciondiaria:
+                                        if par not in listaequipoliquidando and variaciondiaria <= var.maximavariaciondiaria:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
@@ -449,10 +449,10 @@ def main() -> None:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria  
                                             df2=ut.calculardf (par,'1d',1)
-                                            df2['variaciondiaria']=np.where((df2.open<df2.close),((df2.close/df2.open)-1)*100,((df2.open/df2.close)-1)*-100)
-                                            variaciondiaria = abs(ut.truncate((df2.variaciondiaria.iloc[-1]),2))                                            
+                                            df2['variaciondiaria']=((df2.high/df2.low)-1)*100 # se toma como si siempre fuese vela verde ya que sería el caso más alto
+                                            variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
                                             #####################################
-                                            if variaciondiaria <= var.variaciondiaria:
+                                            if variaciondiaria <= var.maximavariaciondiaria:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")

@@ -8,8 +8,8 @@ import ccxt as ccxt
 from binance.client import Client as binanceClient
 
 #EXCHANGE SELECT
-exchange_name = 'kucoin'
-#exchange_name = 'binance'
+#exchange_name = 'kucoin'
+exchange_name = 'binance'
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
@@ -41,10 +41,10 @@ temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición (6)
+porcentajeentrada = 5 #porcentaje de la cuenta para crear la posición.
 ventana = 30 #Ventana de búsqueda en minutos.   
 cantidadcompensaciones = 6
-variaciondiaria = 10 #maxima variacion diaria de una moneda
+maximavariaciondiaria = 20 #maxima variacion diaria de una moneda
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
