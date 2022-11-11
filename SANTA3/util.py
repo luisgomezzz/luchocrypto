@@ -191,10 +191,10 @@ def getentryprice(par):
                         entryprice=float(positions[index]['entryPrice'])
                         break
             if exchange_name=='kucoinfutures':
-                positions=var.clienttrade.get_all_position()
-                for index in range(len(positions)):
-                    if positions[index]['symbol']==par:
-                        entryprice=float(positions[index]['avgEntryPrice'])
+                position = var.exchange.fetch_positions()
+                for i in range(len(position)):
+                    if position[i]['info']['symbol']==par:
+                        entryprice=float(position[i]['info']['entryPrice'])
                         break
             leido = True
         except:
@@ -230,6 +230,7 @@ def creoposicion (par,size,lado)->bool:
             tamanio=truncate((size/currentprice(par)),get_quantityprecision(par))
             var.client.futures_create_order(symbol=par,side=lado,type='MARKET',quantity=tamanio)
         if exchange_name=='kucoinfutures':
+            var.clienttrade.modify_auto_deposit_margin(par,status=True)
             multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
             tamanio=str(int(size/(multiplier*currentprice(par))))
             var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=int(var.apalancamiento))
@@ -240,15 +241,27 @@ def creoposicion (par,size,lado)->bool:
         pass
     return serror
 
-def get_positionamt(par) -> float:
-    leido=False
+def get_positionamt(par) -> float: #monto en moneda original y con signo (no en usdt)
+    leido = False
+    positionamt = 0.0
     while leido == False:
         try:
-            position = var.exchange.fetch_balance()['info']['positions']
+            if exchange_name =='binance':
+                position = var.exchange.fetch_balance()['info']['positions']
+                for i in range(len(position)):
+                    if position[i]['symbol']==par:
+                        positionamt=position[i]['positionAmt']
+                        break
+            if exchange_name =='kucoinfutures':
+                position = var.exchange.fetch_positions()
+                for i in range(len(position)):
+                    if position[i]['info']['symbol']==par:
+                        positionamt=position[i]['info']['currentQty']*float(var.clientmarket.get_contract_detail(par)['multiplier'])
+                        break
             leido = True
         except:
             pass
-    return float([p for p in position if p['symbol'] == par][0]['positionAmt'])
+    return positionamt
 
 def get_positionamtusdt(par):
     precioactualusdt=currentprice(par)

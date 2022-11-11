@@ -1,15 +1,21 @@
 from os import system, name
-import sys, os
-import sys
+import os
 from kucoin_futures.client import Trade as kucoinTrade
 from kucoin.client import Client as kucoinClient
 from kucoin_futures.client import Market
 import ccxt as ccxt
 from binance.client import Client as binanceClient
+import inquirer
 
 #EXCHANGE SELECT
-#exchange_name = 'kucoin'
-exchange_name = 'binance'
+questions = [
+  inquirer.List('exchange',
+                message="Seleccionar exchange: ",
+                choices=['binance', 'kucoin'],
+            ),
+]
+answers = inquirer.prompt(questions)
+exchange_name=answers['exchange']
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
@@ -23,7 +29,10 @@ def clear():
         _ = system('clear')
 
 ##FILES
-nombrelog = "log_santa.txt"
+if exchange_name =='binance':
+    nombrelog = "log_binace.txt"
+if exchange_name =='kucoin':
+    nombrelog = "log_kucoin.txt"    
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 operandofile = "operando.txt"
@@ -41,10 +50,17 @@ temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-porcentajeentrada = 5 #porcentaje de la cuenta para crear la posición.
+#porcentaje de la cuenta para crear la posición. 
+if exchange_name=='kucoin':
+    porcentajeentrada = 20 
+else:
+    porcentajeentrada = 7
+#con 5 soporta 18% de variacion. (con 6 compensaciones)
+#con 7 soporta 15% de variacion. (con 6 compensaciones) 
+#con 10 soporta 12% de variacion. (con 6 compensaciones) 
 ventana = 30 #Ventana de búsqueda en minutos.   
 cantidadcompensaciones = 6
-maximavariaciondiaria = 20 #maxima variacion diaria de una moneda
+maximavariaciondiaria = 20 #maxima variacion diaria de una moneda(20)
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando

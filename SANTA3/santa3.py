@@ -260,7 +260,7 @@ def updating(par,lado):
                 stopvelavela=ut.stopvelavela (par,lado,var.temporalidad)
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
-                        print("crea stopvelavela. "+par)
+                        print("\nCrea stopvelavela. "+par)
                         creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                         if creado==True:
