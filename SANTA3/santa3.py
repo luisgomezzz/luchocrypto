@@ -77,9 +77,12 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
+    print('aca1')
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
-    paso = 1.7    
+    paso = 1.7 
+    print('aca2')   
     if posicioncreada==True:    
+        print('aca3')
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
         ut.printandlog(var.nombrelog,"distancia: "+str(paso))
         #agrego el par al file
@@ -91,8 +94,11 @@ def formacioninicial(par,lado,porcentajeentrada):
         distanciaporc = 0.0
         cantidadtotal = 0.0
         cantidadtotalusdt = 0.0  
+        print('aca4')
         precioinicial = ut.getentryprice(par)
+        print('aca5')
         cantidad = abs(ut.get_positionamt(par))
+        print('aca6')
         cantidadusdt = cantidad*ut.getentryprice(par)
         cantidadtotal = cantidadtotal+cantidad
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
@@ -102,7 +108,9 @@ def formacioninicial(par,lado,porcentajeentrada):
         else:
             preciodeataque = precioinicial*(1+paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+        print('aca7')
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
+        print('aca8')
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         i=0
         #CREA COMPENSACIONES         
@@ -127,7 +135,9 @@ def formacioninicial(par,lado,porcentajeentrada):
                 else:
                     preciodeataque = preciolimit*(1+paso/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                print('aca9')
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
+                print('aca10')
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
         # CANCELA ÚLTIMA COMPENSACIÓN

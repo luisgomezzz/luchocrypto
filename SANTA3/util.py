@@ -63,18 +63,18 @@ def timeindex(df):
     df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
 
 def calculardf (par,temporalidad,ventana):
-    leido = False
-    while leido == False:
-        try:
-            barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
-            df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
-            timeindex(df) #Formatea el campo time para luego calcular las señales
-            leido = True
-        except KeyboardInterrupt:
-            print("\nSalida solicitada.")
-            sys.exit()  
-        except:
-            pass
+    df = pd.DataFrame()
+    try:
+        barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
+        df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+        timeindex(df) #Formatea el campo time para luego calcular las señales
+    except KeyboardInterrupt:
+        print("\nSalida solicitada.")
+        sys.exit()  
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
     return df      
 
 def equipoliquidando ():
@@ -194,7 +194,7 @@ def getentryprice(par):
                 position = var.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
-                        entryprice=float(position[i]['info']['entryPrice'])
+                        entryprice=float(position[i]['info']['avgEntryPrice'])
                         break
             leido = True
         except:
