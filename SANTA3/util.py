@@ -241,7 +241,7 @@ def creoposicion (par,size,lado)->bool:
         pass
     return serror
 
-def get_positionamt(par) -> float: #monto en moneda original y con signo (no en usdt)
+def get_positionamt(par): #monto en moneda original y con signo (no en usdt)
     leido = False
     positionamt = 0.0
     while leido == False:
@@ -250,13 +250,13 @@ def get_positionamt(par) -> float: #monto en moneda original y con signo (no en 
                 position = var.exchange.fetch_balance()['info']['positions']
                 for i in range(len(position)):
                     if position[i]['symbol']==par:
-                        positionamt=position[i]['positionAmt']
+                        positionamt=float(position[i]['positionAmt'])
                         break
             if exchange_name =='kucoinfutures':
                 position = var.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
-                        positionamt=position[i]['info']['currentQty']*float(var.clientmarket.get_contract_detail(par)['multiplier'])
+                        positionamt=float(position[i]['info']['currentQty'])*float(var.clientmarket.get_contract_detail(par)['multiplier'])
                         break
             leido = True
         except:
