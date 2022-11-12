@@ -36,6 +36,20 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
+def obtienecantidaddecimales(numero):
+    try :
+        int(numero.rstrip('0').rstrip('.'))
+        return 0
+    except: 
+        return len(str(float(numero)).split('.')[-1])
+
+def RoundToTickUp(par,numero):
+    if exchange_name=='kucoinfutures':
+        resolucion=float(var.clientmarket.get_contract_detail(par)['tickSize'])
+    cantidaddecimales=obtienecantidaddecimales(resolucion)
+    convertido=truncate((math.floor(numero / resolucion) * resolucion),cantidaddecimales)
+    return float(convertido)
+
 def lista_de_monedas ():
     lista_de_monedas = []
     if exchange_name =='binance':
@@ -234,6 +248,8 @@ def creoposicion (par,size,lado)->bool:
             multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
             tamanio=str(int(size/(multiplier*currentprice(par))))
             var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=int(var.apalancamiento))
+            print("Con Kucoin espera para que de tiempo a actualizar...")
+            waiting(5)
         print("Posición creada. ",tamanio)
     except BinanceAPIException as a:
         print("Falla al crear la posición. Error: ",a.message) 
@@ -299,19 +315,35 @@ def get_priceprecision(par):
     return priceprecision
 
 def compensaciones(par,client,lado,tamanio,distanciaporc):
-    tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
+    if exchange_name=='binance':
+        tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
+    if exchange_name=='kucoinfutures':
+        tamanioformateado = int(tamanio)
     if lado =='SELL':
         preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
     else:
         preciolimit = getentryprice(par)*(1-(distanciaporc/100))
-    preciolimit = get_rounded_price(par, preciolimit)  
-    limitprice = truncate(preciolimit,get_priceprecision(par))
+    if exchange_name=='binance':
+        preciolimit = get_rounded_price(par, preciolimit)  
+        limitprice = truncate(preciolimit,get_priceprecision(par))
+    if exchange_name=='kucoinfutures':
+        limitprice=RoundToTickUp(par,preciolimit)
     try:
-        order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
-        return True,float(order['price']),float(order['origQty']),order['orderId']
+        if exchange_name=='binance':
+            order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
+            return True,float(order['price']),float(order['origQty']),order['orderId']
+        if exchange_name=='kucoinfutures':
+            order=var.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=var.apalancamiento)
+            detalle=(var.clienttrade.get_order_details(order['orderId']))
+            return True,float(detalle['price']),float(detalle['size']),order['orderId']
     except BinanceAPIException as a:                                       
         print("Except 8",a.status_code,a.message)
-        return False,0,0,0    
+        return False,0,0,0     
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+        return False,0,0,0
 
 def binancecrearlimite(par,preciolimit,posicionporc,lado):
     creado = True 

@@ -18,8 +18,7 @@ def posicionsanta(par,lado,porcentajeentrada):
     mensaje=''
     try:      
         if ut.creoposicion (par,size,lado)==True:
-           precioactual = ut.getentryprice(par)
-           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(precioactual,6))
+           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(ut.getentryprice(par),6))
         else:
            mensaje="No se pudo crear la posición. "
            print(mensaje)
@@ -122,11 +121,13 @@ def formacioninicial(par,lado,porcentajeentrada):
             ) 
             and i<=var.cantidadcompensaciones
             ):
+            print('aca9')
             i=i+1
             cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##                       
             distanciaporc = distanciaporc+paso ##                                   
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
             if hayguita == True:
+                print('aca10')
                 cantidadtotal = cantidadtotal+cantidadformateada
                 cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
                 cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
@@ -135,9 +136,9 @@ def formacioninicial(par,lado,porcentajeentrada):
                 else:
                     preciodeataque = preciolimit*(1+paso/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
-                print('aca9')
+                print('aca11')
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-                print('aca10')
+                print('aca12')
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
         # CANCELA ÚLTIMA COMPENSACIÓN
