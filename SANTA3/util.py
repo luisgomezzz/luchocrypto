@@ -7,6 +7,9 @@ import math
 from time import sleep
 from binance.exceptions import BinanceAPIException
 from binance.helpers import round_step_size
+from requests import Session
+import json
+import math
 
 exchange_name=var.exchange_name
 
@@ -426,3 +429,29 @@ def pnl(par):
     else:
         pnl = 0   
     return pnl        
+
+def coingeckoinfo (par,dato='market_cap'):
+    '''
+    {'id': 'binancecoin', 'symbol': 'bnb', 'name': 'BNB', 'image': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1644979850', 
+    'current_price': 282.13, 'market_cap': 45966534569, 'market_cap_rank': 4, 'fully_diluted_valuation': 56304980752, 
+    'total_volume': 1748519199, 'high_24h': 291.05, 'low_24h': 272.34, 'price_change_24h': -3.749382261274775, 
+    'price_change_percentage_24h': -1.31152, 'market_cap_change_24h': -772981310.7671661, 'market_cap_change_percentage_24h': -1.65381,
+    'circulating_supply': 163276974.63, 'total_supply': 163276974.63, 'max_supply': 200000000.0, 'ath': 686.31, 
+    'ath_change_percentage': -58.97972, 'ath_date': '2021-05-10T07:24:17.097Z', 'atl': 0.0398177, 'atl_change_percentage': 706934.61939, 
+    'atl_date': '2017-10-19T00:00:00.000Z', 'roi': None, 'last_updated': '2022-11-12T14:45:04.478Z'}
+    '''
+    symbol = (par[0:par.find('USDT')]).lower()
+    url = 'https://api.coingecko.com/api/v3/coins/list' 
+    session = Session()
+    response = session.get(url)
+    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+    for i in range(len(info)):
+        if info[i]['symbol']==symbol:
+            id=info[i]['id']
+            break
+    urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+    parameters = {}
+    session = Session()
+    response = session.get(urldetalle, params=parameters)
+    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+    return (info[0][dato])
