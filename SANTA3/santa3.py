@@ -335,7 +335,6 @@ def main() -> None:
     listaequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
-    mensaje=''    
     maximavariacion=0.0
     maximavariacionhora=''
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
@@ -446,10 +445,11 @@ def main() -> None:
 
                                     #EJECUTA MINITRADE                                    
                                     if (flecha==" ↑" and precioactual>=preciomayor):
-                                        ###########para la variacion diaria  
-                                        df2=ut.calculardf (par,'1d',1)
-                                        df2['variaciondiaria']=((df2.high/df2.low)-1)*100 # se toma como si siempre fuese vela verde ya que sería el caso más alto
-                                        variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                        ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
+                                        df2=ut.calculardf (par,'1h',12)
+                                        df2preciomenor=df2.low.min()
+                                        df2preciomayor=df2.high.max()
+                                        variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                         #####################################
                                         if par not in listaequipoliquidando and variaciondiaria <= var.maximavariaciondiaria:
                                             ut.sound(duration = 200,freq = 800)
@@ -459,10 +459,11 @@ def main() -> None:
                                             trading(par,lado,var.porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
-                                            ###########para la variacion diaria  
-                                            df2=ut.calculardf (par,'1d',1)
-                                            df2['variaciondiaria']=((df2.high/df2.low)-1)*100 # se toma como si siempre fuese vela verde ya que sería el caso más alto
-                                            variaciondiaria = ut.truncate((df2.variaciondiaria.iloc[-1]),2)
+                                            ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
+                                            df2=ut.calculardf (par,'1h',12)
+                                            df2preciomenor=df2.low.min()
+                                            df2preciomayor=df2.high.max()
+                                            variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                             #####################################
                                             if variaciondiaria <= var.maximavariaciondiaria:
                                                 ut.sound(duration = 200,freq = 800)

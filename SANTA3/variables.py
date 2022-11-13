@@ -65,7 +65,8 @@ else:
 #con 10 soporta 12% de variacion. (con 6 compensaciones) 
 ventana = 30 #Ventana de búsqueda en minutos.   
 cantidadcompensaciones = 6
-maximavariaciondiaria = 20 #maxima variacion diaria de una moneda(20)
+maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
+#la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
