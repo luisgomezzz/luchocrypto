@@ -445,13 +445,37 @@ def coingeckoinfo (par,dato='market_cap'):
     session = Session()
     response = session.get(url)
     info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+    id=''
+    valor=0
     for i in range(len(info)):
         if info[i]['symbol']==symbol:
             id=info[i]['id']
             break
-    urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-    parameters = {}
-    session = Session()
-    response = session.get(urldetalle, params=parameters)
-    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-    return (info[0][dato])
+    if id!='':
+        urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+        parameters = {}
+        session = Session()
+        response = session.get(urldetalle, params=parameters)
+        info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+        valor = info[0][dato]
+    else:
+        valor = 0
+    return valor
+
+def capitalizacion2(par):
+    cap=0.0
+    # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
+    #busqueda en binance
+    if var.exchange_name == 'kucoinfutures':# si se eligió kucoin se le saca el ultimo caracter al símbolo.
+        par=par[0:-1]
+    clientcap = var.binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
+    info = clientcap.get_products()
+    lista=info['data']
+    for i in range(len(lista)):
+        if lista[i]['s']==par:
+            cap = float(lista[i]['c']*lista[i]['cs'])
+            break
+    if cap==0.0:
+        #busqueda en coingecko
+        cap=float(coingeckoinfo (par,dato='market_cap'))
+    return cap    

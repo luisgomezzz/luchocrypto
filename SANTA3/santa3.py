@@ -60,7 +60,7 @@ def filtradodemonedas ():
             if par not in mazmorra:                
                 if (
                     ut.volumeOf24h(par)>var.minvolumen24h 
-                    and ut.capitalizacion(par)>=var.mincapitalizacion
+                    and ut.capitalizacion2(par)>=var.mincapitalizacion
                     ):
                     lista_monedas_filtradas_aux.append(par)
         except Exception as ex:
@@ -97,6 +97,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         precioinicial = ut.getentryprice(par)
         print('aca5')
         cantidad = abs(ut.get_positionamt(par))
+        print("\ncantidad:"+str(cantidad)+"\n")
         print('aca6')
         cantidadusdt = cantidad*ut.getentryprice(par)
         cantidadtotal = cantidadtotal+cantidad
@@ -123,7 +124,8 @@ def formacioninicial(par,lado,porcentajeentrada):
             ):
             print('aca9')
             i=i+1
-            cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##                       
+            cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##             
+            print("\ncantidad:"+str(cantidad)+"\n")          
             distanciaporc = distanciaporc+paso ##                                   
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
             if hayguita == True:

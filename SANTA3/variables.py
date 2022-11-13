@@ -38,9 +38,14 @@ f.close()
 operandofile = "operando.txt"
 f = open(os.path.join(pathroot, operandofile), 'a',encoding="utf-8")
 f.close() 
-lista_monedas_filtradas_file = "lista_monedas_filtradas.txt"
-f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
-f.close() 
+if exchange_name =='binance':
+    lista_monedas_filtradas_file = "lista_monedas_filtradas_binance.txt"
+    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    f.close() 
+if exchange_name =='kucoin':
+    lista_monedas_filtradas_file = "lista_monedas_filtradas_kucoin.txt"
+    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    f.close()     
 lanzadorfile = "lanzador.py"
 f = open(os.path.join(pathroot, lanzadorfile), 'a',encoding="utf-8")
 f.close() 
