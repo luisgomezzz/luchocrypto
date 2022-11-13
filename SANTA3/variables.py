@@ -84,7 +84,7 @@ kucoin_secret='409d3eff-9622-4488-af21-fa0feabb24ec'
 kucoin_passphares='santakucoin'
 
 if exchange_name == 'kucoin':
-    minvolumen24h = float(150000000)
+    minvolumen24h =  float(10000000)
 else:
     minvolumen24h = float(200000000)
 
