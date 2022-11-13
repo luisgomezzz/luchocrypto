@@ -47,8 +47,7 @@ def obtienecantidaddecimales(numero):
         return len(str(float(numero)).split('.')[-1])
 
 def RoundToTickUp(par,numero):
-    if exchange_name=='kucoinfutures':
-        resolucion=float(var.clientmarket.get_contract_detail(par)['tickSize'])
+    resolucion= get_tick_size(par)
     cantidaddecimales=obtienecantidaddecimales(resolucion)
     convertido=truncate((math.floor(numero / resolucion) * resolucion),cantidaddecimales)
     return float(convertido)
@@ -91,7 +90,7 @@ def calculardf (par,temporalidad,ventana):
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
     return df      
 
 def equipoliquidando ():
@@ -258,6 +257,12 @@ def creoposicion (par,size,lado)->bool:
         print("Falla al crear la posición. Error: ",a.message) 
         serror=False
         pass
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+        serror=False
+        pass
     return serror
 
 def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
@@ -288,15 +293,25 @@ def get_positionamtusdt(par):
     tamanioposusdt=positionamt*precioactualusdt
     return tamanioposusdt    
 
-def get_tick_size(symbol: str) -> float:
-    info = var.client.futures_exchange_info()
-    for symbol_info in info['symbols']:
-        if symbol_info['symbol'] == symbol:
-            for symbol_filter in symbol_info['filters']:
-                if symbol_filter['filterType'] == 'PRICE_FILTER':
-                    tick_size = float(symbol_filter['tickSize'])  
+def get_tick_size(symbol) -> float:
+    tick_size = 0.0
+    try:
+        if exchange_name=='kucoinfutures':
+            tick_size=float(var.clientmarket.get_contract_detail(symbol)['tickSize'])
+        if exchange_name=='binance':
+            info = var.client.futures_exchange_info()
+            for symbol_info in info['symbols']:
+                if symbol_info['symbol'] == symbol:
+                    for symbol_filter in symbol_info['filters']:
+                        if symbol_filter['filterType'] == 'PRICE_FILTER':
+                            tick_size = float(symbol_filter['tickSize'])  
+                            break
                     break
-            break  
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
     return tick_size
 
 def get_rounded_price(symbol: str, price: float) -> float:
@@ -318,19 +333,19 @@ def get_priceprecision(par):
     return priceprecision
 
 def compensaciones(par,client,lado,tamanio,distanciaporc):
+
     if exchange_name=='binance':
         tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
     if exchange_name=='kucoinfutures':
         tamanioformateado = int(tamanio)
+
     if lado =='SELL':
         preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
     else:
         preciolimit = getentryprice(par)*(1-(distanciaporc/100))
-    if exchange_name=='binance':
-        preciolimit = get_rounded_price(par, preciolimit)  
-        limitprice = truncate(preciolimit,get_priceprecision(par))
-    if exchange_name=='kucoinfutures':
-        limitprice=RoundToTickUp(par,preciolimit)
+
+    limitprice=RoundToTickUp(par,preciolimit)
+
     try:
         if exchange_name=='binance':
             order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
@@ -345,7 +360,7 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError4: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par)
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         return False,0,0,0
 
 def binancecrearlimite(par,preciolimit,posicionporc,lado):
