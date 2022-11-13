@@ -118,7 +118,7 @@ def equipoliquidando ():
             sys.exit()           
     return listaequipoliquidando      
 
-def volumeOf24h(par):
+def volumeOf24h(par): #en usdt
     vol=0.0
     if exchange_name == 'binance':
         vol= var.client.futures_ticker(symbol=par)['quoteVolume']
@@ -126,7 +126,7 @@ def volumeOf24h(par):
         datos=var.exchange.fetch_markets()
         for i in range(len(datos)):
             if datos[i]['id']==par:
-                vol=datos[i]['info']['volumeOf24h']
+                vol=datos[i]['info']['volumeOf24h']*currentprice(par)
                 break
     return float(vol)
 

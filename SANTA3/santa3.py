@@ -6,7 +6,6 @@ import util as ut
 import datetime as dt
 from datetime import datetime
 import threading
-import numpy as np
 from playsound import playsound
 import variables as var
 from binance.exceptions import BinanceAPIException
