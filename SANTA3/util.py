@@ -260,7 +260,7 @@ def creoposicion (par,size,lado)->bool:
         pass
     return serror
 
-def get_positionamt(par): #monto en moneda original y con signo (no en usdt)
+def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
     leido = False
     positionamt = 0.0
     while leido == False:
@@ -275,7 +275,7 @@ def get_positionamt(par): #monto en moneda original y con signo (no en usdt)
                 position = var.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
-                        positionamt=float(position[i]['info']['currentQty'])*float(var.clientmarket.get_contract_detail(par)['multiplier'])
+                        positionamt=float(position[i]['info']['currentQty'])/float(var.clientmarket.get_contract_detail(par)['multiplier'])
                         break
             leido = True
         except:
@@ -477,5 +477,9 @@ def capitalizacion2(par):
             break
     if cap==0.0:
         #busqueda en coingecko
-        cap=float(coingeckoinfo (par,dato='market_cap'))
+        try:
+            cap=float(coingeckoinfo (par,dato='market_cap'))
+        except:
+            cap=0.0
+            pass
     return cap    
