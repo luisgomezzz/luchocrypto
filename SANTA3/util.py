@@ -130,20 +130,6 @@ def volumeOf24h(par): #en usdt
                 break
     return float(vol)
 
-def capitalizacion(par):#Para todos los exchanges se usa binance por su mayor estabilidad
-    if exchange_name == 'kucoinfutures':
-        par=par[0:-1]
-    cap=0.0
-    clientcap = var.binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
-    info = clientcap.get_products()
-    lista=info['data']
-    df = pd.DataFrame(lista)
-    try:
-        cap=float(df.c.loc[df['s'] == par]*df.cs.loc[df['s'] == par])
-    except:
-        cap=0.0
-    return cap
-
 def sound(duration = 2000,freq = 440):
     # milliseconds
     # Hz
@@ -153,7 +139,6 @@ def sound(duration = 2000,freq = 440):
     # for mac and linux(here, os.name is 'posix')
     else:
         _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
-
 
 def printandlog(nombrelog,mensaje,pal=0,mode='a'):
    if pal==0: #print y log
@@ -441,13 +426,19 @@ def creostoploss (pair,side,stopprice):
         pass
     return creado,stopid    
 
-def closeallopenorders (pair):
+def closeallopenorders (par):
     leido=False
     while leido==False:      
         try:
-            var.client.futures_cancel_all_open_orders(symbol=pair)
-            print("\nÓrdenes cerradas. ")
-            leido=True
+            if exchange_name=='binance':
+                var.client.futures_cancel_all_open_orders(symbol=par)
+                leido=True
+                print("\nÓrdenes binance cerradas. ")
+            if exchange_name == 'kucoinfutures':
+                var.clienttrade.cancel_all_limit_order(par)
+                var.clienttrade.cancel_all_stop_order(par)
+                leido=True
+                print("\nÓrdenes kucoin cerradas. ")
         except:
             pass    
 
@@ -497,11 +488,11 @@ def coingeckoinfo (par,dato='market_cap'):
         valor = 0
     return valor
 
-def capitalizacion2(par):
+def capitalizacion(par):
     cap=0.0
     # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
     #busqueda en binance
-    if var.exchange_name == 'kucoinfutures':# si se eligió kucoin se le saca el ultimo caracter al símbolo.
+    if exchange_name == 'kucoinfutures':# si se eligió kucoin se le saca el ultimo caracter al símbolo.
         par=par[0:-1]
     clientcap = var.binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
     info = clientcap.get_products()

@@ -59,7 +59,7 @@ def filtradodemonedas ():
             if par not in mazmorra:                
                 if (
                     ut.volumeOf24h(par)>var.minvolumen24h 
-                    and ut.capitalizacion2(par)>=var.mincapitalizacion
+                    and ut.capitalizacion(par)>=var.mincapitalizacion
                     ):
                     lista_monedas_filtradas_aux.append(par)
         except Exception as ex:
