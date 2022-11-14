@@ -173,7 +173,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         # STOP LOSS
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        ut.binancestoploss (par,lado,preciostopsanta) 
+        ut.creostoploss (par,lado,preciostopsanta) 
         ut.printandlog(var.nombrelog,"Precio Stop creado.",pal=1)
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
     return posicioncreada        
@@ -252,7 +252,7 @@ def updating(par,lado):
                         stopenganancias=precioposicion+((precioactual-precioposicion)/2)
                     else:
                         stopenganancias=precioposicion-((precioposicion-precioactual)/2)
-                    ut.binancestoploss (par,lado,stopenganancias) 
+                    ut.creostoploss (par,lado,stopenganancias) 
                     playsound(var.pathsound+"cash-register-purchase.mp3")
                     print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
                 except Exception as ex:
@@ -273,7 +273,7 @@ def updating(par,lado):
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
                         print("\nCrea stopvelavela. "+par)
-                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
+                        creado,orderid=ut.creostoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                         if creado==True:
                             if orderidanterior==0:
@@ -289,7 +289,7 @@ def updating(par,lado):
                 else:
                     if stopvelavela!=0.0 and stopvelavela>stopenganancias:
                         print("\ncrea stopvelavela. "+par)
-                        creado,orderid=ut.binancestoploss (par,lado,stopvelavela)
+                        creado,orderid=ut.creostoploss (par,lado,stopvelavela)
                         stopenganancias=stopvelavela
                         if creado==True:
                             if orderidanterior==0:

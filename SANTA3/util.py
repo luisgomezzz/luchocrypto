@@ -249,7 +249,12 @@ def creoposicion (par,size,lado)->bool:
             var.clienttrade.modify_auto_deposit_margin(par,status=True)
             multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
             tamanio=str(int(size/(multiplier*currentprice(par))))
-            var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=int(var.apalancamiento))
+            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
+            if maxLeverage < var.apalancamiento:
+                apalancamiento=int(maxLeverage)
+            else:
+                apalancamiento=int(var.apalancamiento)
+            var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=apalancamiento)
             print("Con Kucoin espera para que de tiempo a actualizar...")
             waiting(5)
         print("Posición creada. ",tamanio)
@@ -280,7 +285,7 @@ def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
                 position = var.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
-                        positionamt=float(position[i]['info']['currentQty'])/float(var.clientmarket.get_contract_detail(par)['multiplier'])
+                        positionamt=float(position[i]['info']['currentQty'])*float(var.clientmarket.get_contract_detail(par)['multiplier'])
                         break
             leido = True
         except:
@@ -403,7 +408,7 @@ def stopvelavela (par,lado,temporalidad):
             stopvelavela=0.0
     return stopvelavela    
 
-def binancestoploss (pair,side,stopprice):   
+def creostoploss (pair,side,stopprice):   
     creado = False
     stopid = 0
     if side == 'BUY':
@@ -411,11 +416,12 @@ def binancestoploss (pair,side,stopprice):
     else:
         side='BUY'
     try:
-        preciostop=truncate(stopprice,get_priceprecision(pair))
-        order=var.client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
-        print("\nStop loss creado. ",preciostop)
-        creado = True
-        stopid = order['orderId']
+        if exchange_name=='binance':
+            preciostop=truncate(stopprice,get_priceprecision(pair))
+            order=var.client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+            print("\nStop loss creado. ",preciostop)
+            creado = True
+            stopid = order['orderId']
     except BinanceAPIException as a:
         print(a.message,"no se pudo crear el stop loss.")
         pass
