@@ -10,6 +10,7 @@ from binance.helpers import round_step_size
 from requests import Session
 import json
 import math
+import ccxt as ccxt
 
 exchange_name=var.exchange_name
 
@@ -338,27 +339,40 @@ def get_priceprecision(par):
     return priceprecision
 
 def compensaciones(par,client,lado,tamanio,distanciaporc):
-
-    if exchange_name=='binance':
-        tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
-    if exchange_name=='kucoinfutures':
-        tamanioformateado = int(tamanio)
-
     if lado =='SELL':
         preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
     else:
         preciolimit = getentryprice(par)*(1-(distanciaporc/100))
-
     limitprice=RoundToTickUp(par,preciolimit)
-
     try:
         if exchange_name=='binance':
+            tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
             order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
             return True,float(order['price']),float(order['origQty']),order['orderId']
-        if exchange_name=='kucoinfutures':
-            order=var.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=var.apalancamiento)
-            detalle=(var.clienttrade.get_order_details(order['orderId']))
-            return True,float(detalle['price']),float(detalle['size']),order['orderId']
+        if exchange_name=='kucoinfutures':                
+            tamanioformateado = int(tamanio)
+            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
+            if maxLeverage < var.apalancamiento:
+                apalancamiento=int(maxLeverage)
+            else:
+                apalancamiento=int(var.apalancamiento)
+            i=0
+            creada=False
+            while creada==False:                        
+                try:
+                    order=var.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=apalancamiento)
+                    detalle=(var.clienttrade.get_order_details(order['orderId']))
+                    creada=True
+                    return True,float(detalle['price']),float(detalle['size']),order['orderId']
+                except ccxt.RateLimitExceeded as e:
+                    now = var.exchange.milliseconds()
+                    datetime = var.exchange.iso8601(now)
+                    print(datetime, i, type(e).__name__, str(e))
+                    var.exchange.sleep(10000)
+                except Exception as e:
+                    print(type(e).__name__, str(e))
+                    raise e
+                i += 1
     except BinanceAPIException as a:                                       
         print("Except 8",a.status_code,a.message)
         return False,0,0,0     

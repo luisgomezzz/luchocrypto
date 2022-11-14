@@ -75,12 +75,9 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
-    print('aca1')
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     paso = 1.7 
-    print('aca2')   
     if posicioncreada==True:    
-        print('aca3')
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
         ut.printandlog(var.nombrelog,"distancia: "+str(paso))
         #agrego el par al file
@@ -92,12 +89,8 @@ def formacioninicial(par,lado,porcentajeentrada):
         distanciaporc = 0.0
         cantidadtotal = 0.0
         cantidadtotalusdt = 0.0  
-        print('aca4')
         precioinicial = ut.getentryprice(par)
-        print('aca5')
         cantidad = abs(ut.get_positionamt(par))
-        print("\ncantidad:"+str(cantidad)+"\n")
-        print('aca6')
         cantidadusdt = cantidad*ut.getentryprice(par)
         cantidadtotal = cantidadtotal+cantidad
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
@@ -107,9 +100,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         else:
             preciodeataque = precioinicial*(1+paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
-        print('aca7')
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-        print('aca8')
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         i=0
         #CREA COMPENSACIONES         
@@ -121,14 +112,11 @@ def formacioninicial(par,lado,porcentajeentrada):
             ) 
             and i<=var.cantidadcompensaciones
             ):
-            print('aca9')
             i=i+1
             cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##             
-            print("\ncantidad:"+str(cantidad)+"\n")          
             distanciaporc = distanciaporc+paso ##                                   
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
             if hayguita == True:
-                print('aca10')
                 cantidadtotal = cantidadtotal+cantidadformateada
                 cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
                 cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
@@ -137,9 +125,7 @@ def formacioninicial(par,lado,porcentajeentrada):
                 else:
                     preciodeataque = preciolimit*(1+paso/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
-                print('aca11')
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-                print('aca12')
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
         # CANCELA ÚLTIMA COMPENSACIÓN

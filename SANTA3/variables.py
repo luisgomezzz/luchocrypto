@@ -97,7 +97,9 @@ if exchange_name == 'binance':
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
     balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400
-    #los 400 son los que puse la primera vez para aprender.
+    #GOALS
+    #400 prestamo compra de dpto. [done]
+    #400 que puse la primera vez para aprender. <<---
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
@@ -106,7 +108,9 @@ if exchange_name == 'kucoin':
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
     clientmarket = Market(url='https://api-futures.kucoin.com')
-    balanceobjetivo = 100 #100 iniciales q transeferí desde binance
+    #GOALS
+    #100 que puse la primera vez para aprender.<<---
+    balanceobjetivo = 100 
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
