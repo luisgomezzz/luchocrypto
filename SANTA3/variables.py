@@ -100,6 +100,7 @@ if exchange_name == 'binance':
     #GOALS
     #400 prestamo compra de dpto. [done]
     #400 que puse la primera vez para aprender. <<---
+    #1500 con esa base se gana buen sueldo.
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret

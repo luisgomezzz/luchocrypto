@@ -367,25 +367,37 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         return False,0,0,0
 
-def binancecrearlimite(par,preciolimit,posicionporc,lado):
+def creolimite(par,preciolimit,posicionporc,lado):
     creado = True 
     order = 0  
     if lado=='BUY':
         lado='SELL'
     else:
-        lado='BUY'
-    sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
-    preciolimit = get_rounded_price(par, preciolimit)  
+        lado='BUY'        
+    limitprice=RoundToTickUp(par,preciolimit)
+
     try:
-        limitprice=truncate(preciolimit,get_priceprecision(par))
-        order=var.client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
-        print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
-        creado= True
+        if exchange_name=='binance':
+            sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
+            order=var.client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=sizedesocupar,price=limitprice)
+            print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
+            creado= True
+        if exchange_name=='kucoinfutures':
+            sizedesocupar=int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier'])))
+            order=var.clienttrade.create_limit_order(symbol=par,side=lado,price=limitprice,type='LIMIT',lever=var.apalancamiento,size=sizedesocupar)
+            print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
+            creado= True
     except BinanceAPIException as a:
         print(a.message,"No se pudo crear el Limit.")
         creado = False      
         order = 0
         pass
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+        creado = False
+        pass    
     return creado,order        
 
 def stopvelavela (par,lado,temporalidad):

@@ -159,8 +159,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         # STOP LOSS
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        ut.creostoploss (par,lado,preciostopsanta) 
-        ut.printandlog(var.nombrelog,"Precio Stop creado.",pal=1)
+        ut.creostoploss (par,lado,preciostopsanta)         
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
     return posicioncreada        
 
@@ -192,7 +191,7 @@ def creaactualizatps (par,lado,limitorders=[]):
                 preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
             else:
                 preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
-            creado,order=ut.binancecrearlimite(par,preciolimit,tamanio,lado)
+            creado,order=ut.creolimite(par,preciolimit,tamanio,lado)
             if creado==True:
                 limitordersnuevos.append(order['orderId'])
             tp=tp+1
