@@ -367,13 +367,13 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         return False,0,0,0
 
-def creolimite(par,preciolimit,posicionporc,lado):
+def creotakeprofit(par,preciolimit,posicionporc,lado):
     try:
         ### exchange details
         if exchange_name=='binance':
             sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
         if exchange_name=='kucoinfutures':
-            sizedesocupar=int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier'])))
+            sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier']))))
         ####################
         creado = True 
         orderid = 0  
@@ -383,8 +383,9 @@ def creolimite(par,preciolimit,posicionporc,lado):
             lado='BUY'        
         limitprice=RoundToTickUp(par,preciolimit)
         params={"leverage": var.apalancamiento}
+        print("\nTAKE PROFIT. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
         order=var.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
-        print("\nLimit creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
+        print("\nTAKE PROFIT creado. \n")
         orderid = order['id']
         creado = True
     except BinanceAPIException as a:
@@ -403,7 +404,7 @@ def creolimite(par,preciolimit,posicionporc,lado):
 
 def stopvelavela (par,lado,temporalidad):
     porc=0.2 #porcentaje de distancia 
-    df=calculardf (par,temporalidad,2) 
+    df=calculardf (par,temporalidad,3) # se coloca 3 ya que con 2, en ocaciones con kucoin, se devolvía solo un registro. 
     if df.open.iloc[-2]<df.close.iloc[-2]:
         colorvelaanterior='verde'
     else:
@@ -522,3 +523,15 @@ def capitalizacion(par):
             cap=0.0
             pass
     return cap    
+
+def construye_tabla_formatos():
+    for estilo in range(8):
+        for colortexto in range(30,38):
+            cad_cod = ''
+            for colorfondo in range(40,48): 
+                fmto = ';'.join([str(estilo), 
+                                 str(colortexto),
+                                 str(colorfondo)]) 
+                cad_cod+="\033["+fmto+"m "+fmto+" \033[0m" 
+            print(cad_cod)
+        print('\n')

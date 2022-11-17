@@ -191,7 +191,7 @@ def creaactualizatps (par,lado,limitorders=[]):
                 preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
             else:
                 preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
-            creado,orderid=ut.creolimite(par,preciolimit,tamanio,lado)
+            creado,orderid=ut.creotakeprofit(par,preciolimit,tamanio,lado)
             if creado==True:
                 limitordersnuevos.append(orderid)
             tp=tp+1
