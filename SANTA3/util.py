@@ -354,6 +354,7 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
                     datetime = var.exchange.iso8601(now)
                     print(datetime, i, type(e).__name__, str(e))
                     var.exchange.sleep(10000)
+                    pass
                 except Exception as e:
                     print(type(e).__name__, str(e))
                     raise e
@@ -373,6 +374,11 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         if exchange_name=='binance':
             sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
         if exchange_name=='kucoinfutures':
+            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
+            if maxLeverage < var.apalancamiento:
+                apalancamiento=int(maxLeverage)
+            else:
+                apalancamiento=int(var.apalancamiento)
             sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier']))))
         ####################
         creado = True 
@@ -382,7 +388,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         else:
             lado='BUY'        
         limitprice=RoundToTickUp(par,preciolimit)
-        params={"leverage": var.apalancamiento}
+        params={"leverage": apalancamiento}
         print("\nTAKE PROFIT. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
         order=var.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
         print("\nTAKE PROFIT creado. \n")
@@ -421,7 +427,7 @@ def stopvelavela (par,lado,temporalidad):
             stopvelavela=0.0
     return stopvelavela    
 
-def creostoploss (pair,side,stopprice):   
+def creostoploss (symbol,side,stopprice):   
     creado = False
     stopid = 0
     if side == 'BUY':
@@ -430,11 +436,18 @@ def creostoploss (pair,side,stopprice):
         side='BUY'
     try:
         if exchange_name=='binance':
-            preciostop=truncate(stopprice,get_priceprecision(pair))
-            order=var.client.futures_create_order(symbol=pair,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+            preciostop=truncate(stopprice,get_priceprecision(symbol))
+            order=var.client.futures_create_order(symbol=symbol,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
             print("\nStop loss creado. ",preciostop)
             creado = True
             stopid = order['orderId']
+        if exchange_name=='kucoinfutures':
+            preciostop=RoundToTickUp(symbol,stopprice)
+            amount=get_positionamt(symbol)
+            type='market'
+            params ={'stopPrice': preciostop,
+                    'closePosition': True}
+            var.exchange.create_order(symbol, type, side, amount, price=None, params=params)
     except BinanceAPIException as a:
         print(a.message,"no se pudo crear el stop loss.")
         pass
