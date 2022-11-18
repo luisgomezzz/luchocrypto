@@ -443,7 +443,7 @@ def creostoploss (symbol,side,stopprice):
             stopid = order['orderId']
         if exchange_name=='kucoinfutures':
             preciostop=RoundToTickUp(symbol,stopprice)
-            amount=get_positionamt(symbol)
+            amount=abs(get_positionamt(symbol))
             type='market'
             params ={'stopPrice': preciostop,
                     'closePosition': True}
