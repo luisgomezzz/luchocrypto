@@ -218,11 +218,29 @@ def get_quantityprecision(par):
             break
     return quantityprecision
 
+def maxLeverage(symbol):
+    maxLeverage = 0
+    if exchange_name=='binance':
+        result = var.client.futures_leverage_bracket()        
+        for x in range(len(result)):
+            if result[x]['symbol'] == symbol:
+                maxLeverage =  result[x]['brackets'][0]['initialLeverage']
+                break
+    if exchange_name=='kucoinfutures':
+        maxLeverage=var.clientmarket.get_contract_detail(symbol)['maxLeverage']
+    return maxLeverage
+
 def creoposicion (par,size,lado)->bool:         
     serror=True            
     try:
-        if  exchange_name=='binance':      
-            var.client.futures_change_leverage(symbol=par, leverage=var.apalancamiento)
+        maximoapalancamiento = maxLeverage(par)
+        if maximoapalancamiento < var.apalancamiento:
+            apalancamiento=int(maximoapalancamiento)
+        else:
+            apalancamiento=int(var.apalancamiento)
+            
+        if  exchange_name=='binance':    
+            var.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
                 var.client.futures_change_margin_type(symbol=par, marginType=var.margen)
             except BinanceAPIException as a:
@@ -235,11 +253,6 @@ def creoposicion (par,size,lado)->bool:
             var.clienttrade.modify_auto_deposit_margin(par,status=True)
             multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
             tamanio=str(int(size/(multiplier*currentprice(par))))
-            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
-            if maxLeverage < var.apalancamiento:
-                apalancamiento=int(maxLeverage)
-            else:
-                apalancamiento=int(var.apalancamiento)
             var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=apalancamiento)
             print("Con Kucoin espera para que de tiempo a actualizar...")
             waiting(5)
@@ -374,13 +387,13 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         if exchange_name=='binance':
             sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
         if exchange_name=='kucoinfutures':
-            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
-            if maxLeverage < var.apalancamiento:
-                apalancamiento=int(maxLeverage)
-            else:
-                apalancamiento=int(var.apalancamiento)
             sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier']))))
         ####################
+        maximoapalancamiento = maxLeverage(par)
+        if maximoapalancamiento < var.apalancamiento:
+            apalancamiento=int(maximoapalancamiento)
+        else:
+            apalancamiento=int(var.apalancamiento)
         creado = True 
         orderid = 0  
         if lado=='BUY':
@@ -393,7 +406,6 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         order=var.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
         print("\nTAKE PROFIT creado. \n")
         orderid = order['id']
-        creado = True
     except BinanceAPIException as a:
         print(a.message,"No se pudo crear el Limit.")
         creado = False      
@@ -548,3 +560,4 @@ def construye_tabla_formatos():
                 cad_cod+="\033["+fmto+"m "+fmto+" \033[0m" 
             print(cad_cod)
         print('\n')
+
