@@ -285,7 +285,7 @@ def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
                 position = var.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
-                        positionamt=float(position[i]['info']['currentQty'])*float(var.clientmarket.get_contract_detail(par)['multiplier'])
+                        positionamt=float(position[i]['info']['currentQty'])
                         break
             leido = True
         except:
@@ -388,7 +388,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         if exchange_name=='binance':
             sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
         if exchange_name=='kucoinfutures':
-            sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)/(float(var.clientmarket.get_contract_detail(par)['multiplier']))))
+            sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)))
         ####################
         maximoapalancamiento = maxLeverage(par)
         if maximoapalancamiento < var.apalancamiento:
