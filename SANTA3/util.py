@@ -82,9 +82,10 @@ def timeindex(df):
 def calculardf (par,temporalidad,ventana):
     df = pd.DataFrame()
     try:
-        barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
-        df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
-        timeindex(df) #Formatea el campo time para luego calcular las señales
+        while df.empty:
+            barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
+            df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+            timeindex(df) #Formatea el campo time para luego calcular las señales
     except KeyboardInterrupt:
         print("\nSalida solicitada.")
         sys.exit()  
@@ -442,10 +443,11 @@ def stopvelavela (par,lado,temporalidad):
 def creostoploss (symbol,side,stopprice):   
     creado = False
     stopid = 0
-    if side == 'BUY':
+    if side.upper() == 'BUY':
         side='SELL'
     else:
-        side='BUY'
+        if side.upper() =='SELL':
+            side='BUY'
     try:
         if exchange_name=='binance':
             preciostop=truncate(stopprice,get_priceprecision(symbol))
@@ -456,10 +458,15 @@ def creostoploss (symbol,side,stopprice):
         if exchange_name=='kucoinfutures':
             preciostop=RoundToTickUp(symbol,stopprice)
             amount=abs(get_positionamt(symbol))
-            type='market'
             params ={'stopPrice': preciostop,
                     'closePosition': True}
-            var.exchange.create_order(symbol, type, side, amount, price=None, params=params)
+            var.exchange.create_order(
+                symbol=symbol,
+                side=side.lower(),
+                type='market', # 'limit' for stop limit orders
+                amount=amount,
+                params=params,
+            )
     except BinanceAPIException as a:
         print(a.message,"no se pudo crear el stop loss.")
         pass
