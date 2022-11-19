@@ -6,6 +6,17 @@ from kucoin_futures.client import Market
 import ccxt as ccxt
 from binance.client import Client as binanceClient
 import inquirer
+from colors import *
+import sys
+
+RED   = "\033[1;31m"  
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+YELLOW = "\33[33m"
 
 #EXCHANGE SELECT
 questions = [
@@ -16,6 +27,11 @@ questions = [
 ]
 answers = inquirer.prompt(questions)
 exchange_name=answers['exchange']
+
+if exchange_name=='binance':
+    sys.stdout.write(YELLOW)
+if exchange_name=='kucoin':
+    sys.stdout.write(GREEN)
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
