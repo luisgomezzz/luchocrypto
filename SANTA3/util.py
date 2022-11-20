@@ -440,7 +440,7 @@ def stopvelavela (par,lado,temporalidad):
             stopvelavela=0.0
     return stopvelavela    
 
-def creostoploss (symbol,side,stopprice):   
+def creostoploss (symbol,side,stopprice,amount=0):   
     creado = False
     stopid = 0
     if side.upper() == 'BUY':
@@ -457,7 +457,10 @@ def creostoploss (symbol,side,stopprice):
             stopid = order['orderId']
         if exchange_name=='kucoinfutures':
             preciostop=RoundToTickUp(symbol,stopprice)
-            amount=abs(get_positionamt(symbol))
+            if amount==0:
+                amount=abs(get_positionamt(symbol))
+            else:
+                amount=amount
             params ={'stopPrice': preciostop,
                     'closePosition': True}
             var.exchange.create_order(

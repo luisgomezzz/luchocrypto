@@ -75,6 +75,10 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
+    if var.exchange_name == 'kucoinfutures':
+        multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
+    else:
+        multiplier=1
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     paso = 1.7 
     if posicioncreada==True:    
@@ -91,7 +95,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         cantidadtotalusdt = 0.0  
         precioinicial = ut.getentryprice(par)
         cantidad = abs(ut.get_positionamt(par))
-        cantidadusdt = cantidad*ut.getentryprice(par)
+        cantidadusdt = cantidad*ut.getentryprice(par)*multiplier
         cantidadtotal = cantidadtotal+cantidad
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
         cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
@@ -99,7 +103,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodeataque = precioinicial*(1-paso/2/100)
         else:
             preciodeataque = precioinicial*(1+paso/2/100)                                
-        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         i=0
@@ -118,13 +122,13 @@ def formacioninicial(par,lado,porcentajeentrada):
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
             if hayguita == True:
                 cantidadtotal = cantidadtotal+cantidadformateada
-                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit) ##
+                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier) ##
                 cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
                 if lado == 'BUY':                                      
                     preciodeataque = preciolimit*(1-paso/2/100)                                            
                 else:
                     preciodeataque = preciolimit*(1+paso/2/100)
-                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque)
+                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
@@ -137,7 +141,8 @@ def formacioninicial(par,lado,porcentajeentrada):
             cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
         except Exception as ex:
             print("Error cancela última compensación: "+str(ex)+"\n")
-            pass                                            
+            pass          
+        '''                                  
         # PUNTO DE ATAQUE  
         if var.flagpuntodeataque ==1:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
@@ -156,10 +161,11 @@ def formacioninicial(par,lado,porcentajeentrada):
         else:
             cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
             preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
+        '''
         # STOP LOSS
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        ut.creostoploss (par,lado,preciostopsanta)         
+        ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
     return posicioncreada        
 
