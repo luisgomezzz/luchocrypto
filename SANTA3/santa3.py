@@ -105,8 +105,12 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodeataque = precioinicial*(1+paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         i=0
+        print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt))
+        print("balancetotal*var.apalancamiento: "+str(balancetotal*var.apalancamiento))
+        print("preciodeataque: "+str(preciodeataque))
+        print("preciostopsanta: "+str(preciostopsanta))
         #CREA COMPENSACIONES         
         while (cantidadtotalconataqueusdt <= balancetotal*var.apalancamiento # pregunta si supera mi capital
             and (
@@ -131,7 +135,7 @@ def formacioninicial(par,lado,porcentajeentrada):
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
-            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)        
+            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
         # CANCELA ÚLTIMA COMPENSACIÓN
         try:
             ut.printandlog(var.nombrelog,"Cancela última compensación ("+str(i)+")")
@@ -163,7 +167,7 @@ def formacioninicial(par,lado,porcentajeentrada):
             preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
         '''
         # STOP LOSS
-        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
         ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
