@@ -70,24 +70,23 @@ f.close()
 temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
+ventana = 30 #Ventana de búsqueda en minutos.   
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
 #porcentaje de la cuenta para crear la posición. 
-if exchange_name=='kucoin':
-    porcentajeentrada = 6 
-else:
-    porcentajeentrada = 6
+
+porcentajeentrada = 10
 #con 5 soporta 18% de variacion. (con 6 compensaciones)
 #con 7 soporta 15% de variacion. (con 6 compensaciones) 
 #con 10 soporta 12% de variacion. (con 6 compensaciones) 
-ventana = 30 #Ventana de búsqueda en minutos.   
-cantidadcompensaciones = 8
+paso = 2 # distancia entre compensaciones.
+incrementocompensacionporc = 15 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
+cantidadcompensaciones = 7
+
 maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
-incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-
 lista_monedas_filtradas_nueva = []
 flagpuntodeataque = 0 # Ataque automatico. 0 desactivado - 1 activado 
 

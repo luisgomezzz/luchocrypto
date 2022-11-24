@@ -81,18 +81,20 @@ def timeindex(df):
 
 def calculardf (par,temporalidad,ventana):
     df = pd.DataFrame()
-    try:
-        while df.empty:
+    while df.empty:
+        try:            
             barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
             df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
             timeindex(df) #Formatea el campo time para luego calcular las señales
-    except KeyboardInterrupt:
-        print("\nSalida solicitada.")
-        sys.exit()  
-    except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+        except KeyboardInterrupt:
+            print("\nSalida solicitada.")
+            sys.exit()  
+        except Exception as falla:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+            print("\nIntento leer otra vez...\n")
+            pass
     return df      
 
 def equipoliquidando ():

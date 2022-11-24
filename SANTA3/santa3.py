@@ -80,10 +80,9 @@ def formacioninicial(par,lado,porcentajeentrada):
     else:
         multiplier=1
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
-    paso = 1.7 
     if posicioncreada==True:    
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
-        ut.printandlog(var.nombrelog,"distancia: "+str(paso))
+        ut.printandlog(var.nombrelog,"distancia: "+str(var.paso))
         #agrego el par al file
         with open(os.path.join(var.pathroot, var.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
@@ -100,9 +99,9 @@ def formacioninicial(par,lado,porcentajeentrada):
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
         cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
         if lado == 'BUY':
-            preciodeataque = precioinicial*(1-paso/2/100)
+            preciodeataque = precioinicial*(1-var.paso/2/100)
         else:
-            preciodeataque = precioinicial*(1+paso/2/100)                                
+            preciodeataque = precioinicial*(1+var.paso/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
@@ -122,16 +121,16 @@ def formacioninicial(par,lado,porcentajeentrada):
             ):
             i=i+1
             cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##             
-            distanciaporc = distanciaporc+paso ##                                   
+            distanciaporc = distanciaporc+var.paso ##                                   
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
             if hayguita == True:
                 cantidadtotal = cantidadtotal+cantidadformateada
                 cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier) ##
                 cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
                 if lado == 'BUY':                                      
-                    preciodeataque = preciolimit*(1-paso/2/100)                                            
+                    preciodeataque = preciolimit*(1-var.paso/2/100)                                            
                 else:
-                    preciodeataque = preciolimit*(1+paso/2/100)
+                    preciodeataque = preciolimit*(1+var.paso/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
@@ -151,7 +150,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         if var.flagpuntodeataque ==1:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
             cantidadtotalconataque = cantidadtotal+cantidad
-            distanciaporc = (distanciaporc-paso)+(paso/3)
+            distanciaporc = (distanciaporc-var.paso)+(var.paso/3)
             ut.printandlog(var.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc)    
             if hayguita == False:
