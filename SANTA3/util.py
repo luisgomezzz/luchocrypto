@@ -391,6 +391,8 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
             sizedesocupar=abs(truncate((get_positionamt(par)*posicionporc/100),get_quantityprecision(par)))
         if exchange_name=='kucoinfutures':
             sizedesocupar=abs(int((get_positionamt(par)*posicionporc/100)))
+            if sizedesocupar<1:
+                sizedesocupar=1 # el size a desocupar no puede ser menor a 1 lot en kucoin
         ####################
         maximoapalancamiento = maxLeverage(par)
         if maximoapalancamiento < var.apalancamiento:
