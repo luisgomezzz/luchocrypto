@@ -106,10 +106,6 @@ def formacioninicial(par,lado,porcentajeentrada):
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         i=0
-        print("cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt))
-        print("balancetotal*var.apalancamiento: "+str(balancetotal*var.apalancamiento))
-        print("preciodeataque: "+str(preciodeataque))
-        print("preciostopsanta: "+str(preciostopsanta))
         #CREA COMPENSACIONES         
         while (cantidadtotalconataqueusdt <= balancetotal*var.apalancamiento # pregunta si supera mi capital
             and (
@@ -120,13 +116,16 @@ def formacioninicial(par,lado,porcentajeentrada):
             and i<=var.cantidadcompensaciones
             ):
             i=i+1
-            cantidad = cantidad*(1+var.incrementocompensacionporc/100) ##             
-            distanciaporc = distanciaporc+var.paso ##                                   
-            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc) ##
+            if i==1:
+                cantidad = cantidad
+            else:
+                cantidad = cantidad*(1+var.incrementocompensacionporc/100)
+            distanciaporc = distanciaporc+var.paso              
+            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc)
             if hayguita == True:
                 cantidadtotal = cantidadtotal+cantidadformateada
-                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier) ##
-                cantidadtotalconataque = cantidadtotal+(cantidadtotal*3) ##  
+                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
+                cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
                 if lado == 'BUY':                                      
                     preciodeataque = preciolimit*(1-var.paso/2/100)                                            
                 else:
