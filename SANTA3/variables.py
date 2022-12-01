@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
   inquirer.List('exchange',
                 message="Seleccionar exchange: ",
-                choices=['binance', 'kucoin'],
+                choices=['binance', 'kucoin', 'finandy'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -32,6 +32,8 @@ if exchange_name=='binance':
     sys.stdout.write(YELLOW)
 if exchange_name=='kucoin':
     sys.stdout.write(GREEN)
+if exchange_name=='finandy':
+    sys.stdout.write(BLUE)    
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 pathsound=pathroot+'sounds/' 
@@ -48,7 +50,9 @@ def clear():
 if exchange_name =='binance':
     nombrelog = "log_binace.txt"
 if exchange_name =='kucoin':
-    nombrelog = "log_kucoin.txt"    
+    nombrelog = "log_kucoin.txt" 
+if exchange_name =='finandy':
+    nombrelog = "log_finandy.txt"        
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 operandofile = "operando.txt"
@@ -61,7 +65,11 @@ if exchange_name =='binance':
 if exchange_name =='kucoin':
     lista_monedas_filtradas_file = "lista_monedas_filtradas_kucoin.txt"
     f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
-    f.close()     
+    f.close()    
+if exchange_name =='finandy':
+    lista_monedas_filtradas_file = "lista_monedas_filtradas_finandy.txt"
+    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    f.close()         
 lanzadorfile = "lanzador.py"
 f = open(os.path.join(pathroot, lanzadorfile), 'a',encoding="utf-8")
 f.close() 
@@ -98,6 +106,10 @@ binance_passphares=''
 kucoin_key='63618000e26bf70001e2bd2c'
 kucoin_secret='409d3eff-9622-4488-af21-fa0feabb24ec'
 kucoin_passphares='santakucoin'
+#FINANDY
+finandy_key="qycthSI8s5HH0b95MxH3lFKPPUeZu8mCSgztp00x2d7SdHmfOp2U9qBeCCbxPyDg"
+finandy_secret="zeJqYkyWzBIdGDMmyfUnofQiThirgEgOCDYvS3rzcq4yle1afD7YEQkciCI43yNs"
+finandy_passphares=''
 
 if exchange_name == 'kucoin':
     minvolumen24h =  float(10000000)
@@ -127,6 +139,13 @@ if exchange_name == 'kucoin':
     #GOALS
     #100 que puse la primera vez para aprender.<<---
     balanceobjetivo = 100 
+if exchange_name == 'finandy':
+    api_key = finandy_key
+    api_secret = finandy_secret
+    api_passphares = finandy_passphares
+    exchange_name = 'binance'
+    client = binanceClient(api_key, api_secret,api_passphares) 
+    balanceobjetivo = 0
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
@@ -139,7 +158,7 @@ exchange =   exchange_class({
             })
 
 clear() #limpia terminal
-if exchange_name =='binance':
+if answers['exchange'] =='binance':
     print('''
 
             _     _                            
@@ -151,7 +170,7 @@ if exchange_name =='binance':
                                                 
                                                 
     ''')
-if exchange_name=='kucoinfutures':
+if answers['exchange']=='kucoin':
     print('''
 
             _                    _       
@@ -162,4 +181,18 @@ if exchange_name=='kucoinfutures':
             |_|\_\\__,_|\___\___/|_|_| |_|
                                                                                
                                     
+    ''')
+
+if answers['exchange']=='finandy':
+    print('''
+
+   __ _                       _       
+  / _(_)                     | |      
+ | |_ _ _ __   __ _ _ __   __| |_   _ 
+ |  _| | '_ \ / _` | '_ \ / _` | | | |
+ | | | | | | | (_| | | | | (_| | |_| |
+ |_| |_|_| |_|\__,_|_| |_|\__,_|\__, |
+                                 __/ |
+                                |___/ 
+           
     ''')
