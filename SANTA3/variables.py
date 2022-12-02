@@ -92,7 +92,7 @@ cantidadcompensaciones = 7
 
 maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
-tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
+tradessimultaneos = 6 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 lista_monedas_filtradas_nueva = []
@@ -123,12 +123,11 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49+400+400+45+63.59+200
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500
     #GOALS
     #400 prestamo compra de dpto. [done]
     #445 que puse la primera vez para aprender. 
-    #recuperar los 100 a finandy y los 100 a kucoin <<---
-    #1500 para llegar al capital base.
+    #1500 para llegar al capital base. <<---
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
