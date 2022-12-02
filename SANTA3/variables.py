@@ -92,7 +92,7 @@ cantidadcompensaciones = 7
 
 maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
-tradessimultaneos = 6 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
+tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 lista_monedas_filtradas_nueva = []
