@@ -79,13 +79,14 @@ temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
 ventana = 30 #Ventana de búsqueda en minutos.   
-procentajeperdida = 10 #porcentaje de mi capital total maximo a perder (10)
-#porcentaje de la cuenta para crear la posición. 
 
-porcentajeentrada = 10
-#con 5 soporta 18% de variacion. (con 6 compensaciones)
-#con 7 soporta 15% de variacion. (con 6 compensaciones) 
-#con 10 soporta 12% de variacion. (con 6 compensaciones) 
+if exchange_name =='finandy':
+    porcentajeentrada = 50 #porcentaje de la cuenta para crear la posición. (10)
+    procentajeperdida = 50 #porcentaje de mi capital total maximo a perder. (10)
+else:
+    porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición. (10)
+    procentajeperdida = 10 #porcentaje de mi capital total maximo a perder. (10)
+
 paso = 2 # distancia entre compensaciones.
 incrementocompensacionporc = 15 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 cantidadcompensaciones = 7
