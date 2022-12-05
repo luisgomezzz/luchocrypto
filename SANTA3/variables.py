@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
   inquirer.List('exchange',
                 message="Seleccionar exchange: ",
-                choices=['binance', 'kucoin', 'finandy'],
+                choices=['finandy','binance', 'kucoin'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -80,12 +80,8 @@ apalancamiento = 10
 margen = 'CROSSED'
 ventana = 30 #Ventana de búsqueda en minutos.   
 
-if exchange_name =='finandy':
-    porcentajeentrada = 50 #porcentaje de la cuenta para crear la posición. (10)
-    procentajeperdida = 50 #porcentaje de mi capital total maximo a perder. (10)
-else:
-    porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición. (10)
-    procentajeperdida = 10 #porcentaje de mi capital total maximo a perder. (10)
+porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición. (10)
+procentajeperdida = 10 #porcentaje de mi capital total maximo a perder. (10)
 
 paso = 2 # distancia entre compensaciones.
 incrementocompensacionporc = 15 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
@@ -124,11 +120,7 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500
-    #GOALS
-    #400 prestamo compra de dpto. [done]
-    #445 que puse la primera vez para aprender. 
-    #1500 para llegar al capital base. <<---
+    balanceobjetivo = 0
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
@@ -137,16 +129,18 @@ if exchange_name == 'kucoin':
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
     clientmarket = Market(url='https://api-futures.kucoin.com')
-    #GOALS
-    #100 que puse la primera vez para aprender.<<---
-    balanceobjetivo = 100 
+    balanceobjetivo = 0 
 if exchange_name == 'finandy':
     api_key = finandy_key
     api_secret = finandy_secret
     api_passphares = finandy_passphares
     exchange_name = 'binance'
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 0
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500
+    #GOALS
+    #400 prestamo compra de dpto. [done]
+    #445 que puse la primera vez para aprender. 
+    #1500 para llegar al capital base. <<---
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
