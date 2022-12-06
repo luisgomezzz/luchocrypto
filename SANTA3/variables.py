@@ -82,9 +82,9 @@ ventana = 30 #Ventana de búsqueda en minutos.
 
 porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición. (10)
 procentajeperdida = 10 #porcentaje de mi capital total maximo a perder. (10)
-paso = 2 # distancia entre compensaciones.
+paso = 1.7 # distancia entre compensaciones.
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-cantidadcompensaciones = 6
+cantidadcompensaciones = 7
 
 maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
