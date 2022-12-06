@@ -415,7 +415,7 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                 
-                                if 4 >= variacion >= 2:
+                                if 5 >= variacion >= 2:
                                     
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
