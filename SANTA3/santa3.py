@@ -341,6 +341,7 @@ def main() -> None:
     filtradodemonedas()
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
     ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
+    anuncioaltavariacionbtc=False
     try:
 
         #lanza filtrado de monedas paralelo
@@ -468,7 +469,16 @@ def main() -> None:
                                 if par[0:7] =='BTCUSDT':
                                     btcvariacion = variacion
                                     btcflecha = flecha
-                                
+                                    
+                                    if btcvariacion>=1 and anuncioaltavariacionbtc==False:
+                                        playsound(var.pathsound+"call-to-attention.mp3")
+                                        print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+                                        anuncioaltavariacionbtc=True
+                                    if btcvariacion<=0.5 and anuncioaltavariacionbtc==True:
+                                        playsound(var.pathsound+"call-to-attention.mp3")
+                                        print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+                                        anuncioaltavariacionbtc=False
+
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BTCUSDT:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()       
 
