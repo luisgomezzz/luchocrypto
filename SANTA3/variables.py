@@ -80,8 +80,8 @@ apalancamiento = 10
 margen = 'CROSSED'
 ventana = 30 #Ventana de búsqueda en minutos.   
 
-porcentajeentrada = 10 #porcentaje de la cuenta para crear la posición. (10)
-procentajeperdida = 10 #porcentaje de mi capital total maximo a perder. (10)
+porcentajeentrada = 20 #porcentaje de la cuenta para crear la posición. (10)
+procentajeperdida = 20 #porcentaje de mi capital total maximo a perder. (10)
 paso = 1.7 # distancia entre compensaciones.
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 cantidadcompensaciones = 7
