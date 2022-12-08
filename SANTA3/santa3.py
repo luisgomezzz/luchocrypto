@@ -75,6 +75,7 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada):
+    procentajeperdida=porcentajeentrada
     if var.exchange_name == 'kucoinfutures':
         multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
     else:
@@ -87,7 +88,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         with open(os.path.join(var.pathroot, var.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
         balancetotal = ut.balancetotal()
-        perdida = (balancetotal*var.procentajeperdida/100)*-1
+        perdida = (balancetotal*procentajeperdida/100)*-1
         hayguita = True
         distanciaporc = 0.0
         cantidadtotal = 0.0
@@ -172,7 +173,7 @@ def formacioninicial(par,lado,porcentajeentrada):
     return posicioncreada        
 
 # MANEJO DE TPs
-def creaactualizatps (par,lado,limitorders=[]):
+def creaactualizatps (par,lado,porcentajeentrada,limitorders=[]):
     print("creaactualizatps-limitorders: "+str(limitorders))
     limitordersnuevos=[]
     tp = 1
@@ -187,8 +188,9 @@ def creaactualizatps (par,lado,limitorders=[]):
     profitmedioporc = 2
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
+    procentajeperdida = porcentajeentrada
     try:        
-        if tamanioactualusdt <= (balancetotal*var.procentajeperdida/100)*1.8:
+        if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
             divisor = profitnormalporc
         else:
             divisor=profitmedioporc
@@ -221,7 +223,7 @@ def creaactualizatps (par,lado,limitorders=[]):
         pass    
     return limitorders
 
-def updating(par,lado):    
+def updating(par,lado,porcentajeentrada):    
     tamanioposicionguardado = ut.get_positionamt(par)
     tamanioactual = tamanioposicionguardado
     limitorders = []
@@ -230,7 +232,7 @@ def updating(par,lado):
     orderidanterior = 0
     #crea TPs
     print("\nupdating-CREA TPs..."+par)
-    limitorders=creaactualizatps (par,lado,limitorders)
+    limitorders=creaactualizatps (par,lado,porcentajeentrada,limitorders)
     stopenganancias = 0.0
     compensacioncount=0
     #actualiza tps y stops
@@ -253,7 +255,7 @@ def updating(par,lado):
             else:
                 # take profit que persigue al precio cuando toma compensaciones 
                 compensacioncount=compensacioncount+1
-                limitorders=creaactualizatps (par,lado,limitorders)
+                limitorders=creaactualizatps (par,lado,porcentajeentrada,limitorders)
                 if compensacioncount<=1:
                     ut.sound(duration = 250,freq = 659)                
                 else:
@@ -319,7 +321,7 @@ def trading(par,lado,porcentajeentrada):
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(var.nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
-    hilo = threading.Thread(target=updating, args=(par,lado))
+    hilo = threading.Thread(target=updating, args=(par,lado,porcentajeentrada))
     hilo.start()    
     return posicioncreada        
 
@@ -343,6 +345,7 @@ def main() -> None:
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
     ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
     anuncioaltavariacionbtc=False
+    porcentajeentrada=var.porcentajeentradaalto
     try:
 
         #lanza filtrado de monedas paralelo
@@ -417,8 +420,21 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                 
-                                if 5 >= variacion >= 2:
-                                    
+                                if par[0:7] =='BTCUSDT':
+                                    btcvariacion = variacion
+                                    btcflecha = flecha                                    
+                                    if btcvariacion>=1 and anuncioaltavariacionbtc==False:
+                                        playsound(var.pathsound+"call-to-attention.mp3")
+                                        print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+                                        anuncioaltavariacionbtc=True
+                                        porcentajeentrada=var.porcentajeentradabajo
+                                    if btcvariacion<=0.5 and anuncioaltavariacionbtc==True:
+                                        playsound(var.pathsound+"call-to-attention.mp3")
+                                        print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+                                        anuncioaltavariacionbtc=False
+                                        porcentajeentrada=var.porcentajeentradaalto                                        
+                                
+                                if 5 >= variacion >= 2:                                    
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                     lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
@@ -430,8 +446,8 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(var.porcentajeentrada)+")"
-                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado)"
+                                    lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+")"
+                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,porcentajeentrada)"
                                     ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 
                                     f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")
@@ -451,7 +467,7 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='SELL'
-                                            trading(par,lado,var.porcentajeentrada)
+                                            trading(par,lado,porcentajeentrada)
                                     else:
                                         if (flecha==" ↓" and precioactual<=preciomenor):
                                             ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
@@ -465,20 +481,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
-                                                trading(par,lado,var.porcentajeentrada)  
-
-                                if par[0:7] =='BTCUSDT':
-                                    btcvariacion = variacion
-                                    btcflecha = flecha
-                                    
-                                    if btcvariacion>=1 and anuncioaltavariacionbtc==False:
-                                        playsound(var.pathsound+"call-to-attention.mp3")
-                                        print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
-                                        anuncioaltavariacionbtc=True
-                                    if btcvariacion<=0.5 and anuncioaltavariacionbtc==True:
-                                        playsound(var.pathsound+"call-to-attention.mp3")
-                                        print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
-                                        anuncioaltavariacionbtc=False
+                                                trading(par,lado,porcentajeentrada)  
 
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BTCUSDT:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()       

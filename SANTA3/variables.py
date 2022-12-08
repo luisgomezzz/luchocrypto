@@ -80,11 +80,12 @@ apalancamiento = 10
 margen = 'CROSSED'
 ventana = 30 #Ventana de búsqueda en minutos.   
 
-porcentajeentrada = 20 #porcentaje de la cuenta para crear la posición. (10)
-procentajeperdida = 20 #porcentaje de mi capital total maximo a perder. (10)
+#los porcentajes de pérdidas serán igual a los porcentajes de entrada
+porcentajeentradabajo = 10 
+porcentajeentradaalto = 20 
 paso = 1.7 # distancia entre compensaciones.
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-cantidadcompensaciones = 7
+cantidadcompensaciones = 99 #la maxima cantidad que permita el saldo
 
 maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
