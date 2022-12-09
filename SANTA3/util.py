@@ -495,18 +495,24 @@ def closeallopenorders (par):
         except:
             pass    
 
-def pnl(par):   
-    precioentrada = getentryprice(par)
-    if precioentrada !=0.0:
-        try:
-            tamanio = get_positionamtusdt(par)
-            precioactual = currentprice(par)
-            pnl = ((precioactual/precioentrada)-1)*tamanio
-        except Exception as ex:
-            pnl = 0
-            pass               
+def pnl(par): 
+    pnl=0.0  
+    if exchange_name == 'kucoinfutures':
+        precioentrada = getentryprice(par)
+        if precioentrada !=0.0:
+            try:
+                tamanio = get_positionamtusdt(par)
+                precioactual = currentprice(par)
+                pnl = ((precioactual/precioentrada)-1)*tamanio
+            except Exception as ex:
+                pnl = 0.0
+                pass               
+        else:
+            pnl = 0.0  
     else:
-        pnl = 0   
+        lista=[]
+        lista.append(par)
+        pnl=var.exchange.fetchPositionsRisk(lista)[0]['unrealizedPnl'] 
     return pnl        
 
 def coingeckoinfo (par,dato='market_cap'):
