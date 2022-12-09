@@ -447,7 +447,7 @@ def main() -> None:
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
                                     lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+")"
-                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,porcentajeentrada)"
+                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,"+str(porcentajeentrada)+")"
                                     ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 
                                     f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")

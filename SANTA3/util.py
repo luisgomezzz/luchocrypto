@@ -498,17 +498,8 @@ def closeallopenorders (par):
 def pnl(par): 
     pnl=0.0  
     if exchange_name == 'kucoinfutures':
-        precioentrada = getentryprice(par)
-        if precioentrada !=0.0:
-            try:
-                tamanio = get_positionamtusdt(par)
-                precioactual = currentprice(par)
-                pnl = ((precioactual/precioentrada)-1)*tamanio
-            except Exception as ex:
-                pnl = 0.0
-                pass               
-        else:
-            pnl = 0.0  
+        #kucoin por ahora no tiene la funcion de pnl en ccxt
+        pnl = var.clienttrade.get_position_details(par)['unrealisedPnl']
     else:
         lista=[]
         lista.append(par)
