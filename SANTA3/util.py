@@ -157,15 +157,12 @@ def printandlog(nombrelog,mensaje,pal=0,mode='a'):
          f.write("\n"+mensaje)
          f.close()   
 
-def currentprice(par):
+def currentprice(symbol):
     leido = False
     current=0.0
     while leido == False:
         try:
-            if exchange_name=='binance':
-                current=float(var.client.get_symbol_ticker(symbol=par)["price"])
-            if exchange_name=='kucoinfutures':
-                current=float(var.clientmarket.get_ticker(par)['price'])
+            current=float(var.exchange.fetch_ticker(symbol)['close'])
             leido = True
         except:
             pass
