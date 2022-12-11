@@ -424,7 +424,10 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
 
 def stopvelavela (par,lado,temporalidad):
     porc=0.2 #porcentaje de distancia 
-    df=calculardf (par,temporalidad,3) # se coloca 3 ya que con 2, en ocaciones con kucoin, se devolvía solo un registro. 
+    cantidad = 0
+    while cantidad!=2:# se asegura q traiga 2 registros para que pueda calcular el color de las velas
+        df=calculardf (par,temporalidad,2) 
+        cantidad=len(df)
     if df.open.iloc[-2]<df.close.iloc[-2]:
         colorvelaanterior='verde'
     else:
