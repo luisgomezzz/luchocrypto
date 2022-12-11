@@ -539,10 +539,10 @@ def capitalizacion(par):
     cap=0.0
     # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
     #busqueda en binance
-    if exchange_name == 'kucoinfutures':# si se eligió kucoin se le saca el ultimo caracter al símbolo.
+    if exchange_name == 'kucoinfutures':
         if par == 'XBTUSDTM': # en kucoin BTC es 'XBTUSDTM'
             par = 'BTCUSDTM'
-        par=par[0:-1]
+        par=par[0:-1]# si se eligió kucoin se le saca el ultimo caracter al símbolo.
     clientcap = var.binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
     info = clientcap.get_products()
     lista=info['data']
