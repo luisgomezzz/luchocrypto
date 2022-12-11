@@ -420,7 +420,7 @@ def main() -> None:
                                     maximavariacionhora = str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
                                     maximavariacionflecha = flecha
                                 
-                                if par[0:7] =='BTCUSDT':
+                                if par[0:7] =='BTCUSDT' or par[0:7] =='XBTUSDT':
                                     btcvariacion = variacion
                                     btcflecha = flecha                                    
                                     if btcvariacion>=1 and anuncioaltavariacionbtc==False:
