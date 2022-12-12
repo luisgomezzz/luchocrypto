@@ -496,14 +496,21 @@ def closeallopenorders (par):
             pass    
 
 def pnl(par): 
+    leido=False
     pnl=0.0  
-    if exchange_name == 'kucoinfutures':
-        #kucoin por ahora no tiene la funcion de pnl en ccxt
-        pnl = var.clienttrade.get_position_details(par)['unrealisedPnl']
-    else:
-        lista=[]
-        lista.append(par)
-        pnl=var.exchange.fetchPositionsRisk(lista)[0]['unrealizedPnl'] 
+    while leido == False:
+        try:
+            if exchange_name == 'kucoinfutures':
+                #kucoin por ahora no tiene la funcion de pnl en ccxt
+                pnl = var.clienttrade.get_position_details(par)['unrealisedPnl']
+                leido=True
+            else:
+                lista=[]
+                lista.append(par)
+                pnl=var.exchange.fetchPositionsRisk(lista)[0]['unrealizedPnl'] 
+                leido=True
+        except:
+            pass
     return pnl        
 
 def coingeckoinfo (par,dato='market_cap'):
