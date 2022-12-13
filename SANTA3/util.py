@@ -59,7 +59,7 @@ def lista_de_monedas ():
         exchange_info = var.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
         for s in exchange_info:
             try:
-                if 'USDT' in s['symbol']:
+                if 'USDT' in s['symbol'] and '_' not in s['symbol']:
                     lista_de_monedas.append(s['symbol'])
             except Exception as ex:
                 pass    
@@ -99,9 +99,8 @@ def calculardf (par,temporalidad,ventana):
 
 def equipoliquidando ():
     listademonedas = lista_de_monedas()
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCDOMUSDT','FOOTBALLUSDT'
-    ,'DEFIUSDT','1000LUNCUSDT','LUNA2USDT','BLUEBIRDUSDT'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)         
-    listaequipoliquidando=[]
+    dict={'inicio':[0,0]}
+    dict.clear()
     temporalidad='1d'
     ventana = 30
     variacionporc = 10
@@ -109,17 +108,17 @@ def equipoliquidando ():
         try:            
             sys.stdout.write("\r"+par+"\033[K")
             sys.stdout.flush()   
-            if ('USDT' in par and '_' not in par and par not in mazmorra ):
+            if 'USDT' in par:
                 df=calculardf (par,temporalidad,ventana)
                 df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
                 if True in set(df['liquidando']):
-                    listaequipoliquidando.append(par)                    
+                    dict[par]=[max(df.close),max(df.high)]
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit()           
-    return listaequipoliquidando      
+    return dict      
 
 def volumeOf24h(par): #en usdt
     vol=0.0

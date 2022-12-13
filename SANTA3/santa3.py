@@ -52,8 +52,7 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
 def filtradodemonedas ():    
     lista_monedas_filtradas_aux = []
     lista_de_monedas = ut.lista_de_monedas ()
-    mazmorra=['1000SHIBUSDT','1000XECUSDT','BTCUSDT_220624','ETHUSDT_220624','ETHUSDT_220930','BTCUSDT_220930','BTCDOMUSDT','FOOTBALLUSDT'
-    ,'ETHUSDT_221230'] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
+    mazmorra=[''] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
     for par in lista_de_monedas:
         try:  
             if par not in mazmorra:                
@@ -328,7 +327,7 @@ def trading(par,lado,porcentajeentrada):
 def main() -> None:
     ##PARAMETROS##########################################################################################
     print("Buscando equipos liquidando...")
-    listaequipoliquidando=ut.equipoliquidando()
+    dictequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
     maximavariacion=0.0
@@ -339,7 +338,7 @@ def main() -> None:
     ##############START        
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2)))
-    print("Equipos liquidando: "+str(listaequipoliquidando))
+    print("Equipos liquidando: "+str(dictequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
     lista_monedas_filtradas = lista_monedas_filtradas_nueva
@@ -392,7 +391,7 @@ def main() -> None:
                         try:
                             
                             if par not in operando:     
-
+                                tradingflag = False
                                 df=ut.calculardf (par,var.temporalidad,var.ventana)
                                 df = df[:-1]
                                 preciomenor=df.close.min()
@@ -423,18 +422,39 @@ def main() -> None:
                                 if par[0:7] =='BTCUSDT' or par[0:7] =='XBTUSDT':
                                     btcvariacion = variacion
                                     btcflecha = flecha                                    
-                                    if btcvariacion>=1 and anuncioaltavariacionbtc==False:
+                                    if btcvariacion>=2 and anuncioaltavariacionbtc==False:
                                         playsound(var.pathsound+"call-to-attention.mp3")
                                         print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=True
                                         porcentajeentrada=var.porcentajeentradabajo
-                                    if btcvariacion<=0.5 and anuncioaltavariacionbtc==True:
+                                    if btcvariacion<2 and anuncioaltavariacionbtc==True:
                                         playsound(var.pathsound+"call-to-attention.mp3")
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
                                         porcentajeentrada=var.porcentajeentradaalto                                        
                                 
-                                if 5 >= variacion >= 2:                                    
+                                #oportunidades en equipos liquidando
+                                if par in dictequipoliquidando:
+                                    ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
+                                    df2=ut.calculardf (par,'1h',12)
+                                    df2preciomenor = df2.low.min()
+                                    df2preciomayor = df2.high.max()
+                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
+                                    #####################################                                    
+                                    if (precioactual < dictequipoliquidando[par][0]
+                                        and precioactual >= dictequipoliquidando[par][0]*(1-1/100) #el precio está al 1% o menos del mayor
+                                        and variaciondiaria <= var.maximavariaciondiaria
+                                        ):
+                                        ut.sound(duration = 200,freq = 800)
+                                        ut.sound(duration = 200,freq = 800)
+                                        ut.printandlog(var.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                        lado='BUY'
+                                        trading(par,lado,porcentajeentrada)
+                                        tradingflag=True
+                                        print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
+                                        playsound(var.pathsound+"call-to-attention.mp3")
+                                
+                                if 5 >= variacion >= 2 and tradingflag==False:                                    
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                     lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
@@ -462,7 +482,8 @@ def main() -> None:
                                         df2preciomayor=df2.high.max()
                                         variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                         #####################################
-                                        if par not in listaequipoliquidando and variaciondiaria <= var.maximavariaciondiaria:
+                                        if ((par not in dictequipoliquidando or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))) # precio actual alejado un 10% del máximo
+                                            and variaciondiaria <= var.maximavariaciondiaria):
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)   
                                             ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
