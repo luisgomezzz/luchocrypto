@@ -454,7 +454,7 @@ def main() -> None:
                                         print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
                                         playsound(var.pathsound+"call-to-attention.mp3")
                                 
-                                if 5 >= variacion >= 2 and tradingflag==False:                                    
+                                if 10 >= variacion >= 3 and tradingflag==False:                                    
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "# https://www.binance.com/en/futures/"+par
                                     lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
