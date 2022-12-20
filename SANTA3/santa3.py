@@ -441,8 +441,7 @@ def main() -> None:
                                     df2preciomayor = df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                     #####################################                                    
-                                    if (precioactual < dictequipoliquidando[par][0]
-                                        and precioactual >= dictequipoliquidando[par][0]*(1-1/100) #el precio está al 1% o menos del mayor
+                                    if (dictequipoliquidando[par][0]*(1+(0.3/100)) >= precioactual >= dictequipoliquidando[par][0] #el precio es mayor al maximo detectado o menor o igual al 0.3% de dicho maximo 
                                         and variaciondiaria <= var.maximavariaciondiaria
                                         ):
                                         ut.sound(duration = 200,freq = 800)
