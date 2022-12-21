@@ -111,7 +111,7 @@ finandy_passphares=''
 if exchange_name == 'kucoin':
     minvolumen24h =  float(10000000)
 else:
-    minvolumen24h = float(150000000)
+    minvolumen24h = float(100000000)
 
 mincapitalizacion = float(80000000)
 
