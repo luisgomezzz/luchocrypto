@@ -167,7 +167,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         # STOP LOSS
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
+        #ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
     return posicioncreada        
 
@@ -390,7 +390,10 @@ def main() -> None:
 
                         try:
                             
-                            if par not in operando:     
+                            if par not in operando:    
+                                # #######################################################################################################
+                                #################################CÁLCULOS
+                                # ####################################################################################################### 
                                 tradingflag = False
                                 df=ut.calculardf (par,var.temporalidad,var.ventana)
                                 df = df[:-1]
@@ -431,83 +434,122 @@ def main() -> None:
                                         playsound(var.pathsound+"call-to-attention.mp3")
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
-                                        porcentajeentrada=var.porcentajeentradaalto                                        
-                                
+                                        porcentajeentrada=var.porcentajeentradaalto      
+                                        
+                                if preciomenor<precioactual:
+                                    flechamecha = " ↑"
+                                    variacionmecha = ((precioactual/preciomenor)-1)*100
+                                else:
+                                    flechamecha = " ↓"
+                                    variacionmecha = ((preciomenor/precioactual)-1)*-100                                                                          
+
+                                # #######################################################################################################
+                                ######################################TRADE COMÚN
+                                # #######################################################################################################
+
                                 if  variacion >= var.variaciontrigger:                                    
-                                    #EJECUTA MINITRADE                                    
-                                    if (flecha==" ↑" and precioactual>=preciomayor):
+                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
+                                    df2=ut.calculardf (par,'1h',12)
+                                    df2preciomenor=df2.low.min()
+                                    df2preciomayor=df2.high.max()
+                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
+                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
+                                    #####################################
+                                    if variaciondiaria <= var.maximavariaciondiaria:
+                                        if (flecha==" ↑" and precioactual>=preciomayor):
+                                            if  (par not in dictequipoliquidando 
+                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
+                                                ): # precio actual alejado un 10% del máximo                                                
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)   
+                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                lado='SELL'
+                                                trading(par,lado,porcentajeentrada)
+                                                tradingflag=True
+                                        else:
+                                            if (flecha==" ↓" and precioactual<=preciomenor):
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                    lado='BUY'
+                                                    trading(par,lado,porcentajeentrada) 
+                                                    tradingflag=True
+
+                                        #crea archivo lanzador por si quiero ejecutarlo manualmente
+                                        lanzadorscript = "# https://www.binance.com/en/futures/"+par
+                                        lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
+                                        lanzadorscript = lanzadorscript+"\nimport sys"
+                                        lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
+                                        lanzadorscript = lanzadorscript+"\nimport santa3 as san"
+                                        lanzadorscript = lanzadorscript+"\npar='"+par+"'"
+                                        if flecha == " ↑":
+                                            lanzadorscript = lanzadorscript+"\nlado='SELL'"
+                                        else:
+                                            lanzadorscript = lanzadorscript+"\nlado='BUY'"
+                                        lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+")"
+                                        lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,"+str(porcentajeentrada)+")"
+                                        ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
+
+                                        f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")
+                                        f.write(lanzadorscript)
+                                        f.close()          
+
+                                # #######################################################################################################
+                                ######################################EQUIPOS LIQUIDANDO
+                                # #######################################################################################################
+
+                                if par in dictequipoliquidando and tradingflag==False:
+                                     if (dictequipoliquidando[par][0]*(1+(0.3/100)) >= precioactual >= dictequipoliquidando[par][0]): #el precio es mayor al maximo detectado o menor o igual al 0.3% de dicho maximo 
                                         ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
                                         df2=ut.calculardf (par,'1h',12)
-                                        df2preciomenor=df2.low.min()
-                                        df2preciomayor=df2.high.max()
+                                        df2preciomenor = df2.low.min()
+                                        df2preciomayor = df2.high.max()
                                         variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                        print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
-                                        #####################################
-                                        if ((par not in dictequipoliquidando or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))) # precio actual alejado un 10% del máximo
-                                            and variaciondiaria <= var.maximavariaciondiaria):
+                                        #####################################                                    
+                                        if variaciondiaria <= var.maximavariaciondiaria:
                                             ut.sound(duration = 200,freq = 800)
-                                            ut.sound(duration = 200,freq = 800)   
-                                            ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                            lado='SELL'
-                                            trading(par,lado,porcentajeentrada)
-                                            tradingflag=True
-                                    else:
-                                        if (flecha==" ↓" and precioactual<=preciomenor):
-                                            ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
-                                            df2=ut.calculardf (par,'1h',12)
-                                            df2preciomenor=df2.low.min()
-                                            df2preciomayor=df2.high.max()
-                                            variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                            print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
-                                            #####################################
-                                            if variaciondiaria <= var.maximavariaciondiaria:
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                lado='BUY'
-                                                trading(par,lado,porcentajeentrada) 
-                                                tradingflag=True
-
-                                    #crea archivo lanzador por si quiero ejecutarlo manualmente
-                                    lanzadorscript = "# https://www.binance.com/en/futures/"+par
-                                    lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
-                                    lanzadorscript = lanzadorscript+"\nimport sys"
-                                    lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
-                                    lanzadorscript = lanzadorscript+"\nimport santa3 as san"
-                                    lanzadorscript = lanzadorscript+"\npar='"+par+"'"
-                                    if flecha == " ↑":
-                                        lanzadorscript = lanzadorscript+"\nlado='SELL'"
-                                    else:
-                                        lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                    lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+")"
-                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,"+str(porcentajeentrada)+")"
-                                    ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
-
-                                    f = open(os.path.join(var.pathroot, var.lanzadorfile), 'w',encoding="utf-8")
-                                    f.write(lanzadorscript)
-                                    f.close()          
-
-                                #oportunidades en equipos liquidando
-                                if par in dictequipoliquidando and tradingflag==False:
-                                    ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
-                                    df2=ut.calculardf (par,'1h',12)
-                                    df2preciomenor = df2.low.min()
-                                    df2preciomayor = df2.high.max()
-                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    #####################################                                    
-                                    if (dictequipoliquidando[par][0]*(1+(0.3/100)) >= precioactual >= dictequipoliquidando[par][0] #el precio es mayor al maximo detectado o menor o igual al 0.3% de dicho maximo 
-                                        and variaciondiaria <= var.maximavariaciondiaria
-                                        ):
-                                        ut.sound(duration = 200,freq = 800)
-                                        ut.sound(duration = 200,freq = 800)
-                                        ut.printandlog(var.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                        lado='BUY'
-                                        trading(par,lado,porcentajeentrada)                                        
-                                        print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
-                                        playsound(var.pathsound+"call-to-attention.mp3")                                                                            
+                                            ut.sound(duration = 200,freq = 800)
+                                            ut.printandlog(var.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            lado='BUY'
+                                            trading(par,lado,porcentajeentrada)                                        
+                                            print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
+                                            playsound(var.pathsound+"call-to-attention.mp3")   
+                                            tradingflag=True                                                                         
 
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
-                                sys.stdout.flush()       
+                                sys.stdout.flush()  
+
+                                # #######################################################################################################
+                                ######################################TRADE MECHA
+                                # #######################################################################################################
+
+                                if  variacionmecha >= var.variaciontrigger and tradingflag==False:                                    
+                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
+                                    df2=ut.calculardf (par,'1h',12)
+                                    df2preciomenor=df2.low.min()
+                                    df2preciomayor=df2.high.max()
+                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
+                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
+                                    #####################################
+                                    if variaciondiaria <= var.maximavariaciondiaria:
+                                        if (flechamecha==" ↑"):
+                                            if  (par not in dictequipoliquidando 
+                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
+                                                ): # precio actual alejado un 10% del máximo                                                
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)   
+                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                lado='SELL'
+                                                trading(par,lado,porcentajeentrada)
+                                                tradingflag=True
+                                        else:
+                                            if (flechamecha==" ↓"):
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                    lado='BUY'
+                                                    trading(par,lado,porcentajeentrada) 
+                                                    tradingflag=True                                     
 
                         except KeyboardInterrupt:
                             print("\nSalida solicitada. ")
