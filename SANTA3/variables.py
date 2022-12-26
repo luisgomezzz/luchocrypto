@@ -86,8 +86,8 @@ porcentajeentradaalto = 20
 paso = 1.7 # distancia entre compensaciones.
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 cantidadcompensaciones = 99 #la maxima cantidad que permita el saldo
-variaciontrigger = 3 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
-maximavariaciondiaria = 20 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
+variaciontrigger = 2 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
+maximavariaciondiaria = 40.0 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
