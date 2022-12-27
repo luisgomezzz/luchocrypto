@@ -436,11 +436,11 @@ def main() -> None:
                                         anuncioaltavariacionbtc=False
                                         porcentajeentrada=var.porcentajeentradaalto      
                                         
-                                if precioactual>=preciomayor:
+                                if precioactual>=preciomayor*(1-0.5/100):
                                     flechamecha = " ↑"
                                     variacionmecha = ((precioactual/preciomenor)-1)*100
                                 else:
-                                    if precioactual<preciomenor:
+                                    if precioactual<preciomenor*(1+0.5/100):
                                         flechamecha = " ↓"
                                         variacionmecha = ((precioactual/preciomayor)-1)*-100       
                                     else:
