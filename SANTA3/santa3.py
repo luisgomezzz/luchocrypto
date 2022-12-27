@@ -436,12 +436,12 @@ def main() -> None:
                                         anuncioaltavariacionbtc=False
                                         porcentajeentrada=var.porcentajeentradaalto      
                                         
-                                if preciomenor<precioactual:
+                                if precioactual>preciomenor:
                                     flechamecha = " ↑"
                                     variacionmecha = ((precioactual/preciomenor)-1)*100
-                                else:
+                                elif precioactual<preciomayor:
                                     flechamecha = " ↓"
-                                    variacionmecha = ((preciomenor/precioactual)-1)*-100                                                                          
+                                    variacionmecha = ((precioactual/preciomayor)-1)*-100                                                                          
 
                                 # #######################################################################################################
                                 ######################################TRADE COMÚN
