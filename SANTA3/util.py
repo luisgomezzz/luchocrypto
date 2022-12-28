@@ -55,21 +55,25 @@ def RoundToTickUp(par,numero):
 
 def lista_de_monedas ():
     lista_de_monedas = []
-    if exchange_name =='binance':
-        exchange_info = var.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
-        for s in exchange_info:
-            try:
-                if 'USDT' in s['symbol'] and '_' not in s['symbol']:
-                    lista_de_monedas.append(s['symbol'])
-            except Exception as ex:
-                pass    
-    if exchange_name =='kucoinfutures':
-        exchange_info = var.clientmarket.get_contracts_list()
-        for index in range(len(exchange_info)):
-            try:
-                lista_de_monedas.append(exchange_info[index]['symbol'])
-            except Exception as ex:
-                pass   
+    try:
+        if exchange_name =='binance':
+            exchange_info = var.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
+            for s in exchange_info:
+                try:
+                    if 'USDT' in s['symbol'] and '_' not in s['symbol']:
+                        lista_de_monedas.append(s['symbol'])
+                except Exception as ex:
+                    pass    
+        if exchange_name =='kucoinfutures':
+            exchange_info = var.clientmarket.get_contracts_list()
+            for index in range(len(exchange_info)):
+                try:
+                    lista_de_monedas.append(exchange_info[index]['symbol'])
+                except Exception as ex:
+                    pass   
+    except:
+        print("\nError al obtener la lista de monedas...\n")
+        pass
     return lista_de_monedas  
 
 def timeindex(df):
