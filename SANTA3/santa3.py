@@ -448,10 +448,42 @@ def main() -> None:
                                         variacionmecha = 0
 
                                 # #######################################################################################################
+                                ######################################TRADE MECHA
+                                # #######################################################################################################
+
+                                if  variacionmecha >= var.variaciontrigger and tradingflag==False:                                    
+                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
+                                    df2=ut.calculardf (par,'1h',12)
+                                    df2preciomenor=df2.low.min()
+                                    df2preciomayor=df2.high.max()
+                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
+                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
+                                    #####################################
+                                    if variaciondiaria <= var.maximavariaciondiaria:
+                                        if (flechamecha==" ↑"):
+                                            if  (par not in dictequipoliquidando 
+                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
+                                                ): # precio actual alejado un 10% del máximo                                                
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)   
+                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                lado='SELL'
+                                                trading(par,lado,porcentajeentrada)
+                                                tradingflag=True
+                                        else:
+                                            if (flechamecha==" ↓"):
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                    lado='BUY'
+                                                    trading(par,lado,porcentajeentrada) 
+                                                    tradingflag=True                                     
+
+                                # #######################################################################################################
                                 ######################################TRADE COMÚN
                                 # #######################################################################################################
 
-                                if  variacion >= var.variaciontrigger:                                    
+                                if  variacion >= var.variaciontrigger and tradingflag==False:                                    
                                     ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
                                     df2=ut.calculardf (par,'1h',12)
                                     df2preciomenor=df2.low.min()
@@ -522,38 +554,6 @@ def main() -> None:
 
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()  
-
-                                # #######################################################################################################
-                                ######################################TRADE MECHA
-                                # #######################################################################################################
-
-                                if  variacionmecha >= var.variaciontrigger and tradingflag==False:                                    
-                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
-                                    df2=ut.calculardf (par,'1h',12)
-                                    df2preciomenor=df2.low.min()
-                                    df2preciomayor=df2.high.max()
-                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
-                                    #####################################
-                                    if variaciondiaria <= var.maximavariaciondiaria:
-                                        if (flechamecha==" ↑"):
-                                            if  (par not in dictequipoliquidando 
-                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
-                                                ): # precio actual alejado un 10% del máximo                                                
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)   
-                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                lado='SELL'
-                                                trading(par,lado,porcentajeentrada)
-                                                tradingflag=True
-                                        else:
-                                            if (flechamecha==" ↓"):
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                    lado='BUY'
-                                                    trading(par,lado,porcentajeentrada) 
-                                                    tradingflag=True                                     
 
                         except KeyboardInterrupt:
                             print("\nSalida solicitada. ")
