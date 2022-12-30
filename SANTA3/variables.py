@@ -113,7 +113,7 @@ if exchange_name == 'kucoin':
 else:
     minvolumen24h = float(100000000)
 
-mincapitalizacion = float(100000000)
+mincapitalizacion = float(50000000)
 
 if exchange_name == 'binance':
     api_key = binance_key
