@@ -50,30 +50,30 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
     return preciostop   
 
 def filtradodemonedas ():    
-    lista_monedas_filtradas_aux = []
+    dict_monedas_filtradas_aux = {}
     lista_de_monedas = ut.lista_de_monedas ()
-    mazmorra=[''] #Monedas que no quiero operar (muchas estan aqui porque fallan en algun momento al crear el dataframe)     
+    mazmorra=[''] #Monedas que no quiero operar
     for par in lista_de_monedas:
         try:  
+            volumeOf24h=ut.volumeOf24h(par)
+            capitalizacion=ut.capitalizacion(par)
             if par not in mazmorra:                
-                if (
-                    ut.volumeOf24h(par)>var.minvolumen24h 
-                    and ut.capitalizacion(par)>=var.mincapitalizacion
-                    ):
-                    lista_monedas_filtradas_aux.append(par)
+                if volumeOf24h >= var.minvolumen24h and capitalizacion >= var.mincapitalizacion:
+                    dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit()   
-    global lista_monedas_filtradas_nueva
-    lista_monedas_filtradas_nueva = lista_monedas_filtradas_aux
+    global dict_monedas_filtradas_nueva
+    dict_monedas_filtradas_nueva = dict_monedas_filtradas_aux
+    return dict_monedas_filtradas_aux
 
 def loopfiltradodemonedas ():
     while True:
         filtradodemonedas ()
 
-def formacioninicial(par,lado,porcentajeentrada):
+def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     procentajeperdida=porcentajeentrada
     if var.exchange_name == 'kucoinfutures':
         multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
@@ -82,7 +82,7 @@ def formacioninicial(par,lado,porcentajeentrada):
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     if posicioncreada==True:    
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
-        ut.printandlog(var.nombrelog,"distancia: "+str(var.paso))
+        ut.printandlog(var.nombrelog,"distancia: "+str(distanciaentrecompensaciones))
         #agrego el par al file
         with open(os.path.join(var.pathroot, var.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
@@ -99,9 +99,9 @@ def formacioninicial(par,lado,porcentajeentrada):
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
         cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
         if lado == 'BUY':
-            preciodeataque = precioinicial*(1-var.paso/2/100)
+            preciodeataque = precioinicial*(1-distanciaentrecompensaciones/2/100)
         else:
-            preciodeataque = precioinicial*(1+var.paso/2/100)                                
+            preciodeataque = precioinicial*(1+distanciaentrecompensaciones/2/100)                                
         cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
@@ -120,16 +120,16 @@ def formacioninicial(par,lado,porcentajeentrada):
                 cantidad = cantidad
             else:
                 cantidad = cantidad*(1+var.incrementocompensacionporc/100)
-            distanciaporc = distanciaporc+var.paso              
+            distanciaporc = distanciaporc+distanciaentrecompensaciones              
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc)
             if hayguita == True:
                 cantidadtotal = cantidadtotal+cantidadformateada
                 cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
                 cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
                 if lado == 'BUY':                                      
-                    preciodeataque = preciolimit*(1-var.paso/2/100)                                            
+                    preciodeataque = preciolimit*(1-distanciaentrecompensaciones/2/100)                                            
                 else:
-                    preciodeataque = preciolimit*(1+var.paso/2/100)
+                    preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
             ut.printandlog(var.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
@@ -149,7 +149,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         if var.flagpuntodeataque ==1:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
             cantidadtotalconataque = cantidadtotal+cantidad
-            distanciaporc = (distanciaporc-var.paso)+(var.paso/3)
+            distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones/3)
             ut.printandlog(var.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,var.client,lado,cantidad,distanciaporc)    
             if hayguita == False:
@@ -315,11 +315,11 @@ def updating(par,lado,porcentajeentrada):
     playsound(var.pathsound+"computer-processing.mp3")
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2))+"\n") 
 
-def trading(par,lado,porcentajeentrada):
+def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog="Trade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(var.nombrelog,mensajelog)    
-    posicioncreada=formacioninicial(par,lado,porcentajeentrada) 
+    posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
     hilo = threading.Thread(target=updating, args=(par,lado,porcentajeentrada))
     hilo.start()    
     return posicioncreada        
@@ -341,8 +341,8 @@ def main() -> None:
     print("Equipos liquidando: "+str(dictequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
-    lista_monedas_filtradas = lista_monedas_filtradas_nueva
-    ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
+    dict_monedas_filtradas = dict_monedas_filtradas_nueva
+    ut.printandlog(var.dict_monedas_filtradas_file,str(dict_monedas_filtradas),pal=1,mode='w')
     anuncioaltavariacionbtc=False
     porcentajeentrada=var.porcentajeentradaalto
     try:
@@ -355,15 +355,17 @@ def main() -> None:
         while True:
             if dt.datetime.today().hour !=18: #se detecta q a esa hora (utc-3) existen variaciones altas.
 
-                res = [x for x in lista_monedas_filtradas + lista_monedas_filtradas_nueva if x not in lista_monedas_filtradas or x not in lista_monedas_filtradas_nueva]
+                lista_aux = list(dict_monedas_filtradas.keys())
+                lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
+                res = [x for x in lista_aux + lista_nueva_aux if x not in lista_aux or x not in lista_nueva_aux]
                 
                 if res:
                     print("\nCambios en monedas filtradas: ")     
                     print(res)
-                    lista_monedas_filtradas = lista_monedas_filtradas_nueva
-                    ut.printandlog(var.lista_monedas_filtradas_file,str(lista_monedas_filtradas),pal=1,mode='w')
+                    dict_monedas_filtradas = dict_monedas_filtradas_nueva
+                    ut.printandlog(var.dict_monedas_filtradas_file,str(dict_monedas_filtradas),pal=1,mode='w')
                 
-                for par in lista_monedas_filtradas:
+                for par in dict_monedas_filtradas:
                     #leo file
                     with open(os.path.join(var.pathroot,var.operandofile), 'r') as filehandle:
                         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
@@ -379,7 +381,7 @@ def main() -> None:
                         datetime_start = datetime.today()
                         vueltas = 1
                     else:
-                        if vueltas == len(lista_monedas_filtradas):
+                        if vueltas == len(dict_monedas_filtradas):
                             datetime_end = datetime.today()
                             minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
                             vueltas = 0
@@ -447,6 +449,12 @@ def main() -> None:
                                         flechamecha = " "
                                         variacionmecha = 0
 
+                                capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
+                                if capitalizaciondelsymbol>=1000000000:
+                                    distanciaentrecompensaciones=1
+                                else:
+                                    distanciaentrecompensaciones=1.7
+
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
@@ -468,7 +476,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)   
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='SELL'
-                                                trading(par,lado,porcentajeentrada)
+                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                                 tradingflag=True
                                         else:
                                             if (flechamecha==" ↓"):
@@ -476,7 +484,7 @@ def main() -> None:
                                                     ut.sound(duration = 200,freq = 800)
                                                     ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                     lado='BUY'
-                                                    trading(par,lado,porcentajeentrada) 
+                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
                                                     tradingflag=True                                     
 
                                 # #######################################################################################################
@@ -500,7 +508,7 @@ def main() -> None:
                                                 ut.sound(duration = 200,freq = 800)   
                                                 ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='SELL'
-                                                trading(par,lado,porcentajeentrada)
+                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                                 tradingflag=True
                                         else:
                                             if (flecha==" ↓" and precioactual<=preciomenor):
@@ -508,7 +516,7 @@ def main() -> None:
                                                     ut.sound(duration = 200,freq = 800)
                                                     ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                     lado='BUY'
-                                                    trading(par,lado,porcentajeentrada) 
+                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
                                                     tradingflag=True
 
                                         #crea archivo lanzador por si quiero ejecutarlo manualmente
@@ -547,12 +555,12 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(var.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='BUY'
-                                            trading(par,lado,porcentajeentrada)                                        
+                                            trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)                                        
                                             print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
                                             playsound(var.pathsound+"call-to-attention.mp3")   
                                             tradingflag=True                                                                         
 
-                                sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(lista_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
+                                sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(dict_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()  
 
                         except KeyboardInterrupt:

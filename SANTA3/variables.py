@@ -59,16 +59,16 @@ operandofile = "operando.txt"
 f = open(os.path.join(pathroot, operandofile), 'a',encoding="utf-8")
 f.close() 
 if exchange_name =='binance':
-    lista_monedas_filtradas_file = "lista_monedas_filtradas_binance.txt"
-    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    dict_monedas_filtradas_file = "dict_monedas_filtradas_binance.txt"
+    f = open(os.path.join(pathroot, dict_monedas_filtradas_file), 'a',encoding="utf-8")
     f.close() 
 if exchange_name =='kucoin':
-    lista_monedas_filtradas_file = "lista_monedas_filtradas_kucoin.txt"
-    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    dict_monedas_filtradas_file = "dict_monedas_filtradas_kucoin.txt"
+    f = open(os.path.join(pathroot, dict_monedas_filtradas_file), 'a',encoding="utf-8")
     f.close()    
 if exchange_name =='finandy':
-    lista_monedas_filtradas_file = "lista_monedas_filtradas_finandy.txt"
-    f = open(os.path.join(pathroot, lista_monedas_filtradas_file), 'a',encoding="utf-8")
+    dict_monedas_filtradas_file = "dict_monedas_filtradas_finandy.txt"
+    f = open(os.path.join(pathroot, dict_monedas_filtradas_file), 'a',encoding="utf-8")
     f.close()         
 lanzadorfile = "lanzador.py"
 f = open(os.path.join(pathroot, lanzadorfile), 'a',encoding="utf-8")
@@ -83,7 +83,6 @@ ventana = 30 #Ventana de búsqueda en minutos.
 #los porcentajes de pérdidas serán igual a los porcentajes de entrada
 porcentajeentradabajo = 10 
 porcentajeentradaalto = 10 
-paso = 1.7 # distancia entre compensaciones.
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 cantidadcompensaciones = 15 #la maxima cantidad que permita el saldo
 variaciontrigger = 5 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
@@ -92,7 +91,7 @@ maximavariaciondiaria = 50 #Máxima variación diaria de una moneda(20%). La max
 tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
-lista_monedas_filtradas_nueva = []
+dict_monedas_filtradas_nueva = []
 flagpuntodeataque = 1 # Ataque automatico. 0 desactivado - 1 activado 
 
 #BINANCE
