@@ -144,7 +144,7 @@ def formacioninicial(par,lado,porcentajeentrada):
         except Exception as ex:
             print("Error cancela última compensación: "+str(ex)+"\n")
             pass          
-        '''                                  
+                                          
         # PUNTO DE ATAQUE  
         if var.flagpuntodeataque ==1:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
@@ -163,11 +163,11 @@ def formacioninicial(par,lado,porcentajeentrada):
         else:
             cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
             preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
-        '''
+        
         # STOP LOSS
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         ut.printandlog(var.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        #ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
+        ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
         ut.printandlog(var.nombrelog,"\n*********************************************************************************************")    
     return posicioncreada        
 

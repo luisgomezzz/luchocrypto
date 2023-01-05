@@ -11,6 +11,7 @@ from requests import Session
 import json
 import math
 import ccxt as ccxt
+from numerize import numerize
 
 exchange_name=var.exchange_name
 
@@ -584,3 +585,20 @@ def construye_tabla_formatos():
             print(cad_cod)
         print('\n')
 
+def rankingcap (lista_de_monedas):
+    dict = {        
+            'nada' : 0.0
+    }
+    dict.clear()
+    for s in lista_de_monedas:
+        try:  
+            par = s
+            dict[par] = capitalizacion(par)
+        except Exception as ex:
+            pass        
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()
+    ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
+    for index in range(len(lista_de_monedas)):
+        print(str(ranking[index][1])+' - '+str(numerize.numerize(ranking[index][0])))
