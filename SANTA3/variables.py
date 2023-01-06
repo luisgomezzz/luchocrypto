@@ -78,7 +78,7 @@ f.close()
 temporalidad = '1m'
 apalancamiento = 10
 margen = 'CROSSED'
-ventana = 30 #Ventana de búsqueda en minutos.   
+ventana = 40 #Ventana de búsqueda en minutos.   
 
 #los porcentajes de pérdidas serán igual a los porcentajes de entrada
 porcentajeentradabajo = 10 
