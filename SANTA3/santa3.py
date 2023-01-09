@@ -80,7 +80,13 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     else:
         multiplier=1
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
-    if posicioncreada==True:    
+    if posicioncreada==True:  
+        #stop de precaución por si el precio varía rapidamente.
+        if lado=='SELL':
+            preciostopprecaicion=ut.getentryprice(par)*(1+((var.cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+        else:
+            preciostopprecaicion=ut.getentryprice(par)*(1-((var.cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+        ut.creostoploss (par,lado,preciostopprecaicion)
         ut.printandlog(var.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
         ut.printandlog(var.nombrelog,"distancia: "+str(distanciaentrecompensaciones))
         #agrego el par al file
@@ -114,6 +120,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             (lado=='SELL' and preciodeataque < preciostopsanta)
             ) 
             and i<=var.cantidadcompensaciones
+            and ut.getentryprice(par)!=0
             ):
             i=i+1
             if i==1:
@@ -465,7 +472,7 @@ def main() -> None:
                                     df2preciomenor=df2.low.min()
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
+                                    print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
                                     #####################################
                                     if variaciondiaria <= var.maximavariaciondiaria:
                                         if (flechamecha==" ↑"):
@@ -497,7 +504,7 @@ def main() -> None:
                                     df2preciomenor=df2.low.min()
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nvariaciondiaria: "+str(variaciondiaria)+"\n")
+                                    print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
                                     #####################################
                                     if variaciondiaria <= var.maximavariaciondiaria:
                                         if (flecha==" ↑" and precioactual>=preciomayor):

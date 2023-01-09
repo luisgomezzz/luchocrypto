@@ -84,7 +84,7 @@ ventana = 40 #Ventana de búsqueda en minutos.
 porcentajeentradabajo = 10 
 porcentajeentradaalto = 10 
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-cantidadcompensaciones = 15 #la maxima cantidad que permita el saldo
+cantidadcompensaciones = 7
 variaciontrigger = 5 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
 maximavariaciondiaria = 50 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
