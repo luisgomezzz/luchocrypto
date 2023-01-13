@@ -153,7 +153,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             pass          
                                           
         # PUNTO DE ATAQUE  
-        if var.flagpuntodeataque ==1:
+        if var.flagpuntodeataque ==1 and ut.getentryprice(par)!=0:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
             cantidadtotalconataque = cantidadtotal+cantidad
             distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones/3)
@@ -458,9 +458,9 @@ def main() -> None:
 
                                 capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
                                 if capitalizaciondelsymbol>=1000000000:
-                                    distanciaentrecompensaciones=1
+                                    distanciaentrecompensaciones=2 #1
                                 else:
-                                    distanciaentrecompensaciones=1.7
+                                    distanciaentrecompensaciones=2 #1.7
 
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
