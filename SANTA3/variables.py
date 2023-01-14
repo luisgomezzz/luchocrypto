@@ -76,7 +76,7 @@ f.close()
 
 ##PARAMETROS ESTRATEGIA 
 temporalidad = '1m'
-apalancamiento = 20 #es 10 pero se coloca 20 para poder tener saldo y crear más de una compensacion de ataque en varias posiciones.
+apalancamiento = 30 #es 10 pero se coloca 20 para poder tener saldo y crear más de una compensacion de ataque en varias posiciones.
 margen = 'CROSSED'
 ventana = 40 #Ventana de búsqueda en minutos.   
 
@@ -85,7 +85,7 @@ porcentajeentradabajo = 5
 porcentajeentradaalto = 5 
 procentajeperdida = 10
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-cantidadcompensaciones = 8
+cantidadcompensaciones = 9
 variaciontrigger = 5 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
 maximavariaciondiaria = 50 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
