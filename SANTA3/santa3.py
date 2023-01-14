@@ -74,7 +74,7 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
-    procentajeperdida=porcentajeentrada
+    procentajeperdida=var.procentajeperdida
     if var.exchange_name == 'kucoinfutures':
         multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
     else:
@@ -112,8 +112,13 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         i=0
+        maximoapalancamiento = ut.maxLeverage(par)
+        if maximoapalancamiento < var.apalancamiento:
+            apalancamiento=int(maximoapalancamiento)
+        else:
+            apalancamiento=int(var.apalancamiento)
         #CREA COMPENSACIONES         
-        while (cantidadtotalconataqueusdt <= balancetotal*var.apalancamiento # pregunta si supera mi capital
+        while (cantidadtotalconataqueusdt <= balancetotal*apalancamiento # pregunta si supera mi capital
             and (
             (lado=='BUY' and preciodeataque > preciostopsanta)
             or 
@@ -194,7 +199,7 @@ def creaactualizatps (par,lado,porcentajeentrada,limitorders=[]):
     profitmedioporc = 2
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
-    procentajeperdida = porcentajeentrada
+    procentajeperdida = var.procentajeperdida
     try:        
         if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
             divisor = profitnormalporc
@@ -345,7 +350,7 @@ def main() -> None:
     ##############START        
     print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
     print("Objetivo a: "+str(ut.truncate(var.balanceobjetivo-ut.balancetotal(),2)))
-    print("Equipos liquidando: "+str(dictequipoliquidando))
+    ut.printandlog(var.nombrelog,"Equipos liquidando: "+str(dictequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
     dict_monedas_filtradas = dict_monedas_filtradas_nueva
@@ -533,11 +538,12 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
                                         lanzadorscript = lanzadorscript+"\nimport santa3 as san"
                                         lanzadorscript = lanzadorscript+"\npar='"+par+"'"
+                                        lanzadorscript = lanzadorscript+"\ndistanciaentrecompensaciones = "+str(distanciaentrecompensaciones)
                                         if flecha == " ↑":
                                             lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                         else:
                                             lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                        lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+")"
+                                        lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+"distanciaentrecompensaciones)"
                                         lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,"+str(porcentajeentrada)+")"
                                         ut.printandlog(var.lanzadorfile,lanzadorscript,pal=1,mode='w')
 

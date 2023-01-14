@@ -76,19 +76,20 @@ f.close()
 
 ##PARAMETROS ESTRATEGIA 
 temporalidad = '1m'
-apalancamiento = 10
+apalancamiento = 20 #es 10 pero se coloca 20 para poder tener saldo y crear más de una compensacion de ataque en varias posiciones.
 margen = 'CROSSED'
 ventana = 40 #Ventana de búsqueda en minutos.   
 
 #los porcentajes de pérdidas serán igual a los porcentajes de entrada
-porcentajeentradabajo = 10 
-porcentajeentradaalto = 10 
+porcentajeentradabajo = 5 
+porcentajeentradaalto = 5 
+procentajeperdida = 10
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-cantidadcompensaciones = 7
+cantidadcompensaciones = 11
 variaciontrigger = 5 #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
 maximavariaciondiaria = 50 #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si 
 #la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
-tradessimultaneos = 3 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
+tradessimultaneos = 2 #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt
 ## VARIABLES GLOBALES 
 operando=[] #lista de monedas que se están operando
 dict_monedas_filtradas_nueva = []
