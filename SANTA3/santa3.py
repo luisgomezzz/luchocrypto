@@ -9,6 +9,7 @@ import threading
 from playsound import playsound
 import variables as var
 from binance.exceptions import BinanceAPIException
+import indicadores as ind
 
 def posicionsanta(par,lado,porcentajeentrada):   
     serror = True
@@ -412,8 +413,7 @@ def main() -> None:
                                 df=ut.calculardf (par,var.temporalidad,var.ventana)
                                 df = df[:-1]
                                 preciomenor=df.close.min()
-                                preciomayor=df.close.max()
-                                precioactual=ut.currentprice(par)
+                                preciomayor=df.close.max()                                
 
                                 # reinicia la máxima variación al pasar una hora
                                 if maximavariacionhoracomienzo != float(dt.datetime.today().hour):
@@ -449,6 +449,14 @@ def main() -> None:
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
                                         porcentajeentrada=var.porcentajeentradaalto      
+
+                                capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
+                                if capitalizaciondelsymbol>=1000000000:
+                                    distanciaentrecompensaciones=2 #1
+                                else:
+                                    distanciaentrecompensaciones=2 #1.7
+
+                                precioactual=ut.currentprice(par)
                                         
                                 if precioactual>=preciomayor*(1-0.5/100):
                                     flechamecha = " ↑"
@@ -460,13 +468,6 @@ def main() -> None:
                                     else:
                                         flechamecha = " "
                                         variacionmecha = 0
-
-                                capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
-                                if capitalizaciondelsymbol>=1000000000:
-                                    distanciaentrecompensaciones=2 #1
-                                else:
-                                    distanciaentrecompensaciones=2 #1.7
-
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
@@ -478,9 +479,16 @@ def main() -> None:
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                     print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
-                                    #####################################
+                                    ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
+                                    LL=ind.PPSR(par)
+                                    R3=LL['R3']
+                                    S3=LL['S3']
+                                    ###########
                                     if variaciondiaria <= var.maximavariaciondiaria:
-                                        if (flechamecha==" ↑"):
+                                        if (flechamecha==" ↑" and precioactual<R3):
+                                            ###################
+                                            ###### SHORT ######
+                                            ###################
                                             if  (par not in dictequipoliquidando 
                                                 or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
                                                 ): # precio actual alejado un 10% del máximo                                                
@@ -491,13 +499,16 @@ def main() -> None:
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                                 tradingflag=True
                                         else:
-                                            if (flechamecha==" ↓"):
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                    lado='BUY'
-                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                    tradingflag=True                                     
+                                            if (flechamecha==" ↓" and precioactual>S3):
+                                                ###################
+                                                ###### LONG #######
+                                                ###################
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.sound(duration = 200,freq = 800)
+                                                ut.printandlog(var.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                                lado='BUY'
+                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
+                                                tradingflag=True                                     
 
                                 # #######################################################################################################
                                 ######################################TRADE COMÚN
@@ -570,7 +581,7 @@ def main() -> None:
                                             lado='BUY'
                                             trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)                                        
                                             print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
-                                            playsound(var.pathsound+"call-to-attention.mp3")   
+                                            playsound(var.pathsound+"liquidating.mp3")   
                                             tradingflag=True                                                                         
 
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(dict_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
