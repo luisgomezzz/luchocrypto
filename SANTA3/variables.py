@@ -76,7 +76,7 @@ f.close()
 
 ##PARAMETROS ESTRATEGIA 
 temporalidad = '1m'
-apalancamiento = 30 #es 10 pero se coloca 20 para poder tener saldo y crear más de una compensacion de ataque en varias posiciones.
+apalancamiento = 30 #es 10 pero se coloca 20, 30, 40, etc. para poder tener saldo y crear más de una compensación de ataque en varias posiciones.
 margen = 'CROSSED'
 ventana = 40 #Ventana de búsqueda en minutos.   
 
