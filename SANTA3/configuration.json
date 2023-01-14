@@ -1,0 +1,12 @@
+{
+    "apalancamiento": 30,
+    "ventana": 40,
+    "porcentajeentradabajo": 5,
+    "porcentajeentradaalto": 5,
+    "procentajeperdida": 10,
+    "incrementocompensacionporc": 30,
+    "cantidadcompensaciones": 10,
+    "variaciontrigger": 5,
+    "maximavariaciondiaria": 50,
+    "tradessimultaneos": 3
+}

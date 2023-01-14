@@ -81,8 +81,8 @@ margen = 'CROSSED'
 ventana = 40 #Ventana de búsqueda en minutos.   
 
 #los porcentajes de pérdidas serán igual a los porcentajes de entrada
-porcentajeentradabajo = 5 
-porcentajeentradaalto = 5 
+porcentajeentradabajo = 10 
+porcentajeentradaalto = 10 
 procentajeperdida = 10
 incrementocompensacionporc = 30 #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
 cantidadcompensaciones = 10

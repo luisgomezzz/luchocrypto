@@ -479,12 +479,12 @@ def main() -> None:
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                     print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
-                                    ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
-                                    LL=ind.PPSR(par)
-                                    R3=LL['R3']
-                                    S3=LL['S3']
                                     ###########
                                     if variaciondiaria <= var.maximavariaciondiaria:
+                                        ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
+                                        LL=ind.PPSR(par)
+                                        R3=LL['R3']
+                                        S3=LL['S3']
                                         if (flechamecha==" ↑" and precioactual<R3):
                                             ###################
                                             ###### SHORT ######
@@ -573,8 +573,12 @@ def main() -> None:
                                         df2preciomenor = df2.low.min()
                                         df2preciomayor = df2.high.max()
                                         variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
+                                        print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
+                                        ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
+                                        LL=ind.PPSR(par)
+                                        R3=LL['R3']
                                         #####################################                                    
-                                        if variaciondiaria <= var.maximavariaciondiaria:
+                                        if variaciondiaria <= var.maximavariaciondiaria and precioactual>R3:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(var.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
