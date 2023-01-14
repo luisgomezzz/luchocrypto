@@ -1,8 +1,7 @@
 {
     "apalancamiento": 30,
     "ventana": 40,
-    "porcentajeentradabajo": 5,
-    "porcentajeentradaalto": 5,
+    "porcentajeentrada": 10,
     "procentajeperdida": 10,
     "incrementocompensacionporc": 30,
     "cantidadcompensaciones": 10,

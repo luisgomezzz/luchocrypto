@@ -1,6 +1,6 @@
 import sys
 import pandas as pd
-import variables as var
+import constantes as cons
 import os
 import winsound as ws
 import math
@@ -14,7 +14,7 @@ import ccxt as ccxt
 from numerize import numerize
 from gtts import gTTS
 
-exchange_name=var.exchange_name
+exchange_name=cons.exchange_name
 
 bar = [
       " [=     ]",
@@ -59,7 +59,7 @@ def lista_de_monedas ():
     lista_de_monedas = []
     try:
         if exchange_name =='binance':
-            exchange_info = var.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
+            exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
                     if 'USDT' in s['symbol'] and '_' not in s['symbol']:
@@ -67,7 +67,7 @@ def lista_de_monedas ():
                 except Exception as ex:
                     pass    
         if exchange_name =='kucoinfutures':
-            exchange_info = var.clientmarket.get_contracts_list()
+            exchange_info = cons.clientmarket.get_contracts_list()
             for index in range(len(exchange_info)):
                 try:
                     lista_de_monedas.append(exchange_info[index]['symbol'])
@@ -89,7 +89,7 @@ def calculardf (par,temporalidad,ventana):
     df = pd.DataFrame()
     while df.empty:
         try:            
-            barsindicators = var.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
+            barsindicators = cons.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
             df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
             timeindex(df) #Formatea el campo time para luego calcular las señales
         except KeyboardInterrupt:
@@ -129,9 +129,9 @@ def equipoliquidando ():
 def volumeOf24h(par): #en usdt
     vol=0.0
     if exchange_name == 'binance':
-        vol= var.client.futures_ticker(symbol=par)['quoteVolume']
+        vol= cons.client.futures_ticker(symbol=par)['quoteVolume']
     if exchange_name == 'kucoinfutures':
-        datos=var.exchange.fetch_markets()
+        datos=cons.exchange.fetch_markets()
         for i in range(len(datos)):
             if datos[i]['id']==par:
                 vol=datos[i]['info']['volumeOf24h']*currentprice(par)
@@ -152,13 +152,13 @@ def printandlog(nombrelog,mensaje,pal=0,mode='a'):
    if pal==0: #print y log
       print(mensaje)
       #escribo file
-      f = open(os.path.join(var.pathroot,nombrelog), mode,encoding="utf-8")
+      f = open(os.path.join(cons.pathroot,nombrelog), mode,encoding="utf-8")
       f.write("\n"+mensaje)
       f.close()   
    else:
       if pal==1: #solo log
          #escribo file
-         f = open(os.path.join(var.pathroot,nombrelog), mode,encoding="utf-8")
+         f = open(os.path.join(cons.pathroot,nombrelog), mode,encoding="utf-8")
          f.write("\n"+mensaje)
          f.close()   
 
@@ -167,7 +167,7 @@ def currentprice(symbol):
     current=0.0
     while leido == False:
         try:
-            current=float(var.exchange.fetch_ticker(symbol)['close'])
+            current=float(cons.exchange.fetch_ticker(symbol)['close'])
             leido = True
         except:
             pass
@@ -178,9 +178,9 @@ def balancetotal():
    while leido == False:
       try:
         if exchange_name=='binance':
-            balance=float(var.exchange.fetch_balance()['info']['totalWalletBalance'])
+            balance=float(cons.exchange.fetch_balance()['info']['totalWalletBalance'])
         if exchange_name=='kucoinfutures':
-            balance=float(var.exchange.fetch_balance()['info']['data']['marginBalance'])
+            balance=float(cons.exchange.fetch_balance()['info']['data']['marginBalance'])
         leido = True
       except:
          pass
@@ -192,13 +192,13 @@ def getentryprice(par):
     while leido == False:
         try:
             if exchange_name=='binance':
-                positions=var.exchange.fetch_balance()['info']['positions']
+                positions=cons.exchange.fetch_balance()['info']['positions']
                 for index in range(len(positions)):
                     if positions[index]['symbol']==par:
                         entryprice=float(positions[index]['entryPrice'])
                         break
             if exchange_name=='kucoinfutures':
-                position = var.exchange.fetch_positions()
+                position = cons.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
                         entryprice=float(position[i]['info']['avgEntryPrice'])
@@ -213,7 +213,7 @@ def get_quantityprecision(par):
     quantityprecision=0
     while leido == False:
         try:   
-            info = var.client.futures_exchange_info()
+            info = cons.client.futures_exchange_info()
             leido = True
         except:
             pass 
@@ -226,39 +226,39 @@ def get_quantityprecision(par):
 def maxLeverage(symbol):
     maxLeverage = 0
     if exchange_name=='binance':
-        result = var.client.futures_leverage_bracket()        
+        result = cons.client.futures_leverage_bracket()        
         for x in range(len(result)):
             if result[x]['symbol'] == symbol:
                 maxLeverage =  result[x]['brackets'][0]['initialLeverage']
                 break
     if exchange_name=='kucoinfutures':
-        maxLeverage=var.clientmarket.get_contract_detail(symbol)['maxLeverage']
+        maxLeverage=cons.clientmarket.get_contract_detail(symbol)['maxLeverage']
     return maxLeverage
 
 def creoposicion (par,size,lado)->bool:         
     serror=True            
     try:
         maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < var.apalancamiento:
+        if maximoapalancamiento < cons.apalancamiento:
             apalancamiento=int(maximoapalancamiento)
         else:
-            apalancamiento=int(var.apalancamiento)
+            apalancamiento=int(cons.apalancamiento)
             
         if  exchange_name=='binance':    
-            var.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
+            cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
-                var.client.futures_change_margin_type(symbol=par, marginType=var.margen)
+                cons.client.futures_change_margin_type(symbol=par, marginType=cons.margen)
             except BinanceAPIException as a:
                 if a.message!="No need to change margin type.":
                     print("Except 7",a.status_code,a.message)
                 pass                    
             tamanio=truncate((size/currentprice(par)),get_quantityprecision(par))
-            var.client.futures_create_order(symbol=par,side=lado,type='MARKET',quantity=tamanio)
+            cons.client.futures_create_order(symbol=par,side=lado,type='MARKET',quantity=tamanio)
         if exchange_name=='kucoinfutures':
-            var.clienttrade.modify_auto_deposit_margin(par,status=True)
-            multiplier=float(var.clientmarket.get_contract_detail(par)['multiplier'])
+            cons.clienttrade.modify_auto_deposit_margin(par,status=True)
+            multiplier=float(cons.clientmarket.get_contract_detail(par)['multiplier'])
             tamanio=str(int(size/(multiplier*currentprice(par))))
-            var.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=apalancamiento)
+            cons.clienttrade.create_market_order(side=lado,symbol=par,type='market',size=tamanio,lever=apalancamiento)
             print("Con Kucoin espera para que de tiempo a actualizar...")
             waiting(5)
         print("Posición creada. ",tamanio)
@@ -280,13 +280,13 @@ def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
     while leido == False:
         try:
             if exchange_name =='binance':
-                position = var.exchange.fetch_balance()['info']['positions']
+                position = cons.exchange.fetch_balance()['info']['positions']
                 for i in range(len(position)):
                     if position[i]['symbol']==par:
                         positionamt=float(position[i]['positionAmt'])
                         break
             if exchange_name =='kucoinfutures':
-                position = var.exchange.fetch_positions()
+                position = cons.exchange.fetch_positions()
                 for i in range(len(position)):
                     if position[i]['info']['symbol']==par:
                         positionamt=float(position[i]['info']['currentQty'])
@@ -306,9 +306,9 @@ def get_tick_size(symbol) -> float:
     tick_size = 0.0
     try:
         if exchange_name=='kucoinfutures':
-            tick_size=float(var.clientmarket.get_contract_detail(symbol)['tickSize'])
+            tick_size=float(cons.clientmarket.get_contract_detail(symbol)['tickSize'])
         if exchange_name=='binance':
-            info = var.client.futures_exchange_info()
+            info = cons.client.futures_exchange_info()
             for symbol_info in info['symbols']:
                 if symbol_info['symbol'] == symbol:
                     for symbol_filter in symbol_info['filters']:
@@ -331,7 +331,7 @@ def get_priceprecision(par):
     priceprecision=0
     while leido == False:
         try: 
-            info = var.client.futures_exchange_info()
+            info = cons.client.futures_exchange_info()
             leido = True
         except:
             pass 
@@ -354,24 +354,24 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
             return True,float(order['price']),float(order['origQty']),order['orderId']
         if exchange_name=='kucoinfutures':                
             tamanioformateado = int(tamanio)
-            maxLeverage = var.clientmarket.get_contract_detail(par)['maxLeverage']
-            if maxLeverage < var.apalancamiento:
+            maxLeverage = cons.clientmarket.get_contract_detail(par)['maxLeverage']
+            if maxLeverage < cons.apalancamiento:
                 apalancamiento=int(maxLeverage)
             else:
-                apalancamiento=int(var.apalancamiento)
+                apalancamiento=int(cons.apalancamiento)
             i=0
             creada=False
             while creada==False:                        
                 try:
-                    order=var.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=apalancamiento)
-                    detalle=(var.clienttrade.get_order_details(order['orderId']))
+                    order=cons.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=apalancamiento)
+                    detalle=(cons.clienttrade.get_order_details(order['orderId']))
                     creada=True
                     return True,float(detalle['price']),float(detalle['size']),order['orderId']
                 except ccxt.RateLimitExceeded as e:
-                    now = var.exchange.milliseconds()
-                    datetime = var.exchange.iso8601(now)
+                    now = cons.exchange.milliseconds()
+                    datetime = cons.exchange.iso8601(now)
                     print(datetime, i, type(e).__name__, str(e))
-                    var.exchange.sleep(10000)
+                    cons.exchange.sleep(10000)
                     pass
                 except Exception as e:
                     print(type(e).__name__, str(e))
@@ -397,10 +397,10 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
                 sizedesocupar=1 # el size a desocupar no puede ser menor a 1 lot en kucoin
         ####################
         maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < var.apalancamiento:
+        if maximoapalancamiento < cons.apalancamiento:
             apalancamiento=int(maximoapalancamiento)
         else:
-            apalancamiento=int(var.apalancamiento)
+            apalancamiento=int(cons.apalancamiento)
         creado = True 
         orderid = 0  
         if lado=='BUY':
@@ -410,7 +410,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         limitprice=RoundToTickUp(par,preciolimit)
         params={"leverage": apalancamiento}
         print("\nTAKE PROFIT. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
-        order=var.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
+        order=cons.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
         print("\nTAKE PROFIT creado. \n")
         orderid = order['id']
     except BinanceAPIException as a:
@@ -460,7 +460,7 @@ def creostoploss (symbol,side,stopprice,amount=0):
     try:
         if exchange_name=='binance':
             preciostop=truncate(stopprice,get_priceprecision(symbol))
-            order=var.client.futures_create_order(symbol=symbol,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+            order=cons.client.futures_create_order(symbol=symbol,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
             print("\nStop loss creado. ",preciostop)
             creado = True
             stopid = order['orderId']
@@ -472,7 +472,7 @@ def creostoploss (symbol,side,stopprice,amount=0):
                 amount=amount
             params ={'stopPrice': preciostop,
                     'closePosition': True}
-            var.exchange.create_order(
+            cons.exchange.create_order(
                 symbol=symbol,
                 side=side.lower(),
                 type='market', # 'limit' for stop limit orders
@@ -489,12 +489,12 @@ def closeallopenorders (par):
     while leido==False:      
         try:
             if exchange_name=='binance':
-                var.client.futures_cancel_all_open_orders(symbol=par)
+                cons.client.futures_cancel_all_open_orders(symbol=par)
                 leido=True
                 print("\nÓrdenes binance cerradas. ")
             if exchange_name == 'kucoinfutures':
-                var.clienttrade.cancel_all_limit_order(par)
-                var.clienttrade.cancel_all_stop_order(par)
+                cons.clienttrade.cancel_all_limit_order(par)
+                cons.clienttrade.cancel_all_stop_order(par)
                 leido=True
                 print("\nÓrdenes kucoin cerradas. ")
         except:
@@ -507,12 +507,12 @@ def pnl(par):
         try:
             if exchange_name == 'kucoinfutures':
                 #kucoin por ahora no tiene la funcion de pnl en ccxt
-                pnl = var.clienttrade.get_position_details(par)['unrealisedPnl']
+                pnl = cons.clienttrade.get_position_details(par)['unrealisedPnl']
                 leido=True
             else:
                 lista=[]
                 lista.append(par)
-                pnl=var.exchange.fetchPositionsRisk(lista)[0]['unrealizedPnl'] 
+                pnl=cons.exchange.fetchPositionsRisk(lista)[0]['unrealizedPnl'] 
                 leido=True
         except:
             pass
@@ -558,7 +558,7 @@ def capitalizacion(par):
         if par == 'XBTUSDTM': # en kucoin BTC es 'XBTUSDTM'
             par = 'BTCUSDTM'
         par=par[0:-1]# si se eligió kucoin se le saca el ultimo caracter al símbolo.
-    clientcap = var.binanceClient(var.binance_key, var.binance_secret,var.binance_passphares) 
+    clientcap = cons.binanceClient(cons.binance_key, cons.binance_secret,cons.binance_passphares) 
     info = clientcap.get_products()
     lista=info['data']
     for i in range(len(lista)):
