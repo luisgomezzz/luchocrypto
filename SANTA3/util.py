@@ -235,14 +235,23 @@ def maxLeverage(symbol):
         maxLeverage=cons.clientmarket.get_contract_detail(symbol)['maxLeverage']
     return maxLeverage
 
+def leeconfiguracion(parameter='porcentajeentrada'):
+    # Opening JSON file
+    with open(os.path.join(cons.pathroot, "configuration.json"), 'r') as openfile: 
+        # Reading from json file
+        json_object = json.load(openfile)
+    valor = json_object[parameter]        
+    return valor 
+
 def creoposicion (par,size,lado)->bool:         
-    serror=True            
+    serror=True        
+    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
         maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < cons.apalancamiento:
+        if maximoapalancamiento < apalancamiento:
             apalancamiento=int(maximoapalancamiento)
         else:
-            apalancamiento=int(cons.apalancamiento)
+            apalancamiento=int(apalancamiento)
             
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -347,6 +356,7 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
     else:
         preciolimit = getentryprice(par)*(1-(distanciaporc/100))
     limitprice=RoundToTickUp(par,preciolimit)
+    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
         if exchange_name=='binance':
             tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
@@ -355,10 +365,10 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
         if exchange_name=='kucoinfutures':                
             tamanioformateado = int(tamanio)
             maxLeverage = cons.clientmarket.get_contract_detail(par)['maxLeverage']
-            if maxLeverage < cons.apalancamiento:
+            if maxLeverage < apalancamiento:
                 apalancamiento=int(maxLeverage)
             else:
-                apalancamiento=int(cons.apalancamiento)
+                apalancamiento=int(apalancamiento)
             i=0
             creada=False
             while creada==False:                        
@@ -387,6 +397,7 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
         return False,0,0,0
 
 def creotakeprofit(par,preciolimit,posicionporc,lado):
+    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
         ### exchange details
         if exchange_name=='binance':
@@ -397,10 +408,10 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
                 sizedesocupar=1 # el size a desocupar no puede ser menor a 1 lot en kucoin
         ####################
         maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < cons.apalancamiento:
+        if maximoapalancamiento < apalancamiento:
             apalancamiento=int(maximoapalancamiento)
         else:
-            apalancamiento=int(cons.apalancamiento)
+            apalancamiento=int(apalancamiento)
         creado = True 
         orderid = 0  
         if lado=='BUY':

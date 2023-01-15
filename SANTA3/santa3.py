@@ -76,18 +76,18 @@ def loopfiltradodemonedas ():
         filtradodemonedas ()
 
 def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
-    procentajeperdida=leeconfiguracion("procentajeperdida")
-    incrementocompensacionporc=leeconfiguracion('incrementocompensacionporc')
-    cantidadcompensaciones=leeconfiguracion('cantidadcompensaciones')
+    procentajeperdida=ut.leeconfiguracion("procentajeperdida")
+    incrementocompensacionporc=ut.leeconfiguracion('incrementocompensacionporc')
+    cantidadcompensaciones=ut.leeconfiguracion('cantidadcompensaciones')
     if cons.exchange_name == 'kucoinfutures':
         multiplier=float(cons.clientmarket.get_contract_detail(par)['multiplier'])
     else:
         multiplier=1
     maximoapalancamiento = ut.maxLeverage(par)
-    if maximoapalancamiento < leeconfiguracion("apalancamiento"):
+    if maximoapalancamiento < ut.leeconfiguracion("apalancamiento"):
         apalancamiento=int(maximoapalancamiento)
     else:
-        apalancamiento=int(leeconfiguracion("apalancamiento"))
+        apalancamiento=int(ut.leeconfiguracion("apalancamiento"))
     if apalancamiento<20:
         porcentajeentrada=5
         procentajeperdida=5
@@ -339,14 +339,6 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     hilo.start()    
     return posicioncreada   
 
-def leeconfiguracion(parameter='porcentajeentrada'):
-    # Opening JSON file
-    with open(os.path.join(cons.pathroot, "configuration.json"), 'r') as openfile: 
-        # Reading from json file
-        json_object = json.load(openfile)
-    valor = json_object[parameter]        
-    return valor      
-
 def main() -> None:
     ##PARAMETROS##########################################################################################
     print("Buscando equipos liquidando...")
@@ -388,7 +380,7 @@ def main() -> None:
                     ut.printandlog(cons.dict_monedas_filtradas_file,str(dict_monedas_filtradas),pal=1,mode='w')
                 
                 for par in dict_monedas_filtradas:
-                    tradessimultaneos=leeconfiguracion('tradessimultaneos')
+                    tradessimultaneos=ut.leeconfiguracion('tradessimultaneos')
                     #leo file
                     with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
                         operando = [current_place.rstrip() for current_place in filehandle.readlines()]
@@ -419,10 +411,10 @@ def main() -> None:
                                 # #######################################################################################################
                                 #################################CÁLCULOS
                                 # ####################################################################################################### 
-                                variaciontrigger=leeconfiguracion("variaciontrigger")
-                                maximavariaciondiaria=leeconfiguracion("maximavariaciondiaria")
-                                ventana=leeconfiguracion('ventana')
-                                porcentajeentrada = leeconfiguracion('porcentajeentrada')
+                                variaciontrigger=ut.leeconfiguracion("variaciontrigger")
+                                maximavariaciondiaria=ut.leeconfiguracion("maximavariaciondiaria")
+                                ventana=ut.leeconfiguracion('ventana')
+                                porcentajeentrada = ut.leeconfiguracion('porcentajeentrada')
 
                                 tradingflag = False                                
                                 df=ut.calculardf (par,cons.temporalidad,ventana)
@@ -465,9 +457,9 @@ def main() -> None:
 
                                 capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
                                 if capitalizaciondelsymbol>=1000000000:
-                                    distanciaentrecompensaciones = leeconfiguracion('distanciaentrecompensacionesbaja')
+                                    distanciaentrecompensaciones = ut.leeconfiguracion('distanciaentrecompensacionesbaja')
                                 else:
-                                    distanciaentrecompensaciones = leeconfiguracion('distanciaentrecompensacionesalta')                                 
+                                    distanciaentrecompensaciones = ut.leeconfiguracion('distanciaentrecompensacionesalta')                                 
 
                                 precioactual=ut.currentprice(par)
                                 if precioactual>=preciomayor*(1-0.5/100):
