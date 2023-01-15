@@ -5,7 +5,7 @@
     "procentajeperdida": 10,
     "incrementocompensacionporc": 30,
     "cantidadcompensaciones": 10,
-    "variaciontrigger": 5,
+    "variaciontrigger": 3,
     "maximavariaciondiaria": 50,
     "tradessimultaneos": 3,
     "distanciaentrecompensacionesalta": 1.7,
