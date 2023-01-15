@@ -119,6 +119,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             apalancamiento=int(maximoapalancamiento)
         else:
             apalancamiento=int(cons.apalancamiento)
+        ut.printandlog(cons.nombrelog,"\nApalancamiento: "+str(apalancamiento))
         #CREA COMPENSACIONES         
         while (cantidadtotalconataqueusdt <= balancetotal*apalancamiento # pregunta si supera mi capital
             and (
@@ -144,10 +145,10 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
                     preciodeataque = preciolimit*(1-distanciaentrecompensaciones/2/100)                                            
                 else:
                     preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
-                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
-                ut.printandlog(cons.nombrelog,"cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt))
+                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)                
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-            ut.printandlog(cons.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
+            ut.printandlog(cons.nombrelog,"Compensación "+str(i)+". Amount: "+str(cantidadformateada)+" - Price: "+str(preciolimit)+" - Volume: "+str(cantidadformateada*preciolimit)+" - Total Volume: "+str(cantidadtotalusdt))
+            ut.printandlog(cons.nombrelog,"cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
         # CANCELA ÚLTIMA COMPENSACIÓN
         try:
@@ -337,7 +338,15 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
     hilo = threading.Thread(target=updating, args=(par,lado,porcentajeentrada))
     hilo.start()    
-    return posicioncreada        
+    return posicioncreada   
+
+def leeconfiguracion(parameter='porcentajeentrada'):
+    # Opening JSON file
+    with open(os.path.join(cons.pathroot, "configuration.json"), 'r') as openfile: 
+        # Reading from json file
+        json_object = json.load(openfile)
+    valor = json_object[parameter]        
+    return valor      
 
 def main() -> None:
     ##PARAMETROS##########################################################################################
@@ -451,15 +460,11 @@ def main() -> None:
 
                                 capitalizaciondelsymbol=dict_monedas_filtradas[par]["capitalizacion"]
                                 if capitalizaciondelsymbol>=1000000000:
-                                    distanciaentrecompensaciones=2 #1
+                                    distanciaentrecompensaciones = leeconfiguracion(parameter='distanciaentrecompensacionesbaja')
                                 else:
-                                    distanciaentrecompensaciones=2 #1.7
+                                    distanciaentrecompensaciones = leeconfiguracion(parameter='distanciaentrecompensacionesalta') 
 
-                                # Opening JSON file
-                                with open(os.path.join(cons.pathroot, "configuration.json"), 'r') as openfile: 
-                                    # Reading from json file
-                                    json_object = json.load(openfile)
-                                porcentajeentrada = json_object['porcentajeentrada']
+                                porcentajeentrada = leeconfiguracion(parameter='porcentajeentrada')
 
                                 precioactual=ut.currentprice(par)
                                 if precioactual>=preciomayor*(1-0.5/100):
@@ -482,7 +487,7 @@ def main() -> None:
                                     df2preciomenor=df2.low.min()
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
+                                    print("\nVariación diaria "+par+": "+str(variaciondiaria)+"\n")
                                     ###########
                                     if variaciondiaria <= cons.maximavariaciondiaria:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
@@ -514,7 +519,27 @@ def main() -> None:
                                                 ut.printandlog(cons.nombrelog,"\nPorcentaje de entrada: "+str(porcentajeentrada))
                                                 lado='BUY'
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                tradingflag=True                                     
+                                                tradingflag=True   
+
+                                    #crea archivo lanzador por si quiero ejecutarlo manualmente
+                                    lanzadorscript = "# https://www.binance.com/en/futures/"+par
+                                    lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
+                                    lanzadorscript = lanzadorscript+"\nimport sys"
+                                    lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
+                                    lanzadorscript = lanzadorscript+"\nimport santa3 as san"
+                                    lanzadorscript = lanzadorscript+"\npar='"+par+"'"
+                                    lanzadorscript = lanzadorscript+"\ndistanciaentrecompensaciones = "+str(distanciaentrecompensaciones)
+                                    lanzadorscript = lanzadorscript+"\nporcentajeentrada = "+str(porcentajeentrada)
+                                    if flecha == " ↑":
+                                        lanzadorscript = lanzadorscript+"\nlado='SELL'"
+                                    else:
+                                        lanzadorscript = lanzadorscript+"\nlado='BUY'"
+                                    lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)"
+                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,porcentajeentrada)"
+                                    ut.printandlog(cons.lanzadorfile,lanzadorscript,pal=1,mode='w')
+                                    f = open(os.path.join(cons.pathroot, cons.lanzadorfile), 'w',encoding="utf-8")
+                                    f.write(lanzadorscript)
+                                    f.close()                                                                                    
 
                                 # #######################################################################################################
                                 ######################################TRADE COMÚN (deshabilitado con el 1==2)
@@ -547,26 +572,6 @@ def main() -> None:
                                                     lado='BUY'
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
                                                     tradingflag=True
-
-                                        #crea archivo lanzador por si quiero ejecutarlo manualmente
-                                        lanzadorscript = "# https://www.binance.com/en/futures/"+par
-                                        lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
-                                        lanzadorscript = lanzadorscript+"\nimport sys"
-                                        lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
-                                        lanzadorscript = lanzadorscript+"\nimport santa3 as san"
-                                        lanzadorscript = lanzadorscript+"\npar='"+par+"'"
-                                        lanzadorscript = lanzadorscript+"\ndistanciaentrecompensaciones = "+str(distanciaentrecompensaciones)
-                                        if flecha == " ↑":
-                                            lanzadorscript = lanzadorscript+"\nlado='SELL'"
-                                        else:
-                                            lanzadorscript = lanzadorscript+"\nlado='BUY'"
-                                        lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,"+str(porcentajeentrada)+"distanciaentrecompensaciones)"
-                                        lanzadorscript = lanzadorscript+"\nsan.updating(par,lado,"+str(porcentajeentrada)+")"
-                                        ut.printandlog(cons.lanzadorfile,lanzadorscript,pal=1,mode='w')
-
-                                        f = open(os.path.join(cons.pathroot, cons.lanzadorfile), 'w',encoding="utf-8")
-                                        f.write(lanzadorscript)
-                                        f.close()          
 
                                 # #######################################################################################################
                                 ######################################EQUIPOS LIQUIDANDO

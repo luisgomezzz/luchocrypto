@@ -7,5 +7,7 @@
     "cantidadcompensaciones": 10,
     "variaciontrigger": 5,
     "maximavariaciondiaria": 50,
-    "tradessimultaneos": 3
+    "tradessimultaneos": 3,
+    "distanciaentrecompensacionesalta": 1.7,
+    "distanciaentrecompensacionesbaja": 1
 }
