@@ -145,6 +145,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
                 else:
                     preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
                 cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
+                ut.printandlog(cons.nombrelog,"cantidadtotalconataqueusdt: "+str(cantidadtotalconataqueusdt))
                 preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
             ut.printandlog(cons.nombrelog,"Compensación "+str(i)+" cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))
             preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
