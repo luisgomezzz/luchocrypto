@@ -516,10 +516,10 @@ def main() -> None:
                                                 tradingflag=True                                     
 
                                 # #######################################################################################################
-                                ######################################TRADE COMÚN
+                                ######################################TRADE COMÚN (deshabilitado con el 1==2)
                                 # #######################################################################################################
 
-                                if  variacion >= cons.variaciontrigger and tradingflag==False:                                    
+                                if  variacion >= cons.variaciontrigger and tradingflag==False and 1==2:                                    
                                     ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
                                     df2=ut.calculardf (par,'1h',12)
                                     df2preciomenor=df2.low.min()
