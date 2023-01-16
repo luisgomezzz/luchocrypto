@@ -124,7 +124,7 @@ if exchange_name == 'finandy':
     api_passphares = finandy_passphares
     exchange_name = 'binance'
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500+99.9+199.80
+    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500+99.9+199.80+100
     #GOALS
     #400 prestamo compra de dpto. [done]
     #445 que puse la primera vez para aprender. 
