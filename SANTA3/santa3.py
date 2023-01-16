@@ -89,8 +89,8 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     else:
         apalancamiento=int(ut.leeconfiguracion("apalancamiento"))
     if apalancamiento<21:
-        porcentajeentrada=4
-        procentajeperdida=4
+        porcentajeentrada=2
+        procentajeperdida=porcentajeentrada
     ut.printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))    
     ut.printandlog(cons.nombrelog,"Porcentaje de entrada: "+str(porcentajeentrada))
     ut.printandlog(cons.nombrelog,"Porcentaje de pérdida: "+str(procentajeperdida))
