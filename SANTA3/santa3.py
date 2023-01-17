@@ -227,6 +227,8 @@ def creaactualizatps (par,lado,limitorders=[]):
             if creado==True:
                 limitordersnuevos.append(orderid)
             tp=tp+1
+            if preciolimit == 0:
+                break
         #cancela los TPs viejos
         for id in limitorders:
             print("Cancela "+str(id))
