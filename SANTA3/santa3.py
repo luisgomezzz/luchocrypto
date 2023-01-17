@@ -201,20 +201,28 @@ def creaactualizatps (par,lado,limitorders=[]):
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-        0.7 : 50
-        #,1.15: 20
-        #,1.3 : 20
-        #,1.5 : 15
-        #,2   : 15
+         1.15 : 50
+        ,1.30 : 20
+        ,1.50 : 15
+        ,2.00 : 15
     }
+    profitnormalporc = 1 
+    profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
+    balancetotal=ut.balancetotal() 
+    tamanioactualusdt=abs(ut.get_positionamtusdt(par))
+    procentajeperdida = ut.leeconfiguracion("procentajeperdida")
     try:        
+        if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
+            divisor = profitnormalporc
+        else:
+            divisor=profitaltoporc
         #crea los TPs
         for porc, tamanio in dict.items():
             print("tp "+str(tp))
             if lado=='BUY':
-                preciolimit = ut.getentryprice(par)*(1+(porc/100))                
+                preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
             else:
-                preciolimit = ut.getentryprice(par)*(1-(porc/100))
+                preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
             creado,orderid=ut.creotakeprofit(par,preciolimit,tamanio,lado)
             if creado==True:
                 limitordersnuevos.append(orderid)
