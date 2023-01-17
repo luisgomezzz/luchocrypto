@@ -196,6 +196,8 @@ dictionary = {
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
-# Writing to configuration.json
-with open(os.path.join(pathroot, "configuration.json"), "w") as outfile:
-    outfile.write(json_object)
+
+if os.path.isfile(os.path.join(pathroot, "configuration.json")) == False:# si no existe el archivo lo crea con los parametros por defecto
+    # Writing to configuration.json
+    with open(os.path.join(pathroot, "configuration.json"), "w") as outfile:
+        outfile.write(json_object)
