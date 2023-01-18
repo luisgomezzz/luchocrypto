@@ -10,7 +10,9 @@ from playsound import playsound
 import constantes as cons
 from binance.exceptions import BinanceAPIException
 import indicadores as ind
-import json
+from binance.client import AsyncClient
+from binance.streams import BinanceSocketManager
+import asyncio
 
 def posicionsanta(par,lado,porcentajeentrada):   
     serror = True
@@ -259,6 +261,8 @@ def updating(par,lado):
     limitorders=creaactualizatps (par,lado,limitorders)
     stopenganancias = 0.0
     compensacioncount = 0
+    hilo = threading.Thread(target=loopupdatingv2, args=(par))
+    hilo.start()   
     #actualiza tps y stops
     while tamanioactual!=0.0: 
         if tamanioposicionguardado!=tamanioactual:
@@ -339,6 +343,41 @@ def updating(par,lado):
         filehandle.writelines("%s\n" % place for place in operando)       
     playsound(cons.pathsound+"computer-processing.mp3")
     print("\nTrading-Final del trade "+par+" en "+lado+" - Saldo: "+str(ut.truncate(ut.balancetotal(),2))+"- Objetivo a: "+str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2))+"\n") 
+
+async def updatingv2(symbol):
+    try:
+        client = await AsyncClient.create(cons.api_key, 
+        cons.api_secret)
+        bm = BinanceSocketManager(client)
+        # start any sockets here, i.e a trade socket
+        ts = bm.futures_user_socket()#-за фючърсният срийм или за спот стрийма
+        # then start receiving messages
+        async with ts as tscm:
+            while True:
+                res = await tscm.recv()
+                if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
+                    especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
+                    if especifico:
+                        print(f"Symbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {especifico['up']}")
+                        if float(especifico['pa']) == 0.0:
+                            print(f"Posicion {especifico['s']} cerrada.")
+                            break
+        await client.close_connection()
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass
+
+def loopupdatingv2 (symbol):
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(updatingv2(symbol))
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass
 
 def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog="Trade - "+par+" - "+lado+" - Hora:"+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))
