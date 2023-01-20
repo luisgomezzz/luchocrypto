@@ -204,9 +204,7 @@ def creaactualizatps (par,lado,limitorders=[]):
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
          1.15 : 50
-        ,1.30 : 20
-        ,1.50 : 15
-        ,2.00 : 15
+        ,5.00 : 50
     }
     profitnormalporc = 1 
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
@@ -256,31 +254,14 @@ def updating(par,lado):
     creado = False
     orderid = 0
     orderidanterior = 0
-    #crea TPs
     print("\nupdating-CREA TPs..."+par)
     limitorders=creaactualizatps (par,lado,limitorders)
     stopenganancias = 0.0
     compensacioncount = 0
-    thread_a = threading.Thread(target=callback_a,args=(par,), daemon=True)
-    thread_a.start()
     #actualiza tps y stops
     while tamanioactual!=0.0: 
         if tamanioposicionguardado!=tamanioactual:
-            if ut.pnl(par) > 0.0:
-                try:
-                    # stop en ganancias cuando tocó un TP
-                    precioactual=ut.currentprice(par)
-                    precioposicion=ut.getentryprice(par)
-                    if lado=='BUY':
-                        stopenganancias=precioposicion+((precioactual-precioposicion)/2)
-                    else:
-                        stopenganancias=precioposicion-((precioposicion-precioactual)/2)
-                    ut.creostoploss (par,lado,stopenganancias) 
-                    playsound(cons.pathsound+"cash-register-purchase.mp3")
-                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+par)
-                except Exception as ex:
-                    pass
-            else:
+            if ut.pnl(par) < 0.0:
                 # take profit que persigue al precio cuando toma compensaciones 
                 compensacioncount=compensacioncount+1
                 limitorders=creaactualizatps (par,lado,limitorders)
@@ -291,7 +272,7 @@ def updating(par,lado):
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
             tamanioposicionguardado = tamanioactual    
         else:
-            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:
+            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:#por ahora no funcionaria debido a que no se actualizaria la variable stopenganancias.
                 stopvelavela=ut.stopvelavela (par,lado,cons.temporalidad)
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
@@ -349,11 +330,13 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(cons.nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
+    thread_ws = threading.Thread(target=callback_updatingv2,args=(par,lado), daemon=True)
+    thread_ws.start()
     hilo = threading.Thread(target=updating, args=(par,lado))
     hilo.start()    
     return posicioncreada   
 
-async def updatingv2(symbol):
+async def updatingv2(symbol,side):
     try:
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
         bm = BinanceSocketManager(client)
@@ -367,6 +350,12 @@ async def updatingv2(symbol):
                     especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
                     if especifico:
                         print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {especifico['up']}\n")
+                        if float(especifico['up']) > 0.0:
+                                # stop en ganancias porque tocó un TP
+                                stopenganancias=float(especifico['ep'])
+                                ut.creostoploss (symbol,side,stopenganancias) 
+                                playsound(cons.pathsound+"cash-register-purchase.mp3")
+                                print("\nupdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                         if float(especifico['pa']) == 0.0:
                             print(f"\nPosicion {especifico['s']} cerrada.\n")
                             break
@@ -379,10 +368,10 @@ async def updatingv2(symbol):
 
 loop = asyncio.new_event_loop()
 
-def callback_a(symbol):
-    try:        
+def callback_updatingv2(symbol,side):
+    try:                
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(updatingv2(symbol))
+        loop.run_until_complete(updatingv2(symbol,side))
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
