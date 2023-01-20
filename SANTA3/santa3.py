@@ -102,14 +102,22 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     ut.printandlog(cons.nombrelog,"Cantidad de compensaciones: "+str(cantidadcompensaciones))
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     if posicioncreada==True:  
+        entryprice = ut.getentryprice(par)
+        tamanio=ut.get_positionamt(par)
         #stop de precaución por si el precio varía rapidamente.
         if lado=='SELL':
-            preciostopprecaicion=ut.getentryprice(par)*(1+((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+            preciostopprecaicion=entryprice*(1+((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
         else:
-            preciostopprecaicion=ut.getentryprice(par)*(1-((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
-        ut.creostoploss (par,lado,preciostopprecaicion)
-        ut.printandlog(cons.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(ut.get_positionamt(par)))
+            preciostopprecaicion=entryprice*(1-((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+        ut.creostoploss (par,lado,preciostopprecaicion)        
+        ut.printandlog(cons.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(tamanio))
         ut.printandlog(cons.nombrelog,"distancia entre compensaciones: "+str(distanciaentrecompensaciones))
+        #take profit de precaución por si el precio varía rapidamente.
+        if lado=='BUY':
+            preciolimit = entryprice*(1+((6)/100))                
+        else:
+            preciolimit = entryprice*(1-((6)/100))
+        ut.creotakeprofit(par,preciolimit,tamanio,lado) 
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
@@ -119,9 +127,9 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         distanciaporc = 0.0
         cantidadtotal = 0.0
         cantidadtotalusdt = 0.0  
-        precioinicial = ut.getentryprice(par)
-        cantidad = abs(ut.get_positionamt(par))
-        cantidadusdt = cantidad*ut.getentryprice(par)*multiplier
+        precioinicial = entryprice
+        cantidad = abs(tamanio)
+        cantidadusdt = cantidad*entryprice*multiplier
         cantidadtotal = cantidadtotal+cantidad
         cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
         cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
@@ -332,10 +340,8 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(cons.nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-    thread_ws = threading.Thread(target=callback_updatingv2,args=(par,lado), daemon=True)
-    thread_ws.start()
-    #hilo = threading.Thread(target=updating, args=(par,lado))
-    #hilo.start()    
+    thread_trading = threading.Thread(target=callback_updatingv2,args=(par,lado), daemon=True)
+    thread_trading.start()
     return posicioncreada   
 
 async def updatingv2(symbol,side):
@@ -361,6 +367,8 @@ async def updatingv2(symbol,side):
                                 ut.creostoploss (symbol,side,stopenganancias) 
                                 playsound(cons.pathsound+"cash-register-purchase.mp3")
                                 print("\nupdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
+                                thread_stopvelavela.start() 
                         else:
                             if pnl < 0.0:# take profit que persigue al precio cuando toma compensaciones                                 
                                 compensacioncount=compensacioncount+1
@@ -441,6 +449,17 @@ async def stopvelavela(par,lado,preciostopenganancias):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass
+
+def callback_stopvelavela(par,lado,preciostopenganancias):
+    try:               
+        loop = asyncio.new_event_loop() 
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(stopvelavela(par,lado,preciostopenganancias))
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
+        pass      
 
 def main() -> None:
     ##PARAMETROS##########################################################################################
