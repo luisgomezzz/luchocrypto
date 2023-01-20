@@ -13,6 +13,8 @@ import indicadores as ind
 from binance.client import AsyncClient
 from binance.streams import BinanceSocketManager
 import asyncio
+import websockets
+import json
 
 def posicionsanta(par,lado,porcentajeentrada):   
     serror = True
@@ -259,8 +261,8 @@ def updating(par,lado):
     stopenganancias = 0.0
     compensacioncount = 0
     #actualiza tps y stops
-    while tamanioactual!=0.0: 
-        if tamanioposicionguardado!=tamanioactual:
+    while tamanioactual!=0.0: #mientras haya posicion
+        if tamanioposicionguardado!=tamanioactual:# si el tamanio de la posicion cambio
             if ut.pnl(par) < 0.0:
                 # take profit que persigue al precio cuando toma compensaciones 
                 compensacioncount=compensacioncount+1
@@ -271,9 +273,9 @@ def updating(par,lado):
                     playsound(cons.pathsound+"call-to-attention.mp3")
                 print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+par)
             tamanioposicionguardado = tamanioactual    
-        else:
-            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:#por ahora no funcionaria debido a que no se actualizaria la variable stopenganancias.
-                stopvelavela=ut.stopvelavela (par,lado,cons.temporalidad)
+        else: #si el tamaño de la posicion no cambió pero ya se ejecutó el primer tp
+            if ut.pnl(par) > 0.0 and stopenganancias != 0.0:#stop vela vela
+                stopvelavela=ut.get_preciostopvelavela (par,lado,cons.temporalidad)
                 if lado=='SELL':
                     if stopvelavela!=0.0 and stopvelavela<stopenganancias:
                         print("\nCrea stopvelavela. "+par)
@@ -332,12 +334,15 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
     thread_ws = threading.Thread(target=callback_updatingv2,args=(par,lado), daemon=True)
     thread_ws.start()
-    hilo = threading.Thread(target=updating, args=(par,lado))
-    hilo.start()    
+    #hilo = threading.Thread(target=updating, args=(par,lado))
+    #hilo.start()    
     return posicioncreada   
 
 async def updatingv2(symbol,side):
     try:
+        compensacioncount = 0
+        print("\nupdatingv2-CREA TPs..."+symbol)
+        limitorders=creaactualizatps (symbol,side)        
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
         bm = BinanceSocketManager(client)
         # start any sockets here, i.e a trade socket
@@ -349,16 +354,26 @@ async def updatingv2(symbol,side):
                 if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
                     especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
                     if especifico:
-                        print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {especifico['up']}\n")
-                        if float(especifico['up']) > 0.0:
-                                # stop en ganancias porque tocó un TP
+                        pnl=float(especifico['pa'])
+                        print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}\n")
+                        if pnl > 0.0:# stop en ganancias porque tocó un TP                                
                                 stopenganancias=float(especifico['ep'])
                                 ut.creostoploss (symbol,side,stopenganancias) 
                                 playsound(cons.pathsound+"cash-register-purchase.mp3")
                                 print("\nupdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
-                        if float(especifico['pa']) == 0.0:
-                            print(f"\nPosicion {especifico['s']} cerrada.\n")
-                            break
+                        else:
+                            if pnl < 0.0:# take profit que persigue al precio cuando toma compensaciones                                 
+                                compensacioncount=compensacioncount+1
+                                limitorders=creaactualizatps (symbol,side,limitorders)
+                                if compensacioncount<=1:
+                                    ut.sound(duration = 250,freq = 659)                
+                                else:
+                                    playsound(cons.pathsound+"call-to-attention.mp3")
+                                print("\nupdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)                   
+                            else: 
+                                if pnl == 0.0:
+                                    print(f"\nPosición {symbol} cerrada.\n")
+                                    break
         await client.close_connection()
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -366,16 +381,65 @@ async def updatingv2(symbol,side):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass
 
-loop = asyncio.new_event_loop()
-
 def callback_updatingv2(symbol,side):
-    try:                
+    try:               
+        loop = asyncio.new_event_loop() 
         asyncio.set_event_loop(loop)
         loop.run_until_complete(updatingv2(symbol,side))
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass
+
+async def stopvelavela(par,lado,preciostopenganancias):
+    try:
+        print("\nSTOP VELA A VELA ACTIVADO....\n")
+        orderidanterior = 0
+        url = cons.url_stream
+        first_pair = f'{par.lower()}@kline_{cons.temporalidad}' 
+        async with websockets.connect(url+first_pair) as sock:
+            while True:
+                data = json.loads(await sock.recv())
+                vela_cerrada = data['k']['x']
+                if vela_cerrada==True:
+                    preciostopvelavela=ut.get_preciostopvelavela (par,lado,cons.temporalidad)
+                    if lado=='SELL':
+                        if preciostopvelavela!=0.0 and preciostopvelavela<preciostopenganancias:
+                            print("\nCrea stopvelavela nuevo. "+par)
+                            creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
+                            preciostopenganancias=preciostopvelavela
+                            if creado==True:
+                                if orderidanterior==0:
+                                    orderidanterior=orderid
+                                else:
+                                    try:
+                                        cons.exchange.cancel_order(orderidanterior, par)
+                                        orderidanterior=orderid
+                                        print("\nStopvelavela anterior cancelado. "+par)
+                                    except:
+                                        orderidanterior=orderid
+                                        pass
+                    else:
+                        if preciostopvelavela!=0.0 and preciostopvelavela>preciostopenganancias:
+                            print("\ncrea stopvelavela. "+par)
+                            creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
+                            preciostopenganancias=preciostopvelavela
+                            if creado==True:
+                                if orderidanterior==0:
+                                    orderidanterior=orderid
+                                else:
+                                    try:
+                                        cons.exchange.cancel_order(orderidanterior, par)
+                                        orderidanterior=orderid
+                                        print("Stopvelavela anterior cancelado. "+par)
+                                    except:
+                                        orderidanterior=orderid
+                                        pass
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass
 
 def main() -> None:

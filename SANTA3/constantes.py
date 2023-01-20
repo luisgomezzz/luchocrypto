@@ -201,3 +201,5 @@ if os.path.isfile(os.path.join(pathroot, "configuration.json")) == False:# si no
     # Writing to configuration.json
     with open(os.path.join(pathroot, "configuration.json"), "w") as outfile:
         outfile.write(json_object)
+
+url_stream = "wss://stream.binance.com:9443/ws/"

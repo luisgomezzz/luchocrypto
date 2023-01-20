@@ -438,7 +438,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         pass    
     return creado,orderid        
 
-def stopvelavela (par,lado,temporalidad):
+def get_preciostopvelavela (par,lado,temporalidad):
     porc=0.2 #porcentaje de distancia 
     cantidad = 0
     while cantidad!=2:# se asegura q traiga 2 registros para que pueda calcular el color de las velas
@@ -452,13 +452,13 @@ def stopvelavela (par,lado,temporalidad):
         else:        
             colorvelaanterior='nada'
     if lado=='SELL' and colorvelaanterior=='rojo':
-        stopvelavela=df.high.iloc[-2]*(1+porc/100)
+        preciostopvelavela=df.high.iloc[-2]*(1+porc/100)
     else:
         if lado=='BUY' and colorvelaanterior=='verde':
-            stopvelavela=df.low.iloc[-2]*(1-porc/100)
+            preciostopvelavela=df.low.iloc[-2]*(1-porc/100)
         else:
-            stopvelavela=0.0
-    return stopvelavela    
+            preciostopvelavela=0.0
+    return preciostopvelavela    
 
 def creostoploss (symbol,side,stopprice,amount=0):   
     creado = False
@@ -618,3 +618,7 @@ def rankingcap (lista_de_monedas):
 #descargar audio desde google translator
 #tts = gTTS('The team is liquidating tokens.')
 #tts.save('liquidating.mp3')
+
+def printenjson (dictionary={}):
+    json_object = json.dumps(dictionary, indent=4)
+    print(json_object)
