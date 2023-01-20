@@ -360,7 +360,7 @@ async def updatingv2(symbol,side):
                 if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
                     especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
                     if especifico:
-                        pnl=float(especifico['pa'])
+                        pnl=float(especifico['up'])
                         print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}\n")
                         if pnl > 0.0:# stop en ganancias porque tocó un TP                                
                                 stopenganancias=float(especifico['ep'])
