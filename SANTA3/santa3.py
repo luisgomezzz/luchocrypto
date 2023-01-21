@@ -117,7 +117,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             preciolimit = entryprice*(1+((6)/100))                
         else:
             preciolimit = entryprice*(1-((6)/100))
-        ut.creotakeprofit(par,preciolimit,tamanio,lado) 
+        ut.creotakeprofit(par,preciolimit,100,lado) 
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
@@ -227,13 +227,13 @@ def creaactualizatps (par,lado,limitorders=[]):
         else:
             divisor=profitaltoporc
         #crea los TPs
-        for porc, tamanio in dict.items():
+        for porcvariacion, porcdesocupar in dict.items():
             print("tp "+str(tp))
             if lado=='BUY':
-                preciolimit = ut.getentryprice(par)*(1+((porc/divisor)/100))                
+                preciolimit = ut.getentryprice(par)*(1+((porcvariacion/divisor)/100))                
             else:
-                preciolimit = ut.getentryprice(par)*(1-((porc/divisor)/100))
-            creado,orderid=ut.creotakeprofit(par,preciolimit,tamanio,lado)
+                preciolimit = ut.getentryprice(par)*(1-((porcvariacion/divisor)/100))
+            creado,orderid=ut.creotakeprofit(par,preciolimit,porcdesocupar,lado)
             if creado==True:
                 limitordersnuevos.append(orderid)
             tp=tp+1
@@ -367,8 +367,8 @@ async def updatingv2(symbol,side):
                                 ut.creostoploss (symbol,side,stopenganancias) 
                                 playsound(cons.pathsound+"cash-register-purchase.mp3")
                                 print("\nupdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
-                                thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
-                                thread_stopvelavela.start() 
+                                #thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
+                                #thread_stopvelavela.start() 
                         else:
                             if pnl < 0.0:# take profit que persigue al precio cuando toma compensaciones                                 
                                 compensacioncount=compensacioncount+1
