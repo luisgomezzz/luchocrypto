@@ -114,9 +114,9 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         ut.printandlog(cons.nombrelog,"distancia entre compensaciones: "+str(distanciaentrecompensaciones))
         #take profit de precaución por si el precio varía rapidamente.
         if lado=='BUY':
-            preciolimit = entryprice*(1+((6)/100))                
+            preciolimit = entryprice*(1+((3)/100))                
         else:
-            preciolimit = entryprice*(1-((6)/100))
+            preciolimit = entryprice*(1-((3)/100))
         ut.creotakeprofit(par,preciolimit,100,lado) 
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
@@ -214,7 +214,9 @@ def creaactualizatps (par,lado,limitorders=[]):
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
          1.15 : 50
-        ,5.00 : 50
+        ,1.30 : 20
+        ,1.50 : 15
+        ,2.00 : 15
     }
     profitnormalporc = 1 
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
@@ -363,24 +365,41 @@ async def updatingv2(symbol,side):
                         pnl=float(especifico['up'])
                         print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}\n")
                         if pnl > 0.0:# stop en ganancias porque tocó un TP                                
+                                print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                                 stopenganancias=float(especifico['ep'])
                                 ut.creostoploss (symbol,side,stopenganancias) 
-                                playsound(cons.pathsound+"cash-register-purchase.mp3")
-                                print("\nupdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                playsound(cons.pathsound+"cash-register-purchase.mp3")                                
                                 #thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
                                 #thread_stopvelavela.start() 
                         else:
                             if pnl < 0.0:# take profit que persigue al precio cuando toma compensaciones                                 
+                                print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
                                 compensacioncount=compensacioncount+1
                                 limitorders=creaactualizatps (symbol,side,limitorders)
                                 if compensacioncount<=1:
-                                    ut.sound(duration = 250,freq = 659)                
+                                    ut.sound(duration = 250,freq = 659)
                                 else:
-                                    playsound(cons.pathsound+"call-to-attention.mp3")
-                                print("\nupdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)                   
+                                    playsound(cons.pathsound+"call-to-attention.mp3")                                
                             else: 
                                 if pnl == 0.0:
                                     print(f"\nPosición {symbol} cerrada.\n")
+                                    #cierra todo porque se terminó el trade
+                                    ut.closeallopenorders(symbol)    
+                                    #se quita la moneda del arhivo ya que no se está operando
+                                    #leo
+                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
+                                        operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+                                    # remove the item for all its occurrences
+                                    c = operando.count(symbol)
+                                    for i in range(c):
+                                        operando.remove(symbol)
+                                    #borro todo
+                                    open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
+                                    ##agrego
+                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
+                                        filehandle.writelines("%s\n" % place for place in operando)       
+                                    playsound(cons.pathsound+"computer-processing.mp3")
+                                    print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(ut.balancetotal(),2))}- Objetivo a: {str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2))}\n")
                                     break
         await client.close_connection()
     except Exception as falla:
@@ -638,11 +657,10 @@ def main() -> None:
                                                 tradingflag=True   
 
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
-                                    lanzadorscript = "# https://www.binance.com/en/futures/"+par
-                                    lanzadorscript = lanzadorscript+"\n# https://www.tradingview.com/chart/Wo0HiKnm/?symbol=BINANCE%3A"+par
-                                    lanzadorscript = lanzadorscript+"\nimport sys"
+                                    lanzadorscript = "import sys"
                                     lanzadorscript = lanzadorscript+"\nsys.path.insert(1,'./')"
                                     lanzadorscript = lanzadorscript+"\nimport santa3 as san"
+                                    lanzadorscript = lanzadorscript+"\nimport asyncio"
                                     lanzadorscript = lanzadorscript+"\npar='"+par+"'"
                                     lanzadorscript = lanzadorscript+"\ndistanciaentrecompensaciones = "+str(distanciaentrecompensaciones)
                                     lanzadorscript = lanzadorscript+"\nporcentajeentrada = "+str(porcentajeentrada)
@@ -650,44 +668,14 @@ def main() -> None:
                                         lanzadorscript = lanzadorscript+"\nlado='SELL'"
                                     else:
                                         lanzadorscript = lanzadorscript+"\nlado='BUY'"
+                                    lanzadorscript = lanzadorscript+"\nloop = asyncio.new_event_loop()"
+                                    lanzadorscript = lanzadorscript+"\nasyncio.set_event_loop(loop)"
                                     lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)"
-                                    lanzadorscript = lanzadorscript+"\nsan.updating(par,lado)"
+                                    lanzadorscript = lanzadorscript+"\nloop.run_until_complete(san.updatingv2(par,lado))"
                                     ut.printandlog(cons.lanzadorfile,lanzadorscript,pal=1,mode='w')
                                     f = open(os.path.join(cons.pathroot, cons.lanzadorfile), 'w',encoding="utf-8")
                                     f.write(lanzadorscript)
                                     f.close()                                                                                    
-
-                                # #######################################################################################################
-                                ######################################TRADE COMÚN (deshabilitado con el 1==2)
-                                # #######################################################################################################
-
-                                if  variacion >= variaciontrigger and tradingflag==False and 1==2:                                    
-                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
-                                    df2=ut.calculardf (par,'1h',12)
-                                    df2preciomenor=df2.low.min()
-                                    df2preciomayor=df2.high.max()
-                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
-                                    #####################################
-                                    if variaciondiaria <= maximavariaciondiaria:
-                                        if (flecha==" ↑" and precioactual>=preciomayor):
-                                            if  (par not in dictequipoliquidando 
-                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
-                                                ): # precio actual alejado un 10% del máximo                                                
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)   
-                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                lado='SELL'
-                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
-                                                tradingflag=True
-                                        else:
-                                            if (flecha==" ↓" and precioactual<=preciomenor):
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                    lado='BUY'
-                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                    tradingflag=True
 
                                 # #######################################################################################################
                                 ######################################EQUIPOS LIQUIDANDO
