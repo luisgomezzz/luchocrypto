@@ -112,12 +112,6 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         ut.creostoploss (par,lado,preciostopprecaicion)        
         ut.printandlog(cons.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(tamanio))
         ut.printandlog(cons.nombrelog,"distancia entre compensaciones: "+str(distanciaentrecompensaciones))
-        #take profit de precaución por si el precio varía rapidamente.
-        if lado=='BUY':
-            preciolimit = entryprice*(1+((3)/100))                
-        else:
-            preciolimit = entryprice*(1-((3)/100))
-        ut.creotakeprofit(par,preciolimit,100,lado) 
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
@@ -349,6 +343,7 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
 async def updatingv2(symbol,side):
     try:
         compensacioncount = 0
+        stopengananciascreado = False
         print("\nupdatingv2-CREA TPs..."+symbol)
         limitorders=creaactualizatps (symbol,side)        
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
@@ -364,43 +359,42 @@ async def updatingv2(symbol,side):
                     if especifico:
                         pnl=float(especifico['up'])
                         print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}\n")
-                        if pnl > 0.0:# stop en ganancias porque tocó un TP                                
+                        if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
                                 print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                                 stopenganancias=float(especifico['ep'])
                                 ut.creostoploss (symbol,side,stopenganancias) 
+                                stopengananciascreado = True
                                 playsound(cons.pathsound+"cash-register-purchase.mp3")                                
-                                #thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
-                                #thread_stopvelavela.start() 
-                        else:
-                            if pnl < 0.0:# take profit que persigue al precio cuando toma compensaciones                                 
-                                print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
-                                compensacioncount=compensacioncount+1
-                                limitorders=creaactualizatps (symbol,side,limitorders)
-                                if compensacioncount<=1:
-                                    ut.sound(duration = 250,freq = 659)
-                                else:
-                                    playsound(cons.pathsound+"call-to-attention.mp3")                                
-                            else: 
-                                if pnl == 0.0:
-                                    print(f"\nPosición {symbol} cerrada.\n")
-                                    #cierra todo porque se terminó el trade
-                                    ut.closeallopenorders(symbol)    
-                                    #se quita la moneda del arhivo ya que no se está operando
-                                    #leo
-                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
-                                        operando = [current_place.rstrip() for current_place in filehandle.readlines()]
-                                    # remove the item for all its occurrences
-                                    c = operando.count(symbol)
-                                    for i in range(c):
-                                        operando.remove(symbol)
-                                    #borro todo
-                                    open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
-                                    ##agrego
-                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
-                                        filehandle.writelines("%s\n" % place for place in operando)       
-                                    playsound(cons.pathsound+"computer-processing.mp3")
-                                    print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(ut.balancetotal(),2))}- Objetivo a: {str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2))}\n")
-                                    break
+                                thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
+                                thread_stopvelavela.start() 
+                        if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
+                            print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
+                            compensacioncount=compensacioncount+1
+                            limitorders=creaactualizatps (symbol,side,limitorders)
+                            if compensacioncount<=1:
+                                ut.sound(duration = 250,freq = 659)
+                            else:
+                                playsound(cons.pathsound+"call-to-attention.mp3")                                
+                        if pnl == 0.0:
+                            print(f"\nPosición {symbol} cerrada.\n")
+                            #cierra todo porque se terminó el trade
+                            ut.closeallopenorders(symbol)    
+                            #se quita la moneda del arhivo ya que no se está operando
+                            #leo
+                            with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
+                                operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+                            # remove the item for all its occurrences
+                            c = operando.count(symbol)
+                            for i in range(c):
+                                operando.remove(symbol)
+                            #borro todo
+                            open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
+                            ##agrego
+                            with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
+                                filehandle.writelines("%s\n" % place for place in operando)       
+                            playsound(cons.pathsound+"computer-processing.mp3")
+                            print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(ut.balancetotal(),2))}- Objetivo a: {str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2))}\n")
+                            break
         await client.close_connection()
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -421,48 +415,55 @@ def callback_updatingv2(symbol,side):
 
 async def stopvelavela(par,lado,preciostopenganancias):
     try:
-        print("\nSTOP VELA A VELA ACTIVADO....\n")
+        print(f"\nSTOP VELA A VELA {par} ACTIVADO....\n")
         orderidanterior = 0
         url = cons.url_stream
         first_pair = f'{par.lower()}@kline_{cons.temporalidad}' 
         async with websockets.connect(url+first_pair) as sock:
             while True:
-                data = json.loads(await sock.recv())
+                data = json.loads(await sock.recv()) #ESPERO RECIBIR
                 vela_cerrada = data['k']['x']
                 if vela_cerrada==True:
-                    preciostopvelavela=ut.get_preciostopvelavela (par,lado,cons.temporalidad)
-                    if lado=='SELL':
-                        if preciostopvelavela!=0.0 and preciostopvelavela<preciostopenganancias:
-                            print("\nCrea stopvelavela nuevo. "+par)
-                            creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
-                            preciostopenganancias=preciostopvelavela
-                            if creado==True:
-                                if orderidanterior==0:
-                                    orderidanterior=orderid
-                                else:
-                                    try:
-                                        cons.exchange.cancel_order(orderidanterior, par)
+                    if ut.get_positionamt(par)!=0.0:
+                        preciostopvelavela=ut.get_preciostopvelavela (par,lado,cons.temporalidad)
+                        if lado=='SELL':
+                            if preciostopvelavela!=0.0 and preciostopvelavela<preciostopenganancias:
+                                print("\nCrea stopvelavela nuevo. "+par)
+                                creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
+                                preciostopenganancias=preciostopvelavela
+                                if creado==True:
+                                    if orderidanterior==0:
                                         orderidanterior=orderid
-                                        print("\nStopvelavela anterior cancelado. "+par)
-                                    except:
+                                    else:
+                                        try:
+                                            cons.exchange.cancel_order(orderidanterior, par)
+                                            orderidanterior=orderid
+                                            print("\nStopvelavela anterior cancelado. "+par)
+                                        except:
+                                            orderidanterior=orderid
+                                            pass
+                        else:
+                            if preciostopvelavela!=0.0 and preciostopvelavela>preciostopenganancias:
+                                print("\ncrea stopvelavela. "+par)
+                                creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
+                                preciostopenganancias=preciostopvelavela
+                                if creado==True:
+                                    if orderidanterior==0:
                                         orderidanterior=orderid
-                                        pass
-                    else:
-                        if preciostopvelavela!=0.0 and preciostopvelavela>preciostopenganancias:
-                            print("\ncrea stopvelavela. "+par)
-                            creado,orderid=ut.creostoploss (par,lado,preciostopvelavela)
-                            preciostopenganancias=preciostopvelavela
-                            if creado==True:
-                                if orderidanterior==0:
-                                    orderidanterior=orderid
-                                else:
-                                    try:
-                                        cons.exchange.cancel_order(orderidanterior, par)
-                                        orderidanterior=orderid
-                                        print("Stopvelavela anterior cancelado. "+par)
-                                    except:
-                                        orderidanterior=orderid
-                                        pass
+                                    else:
+                                        try:
+                                            cons.exchange.cancel_order(orderidanterior, par)
+                                            orderidanterior=orderid
+                                            print("Stopvelavela anterior cancelado. "+par)
+                                        except:
+                                            orderidanterior=orderid
+                                            pass
+                    else:                        
+                        break
+
+            ut.closeallopenorders(par)
+            sock.close()
+            print(f"\nSTOP VELA A VELA {par} TERMINADO....\n")
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
