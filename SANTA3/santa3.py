@@ -683,9 +683,9 @@ def main() -> None:
                                         print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
                                         ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
                                         LL=ind.PPSR(par)
-                                        R3=LL['R3']
+                                        R4=LL['R4']
                                         #####################################                                    
-                                        if variaciondiaria <= maximavariaciondiaria and precioactual>R3:
+                                        if variaciondiaria <= maximavariaciondiaria and precioactual > R4:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(cons.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
