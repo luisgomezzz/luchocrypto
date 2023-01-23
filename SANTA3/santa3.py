@@ -208,9 +208,9 @@ def creaactualizatps (par,lado,limitorders=[]):
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
          1.15 : 50
-        ,1.30 : 20
-        ,1.50 : 15
-        ,2.00 : 15
+        #,1.30 : 20
+        #,1.50 : 15
+        #,2.00 : 15
     }
     profitnormalporc = 1 
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
