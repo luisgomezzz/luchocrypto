@@ -223,18 +223,6 @@ def get_quantityprecision(par):
             break
     return quantityprecision
 
-def maxLeverage(symbol):
-    maxLeverage = 0
-    if exchange_name=='binance':
-        result = cons.client.futures_leverage_bracket()        
-        for x in range(len(result)):
-            if result[x]['symbol'] == symbol:
-                maxLeverage =  result[x]['brackets'][0]['initialLeverage']
-                break
-    if exchange_name=='kucoinfutures':
-        maxLeverage=cons.clientmarket.get_contract_detail(symbol)['maxLeverage']
-    return maxLeverage
-
 def leeconfiguracion(parameter='porcentajeentrada'):
     # Opening JSON file
     with open(os.path.join(cons.pathroot, "configuration.json"), 'r') as openfile: 
@@ -243,16 +231,28 @@ def leeconfiguracion(parameter='porcentajeentrada'):
     valor = json_object[parameter]        
     return valor 
 
+def apalancamientoseguncapital(symbol):
+    apalancamiento=0
+    try:
+        capitalapalancado = cons.apalancamientoreal*balancetotal()
+        result= cons.client.futures_leverage_bracket()
+        for x in range(len(result)):
+            if result[x]['symbol'] == symbol:
+                lista =  result[x]['brackets']
+                for y in range(len(lista)):
+                    if lista[y]['notionalCap'] > capitalapalancado and lista[y]['initialLeverage']>=cons.apalancamientoreal:
+                        apalancamiento = lista[y]['initialLeverage']
+                        break
+    except:
+        apalancamiento=0
+        print("No hay valores de apalancamiento y notionalcap compatibles con la estrategia. "+symbol)
+    return(apalancamiento)
+
 def creoposicion (par,size,lado)->bool:         
     serror=True        
-    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
-        maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < apalancamiento:
-            apalancamiento=int(maximoapalancamiento)
-        else:
-            apalancamiento=int(apalancamiento)
-            
+        apalancamiento=apalancamientoseguncapital(par)
+        printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))        
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
@@ -356,13 +356,13 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
     else:
         preciolimit = getentryprice(par)*(1-(distanciaporc/100))
     limitprice=RoundToTickUp(par,preciolimit)
-    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
         if exchange_name=='binance':
             tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
             order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
             return True,float(order['price']),float(order['origQty']),order['orderId']
-        if exchange_name=='kucoinfutures':                
+        if exchange_name=='kucoinfutures':   ##revisar kucoin porque cambió la lógica de elección de leverage.
+            apalancamiento=leeconfiguracion("apalancamiento")              
             tamanioformateado = int(tamanio)
             maxLeverage = cons.clientmarket.get_contract_detail(par)['maxLeverage']
             if maxLeverage < apalancamiento:
@@ -397,7 +397,6 @@ def compensaciones(par,client,lado,tamanio,distanciaporc):
         return False,0,0,0
 
 def creotakeprofit(par,preciolimit,posicionporc,lado):
-    apalancamiento=leeconfiguracion("apalancamiento")    
     try:
         ### exchange details
         if exchange_name=='binance':
@@ -407,11 +406,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
             if sizedesocupar<1:
                 sizedesocupar=1 # el size a desocupar no puede ser menor a 1 lot en kucoin
         ####################
-        maximoapalancamiento = maxLeverage(par)
-        if maximoapalancamiento < apalancamiento:
-            apalancamiento=int(maximoapalancamiento)
-        else:
-            apalancamiento=int(apalancamiento)
+        apalancamiento=apalancamientoseguncapital(par)
         creado = True 
         orderid = 0  
         if lado=='BUY':

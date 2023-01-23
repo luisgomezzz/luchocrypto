@@ -182,7 +182,6 @@ if answers['exchange']=='finandy':
 
 # Data to be written
 dictionary = {
-    "apalancamiento" : 30, #es 10 pero se coloca 20, 30, 40, etc. para poder tener saldo y crear más de una compensación de ataque en varias posiciones.
     "ventana" : 40, #Ventana de búsqueda en minutos.   
     "porcentajeentrada" : 10, 
     "procentajeperdida" : 10,
@@ -203,3 +202,7 @@ if os.path.isfile(os.path.join(pathroot, "configuration.json")) == False:# si no
         outfile.write(json_object)
 
 url_stream = "wss://stream.binance.com:9443/ws/"
+
+apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total, dará el capital total disponible para usar en posición 
+# y compensaciones. Durante el código pueden usarse apalancamientos distintos para poder usar todo el capital apalancado
+# (apalancamientoreal*balancetotal) en la estrategia.

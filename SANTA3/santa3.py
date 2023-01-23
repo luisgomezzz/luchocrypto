@@ -87,15 +87,6 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         multiplier=float(cons.clientmarket.get_contract_detail(par)['multiplier'])
     else:
         multiplier=1
-    maximoapalancamiento = ut.maxLeverage(par)
-    if maximoapalancamiento < ut.leeconfiguracion("apalancamiento"):
-        apalancamiento=int(maximoapalancamiento)
-    else:
-        apalancamiento=int(ut.leeconfiguracion("apalancamiento"))
-    if apalancamiento<=25:
-        porcentajeentrada=2
-        procentajeperdida=porcentajeentrada
-    ut.printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))    
     ut.printandlog(cons.nombrelog,"Porcentaje de entrada: "+str(porcentajeentrada))
     ut.printandlog(cons.nombrelog,"Porcentaje de pérdida: "+str(procentajeperdida))
     ut.printandlog(cons.nombrelog,"Incremento porcentual entre compensaciones: "+str(incrementocompensacionporc))
@@ -136,7 +127,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
         i=0
         #CREA COMPENSACIONES         
-        while (cantidadtotalconataqueusdt <= balancetotal*apalancamiento # pregunta si supera mi capital
+        while (cantidadtotalconataqueusdt <= balancetotal*cons.apalancamientoreal # pregunta si supera mi capital
             and (
             (lado=='BUY' and preciodeataque > preciostopsanta)
             or 
@@ -462,7 +453,7 @@ async def stopvelavela(par,lado,preciostopenganancias):
                         break
 
             ut.closeallopenorders(par)
-            sock.close()
+            #sock.close()
             print(f"\nSTOP VELA A VELA {par} TERMINADO....\n")
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -698,7 +689,6 @@ def main() -> None:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(cons.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                            ut.printandlog(cons.nombrelog,"\nPorcentaje de entrada: "+str(porcentajeentrada))
                                             lado='BUY'
                                             trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)                                        
                                             print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
