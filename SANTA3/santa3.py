@@ -611,7 +611,6 @@ def main() -> None:
                                         df2preciomenor = df2.low.min()
                                         df2preciomayor = df2.high.max()
                                         variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                        print("\nvariaciondiaria "+par+": "+str(variaciondiaria)+"\n")
                                         ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
                                         LL=ind.PPSR(par)
                                         R4=LL['R4']
