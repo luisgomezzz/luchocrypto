@@ -171,7 +171,12 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
             cantidadtotalconataque = cantidadtotal+cantidad
             distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones/3)
-            ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Distancia porcentaje: "+str(distanciaporc))
+            if lado =='SELL':
+                preciolimit = ut.getentryprice(par)*(1+(distanciaporc/100))   
+            else:
+                preciolimit = ut.getentryprice(par)*(1-(distanciaporc/100))
+            limitprice=ut.RoundToTickUp(par,preciolimit)
+            ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Precio: "+str(limitprice))
             hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,cons.client,lado,cantidad,distanciaporc)    
             if hayguita == False:
                 print("No se pudo crear la compensación de ataque.")

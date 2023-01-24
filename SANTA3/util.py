@@ -255,8 +255,8 @@ def creoposicion (par,size,lado)->bool:
         if apalancamiento < cons.apalancamientoreal:
             micapital = balancetotal()
             size = float(micapital*5/100)
+            printandlog(cons.nombrelog,"Porcentaje de entrada redefinido al 5%: "+str(size))
         printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))        
-        printandlog(cons.nombrelog,"Porcentaje de entrada redefinido al 5%: "+str(size))        
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
