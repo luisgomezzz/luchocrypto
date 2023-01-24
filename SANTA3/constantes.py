@@ -108,7 +108,6 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 0
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
@@ -117,18 +116,12 @@ if exchange_name == 'kucoin':
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
     clientmarket = Market(url='https://api-futures.kucoin.com')
-    balanceobjetivo = 0 
 if exchange_name == 'finandy':
     api_key = finandy_key
     api_secret = finandy_secret
     api_passphares = finandy_passphares
     exchange_name = 'binance'
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500+99.9+199.80+100+100
-    #GOALS
-    #400 prestamo compra de dpto. [done]
-    #445 que puse la primera vez para aprender. 
-    #1500 para llegar al capital base. <<---
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
@@ -191,7 +184,8 @@ dictionary = {
     "maximavariaciondiaria" : 50, #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
     "tradessimultaneos" : 3, #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt  
     "distanciaentrecompensacionesalta" : 1.7, #porcentaje de distancia entre compensaciones para monedas por debajo del top de capitalización
-    "distanciaentrecompensacionesbaja" : 1 #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
+    "distanciaentrecompensacionesbaja" : 1, #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
+    "reservas": 2247 #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)

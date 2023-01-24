@@ -311,7 +311,9 @@ async def updatingv2(symbol,side):
                             with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
                                 filehandle.writelines("%s\n" % place for place in operando)       
                             playsound(cons.pathsound+"computer-processing.mp3")
-                            print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(ut.balancetotal(),2))}- Objetivo a: {str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2))}\n")
+                            balancetotal=ut.balancetotal()
+                            reservas=ut.leeconfiguracion("reservas")
+                            print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}\n")
                             break
         await client.close_connection()
     except Exception as falla:
@@ -410,9 +412,11 @@ def main() -> None:
     maximavariacionhoracomienzo = float(dt.datetime.today().hour)
     btcvariacion = 0
     btcflecha = ''    
+    balancetotal=ut.balancetotal()
+    reservas = ut.leeconfiguracion("reservas")
     ##############START        
-    print("Saldo: "+str(ut.truncate(ut.balancetotal(),2)))
-    print("Objetivo a: "+str(ut.truncate(cons.balanceobjetivo-ut.balancetotal(),2)))
+    print("Saldo: "+str(ut.truncate(balancetotal,2)))
+    print(f"PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
     ut.printandlog(cons.nombrelog,"Equipos liquidando: "+str(dictequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
