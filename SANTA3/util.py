@@ -240,19 +240,23 @@ def apalancamientoseguncapital(symbol):
             if result[x]['symbol'] == symbol:
                 lista =  result[x]['brackets']
                 for y in range(len(lista)):
-                    if lista[y]['notionalCap'] > capitalapalancado and lista[y]['initialLeverage']>=cons.apalancamientoreal:
+                    if lista[y]['notionalCap'] > capitalapalancado:# and lista[y]['initialLeverage']>=cons.apalancamientoreal:
                         apalancamiento = lista[y]['initialLeverage']
                         break
     except:
         apalancamiento=0
-        print("No hay valores de apalancamiento y notionalcap compatibles con la estrategia. "+symbol)
+        print("\nNo hay valores de apalancamiento y notionalcap compatibles con la estrategia. "+symbol+"\n")
     return(apalancamiento)
 
 def creoposicion (par,size,lado)->bool:         
     serror=True        
     try:
         apalancamiento=apalancamientoseguncapital(par)
+        if apalancamiento < cons.apalancamientoreal:
+            micapital = balancetotal()
+            size = float(micapital*5/100)
         printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))        
+        printandlog(cons.nombrelog,"Porcentaje de entrada redefinido al 5%: "+str(size))        
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
