@@ -23,7 +23,7 @@ def posicionsanta(par,lado,porcentajeentrada):
     mensaje=''
     try:      
         if ut.creoposicion (par,size,lado)==True:
-           mensaje=mensaje+"\nEntryPrice: "+str(ut.truncate(ut.getentryprice(par),6))
+           mensaje=mensaje+"EntryPrice: "+str(ut.truncate(ut.getentryprice(par),6))
         else:
            mensaje="No se pudo crear la posición. "
            print(mensaje)
@@ -212,9 +212,8 @@ def creaactualizatps (par,lado,limitorders=[]):
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
     balancetotal=ut.balancetotal() 
     tamanioactualusdt=abs(ut.get_positionamtusdt(par))
-    procentajeperdida = ut.leeconfiguracion("procentajeperdida")
     try:        
-        if tamanioactualusdt <= (balancetotal*procentajeperdida/100)*1.8:
+        if tamanioactualusdt <= balancetotal*cons.apalancamientoreal*7/100:
             divisor = profitnormalporc
         else:
             divisor=profitaltoporc
@@ -276,9 +275,10 @@ async def updatingv2(symbol,side):
                     especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
                     if especifico:
                         pnl=float(especifico['up'])
-                        print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}\n")
+                        print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}")
                         if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
-                                print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                print("Updatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
                                 stopenganancias=float(especifico['ep'])
                                 ut.creostoploss (symbol,side,stopenganancias) 
                                 stopengananciascreado = True
@@ -547,7 +547,6 @@ def main() -> None:
                                     df2preciomenor=df2.low.min()
                                     df2preciomayor=df2.high.max()
                                     variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    print("\nVariación diaria "+par+": "+str(variaciondiaria)+"\n")
                                     ###########
                                     if variaciondiaria <= maximavariaciondiaria:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
