@@ -419,10 +419,9 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
             lado='BUY'        
         limitprice=RoundToTickUp(par,preciolimit)
         params={"leverage": apalancamiento}
-        print("\nTAKE PROFIT. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice,"\n")
         order=cons.exchange.create_order (par, 'limit', lado, sizedesocupar, limitprice, params)
-        print("TAKE PROFIT creado. ")
         orderid = order['id']
+        print("\nTAKE PROFIT creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
     except BinanceAPIException as a:
         print(a.message,"No se pudo crear el Limit.")
         creado = False      
