@@ -613,9 +613,9 @@ def main() -> None:
                                         variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
                                         ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
                                         LL=ind.PPSR(par)
-                                        R4=LL['R4']
+                                        R5=LL['R5']
                                         #####################################                                    
-                                        if variaciondiaria <= maximavariaciondiaria and precioactual > R4:
+                                        if variaciondiaria <= maximavariaciondiaria and precioactual > R5:
                                             ut.sound(duration = 200,freq = 800)
                                             ut.sound(duration = 200,freq = 800)
                                             ut.printandlog(cons.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
