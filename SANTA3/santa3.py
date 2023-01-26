@@ -561,7 +561,8 @@ def main() -> None:
                                                 or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
                                                 ): # precio actual alejado un 10% del máximo                                                
                                                 ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)   
+                                                ut.sound(duration = 200,freq = 800)  
+                                                print("*********************************************************************************************")
                                                 ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='SELL'
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
@@ -573,6 +574,7 @@ def main() -> None:
                                                 ###################
                                                 ut.sound(duration = 200,freq = 800)
                                                 ut.sound(duration = 200,freq = 800)
+                                                print("*********************************************************************************************")
                                                 ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
