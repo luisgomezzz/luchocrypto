@@ -514,11 +514,11 @@ def main() -> None:
                                     btcvariacion = variacion
                                     btcflecha = flecha                                    
                                     if btcvariacion>=2 and anuncioaltavariacionbtc==False:
-                                        playsound(cons.pathsound+"call-to-attention.mp3")
+                                        playsound(cons.pathsound+"High_volatility_of_bitcoin.mp3")
                                         print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=True
                                     if btcvariacion<2 and anuncioaltavariacionbtc==True:
-                                        playsound(cons.pathsound+"call-to-attention.mp3")
+                                        playsound(cons.pathsound+"High_volatility_of_bitcoin.mp3")
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
 

@@ -12,7 +12,6 @@ import json
 import math
 import ccxt as ccxt
 from numerize import numerize
-from gtts import gTTS
 
 exchange_name=cons.exchange_name
 
@@ -614,6 +613,7 @@ def rankingcap (lista_de_monedas):
         print(str(ranking[index][1])+' - '+str(numerize.numerize(ranking[index][0])))
 
 #descargar audio desde google translator
+#from gtts import gTTS
 #tts = gTTS('The team is liquidating tokens.')
 #tts.save('liquidating.mp3')
 
