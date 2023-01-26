@@ -175,7 +175,7 @@ if answers['exchange']=='finandy':
 
 # Data to be written
 dictionary = {
-    "ventana" : 40, #Ventana de búsqueda en minutos.   
+    "ventana" : 30, #Ventana de búsqueda en minutos.   
     "porcentajeentrada" : 10, 
     "procentajeperdida" : 10,
     "incrementocompensacionporc" : 30, #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
