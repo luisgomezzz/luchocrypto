@@ -50,10 +50,13 @@ def clear():
 ##FILES
 if exchange_name =='binance':
     nombrelog = "log_binace.txt"
+    nombrereporte = "reporte_binance.txt"  
 if exchange_name =='kucoin':
     nombrelog = "log_kucoin.txt" 
+    nombrereporte = "reporte_kucoin.txt"  
 if exchange_name =='finandy':
-    nombrelog = "log_finandy.txt"        
+    nombrelog = "log_finandy.txt"
+    nombrereporte = "reporte_finanfy.txt"        
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 operandofile = "operando.txt"
@@ -200,3 +203,4 @@ url_stream = "wss://stream.binance.com:9443/ws/"
 apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total, dará el capital total disponible para usar en posición 
 # y compensaciones. Durante el código pueden usarse apalancamientos distintos para poder usar todo el capital apalancado
 # (apalancamientoreal*balancetotal) en la estrategia.
+
