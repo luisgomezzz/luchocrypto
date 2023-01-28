@@ -50,13 +50,10 @@ def clear():
 ##FILES
 if exchange_name =='binance':
     nombrelog = "log_binace.txt"
-    nombrereporte = "reporte_binance.txt"  
 if exchange_name =='kucoin':
     nombrelog = "log_kucoin.txt" 
-    nombrereporte = "reporte_kucoin.txt"  
 if exchange_name =='finandy':
     nombrelog = "log_finandy.txt"
-    nombrereporte = "reporte_finanfy.txt"        
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 operandofile = "operando.txt"
