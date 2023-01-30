@@ -16,4 +16,6 @@ def PPSR(symbol,temporalidad='1d',ventana=15): #PIVOT POINTS STANDARD
     S5 = pd.Series(data['low'] - 4 * (data['high'] - PP))      
     psr = {'PP':PP, 'R1':R1, 'S1':S1, 'R2':R2, 'S2':S2, 'R3':R3, 'S3':S3, 'R4':R4, 'S4':S4, 'R5':R5, 'S5':S5}  
     PSR = pd.DataFrame(psr)  
-    return PSR.iloc[-2]
+    anteultimo=PSR.iloc[-2]
+    dict=anteultimo.to_dict()
+    return dict

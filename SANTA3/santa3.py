@@ -404,6 +404,53 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass      
 
+def validacionmuroscontencion(symbol,side,precioactual,distanciaentrecompensaciones)->float:
+    # validaciones
+    # que haya al menos 3 resitencias/soportes en la dirección opuesta.
+    # que la próxima resistencia/soporte no esté más allá del porcentaje total de variación que soporta la estrategia.
+    salida = False
+    LL=ind.PPSR(symbol)
+    R3=LL['R3']
+    S3=LL['S3']
+    if side=='SELL':
+        proximomuro=LL['R5']
+    else:
+        proximomuro=LL['S5']
+    for rs, precio in LL.items():
+        if side =='SELL':
+            if precioactual<precio:
+                if precio<proximomuro:
+                    proximomuro=precio
+        else:
+            if precioactual>precio:
+                if precio>proximomuro:
+                    proximomuro=precio
+    if side=='SELL':
+        variacion =((proximomuro/precioactual)-1)*100
+    else:
+        variacion =((proximomuro/precioactual)-1)*-100
+    if side=='SELL':
+        if variacion < ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones:
+            if precioactual<R3:
+                salida = True
+            else:
+                print(f"{symbol} - No se cumple condición. El precio actual no es menor que R3.\n")
+                salida = False
+        else:
+            print(f"{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
+            salida = False
+    else:
+        if variacion < ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones:
+            if precioactual>S3:
+                salida = True                
+            else:
+                print(f"{symbol} - No se cumple condición. El precio actual no es mayor que S3.\n")
+                salida = False
+        else:
+            print(f"{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
+            salida = False
+    return salida
+
 def main() -> None:
     ##PARAMETROS##########################################################################################
     print("Buscando equipos liquidando...")
@@ -553,10 +600,7 @@ def main() -> None:
                                     ###########
                                     if variaciondiaria <= maximavariaciondiaria:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
-                                        LL=ind.PPSR(par)
-                                        R3=LL['R3']
-                                        S3=LL['S3']
-                                        if (flechamecha==" ↑" and precioactual<R3):
+                                        if (flechamecha==" ↑" and validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True):
                                             ###################
                                             ###### SHORT ######
                                             ###################
@@ -570,8 +614,10 @@ def main() -> None:
                                                 lado='SELL'
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                                 tradingflag=True
+                                            else:
+                                                print(f"{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
                                         else:
-                                            if (flechamecha==" ↓" and precioactual>S3):
+                                            if (flechamecha==" ↓" and validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True):
                                                 ###################
                                                 ###### LONG #######
                                                 ###################
@@ -581,7 +627,11 @@ def main() -> None:
                                                 ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                                 lado='BUY'
                                                 trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                tradingflag=True   
+                                                tradingflag=True  
+                                            else: 
+                                                print(f"{par} - No se cumple condición. validacionmuroscontencion False.\n")
+                                    else:
+                                        print(f"{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})\n")
 
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "import sys"
