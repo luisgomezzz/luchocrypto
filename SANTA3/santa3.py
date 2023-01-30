@@ -600,36 +600,38 @@ def main() -> None:
                                     ###########
                                     if variaciondiaria <= maximavariaciondiaria:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
-                                        if (flechamecha==" ↑" and validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True):
-                                            ###################
-                                            ###### SHORT ######
-                                            ###################
-                                            if  (par not in dictequipoliquidando 
-                                                or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
-                                                ): # precio actual alejado un 10% del máximo                                                
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)  
-                                                print("*********************************************************************************************")
-                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                                lado='SELL'
-                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
-                                                tradingflag=True
-                                            else:
-                                                print(f"{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
+                                        if flechamecha==" ↑":
+                                            lado='SELL'
+                                            if validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                                ###################
+                                                ###### SHORT ######
+                                                ###################
+                                                if  (par not in dictequipoliquidando 
+                                                    or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
+                                                    ): # precio actual alejado un 10% del máximo                                                
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound(duration = 200,freq = 800)  
+                                                    print("*********************************************************************************************")
+                                                    ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
+                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
+                                                    tradingflag=True
+                                                else:
+                                                    print(f"{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
                                         else:
-                                            if (flechamecha==" ↓" and validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True):
-                                                ###################
-                                                ###### LONG #######
-                                                ###################
-                                                ut.sound(duration = 200,freq = 800)
-                                                ut.sound(duration = 200,freq = 800)
-                                                print("*********************************************************************************************")
-                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
+                                            if flechamecha==" ↓":
                                                 lado='BUY'
-                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                tradingflag=True  
-                                            else: 
-                                                print(f"{par} - No se cumple condición. validacionmuroscontencion False.\n")
+                                                if validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                                    ###################
+                                                    ###### LONG #######
+                                                    ###################
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound(duration = 200,freq = 800)
+                                                    print("*********************************************************************************************")
+                                                    ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
+                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
+                                                    tradingflag=True  
+                                                else: 
+                                                    print(f"{par} - No se cumple condición. validacionmuroscontencion False.\n")
                                     else:
                                         print(f"{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})\n")
 
