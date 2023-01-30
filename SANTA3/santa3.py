@@ -434,20 +434,20 @@ def validacionmuroscontencion(symbol,side,precioactual,distanciaentrecompensacio
             if precioactual<R3:
                 salida = True
             else:
-                print(f"{symbol} - No se cumple condición. El precio actual no es menor que R3.\n")
+                print(f"\n{symbol} - No se cumple condición. El precio actual no es menor que R3.\n")
                 salida = False
         else:
-            print(f"{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
+            print(f"\n{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
             salida = False
     else:
         if variacion < ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones:
             if precioactual>S3:
                 salida = True                
             else:
-                print(f"{symbol} - No se cumple condición. El precio actual no es mayor que S3.\n")
+                print(f"\n{symbol} - No se cumple condición. El precio actual no es mayor que S3.\n")
                 salida = False
         else:
-            print(f"{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
+            print(f"\n{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
             salida = False
     return salida
 
