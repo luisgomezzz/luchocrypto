@@ -275,7 +275,6 @@ async def updatingv2(symbol,side):
                     especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
                     if especifico:
                         pnl=float(especifico['up'])
-                        print(f"\nSymbol: {especifico['s']} - entryPrice: {especifico['ep']} - amount: {especifico['pa']} - PNL: {pnl}")
                         if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
                                 print("Updatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                                 ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
