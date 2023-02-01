@@ -58,14 +58,12 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
 def filtradodemonedas ():    
     dict_monedas_filtradas_aux = {}
     lista_de_monedas = ut.lista_de_monedas ()
-    mazmorra=[''] #Monedas que no quiero operar
     for par in lista_de_monedas:
         try:  
             volumeOf24h=ut.volumeOf24h(par)
             capitalizacion=ut.capitalizacion(par)
-            if par not in mazmorra:                
-                if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
-                    dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
+            if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
+                dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:

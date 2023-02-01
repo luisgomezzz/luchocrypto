@@ -56,12 +56,13 @@ def RoundToTickUp(par,numero):
 
 def lista_de_monedas ():
     lista_de_monedas = []
+    mazmorra = cons.mazmorra
     try:
         if exchange_name =='binance':
             exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol']:
+                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
                         lista_de_monedas.append(s['symbol'])
                 except Exception as ex:
                     pass    

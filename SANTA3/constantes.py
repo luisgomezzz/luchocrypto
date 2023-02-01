@@ -201,3 +201,5 @@ apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total,
 # y compensaciones. Durante el código pueden usarse apalancamientos distintos para poder usar todo el capital apalancado
 # (apalancamientoreal*balancetotal) en la estrategia.
 
+#monedas que no quiero operar
+mazmorra=['TUSDT']
