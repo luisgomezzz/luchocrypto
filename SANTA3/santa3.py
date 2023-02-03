@@ -168,7 +168,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         if cons.flagpuntodeataque ==1 and ut.getentryprice(par)!=0:
             cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
             cantidadtotalconataque = cantidadtotal+cantidad
-            distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones/3)
+            distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones)
             if lado =='SELL':
                 preciolimit = ut.getentryprice(par)*(1+(distanciaporc/100))   
             else:
