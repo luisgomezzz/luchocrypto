@@ -445,7 +445,7 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
                 playsound(cons.pathsound+"chicharra-error.mp3")
         else:        
             if precioactual<R3:
-                if 4.0 > variacion > 0.0:
+                if 5.0 > variacion > 0.0:
                     print(f"\n{symbol} {side} - Condición cumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
                     salida = True
                 else:
@@ -467,7 +467,7 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
                 playsound(cons.pathsound+"chicharra-error.mp3")
         else:
             if precioactual>S3:
-                if 4.0 > variacion > 0.0:
+                if 5.0 > variacion > 0.0:
                     print(f"\n{symbol} {side} - Condición cumplida. precioactual>S3. Variación en contra del último soporte: {variacion}\n")
                     salida = True
                 else:
