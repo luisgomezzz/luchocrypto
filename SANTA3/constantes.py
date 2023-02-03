@@ -176,16 +176,17 @@ if answers['exchange']=='finandy':
 # Data to be written
 dictionary = {
     "ventana" : 30, #Ventana de búsqueda en minutos.   
-    "porcentajeentrada" : 10, 
-    "procentajeperdida" : 10,
+    "porcentajeentrada" : 8, 
+    "procentajeperdida" : 13,
     "incrementocompensacionporc" : 30, #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-    "cantidadcompensaciones" : 8,
+    "cantidadcompensaciones" : 7,
     "variaciontrigger" : 5, #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
     "maximavariaciondiaria" : 50, #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
     "tradessimultaneos" : 2, #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt  
     "distanciaentrecompensacionesalta" : 1.7, #porcentaje de distancia entre compensaciones para monedas por debajo del top de capitalización
     "distanciaentrecompensacionesbaja" : 1, #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
-    "reservas": 2247 #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
+    "reservas": 2437, #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
+    "sideflag": 0 # 0 ambos | 1 solo shorts | 2 solo longs
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)

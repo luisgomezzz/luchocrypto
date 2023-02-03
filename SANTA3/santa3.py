@@ -401,51 +401,84 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass      
 
-def validacionmuroscontencion(symbol,side,precioactual,distanciaentrecompensaciones)->float:
+def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompensaciones)->float:
     # validaciones
     # que haya al menos 3 resitencias/soportes en la dirección opuesta.
-    # que la próxima resistencia/soporte no esté más allá del porcentaje total de variación que soporta la estrategia.
+    # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
+    # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
     salida = False
     LL=ind.PPSR(symbol)
     R3=LL['R3']
     S3=LL['S3']
-    if side=='SELL':
-        proximomuro=LL['R5']
+    S5=LL['S5']
+    R5=LL['R5']
+    distanciasoportada=ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones
+    if side=='BUY':
+        proximomuro=R5
+        preciosoporta=precioactual*(1-(distanciasoportada/100))
     else:
-        proximomuro=LL['S5']
+        proximomuro=S5
+        preciosoporta=precioactual*(1+(distanciasoportada/100))
     for rs, precio in LL.items():
-        if side =='SELL':
-            if precioactual<precio:
+        if side =='BUY':
+            if preciosoporta<precio:
                 if precio<proximomuro:
                     proximomuro=precio
         else:
-            if precioactual>precio:
+            if preciosoporta>precio:
                 if precio>proximomuro:
                     proximomuro=precio
+
     if side=='SELL':
-        variacion =((proximomuro/precioactual)-1)*100
+        variacion =((preciosoporta/proximomuro)-1)*100
     else:
-        variacion =((proximomuro/precioactual)-1)*-100
+        variacion =((proximomuro/preciosoporta)-1)*100
+
     if side=='SELL':
-        if variacion < ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones:
-            if precioactual<R3:
+        if precioactual<S5:
+            if abs(variacion)<distanciasoportada:
+                print(f"\n{symbol} {side} - Condición cumplida. precioactual<S5. Variación en contra: {variacion}\n")
                 salida = True
             else:
-                print(f"\n{symbol} - No se cumple condición. El precio actual no es menor que R3.\n")
-                salida = False
-        else:
-            print(f"\n{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
-            salida = False
-    else:
-        if variacion < ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones:
-            if precioactual>S3:
-                salida = True                
+                print(f"\n{symbol} {side} - Condición incumplida. precioactual<S5. Variación en contra: {variacion}\n")
+                salida = False  
+                playsound(cons.pathsound+"chicharra-error.mp3")
+        else:        
+            if precioactual<R3:
+                if 4.0 > variacion > 0.0:
+                    print(f"\n{symbol} {side} - Condición cumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
+                    salida = True
+                else:
+                    print(f"\n{symbol} {side} - Condición incumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
+                    salida = False
+                    playsound(cons.pathsound+"chicharra-error.mp3")
             else:
-                print(f"\n{symbol} - No se cumple condición. El precio actual no es mayor que S3.\n")
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R3.\n")
                 salida = False
+                playsound(cons.pathsound+"chicharra-error.mp3")
+    else:
+        if precioactual>R5:
+            if abs(variacion)<distanciasoportada:
+                print(f"\n{symbol} {side} - Condición cumplida. precioactual>R5. Variación en contra: {variacion}\n")
+                salida = True
+            else:
+                print(f"\n{symbol} {side} - Condición incumplida. precioactual>R5. Variación en contra: {variacion}\n")
+                salida = False
+                playsound(cons.pathsound+"chicharra-error.mp3")
         else:
-            print(f"\n{symbol} - No se cumple condición. La variación entre muros es mayor a la soportada por la estrategia.\n")
-            salida = False
+            if precioactual>S3:
+                if 4.0 > variacion > 0.0:
+                    print(f"\n{symbol} {side} - Condición cumplida. precioactual>S3. Variación en contra del último soporte: {variacion}\n")
+                    salida = True
+                else:
+                    print(f"\n{symbol} {side} - Condición incumplida. precioactual>S3. Variación en contra del último soporte: {variacion}\n")
+                    salida = False
+                    playsound(cons.pathsound+"chicharra-error.mp3")
+            else:
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S3.\n")
+                salida = False
+                playsound(cons.pathsound+"chicharra-error.mp3")
+
     return salida
 
 def main() -> None:
@@ -584,6 +617,8 @@ def main() -> None:
                                         flechamecha = " "
                                         variacionmecha = 0
 
+                                sideflag=ut.leeconfiguracion('sideflag')
+
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
@@ -597,9 +632,9 @@ def main() -> None:
                                     ###########
                                     if variaciondiaria <= maximavariaciondiaria:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
-                                        if flechamecha==" ↑":
+                                        if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
                                             lado='SELL'
-                                            if validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                            if validacionsoportesresistencias(par,lado,precioactual,distanciaentrecompensaciones)==True:
                                                 ###################
                                                 ###### SHORT ######
                                                 ###################
@@ -615,9 +650,9 @@ def main() -> None:
                                                 else:
                                                     print(f"{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
                                         else:
-                                            if flechamecha==" ↓":
+                                            if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                                 lado='BUY'
-                                                if validacionmuroscontencion(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                                if validacionsoportesresistencias(par,lado,precioactual,distanciaentrecompensaciones)==True:
                                                     ###################
                                                     ###### LONG #######
                                                     ###################
