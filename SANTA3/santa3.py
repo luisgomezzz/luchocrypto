@@ -95,9 +95,9 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         tamanio=ut.get_positionamt(par)
         #stop de precaución por si el precio varía rapidamente.
         if lado=='SELL':
-            preciostopprecaicion=entryprice*(1+((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+            preciostopprecaicion=entryprice*(1+((cantidadcompensaciones+3)*distanciaentrecompensaciones/100))
         else:
-            preciostopprecaicion=entryprice*(1-((cantidadcompensaciones+2)*distanciaentrecompensaciones/100))
+            preciostopprecaicion=entryprice*(1-((cantidadcompensaciones+3)*distanciaentrecompensaciones/100))
         ut.creostoploss (par,lado,preciostopprecaicion)        
         ut.printandlog(cons.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(tamanio))
         ut.printandlog(cons.nombrelog,"distancia entre compensaciones: "+str(distanciaentrecompensaciones))
