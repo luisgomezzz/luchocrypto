@@ -442,7 +442,7 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
                 salida = False
         else:        
             if precioactual<R3:
-                if 5.0 > variacion > 0.0:
+                if 7.0 > variacion > 0.0:
                     print(f"\n{symbol} {side} - Condición cumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
                     salida = True
                 else:
