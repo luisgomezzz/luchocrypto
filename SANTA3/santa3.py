@@ -266,56 +266,57 @@ async def updatingv2(symbol,side):
         # start any sockets here, i.e a trade socket
         ts = bm.futures_user_socket()#-за фючърсният срийм или за спот стрийма
         # then start receiving messages
-        async with ts as tscm:
-            while True:
-                res = await tscm.recv() #espera a recibir un mensaje
-                if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
-                    especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
-                    if especifico:
-                        pnl=float(especifico['up'])
-                        if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
-                                print("Updatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
-                                ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
-                                stopenganancias=float(especifico['ep'])
-                                ut.creostoploss (symbol,side,stopenganancias) 
-                                stopengananciascreado = True
-                                playsound(cons.pathsound+"cash-register-purchase.mp3")  
-                                if float(ut.get_positionamt(symbol))!=0.0:
-                                    thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
-                                    thread_stopvelavela.start() 
-                        else:
-                            if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
-                                print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
-                                compensacioncount=compensacioncount+1
-                                limitorders=creaactualizatps (symbol,side,limitorders)
-                                if compensacioncount<=1:
-                                    ut.sound(duration = 250,freq = 659)
-                                else:
-                                    playsound(cons.pathsound+"call-to-attention.mp3")                                
+        if ut.get_positionamt(symbol)!=0.0: #pregunta si en el transcurso de la creación de las compensaciones se cerró la posición.
+            async with ts as tscm:
+                while True:
+                    res = await tscm.recv() #espera a recibir un mensaje
+                    if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
+                        especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
+                        if especifico:
+                            pnl=float(especifico['up'])
+                            if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
+                                    print("Updatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                    ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
+                                    stopenganancias=float(especifico['ep'])
+                                    ut.creostoploss (symbol,side,stopenganancias) 
+                                    stopengananciascreado = True
+                                    playsound(cons.pathsound+"cash-register-purchase.mp3")  
+                                    if float(ut.get_positionamt(symbol))!=0.0:
+                                        thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
+                                        thread_stopvelavela.start() 
                             else:
-                                if pnl == 0.0:
-                                    print(f"\nPosición {symbol} cerrada.\n")
-                                    #cierra todo porque se terminó el trade
-                                    ut.closeallopenorders(symbol)    
-                                    #se quita la moneda del arhivo ya que no se está operando
-                                    #leo
-                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
-                                        operando = [current_place.rstrip() for current_place in filehandle.readlines()]
-                                    # remove the item for all its occurrences
-                                    c = operando.count(symbol)
-                                    for i in range(c):
-                                        operando.remove(symbol)
-                                    #borro todo
-                                    open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
-                                    ##agrego
-                                    with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
-                                        filehandle.writelines("%s\n" % place for place in operando)       
-                                    playsound(cons.pathsound+"computer-processing.mp3")
-                                    balancetotal=ut.balancetotal()
-                                    reservas=ut.leeconfiguracion("reservas")
-                                    print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}\n")
-                                    break
-        await client.close_connection()
+                                if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
+                                    print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
+                                    compensacioncount=compensacioncount+1
+                                    limitorders=creaactualizatps (symbol,side,limitorders)
+                                    if compensacioncount<=1:
+                                        ut.sound(duration = 250,freq = 659)
+                                    else:
+                                        playsound(cons.pathsound+"call-to-attention.mp3")                                
+                                else:
+                                    if pnl == 0.0:
+                                       break
+            await client.close_connection()
+        print(f"\nPosición {symbol} cerrada.\n")
+        #cierra todo porque se terminó el trade
+        ut.closeallopenorders(symbol)    
+        #se quita la moneda del arhivo ya que no se está operando
+        #leo
+        with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
+            operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+        # remove the item for all its occurrences
+        c = operando.count(symbol)
+        for i in range(c):
+            operando.remove(symbol)
+        #borro todo
+        open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
+        ##agrego
+        with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
+            filehandle.writelines("%s\n" % place for place in operando)       
+        playsound(cons.pathsound+"computer-processing.mp3")
+        balancetotal=ut.balancetotal()
+        reservas=ut.leeconfiguracion("reservas")
+        print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}\n")
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
