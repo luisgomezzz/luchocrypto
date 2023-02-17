@@ -87,11 +87,12 @@ def timeindex(df):
 
 def calculardf (par,temporalidad,ventana):
     df = pd.DataFrame()
-    while df.empty:
+    while True:
         try:            
             barsindicators = cons.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
             df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
             timeindex(df) #Formatea el campo time para luego calcular las señales
+            break
         except KeyboardInterrupt:
             print("\nSalida solicitada.")
             sys.exit()  
