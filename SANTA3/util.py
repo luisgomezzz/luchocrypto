@@ -471,7 +471,7 @@ def creostoploss (symbol,side,stopprice,amount=0):
         if exchange_name=='binance':
             preciostop=truncate(stopprice,get_priceprecision(symbol))
             order=cons.client.futures_create_order(symbol=symbol,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
-            print("Stop loss creado. ",preciostop)
+            print("\nStop loss creado. ",preciostop)
             creado = True
             stopid = order['orderId']
         if exchange_name=='kucoinfutures':
@@ -501,7 +501,7 @@ def closeallopenorders (par):
             if exchange_name=='binance':
                 cons.client.futures_cancel_all_open_orders(symbol=par)
                 leido=True
-                print("Órdenes binance cerradas. ")
+                print("\nÓrdenes binance cerradas. ")
             if exchange_name == 'kucoinfutures':
                 cons.clienttrade.cancel_all_limit_order(par)
                 cons.clienttrade.cancel_all_stop_order(par)

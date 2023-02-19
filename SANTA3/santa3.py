@@ -217,7 +217,7 @@ def creaactualizatps (par,lado,limitorders=[]):
             divisor=profitaltoporc
         #crea los TPs
         for porcvariacion, porcdesocupar in dict.items():
-            print("tp "+str(tp))
+            print("\ntp "+str(tp))
             if lado=='BUY':
                 preciolimit = ut.getentryprice(par)*(1+((porcvariacion/divisor)/100))                
             else:
@@ -275,7 +275,7 @@ async def updatingv2(symbol,side):
                         if especifico:
                             pnl=float(especifico['up'])
                             if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
-                                    print("Updatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                    print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                                     ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
                                     stopenganancias=float(especifico['ep'])
                                     ut.creostoploss (symbol,side,stopenganancias) 
@@ -316,7 +316,7 @@ async def updatingv2(symbol,side):
         playsound(cons.pathsound+"computer-processing.mp3")
         balancetotal=ut.balancetotal()
         reservas=ut.leeconfiguracion("reservas")
-        print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}\n")
+        print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -375,7 +375,7 @@ async def stopvelavela(par,lado,preciostopenganancias):
                                         try:
                                             cons.exchange.cancel_order(orderidanterior, par)
                                             orderidanterior=orderid
-                                            print("Stopvelavela anterior cancelado. "+par)
+                                            print("\nStopvelavela anterior cancelado. "+par)
                                         except:
                                             orderidanterior=orderid
                                             pass
