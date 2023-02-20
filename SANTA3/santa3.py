@@ -197,7 +197,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
 
 # MANEJO DE TPs
 def creaactualizatps (par,lado,limitorders=[]):
-    print("creaactualizatps-limitorders: "+str(limitorders))
+    print("\ncreaactualizatps-limitorders: "+str(limitorders))
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
@@ -237,7 +237,7 @@ def creaactualizatps (par,lado,limitorders=[]):
                 print("Error3 creaactualizatps: "+str(ex)+"\n")
                 pass  
         limitorders=limitordersnuevos
-        print("limitorders: "+str(limitorders))
+        print("\nlimitorders: "+str(limitorders))
     except BinanceAPIException as bin:
         print("Error1 creaactualizatps: ",bin.status_code,bin.message+"\n")   
         pass          
