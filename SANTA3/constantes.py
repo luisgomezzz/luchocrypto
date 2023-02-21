@@ -203,4 +203,5 @@ apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total,
 # (apalancamientoreal*balancetotal) en la estrategia.
 
 #monedas que no quiero operar
-mazmorra=[]
+#BELUSDT moneda que ya ha hecho manipulaciones.
+mazmorra=['BELUSDT']

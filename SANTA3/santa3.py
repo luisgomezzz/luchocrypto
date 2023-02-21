@@ -297,7 +297,7 @@ async def updatingv2(symbol,side):
                                     if pnl == 0.0:
                                        break
             await client.close_connection()
-        print(f"\nPosición {symbol} cerrada.\n")
+        print(f"\nPosición {symbol} cerrada. ")
         #cierra todo porque se terminó el trade
         ut.closeallopenorders(symbol)    
         #se quita la moneda del arhivo ya que no se está operando
@@ -503,7 +503,7 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if dt.datetime.today().hour !=18: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            if 18 > dt.datetime.today().hour > 8: #se detecta q a esa hora (utc-3) existen variaciones altas.
 
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
@@ -640,7 +640,7 @@ def main() -> None:
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                                     tradingflag=True
                                                 else:
-                                                    print(f"{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
+                                                    print(f"\n{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
                                         else:
                                             if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                                 lado='BUY'
@@ -655,9 +655,9 @@ def main() -> None:
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
                                                     tradingflag=True  
                                                 else: 
-                                                    print(f"{par} - No se cumple condición. validacionmuroscontencion False.\n")
+                                                    print(f"\n{par} - No se cumple condición. validacionmuroscontencion False.\n")
                                     else:
-                                        print(f"{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})\n")
+                                        print(f"\n{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})\n")
 
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "import sys"
