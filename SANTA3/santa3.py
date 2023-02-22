@@ -503,7 +503,8 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if 18 > dt.datetime.today().hour > 8: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            #if 18 > dt.datetime.today().hour > 8: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            if dt.datetime.today().hour != 18: #se detecta q a esa hora (utc-3) existen variaciones altas.
 
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
@@ -657,7 +658,7 @@ def main() -> None:
                                                 else: 
                                                     print(f"\n{par} - No se cumple condición. validacionmuroscontencion False.\n")
                                     else:
-                                        print(f"\n{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})\n")
+                                        print(f"\n{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})")
 
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "import sys"
