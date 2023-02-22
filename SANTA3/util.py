@@ -12,6 +12,7 @@ import json
 import math
 import ccxt as ccxt
 from numerize import numerize
+from playsound import playsound
 
 exchange_name=cons.exchange_name
 
@@ -139,15 +140,22 @@ def volumeOf24h(par): #en usdt
                 break
     return float(vol)
 
-def sound(duration = 2000,freq = 440):
-    # milliseconds
-    # Hz
-    # for windows
-    if os.name == 'nt':
-        ws.Beep(freq, duration)
-    # for mac and linux(here, os.name is 'posix')
-    else:
-        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+def sound(archivo=''):
+    sonidoactivado=False
+    if sonidoactivado==True:
+        if archivo!='':
+            playsound(cons.pathsound+archivo)  
+        else:
+            duration = 200
+            freq = 800
+            # milliseconds
+            # Hz
+            # for windows
+            if os.name == 'nt':
+                ws.Beep(freq, duration)
+            # for mac and linux(here, os.name is 'posix')
+            else:
+                _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
 
 def printandlog(nombrelog,mensaje,pal=0,mode='a'):
    if pal==0: #print y log

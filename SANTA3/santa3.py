@@ -6,7 +6,6 @@ import util as ut
 import datetime as dt
 from datetime import datetime
 import threading
-from playsound import playsound
 import constantes as cons
 from binance.exceptions import BinanceAPIException
 import indicadores as ind
@@ -280,7 +279,7 @@ async def updatingv2(symbol,side):
                                     stopenganancias=float(especifico['ep'])
                                     ut.creostoploss (symbol,side,stopenganancias) 
                                     stopengananciascreado = True
-                                    playsound(cons.pathsound+"cash-register-purchase.mp3")  
+                                    ut.sound("cash-register-purchase.mp3")  
                                     if float(ut.get_positionamt(symbol))!=0.0:
                                         thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
                                         thread_stopvelavela.start() 
@@ -290,10 +289,9 @@ async def updatingv2(symbol,side):
                                     compensacioncount=compensacioncount+1
                                     limitorders=creaactualizatps (symbol,side,limitorders)
                                     if compensacioncount<=1:
-                                        ut.sound(duration = 250,freq = 659)
+                                        ut.sound()
                                     else:
-                                        ut.sound(duration = 250,freq = 659)
-                                        #playsound(cons.pathsound+"call-to-attention.mp3")
+                                        ut.sound("call-to-attention.mp3")
                                 else:
                                     if pnl == 0.0:
                                        break
@@ -314,7 +312,7 @@ async def updatingv2(symbol,side):
         ##agrego
         with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
             filehandle.writelines("%s\n" % place for place in operando)       
-        playsound(cons.pathsound+"computer-processing.mp3")
+        ut.sound("computer-processing.mp3")
         balancetotal=ut.balancetotal()
         reservas=ut.leeconfiguracion("reservas")
         print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
@@ -585,11 +583,11 @@ def main() -> None:
                                     btcvariacion = variacion
                                     btcflecha = flecha                                    
                                     if btcvariacion>=2 and anuncioaltavariacionbtc==False:
-                                        playsound(cons.pathsound+"High_volatility_of_bitcoin.mp3")
+                                        ut.sound("High_volatility_of_bitcoin.mp3")
                                         print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=True
                                     if btcvariacion<2 and anuncioaltavariacionbtc==True:
-                                        playsound(cons.pathsound+"High_volatility_of_bitcoin.mp3")
+                                        ut.sound("High_volatility_of_bitcoin.mp3")
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
 
@@ -635,8 +633,8 @@ def main() -> None:
                                                 if  (par not in dictequipoliquidando 
                                                     or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
                                                     ): # precio actual alejado un 10% del máximo                                                
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.sound(duration = 200,freq = 800)  
+                                                    ut.sound()
+                                                    ut.sound()  
                                                     print("*********************************************************************************************")
                                                     ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
@@ -650,8 +648,8 @@ def main() -> None:
                                                     ###################
                                                     ###### LONG #######
                                                     ###################
-                                                    ut.sound(duration = 200,freq = 800)
-                                                    ut.sound(duration = 200,freq = 800)
+                                                    ut.sound()
+                                                    ut.sound()
                                                     print("*********************************************************************************************")
                                                     ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
@@ -698,13 +696,13 @@ def main() -> None:
                                         R5=LL['R5']
                                         #####################################                                    
                                         if variaciondiaria <= maximavariaciondiaria and precioactual > R5:
-                                            ut.sound(duration = 200,freq = 800)
-                                            ut.sound(duration = 200,freq = 800)
+                                            ut.sound()
+                                            ut.sound()
                                             ut.printandlog(cons.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
                                             lado='BUY'
                                             trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)                                        
                                             print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
-                                            playsound(cons.pathsound+"liquidating.mp3")   
+                                            ut.sound("liquidating.mp3")   
                                             tradingflag=True                                                                         
 
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(dict_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
