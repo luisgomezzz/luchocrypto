@@ -141,8 +141,8 @@ def volumeOf24h(par): #en usdt
     return float(vol)
 
 def sound(archivo=''):
-    sonidoactivado=False
-    if sonidoactivado==True:
+    sonidoactivado=leeconfiguracion("sonidos")
+    if sonidoactivado==1:
         if archivo!='':
             playsound(cons.pathsound+archivo)  
         else:
