@@ -292,7 +292,8 @@ async def updatingv2(symbol,side):
                                     if compensacioncount<=1:
                                         ut.sound(duration = 250,freq = 659)
                                     else:
-                                        playsound(cons.pathsound+"call-to-attention.mp3")                                
+                                        ut.sound(duration = 250,freq = 659)
+                                        #playsound(cons.pathsound+"call-to-attention.mp3")
                                 else:
                                     if pnl == 0.0:
                                        break
