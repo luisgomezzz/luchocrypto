@@ -408,8 +408,8 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
     # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
     salida = False
     LL=ind.PPSR(symbol)
-    R3=LL['R3']
-    S3=LL['S3']
+    R4=LL['R4']
+    S4=LL['S4']
     S5=LL['S5']
     R5=LL['R5']
     distanciasoportada=ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones
@@ -435,40 +435,36 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
     if side=='SELL':
         if precioactual<S5:
             if abs(variacion)<distanciasoportada:
-                print(f"\n{symbol} {side} - Condición cumplida. precioactual<S5. Variación en contra: {variacion}\n")
                 salida = True
             else:
-                print(f"\n{symbol} {side} - Condición incumplida. precioactual<S5. Variación en contra: {variacion}\n")
+                print(f"\n{symbol} {side} - Condición incumplida. precioactual<SX. Variación en contra: {variacion}\n")
                 salida = False
         else:        
-            if precioactual<R3:
-                if 6.0 > variacion > 0.0:
-                    print(f"\n{symbol} {side} - Condición cumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
+            if precioactual<R4:
+                if 8.0 > variacion > 0.0:
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - Condición incumplida. precioactual<R3. Variación en contra del último soporte: {variacion}\n")
+                    print(f"\n{symbol} {side} - Condición incumplida. precioactual<RX. Variación en contra del último soporte: {variacion}\n")
                     salida = False
             else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R3.\n")
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que RX.\n")
                 salida = False
     else:
         if precioactual>R5:
             if abs(variacion)<distanciasoportada:
-                print(f"\n{symbol} {side} - Condición cumplida. precioactual>R5. Variación en contra: {variacion}\n")
                 salida = True
             else:
-                print(f"\n{symbol} {side} - Condición incumplida. precioactual>R5. Variación en contra: {variacion}\n")
+                print(f"\n{symbol} {side} - Condición incumplida. precioactual>RX. Variación en contra: {variacion}\n")
                 salida = False                
         else:
-            if precioactual>S3:
-                if 5.0 > variacion > 0.0:
-                    print(f"\n{symbol} {side} - Condición cumplida. precioactual>S3. Variación en contra del último soporte: {variacion}\n")
+            if precioactual>S4:
+                if 8.0 > variacion > 0.0:
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - Condición incumplida. precioactual>S3. Variación en contra del último soporte: {variacion}\n")
+                    print(f"\n{symbol} {side} - Condición incumplida. precioactual>SX. Variación en contra del último soporte: {variacion}\n")
                     salida = False                    
             else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S3.\n")
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que SX.\n")
                 salida = False
     return salida
 
