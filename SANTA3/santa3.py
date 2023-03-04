@@ -498,8 +498,8 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            #if 18 > dt.datetime.today().hour > 8: #se detecta q a esa hora (utc-3) existen variaciones altas.
-            if dt.datetime.today().hour != 18: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            if 17 >= dt.datetime.today().hour >= 4: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            #if dt.datetime.today().hour != 18: #se detecta q a esa hora (utc-3) existen variaciones altas.
 
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
@@ -578,11 +578,11 @@ def main() -> None:
                                 if par[0:7] =='BTCUSDT' or par[0:7] =='XBTUSDT':
                                     btcvariacion = variacion
                                     btcflecha = flecha                                    
-                                    if btcvariacion>=2 and anuncioaltavariacionbtc==False:
+                                    if btcvariacion>=1.5 and anuncioaltavariacionbtc==False:
                                         ut.sound("High_volatility_of_bitcoin.mp3")
                                         print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=True
-                                    if btcvariacion<2 and anuncioaltavariacionbtc==True:
+                                    if btcvariacion<1.5 and anuncioaltavariacionbtc==True:
                                         ut.sound("High_volatility_of_bitcoin.mp3")
                                         print("\nBAJA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
                                         anuncioaltavariacionbtc=False
@@ -611,7 +611,7 @@ def main() -> None:
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
 
-                                if  variacionmecha >= variaciontrigger and tradingflag==False:                                    
+                                if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False:                                    
                                     ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
                                     df2=ut.calculardf (par,'1h',12)
                                     df2preciomenor=df2.low.min()
