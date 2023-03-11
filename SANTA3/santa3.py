@@ -498,8 +498,7 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if 17 >= dt.datetime.today().hour >= 4: #se detecta q a esa hora (utc-3) existen variaciones altas.
-            #if dt.datetime.today().hour != 18: #se detecta q a esa hora (utc-3) existen variaciones altas.
+            if 17 >= dt.datetime.today().hour >= 4 or ut.leeconfiguracion('restriccionhoraria')==0: 
 
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
