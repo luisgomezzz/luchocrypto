@@ -263,8 +263,9 @@ def creoposicion (par,size,lado)->bool:
         apalancamiento=apalancamientoseguncapital(par)
         if apalancamiento < cons.apalancamientoreal:
             micapital = balancetotal()
-            size = float(micapital*5/100)
-            printandlog(cons.nombrelog,"Porcentaje de entrada redefinido al 5%: "+str(size))
+            porc=truncate(leeconfiguracion('porcentajeentrada')/2,2)
+            size = float(micapital*porc/100)
+            printandlog(cons.nombrelog,f"Porcentaje de entrada redefinido al {porc}%: "+str(size))
         printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))        
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
@@ -630,3 +631,12 @@ def rankingcap (lista_de_monedas):
 def printenjson (dictionary={}):
     json_object = json.dumps(dictionary, indent=4)
     print(json_object)
+
+def closeposition(symbol,side):
+    if side=='SELL':
+        lado='BUY'
+    else:
+        lado='SELL'
+    quantity=abs(get_positionamt(symbol))
+    if quantity!=0.0:
+        cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    

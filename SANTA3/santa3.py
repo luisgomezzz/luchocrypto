@@ -258,6 +258,7 @@ async def updatingv2(symbol,side):
     try:
         compensacioncount = 0
         stopengananciascreado = False
+        positionamtbk=ut.get_positionamt(symbol)
         print("\nupdatingv2-CREA TPs..."+symbol)
         limitorders=creaactualizatps (symbol,side)        
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
@@ -265,7 +266,7 @@ async def updatingv2(symbol,side):
         # start any sockets here, i.e a trade socket
         ts = bm.futures_user_socket()#-за фючърсният срийм или за спот стрийма
         # then start receiving messages
-        if ut.get_positionamt(symbol)!=0.0: #pregunta si en el transcurso de la creación de las compensaciones se cerró la posición.
+        if abs(ut.get_positionamt(symbol)) >= abs(positionamtbk): #Si en el transcurso de la creación de las compensaciones no se cerró la posición y no tocó un TP .
             async with ts as tscm:
                 while True:
                     res = await tscm.recv() #espera a recibir un mensaje
@@ -296,6 +297,9 @@ async def updatingv2(symbol,side):
                                     if pnl == 0.0:
                                        break
             await client.close_connection()
+        else:
+            print(f"\nSe cierra la posición porque tocó un TP al mismo momento en que se creaba o se cerró la posición mientras se creaban las compensaciones. ")
+            ut.closeposition(symbol,side)
         print(f"\nPosición {symbol} cerrada. ")
         #cierra todo porque se terminó el trade
         ut.closeallopenorders(symbol)    
