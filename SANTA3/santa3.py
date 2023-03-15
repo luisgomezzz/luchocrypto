@@ -407,7 +407,7 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
 
 def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompensaciones)->float:
     # validaciones
-    # que haya al menos 3 resitencias/soportes en la dirección opuesta.
+    # que haya al menos 2 resitencias/soportes en la dirección opuesta.
     # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
     # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
     salida = False
@@ -446,7 +446,7 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
         else:        
             if precioactual<R4:
                 if 8.0 > variacion > 0.0:
-                    salida = True
+                    salida = True                    
                 else:
                     print(f"\n{symbol} {side} - Condición incumplida. precioactual<RX. Variación en contra del último soporte: {variacion}\n")
                     salida = False
@@ -470,6 +470,8 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que SX.\n")
                 salida = False
+    if salida==True:
+        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: "+ut.truncate(variacion,2))
     return salida
 
 def main() -> None:
