@@ -76,17 +76,106 @@ def loopfiltradodemonedas ():
     while True:
         filtradodemonedas ()
 
-def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
+def malladecompensaciones(par,lado,entryprice,tamanio,distanciaentrecompensaciones,cantidadcompensaciones):
     procentajeperdida=ut.leeconfiguracion("procentajeperdida")
+    ut.printandlog(cons.nombrelog,"Porcentaje de pérdida: "+str(procentajeperdida)) 
     incrementocompensacionporc=ut.leeconfiguracion('incrementocompensacionporc')
-    cantidadcompensaciones=ut.leeconfiguracion('cantidadcompensaciones')
+    ut.printandlog(cons.nombrelog,"Incremento porcentual entre compensaciones: "+str(incrementocompensacionporc))
     if cons.exchange_name == 'kucoinfutures':
         multiplier=float(cons.clientmarket.get_contract_detail(par)['multiplier'])
     else:
-        multiplier=1
-    ut.printandlog(cons.nombrelog,"Porcentaje de entrada: "+str(porcentajeentrada))
-    ut.printandlog(cons.nombrelog,"Porcentaje de pérdida: "+str(procentajeperdida))
-    ut.printandlog(cons.nombrelog,"Incremento porcentual entre compensaciones: "+str(incrementocompensacionporc))
+        multiplier=1     
+    balancetotal = ut.balancetotal()
+    perdida = (balancetotal*procentajeperdida/100)*-1
+    hayguita = True
+    distanciaporc = 0.0
+    cantidadtotal = 0.0
+    cantidadtotalusdt = 0.0  
+    precioinicial = entryprice
+    cantidad = abs(tamanio)
+    cantidadusdt = cantidad*entryprice*multiplier
+    cantidadtotal = cantidadtotal+cantidad
+    cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
+    cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
+    if lado == 'BUY':
+        preciodeataque = precioinicial*(1-distanciaentrecompensaciones/2/100)
+    else:
+        preciodeataque = precioinicial*(1+distanciaentrecompensaciones/2/100)                                
+    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
+    preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
+    preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
+    i=0
+    #CREA COMPENSACIONES         
+    while (cantidadtotalconataqueusdt <= balancetotal*cons.apalancamientoreal # pregunta si supera mi capital
+        and (
+        (lado=='BUY' and preciodeataque > preciostopsanta)
+        or 
+        (lado=='SELL' and preciodeataque < preciostopsanta)
+        ) 
+        and i<=cantidadcompensaciones
+        and ut.getentryprice(par)!=0
+        ):
+        i=i+1
+        if i==1:
+            cantidad = cantidad
+        else:                
+            cantidad = cantidad*(1+incrementocompensacionporc/100)
+        distanciaporc = distanciaporc+distanciaentrecompensaciones              
+        hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)
+        if hayguita == True:
+            cantidadtotal = cantidadtotal+cantidadformateada
+            cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
+            cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
+            if lado == 'BUY':                                      
+                preciodeataque = preciolimit*(1-distanciaentrecompensaciones/2/100)                                            
+            else:
+                preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
+            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)                
+            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
+        ut.printandlog(cons.nombrelog,"Compensación "+str(i)+". Amount: "+str(cantidadformateada)+" - Price: "+str(preciolimit)+" - Volume: "+str(cantidadformateada*preciolimit)+" - Total Volume: "+str(cantidadtotalusdt))
+        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
+    # CANCELA ÚLTIMA COMPENSACIÓN
+    try:
+        ut.printandlog(cons.nombrelog,"Cancela última compensación ("+str(i)+")")
+        cons.exchange.cancel_order(compensacionid, par)  
+        ut.printandlog(cons.nombrelog,"Cancelada. ")
+        cantidadtotal = cantidadtotal-cantidadformateada      
+        cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
+    except Exception as ex:
+        print("Error cancela última compensación: "+str(ex)+"\n")
+        pass                                                    
+    # PUNTO DE ATAQUE  
+    if cons.flagpuntodeataque ==1 and ut.getentryprice(par)!=0:
+        cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
+        cantidadtotalconataque = cantidadtotal+cantidad
+        distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones)
+        if lado =='SELL':
+            preciolimit = ut.getentryprice(par)*(1+(distanciaporc/100))   
+        else:
+            preciolimit = ut.getentryprice(par)*(1-(distanciaporc/100))
+        limitprice=ut.RoundToTickUp(par,preciolimit)
+        ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Precio: "+str(limitprice))
+        hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)    
+        if hayguita == False:
+            print("No se pudo crear la compensación de ataque.")
+            cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+            preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
+        else:
+            ut.printandlog(cons.nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
+            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
+            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
+    else:
+        cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
+        preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque        
+    # STOP LOSS
+    preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
+    ut.printandlog(cons.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
+    ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
+    ut.printandlog(cons.nombrelog,"\n*********************************************************************************************")         
+
+def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):        
+    cantidadcompensaciones=ut.leeconfiguracion('cantidadcompensaciones')
+    ut.printandlog(cons.nombrelog,"Porcentaje de entrada: "+str(porcentajeentrada))    
     ut.printandlog(cons.nombrelog,"Cantidad de compensaciones: "+str(cantidadcompensaciones))
     posicioncreada,mensajeposicioncompleta=posicionsanta(par,lado,porcentajeentrada)
     if posicioncreada==True:  
@@ -103,96 +192,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
-        
-        balancetotal = ut.balancetotal()
-        perdida = (balancetotal*procentajeperdida/100)*-1
-        hayguita = True
-        distanciaporc = 0.0
-        cantidadtotal = 0.0
-        cantidadtotalusdt = 0.0  
-        precioinicial = entryprice
-        cantidad = abs(tamanio)
-        cantidadusdt = cantidad*entryprice*multiplier
-        cantidadtotal = cantidadtotal+cantidad
-        cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
-        cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
-        if lado == 'BUY':
-            preciodeataque = precioinicial*(1-distanciaentrecompensaciones/2/100)
-        else:
-            preciodeataque = precioinicial*(1+distanciaentrecompensaciones/2/100)                                
-        cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
-        preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
-        i=0
-        #CREA COMPENSACIONES         
-        while (cantidadtotalconataqueusdt <= balancetotal*cons.apalancamientoreal # pregunta si supera mi capital
-            and (
-            (lado=='BUY' and preciodeataque > preciostopsanta)
-            or 
-            (lado=='SELL' and preciodeataque < preciostopsanta)
-            ) 
-            and i<=cantidadcompensaciones
-            and ut.getentryprice(par)!=0
-            ):
-            i=i+1
-            if i==1:
-                cantidad = cantidad
-            else:                
-                cantidad = cantidad*(1+incrementocompensacionporc/100)
-            distanciaporc = distanciaporc+distanciaentrecompensaciones              
-            hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)
-            if hayguita == True:
-                cantidadtotal = cantidadtotal+cantidadformateada
-                cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
-                cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
-                if lado == 'BUY':                                      
-                    preciodeataque = preciolimit*(1-distanciaentrecompensaciones/2/100)                                            
-                else:
-                    preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
-                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)                
-                preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-            ut.printandlog(cons.nombrelog,"Compensación "+str(i)+". Amount: "+str(cantidadformateada)+" - Price: "+str(preciolimit)+" - Volume: "+str(cantidadformateada*preciolimit)+" - Total Volume: "+str(cantidadtotalusdt))
-            preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
-        # CANCELA ÚLTIMA COMPENSACIÓN
-        try:
-            ut.printandlog(cons.nombrelog,"Cancela última compensación ("+str(i)+")")
-            cons.exchange.cancel_order(compensacionid, par)  
-            ut.printandlog(cons.nombrelog,"Cancelada. ")
-            cantidadtotal = cantidadtotal-cantidadformateada      
-            cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
-        except Exception as ex:
-            print("Error cancela última compensación: "+str(ex)+"\n")
-            pass          
-                                          
-        # PUNTO DE ATAQUE  
-        if cons.flagpuntodeataque ==1 and ut.getentryprice(par)!=0:
-            cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
-            cantidadtotalconataque = cantidadtotal+cantidad
-            distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones)
-            if lado =='SELL':
-                preciolimit = ut.getentryprice(par)*(1+(distanciaporc/100))   
-            else:
-                preciolimit = ut.getentryprice(par)*(1-(distanciaporc/100))
-            limitprice=ut.RoundToTickUp(par,preciolimit)
-            ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Precio: "+str(limitprice))
-            hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)    
-            if hayguita == False:
-                print("No se pudo crear la compensación de ataque.")
-                cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
-                preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
-            else:
-                ut.printandlog(cons.nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
-                cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
-                preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
-        else:
-            cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
-            preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
-        
-        # STOP LOSS
-        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
-        ut.printandlog(cons.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-        ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
-        ut.printandlog(cons.nombrelog,"\n*********************************************************************************************")    
+        malladecompensaciones(par,lado,entryprice,tamanio,distanciaentrecompensaciones,cantidadcompensaciones)            
     return posicioncreada        
 
 # MANEJO DE TPs
