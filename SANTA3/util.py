@@ -364,7 +364,7 @@ def get_priceprecision(par):
             break         
     return priceprecision
 
-def compensaciones(par,client,lado,tamanio,distanciaporc):
+def creacompensacion(par,client,lado,tamanio,distanciaporc):
     if lado =='SELL':
         preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
     else:

@@ -103,6 +103,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
             filehandle.writelines("%s\n" % place for place in [par])
+        
         balancetotal = ut.balancetotal()
         perdida = (balancetotal*procentajeperdida/100)*-1
         hayguita = True
@@ -139,7 +140,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
             else:                
                 cantidad = cantidad*(1+incrementocompensacionporc/100)
             distanciaporc = distanciaporc+distanciaentrecompensaciones              
-            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,cons.client,lado,cantidad,distanciaporc)
+            hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)
             if hayguita == True:
                 cantidadtotal = cantidadtotal+cantidadformateada
                 cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
@@ -174,7 +175,7 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
                 preciolimit = ut.getentryprice(par)*(1-(distanciaporc/100))
             limitprice=ut.RoundToTickUp(par,preciolimit)
             ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Precio: "+str(limitprice))
-            hayguita,preciolimit,cantidadformateada,compensacionid = ut.compensaciones(par,cons.client,lado,cantidad,distanciaporc)    
+            hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)    
             if hayguita == False:
                 print("No se pudo crear la compensación de ataque.")
                 cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
