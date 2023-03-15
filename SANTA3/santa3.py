@@ -471,7 +471,7 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que SX.\n")
                 salida = False
     if salida==True:
-        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: "+ut.truncate(variacion,2))
+        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: "+str(ut.truncate(variacion,2)))
     return salida
 
 def main() -> None:
