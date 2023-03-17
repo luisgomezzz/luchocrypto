@@ -197,7 +197,6 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
 
 # MANEJO DE TPs
 def creaactualizatps (par,lado,limitorders=[]):
-    print("\ncreaactualizatps-limitorders: "+str(limitorders))
     limitordersnuevos=[]
     tp = 1
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
@@ -237,7 +236,6 @@ def creaactualizatps (par,lado,limitorders=[]):
                 print("Error3 creaactualizatps: "+str(ex)+"\n")
                 pass  
         limitorders=limitordersnuevos
-        print("\nlimitorders: "+str(limitorders))
     except BinanceAPIException as bin:
         print("Error1 creaactualizatps: ",bin.status_code,bin.message+"\n")   
         pass          
@@ -417,7 +415,8 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
     S4=LL['S4']
     S5=LL['S5']
     R5=LL['R5']
-    distanciasoportada=ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones
+    # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
+    distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
     if side=='BUY':
         proximomuro=R5
         preciosoporta=precioactual*(1-(distanciasoportada/100))
@@ -433,46 +432,47 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
             if preciosoporta>precio:
                 if precio>proximomuro:
                     proximomuro=precio
+    # Variacion es la variacion entre el precio stop y el muro más cercano en dirección hacia la posición.
     if side=='SELL':
         variacion =((preciosoporta/proximomuro)-1)*100
     else:
         variacion =((proximomuro/preciosoporta)-1)*100
     if side=='SELL':
-        if precioactual<S5:
+        if precioactual<S5: # si el precio anda por abajo de todos los muros
             if abs(variacion)<distanciasoportada:
                 salida = True
             else:
-                print(f"\n{symbol} {side} - Condición incumplida. precioactual<SX. Variación en contra: {variacion}\n")
+                print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                 salida = False
         else:        
-            if precioactual<R4:
-                if 8.0 > variacion > 0.0:
+            if precioactual<R4: # si el precio anda entre los muros
+                if abs(variacion)<distanciasoportada:
                     salida = True                    
                 else:
-                    print(f"\n{symbol} {side} - Condición incumplida. precioactual<RX. Variación en contra del último soporte: {variacion}\n")
+                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                     salida = False
             else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que RX.\n")
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
                 salida = False
     else:
-        if precioactual>R5:
+        if precioactual>R5: # si el precio anda por arriba de todos los muros
             if abs(variacion)<distanciasoportada:
                 salida = True
             else:
-                print(f"\n{symbol} {side} - Condición incumplida. precioactual>RX. Variación en contra: {variacion}\n")
+                print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                 salida = False                
         else:
-            if precioactual>S4:
-                if 8.0 > variacion > 0.0:
+            if precioactual>S4:# si el precio anda entre los muros
+                if abs(variacion)<distanciasoportada:
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - Condición incumplida. precioactual>SX. Variación en contra del último soporte: {variacion}\n")
+                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                     salida = False                    
             else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que SX.\n")
+                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
                 salida = False
     if salida==True:
-        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: "+str(ut.truncate(variacion,2)))
+        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
     return salida
 
 def main() -> None:
@@ -656,8 +656,6 @@ def main() -> None:
                                                     ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
                                                     trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
                                                     tradingflag=True  
-                                                else: 
-                                                    print(f"\n{par} - No se cumple condición. validacionmuroscontencion False.\n")
                                     else:
                                         print(f"\n{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})")
 
