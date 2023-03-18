@@ -505,7 +505,7 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if 17 >= dt.datetime.today().hour >= 4 or ut.leeconfiguracion('restriccionhoraria')==0: 
+            if 17 >= dt.datetime.today().hour >= 6 or ut.leeconfiguracion('restriccionhoraria')==0: 
 
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
