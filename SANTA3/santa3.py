@@ -15,6 +15,30 @@ import asyncio
 import websockets
 import json
 
+class Archivooperando:    
+    def leer(self):
+        with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
+            operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+            return operando
+    def borrarsymbol(self,symbol):
+        #leo
+        with open(os.path.join(cons.pathroot,cons.operandofile), 'r') as filehandle:
+            operando = [current_place.rstrip() for current_place in filehandle.readlines()]
+        # remove the item for all its occurrences
+        c = operando.count(symbol)
+        for i in range(c):
+            operando.remove(symbol)
+        #borro todo
+        open(os.path.join(cons.pathroot,cons.operandofile), "w").close()
+        ##agrego
+        with open(os.path.join(cons.pathroot,cons.operandofile), 'a') as filehandle:
+            filehandle.writelines("%s\n" % place for place in operando)
+    def agregarsymbol(self,symbol):
+        with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
+            filehandle.writelines("%s\n" % place for place in [symbol])
+
+archivooperando = Archivooperando()
+
 def posicionsanta(par,lado,porcentajeentrada):   
     serror = True
     micapital = ut.balancetotal()
@@ -282,6 +306,7 @@ async def updatingv2(symbol,side):
                                     ut.sound("cash-register-purchase.mp3")  
                                     if float(ut.get_positionamt(symbol))!=0.0:
                                         if compensacioncount>=1:
+                                            #stop vela vela
                                             thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
                                             thread_stopvelavela.start() 
                                         else:
@@ -303,7 +328,7 @@ async def updatingv2(symbol,side):
         else:
             print(f"\nSe cierra la posición porque tocó un TP al mismo momento en que se creaba o se cerró la posición mientras se creaban las compensaciones. ")
             ut.closeposition(symbol,side)
-        print(f"\nPosición {symbol} cerrada. ")
+        print(f"Posición {symbol} cerrada. ")
         #cierra todo porque se terminó el trade
         ut.closeallopenorders(symbol)    
         #se quita la moneda del arhivo ya que no se está operando
@@ -391,6 +416,8 @@ async def stopvelavela(par,lado,preciostopenganancias):
             ut.closeallopenorders(par)
             #sock.close()
             print(f"\nSTOP VELA A VELA {par} TERMINADO....\n")
+            if '1' not in archivooperando.leer():
+                archivooperando.agregarsymbol('1')
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -398,7 +425,8 @@ async def stopvelavela(par,lado,preciostopenganancias):
         pass
 
 def callback_stopvelavela(par,lado,preciostopenganancias):
-    try:               
+    try:      
+        archivooperando.borrarsymbol('1')         
         loop = asyncio.new_event_loop() 
         asyncio.set_event_loop(loop)
         loop.run_until_complete(stopvelavela(par,lado,preciostopenganancias))

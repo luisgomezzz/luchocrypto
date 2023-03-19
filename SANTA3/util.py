@@ -510,12 +510,12 @@ def closeallopenorders (par):
             if exchange_name=='binance':
                 cons.client.futures_cancel_all_open_orders(symbol=par)
                 leido=True
-                print("Órdenes binance cerradas. ")
+                print("\nÓrdenes binance cerradas. ")
             if exchange_name == 'kucoinfutures':
                 cons.clienttrade.cancel_all_limit_order(par)
                 cons.clienttrade.cancel_all_stop_order(par)
                 leido=True
-                print("Órdenes kucoin cerradas. ")
+                print("\nÓrdenes kucoin cerradas. ")
         except:
             pass    
 
