@@ -281,8 +281,12 @@ async def updatingv2(symbol,side):
                                     stopengananciascreado = True
                                     ut.sound("cash-register-purchase.mp3")  
                                     if float(ut.get_positionamt(symbol))!=0.0:
-                                        thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
-                                        thread_stopvelavela.start() 
+                                        if compensacioncount>=1:
+                                            thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
+                                            thread_stopvelavela.start() 
+                                        else:
+                                            print(f"\n{symbol} - {side} - Se cierra la posición porque el tamaño es muy chico.")
+                                            ut.closeposition(symbol,side)
                             else:
                                 if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
                                     print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
