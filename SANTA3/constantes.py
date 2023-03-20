@@ -181,7 +181,7 @@ dictionary = {
     "incrementocompensacionporc" : 30, #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
     "cantidadcompensaciones" : 7,
     "variaciontrigger" : 5, #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
-    "maximavariaciondiaria" : 60, #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
+    "maximavariaciondiaria" : 50, #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
     "tradessimultaneos" : 3, #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt  
     "distanciaentrecompensacionesalta" : 1.7, #porcentaje de distancia entre compensaciones para monedas por debajo del top de capitalización
     "distanciaentrecompensacionesbaja" : 1, #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
@@ -206,4 +206,4 @@ apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total,
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.
-mazmorra=['BELUSDT']
+mazmorra=['BELUSDT','RENUSDT']
