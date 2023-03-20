@@ -312,6 +312,8 @@ async def updatingv2(symbol,side):
                                         else:
                                             print(f"\n{symbol} - {side} - Se cierra la posición porque el tamaño es muy chico.")
                                             ut.closeposition(symbol,side)
+                                            if '1' not in archivooperando.leer():
+                                                archivooperando.agregarsymbol('1')
                             else:
                                 if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
                                     print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
