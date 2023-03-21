@@ -299,7 +299,12 @@ async def updatingv2(symbol,side):
                             pnl=float(especifico['up'])
                             if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
                                     print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
-                                    ut.closeallopenorders (symbol) #cierro todas las compensaciones ya que no sirven más.
+                                    #cierro todas las compensaciones ya que no sirven más. Dejo los STOP LOSS por las dudas
+                                    info = cons.client.futures_get_open_orders(symbol=symbol)
+                                    for i in range(len(info)):
+                                        if info[i]['type']=='LIMIT':
+                                            orid=(info[i]['orderId'])
+                                            cons.exchange.cancel_order(orid, symbol)
                                     stopenganancias=float(especifico['ep'])
                                     ut.creostoploss (symbol,side,stopenganancias) 
                                     stopengananciascreado = True
