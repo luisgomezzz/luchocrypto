@@ -516,8 +516,6 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
 
 def main() -> None:
     ##PARAMETROS##########################################################################################
-    print("Buscando equipos liquidando...")
-    dictequipoliquidando=ut.equipoliquidando()
     vueltas=0
     minutes_diff=0    
     maximavariacion=0.0
@@ -530,7 +528,6 @@ def main() -> None:
     ##############START        
     print("Saldo: "+str(ut.truncate(balancetotal,2)))
     print(f"PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
-    ut.printandlog(cons.nombrelog,"Equipos liquidando: "+str(dictequipoliquidando))
     print("Filtrando monedas...")
     filtradodemonedas()
     dict_monedas_filtradas = dict_monedas_filtradas_nueva
@@ -544,8 +541,7 @@ def main() -> None:
         hilofiltramoneda.start()        
 
         while True:
-            if 17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0: 
-
+                
                 lista_aux = list(dict_monedas_filtradas.keys())
                 lista_nueva_aux = list(dict_monedas_filtradas_nueva.keys())
                 res = [x for x in lista_aux + lista_nueva_aux if x not in lista_aux or x not in lista_nueva_aux]
@@ -656,7 +652,7 @@ def main() -> None:
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
 
-                                if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False:                                    
+                                if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
                                     ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
                                     df2=ut.calculardf (par,'1h',12)
                                     df2preciomenor=df2.low.min()
@@ -671,17 +667,13 @@ def main() -> None:
                                                 ###################
                                                 ###### SHORT ######
                                                 ###################
-                                                if  (par not in dictequipoliquidando 
-                                                    or (par in dictequipoliquidando and precioactual < dictequipoliquidando[par][0]*(1-10/100))
-                                                    ): # precio actual alejado un 10% del máximo                                                
-                                                    ut.sound()
-                                                    ut.sound()  
-                                                    print("*********************************************************************************************")
-                                                    ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
-                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
-                                                    tradingflag=True
-                                                else:
-                                                    print(f"\n{par} - No se cumple condición. Equipo liquidando y precio cerca de máximos.\n")
+                                                ut.sound()
+                                                ut.sound()  
+                                                print("*********************************************************************************************")
+                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
+                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
+                                                tradingflag=True
+
                                         else:
                                             if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                                 lado='BUY'
@@ -718,32 +710,7 @@ def main() -> None:
                                     f = open(os.path.join(cons.pathroot, cons.lanzadorfile), 'w',encoding="utf-8")
                                     f.write(lanzadorscript)
                                     f.close()                                                                                    
-
-                                # #######################################################################################################
-                                ######################################EQUIPOS LIQUIDANDO
-                                # #######################################################################################################
-
-                                if par in dictequipoliquidando and tradingflag==False:
-                                     if (dictequipoliquidando[par][0]*(1+(0.3/100)) >= precioactual >= dictequipoliquidando[par][0]): #el precio es mayor al maximo detectado o menor o igual al 0.3% de dicho maximo 
-                                        ###########para la variacion diaria (aunque tomo 12 hs para atrás ;)
-                                        df2=ut.calculardf (par,'1h',12)
-                                        df2preciomenor = df2.low.min()
-                                        df2preciomayor = df2.high.max()
-                                        variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                        ###########para calcular que tenga soportes/resitencias si el precio se va en contra.
-                                        LL=ind.PPSR(par)
-                                        R5=LL['R5']
-                                        #####################################                                    
-                                        if variaciondiaria <= maximavariaciondiaria and precioactual > R5:
-                                            ut.sound()
-                                            ut.sound()
-                                            ut.printandlog(cons.nombrelog,"\nOportunidad Equipo liquidando - Par: "+par+" - Variación: "+str(ut.truncate(variacion,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")
-                                            lado='BUY'
-                                            trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)                                        
-                                            print("\nTake profit sugerido a:"+str(dictequipoliquidando[par][1])+"\n")
-                                            ut.sound("liquidating.mp3")   
-                                            tradingflag=True                                                                         
-
+                                
                                 sys.stdout.write("\r"+par+" -"+flecha+str(ut.truncate(variacion,2))+"% - T. vuelta: "+str(ut.truncate(minutes_diff,2))+" min - Monedas filtradas: "+ str(len(dict_monedas_filtradas))+" - máxima variación "+maximavariacionpar+maximavariacionflecha+str(ut.truncate(maximavariacion,2))+"% Hora: "+maximavariacionhora+" - BITCOIN:"+btcflecha+str(ut.truncate(btcvariacion,2))+"%"+"\033[K")
                                 sys.stdout.flush()  
 
@@ -767,10 +734,6 @@ def main() -> None:
                         if a.message!="Invalid symbol.":
                             print("Error5 - Par:",par,"-",a.status_code,a.message)
                         pass
-            else:
-                sys.stdout.write("\rFuera de horario...\033[K")
-                ut.waiting(60)
-                sys.stdout.flush()    
 
     except BinanceAPIException as a:
        print("Error6 - Par:",par,"-",a.status_code,a.message)
