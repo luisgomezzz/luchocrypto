@@ -379,7 +379,7 @@ def creacompensacion(par,client,lado,tamanio,distanciaporc):
             order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
             return True,float(order['price']),float(order['origQty']),order['orderId']
         if exchange_name=='kucoinfutures':   ##revisar kucoin porque cambió la lógica de elección de leverage.
-            apalancamiento=leeconfiguracion("apalancamiento")              
+            apalancamiento=cons.apalancamientoreal
             tamanioformateado = int(tamanio)
             maxLeverage = cons.clientmarket.get_contract_detail(par)['maxLeverage']
             if maxLeverage < apalancamiento:
