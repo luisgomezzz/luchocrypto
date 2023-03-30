@@ -243,15 +243,18 @@ def leeconfiguracion(parameter='porcentajeentrada'):
 def apalancamientoseguncapital(symbol):
     apalancamiento=0
     try:
-        capitalapalancado = cons.apalancamientoreal*balancetotal()
-        result= cons.client.futures_leverage_bracket()
-        for x in range(len(result)):
-            if result[x]['symbol'] == symbol:
-                lista =  result[x]['brackets']
-                for y in range(len(lista)):
-                    if lista[y]['notionalCap'] > capitalapalancado:# and lista[y]['initialLeverage']>=cons.apalancamientoreal:
-                        apalancamiento = lista[y]['initialLeverage']
-                        break
+        if exchange_name=='binance':
+            capitalapalancado = cons.apalancamientoreal*balancetotal()
+            result= cons.client.futures_leverage_bracket()
+            for x in range(len(result)):
+                if result[x]['symbol'] == symbol:
+                    lista =  result[x]['brackets']
+                    for y in range(len(lista)):
+                        if lista[y]['notionalCap'] > capitalapalancado:# and lista[y]['initialLeverage']>=cons.apalancamientoreal:
+                            apalancamiento = lista[y]['initialLeverage']
+                            break
+        if exchange_name=='kucoinfutures':
+            apalancamiento=cons.apalancamientoreal
     except:
         apalancamiento=0
         print("\nNo hay valores de apalancamiento y notionalcap compatibles con la estrategia. "+symbol+"\n")

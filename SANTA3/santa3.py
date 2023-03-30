@@ -273,16 +273,16 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(cons.nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-    thread_trading = threading.Thread(target=callback_updatingv2,args=(par,lado), daemon=True)
+    thread_trading = threading.Thread(target=callback_updating,args=(par,lado), daemon=True)
     thread_trading.start()
     return posicioncreada   
 
-async def updatingv2(symbol,side):
+async def updating(symbol,side):
     try:
         compensacioncount = 0
         stopengananciascreado = False
         positionamtbk=ut.get_positionamt(symbol)
-        print("\nupdatingv2-CREA TPs..."+symbol)
+        print("\nupdating-CREA TPs..."+symbol)
         limitorders=creaactualizatps (symbol,side)        
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
         bm = BinanceSocketManager(client)
@@ -298,7 +298,7 @@ async def updatingv2(symbol,side):
                         if especifico:
                             pnl=float(especifico['up'])
                             if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
-                                    print("\nUpdatingv2-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
+                                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
                                     stopenganancias=float(especifico['ep'])
                                     ut.creostoploss (symbol,side,stopenganancias) 
                                     stopengananciascreado = True
@@ -321,7 +321,7 @@ async def updatingv2(symbol,side):
                                                 archivooperando.agregarsymbol('1')
                             else:
                                 if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
-                                    print("\nUpdatingv2-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
+                                    print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
                                     compensacioncount=compensacioncount+1
                                     limitorders=creaactualizatps (symbol,side,limitorders)
                                     if compensacioncount<=1:
@@ -361,11 +361,11 @@ async def updatingv2(symbol,side):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass
 
-def callback_updatingv2(symbol,side):
+def callback_updating(symbol,side):
     try:               
         loop = asyncio.new_event_loop() 
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(updatingv2(symbol,side))
+        loop.run_until_complete(updating(symbol,side))
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -705,7 +705,7 @@ def main() -> None:
                                     lanzadorscript = lanzadorscript+"\nloop = asyncio.new_event_loop()"
                                     lanzadorscript = lanzadorscript+"\nasyncio.set_event_loop(loop)"
                                     lanzadorscript = lanzadorscript+"\n#san.trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)"
-                                    lanzadorscript = lanzadorscript+"\nloop.run_until_complete(san.updatingv2(par,lado))"
+                                    lanzadorscript = lanzadorscript+"\nloop.run_until_complete(san.updating(par,lado))"
                                     ut.printandlog(cons.lanzadorfile,lanzadorscript,pal=1,mode='w')
                                     f = open(os.path.join(cons.pathroot, cons.lanzadorfile), 'w',encoding="utf-8")
                                     f.write(lanzadorscript)
