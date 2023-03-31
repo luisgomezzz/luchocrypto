@@ -501,6 +501,7 @@ def creostoploss (symbol,side,stopprice,amount=0):
                 amount=amount,
                 params=params,
             )
+            print("\nStop loss creado. ",preciostop)
     except BinanceAPIException as a:
         print(a.message,"no se pudo crear el stop loss.")
         pass

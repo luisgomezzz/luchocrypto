@@ -279,10 +279,10 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
 
 async def updating(symbol,side):
     try:
+        print("\nupdating-CREA TPs..."+symbol)
         compensacioncount = 0
         stopengananciascreado = False
         positionamtbk=ut.get_positionamt(symbol)
-        print("\nupdating-CREA TPs..."+symbol)
         limitorders=creaactualizatps (symbol,side)        
         client = await AsyncClient.create(cons.api_key, cons.api_secret)
         bm = BinanceSocketManager(client)
