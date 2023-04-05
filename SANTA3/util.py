@@ -84,9 +84,9 @@ def timeindex(df):
     # may be in milliseconds, try `ts /= 1000` in that case
     df['time2']=df['time']/1000
     df['time3']=(pd.to_datetime(df['time2'],unit='s')) 
-    df.set_index(pd.DatetimeIndex(df["time3"]), inplace=True)
+    df.set_index('time3', inplace=True)
 
-def calculardf (par,temporalidad,ventana):
+def calculardf (par,temporalidad,ventana=500):
     df = pd.DataFrame()
     while True:
         try:            

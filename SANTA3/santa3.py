@@ -223,11 +223,9 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
 def creaactualizatps (par,lado,limitorders=[]):
     limitordersnuevos=[]
     tp = 1
+    porcentajeadesocupar=ut.leeconfiguracion("porcentajeadesocupar")
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-         1.15 : 90
-        #,1.30 : 20
-        #,1.50 : 15
-        #,2.00 : 15
+         1.15 : porcentajeadesocupar
     }
     profitnormalporc = 1 
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
@@ -443,7 +441,7 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass      
 
-def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompensaciones)->float:
+def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->float:
     # validaciones
     # que haya al menos 2 resitencias/soportes en la dirección opuesta.
     # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
@@ -479,14 +477,26 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
     if side=='SELL':
         if precioactual<S5: # si el precio anda por abajo de todos los muros
             if abs(variacion)<distanciasoportada:
-                salida = True
+                if (df.close.iloc[-2] < df.upper2.iloc[-2]
+                and df.close.iloc[-3] > df.upper2.iloc[-3]
+                and precioactual < df.upper2.iloc[-1]):
+                    salida = True
+                else:
+                    print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
+                    salida = False
             else:
                 print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                 salida = False
         else:        
             if precioactual<R4: # si el precio anda entre los muros
                 if abs(variacion)<distanciasoportada:
-                    salida = True                    
+                    if (df.close.iloc[-2] < df.upper2.iloc[-2]
+                    and df.close.iloc[-3] > df.upper2.iloc[-3]
+                    and precioactual < df.upper2.iloc[-1]):
+                        salida = True
+                    else:
+                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                        salida = False
                 else:
                     print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                     salida = False
@@ -496,14 +506,30 @@ def validacionsoportesresistencias(symbol,side,precioactual,distanciaentrecompen
     else:
         if precioactual>R5: # si el precio anda por arriba de todos los muros
             if abs(variacion)<distanciasoportada:
-                salida = True
+                if  (
+                    df.close.iloc[-2] > df.lower2.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
+                    and df.close.iloc[-3] < df.lower2.iloc[-3] #antepenúltima vela cerró con colse menor que el limite bajo
+                    and precioactual > df.lower2.iloc[-1]
+                    ):
+                    salida = True
+                else:
+                    salida = False
+                    print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
             else:
                 print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                 salida = False                
         else:
             if precioactual>S4:# si el precio anda entre los muros
                 if abs(variacion)<distanciasoportada:
-                    salida = True
+                    if  (
+                    df.close.iloc[-2] > df.lower2.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
+                    and df.close.iloc[-3] < df.lower2.iloc[-3] #antepenúltima vela cerró con colse menor que el limite bajo
+                    and precioactual > df.lower2.iloc[-1]
+                    ):
+                        salida = True
+                    else:
+                        salida = False
+                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                 else:
                     print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
                     salida = False                    
@@ -648,6 +674,8 @@ def main() -> None:
 
                                 sideflag=ut.leeconfiguracion('sideflag')
 
+                                df=ind.get_bollinger_bands(df)
+
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
@@ -663,7 +691,7 @@ def main() -> None:
                                         ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
                                         if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
                                             lado='SELL'
-                                            if validacionsoportesresistencias(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                            if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
                                                 ###################
                                                 ###### SHORT ######
                                                 ###################
@@ -677,7 +705,7 @@ def main() -> None:
                                         else:
                                             if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                                 lado='BUY'
-                                                if validacionsoportesresistencias(par,lado,precioactual,distanciaentrecompensaciones)==True:
+                                                if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
                                                     ###################
                                                     ###### LONG #######
                                                     ###################

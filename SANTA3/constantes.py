@@ -189,6 +189,7 @@ dictionary = {
     "sideflag": 0, # 0 ambos | 1 solo shorts | 2 solo longs
     "sonidos": 1, # 1 sonido ON, 0 sonido OFF
     "restriccionhoraria": 1, # 1 restricción ON, 0 restricción OFF
+    "porcentajeadesocupar": 50 # porcentaje de la posición que desocupa al tocar el tp.
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)

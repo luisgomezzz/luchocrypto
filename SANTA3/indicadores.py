@@ -1,5 +1,6 @@
 import pandas as pd
 import util as ut
+import talib
 
 def PPSR(symbol,temporalidad='1d',ventana=15): #PIVOT POINTS STANDARD  
     data = ut.calculardf (symbol,temporalidad,ventana)
@@ -19,3 +20,19 @@ def PPSR(symbol,temporalidad='1d',ventana=15): #PIVOT POINTS STANDARD
     anteultimo=PSR.iloc[-2]
     dict=anteultimo.to_dict()
     return dict
+
+def get_bollinger_bands(df):
+    mult = 2.0
+    length = 20
+    # calcular indicadores
+    close = df['close']
+    basis = talib.SMA(close, length)
+    dev = talib.STDDEV(close, length)
+    dev2 = mult * dev
+    df['upper2'] = basis + dev2
+    df['lower2'] = basis - dev2
+    # imprimir resultados
+    return df
+
+
+
