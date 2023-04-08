@@ -82,9 +82,9 @@ def lista_de_monedas ():
 def timeindex(df):
     # if you encounter a "year is out of range" error the timestamp
     # may be in milliseconds, try `ts /= 1000` in that case
-    df['time2']=df['time']/1000
-    df['time3']=(pd.to_datetime(df['time2'],unit='s')) 
-    df.set_index('time3', inplace=True)
+    df['indice']=(pd.to_datetime(df['time']/1000,unit='s')) 
+    df['timestamp']=df.indice
+    df.set_index('indice', inplace=True)
 
 def calculardf (par,temporalidad,ventana=500):
     df = pd.DataFrame()
