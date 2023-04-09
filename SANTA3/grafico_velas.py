@@ -50,8 +50,8 @@ df['bullish'] = df['regimeFilter'] & (df.rsiValue.any() > rsiMom or not useRsi)
 df['caution'] = df['bullish'] & ((df['high'].rolling(window=7).max() - df['low']) > (df['atrValue'] * 1.5))
 # Set momentum color
 df['bgCol'] = 'red'
-df['bgCol'] = np.where(df['bullish'].shift(-1)==True,'green',df['bgCol'])
-df['bgCol'] = np.where(df['caution'].shift(-1)==True,'orange',df['bgCol'])
+df['bgCol'] = np.where(df['bullish'].shift(-1),'green',df['bgCol'])
+df['bgCol'] = np.where(df['caution'].shift(-1),'orange',df['bgCol'])
 # Set trailing stop loss
 df['trailStop']= np.nan
 position_size=0
