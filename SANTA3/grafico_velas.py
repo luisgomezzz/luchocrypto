@@ -7,19 +7,36 @@ import pandas as pd
 
 # Get user input
 symbol = "BTCUSDT"
+res = "1w"
+len         = 20
 marketTF = "1d"
+useRsi = False
 rsiMom = 70
-useRsi      = False
+
+def f_sec(df, timeframe):
+    # convertir la columna timestamp a un objeto datetime
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    # calcular la diferencia de tiempo entre filas adyacentes
+    time_diff = df['timestamp'].diff()
+    # determinar si la barra actual ha terminado
+    if time_diff.iloc[-1] == pd.Timedelta(timeframe):
+        # la barra actual ha terminado
+        return 0
+    else:
+        # la barra actual aún no ha terminado
+        return 1
 
 # Get daily data
-df = ut.calculardf(symbol, marketTF,50)
+df = ut.calculardf(symbol, marketTF)
 # Get weekly data
-df_weekly = ut.calculardf(symbol, "1w")
+df_weekly = ut.calculardf(symbol, res)
 # Calculate EMA for weekly data
-ema_weekly = df_weekly['close'].ewm(span=20, adjust=False).mean()
+ema_weekly = pta.ema(df_weekly['close'],len)
+if f_sec(df, res) == 1:
+    ema_weekly.iloc[-1] = ema_weekly.iloc[-2]
+print(ema_weekly)
 # Resample EMA to daily data
-ema_weekly = ema_weekly.reindex(df.index, method='nearest')
-df['emaweek']=ema_weekly
+df['emaweek'] = ema_weekly.reindex(df.index, method='nearest')
 df['emaweek']=df['emaweek'].shift(9)
 df['color_emaweek']=np.where(df.close>df.emaweek, 'green', 'red')
 # Get ATR value
@@ -46,18 +63,16 @@ df['buy_sell'] = np.nan
 df['temp_trailStop']=np.nan
 
 for i, row in df.iterrows():
+    df.loc[:, 'temp_trailStop'] = df['low'].rolling(7).max() - (df.atrValue[i] * 0.2 if pd.Series(df.caution).shift(-1)[i] else df.atrValue[i])
     #Handle strategy entry
     if df.bullish[i] and position_size==0 and not df.caution[i]:
         df.loc[i, 'buy_sell'] = 'buy'
         position_size=100
         df.loc[i, 'trailStop'] = np.nan
-        
     # Handle trailing stop
-    df.loc[:, 'temp_trailStop'] = df['low'].rolling(7).max() - (df.atrValue[i] * 0.2 if pd.Series(df.caution).shift(-1)[i] else df.atrValue[i])
-    #print((df.atrValue[i] * 0.2 if pd.Series(df.caution).shift(-1)[i] else df.atrValue[i]))
-    if position_size > 0:
-        if (pd.Series(row.temp_trailStop > row.trailStop).any() or pd.isna(row.trailStop)):
-            df.loc[i, 'trailStop'] = row.temp_trailStop
+    elif position_size > 0:
+        if (pd.Series(df.temp_trailStop[i] > df.trailStop[i]).any() or pd.isna(df.trailStop[i])):
+            df.loc[i, 'trailStop'] = df.temp_trailStop[i]
     
     # Handle strategy exit
     if (((df.close[i] < df.trailStop[i]) or (df.close[i] < df.emaweek[i]))) and position_size>0:
@@ -116,3 +131,5 @@ fig.update_layout(title=f"{symbol}", height=800)
 fig.update_yaxes(title="Price $", secondary_y=True, showgrid=True)
 fig.update_yaxes(title="Volume $", secondary_y=False, showgrid=False)
 fig.show()
+
+
