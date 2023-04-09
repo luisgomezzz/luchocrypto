@@ -7,11 +7,10 @@ import pandas as pd
 
 # Get user input
 symbol = "BTCUSDT"
-res = "1w"
-len         = 20
 marketTF = "1d"
-useRsi = False
 rsiMom = 70
+useRsi = False
+res = "1w"
 
 def f_sec(df, timeframe):
     # convertir la columna timestamp a un objeto datetime
@@ -31,12 +30,12 @@ df = ut.calculardf(symbol, marketTF)
 # Get weekly data
 df_weekly = ut.calculardf(symbol, res)
 # Calculate EMA for weekly data
-ema_weekly = pta.ema(df_weekly['close'],len)
+ema_weekly = pta.ema(df_weekly['close'],20)
 if f_sec(df, res) == 1:
     ema_weekly.iloc[-1] = ema_weekly.iloc[-2]
-print(ema_weekly)
 # Resample EMA to daily data
-df['emaweek'] = ema_weekly.reindex(df.index, method='nearest')
+ema_weekly = ema_weekly.reindex(df.index, method='nearest')
+df['emaweek']=ema_weekly
 df['emaweek']=df['emaweek'].shift(9)
 df['color_emaweek']=np.where(df.close>df.emaweek, 'green', 'red')
 # Get ATR value
@@ -131,5 +130,6 @@ fig.update_layout(title=f"{symbol}", height=800)
 fig.update_yaxes(title="Price $", secondary_y=True, showgrid=True)
 fig.update_yaxes(title="Volume $", secondary_y=False, showgrid=False)
 fig.show()
+
 
 
