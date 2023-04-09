@@ -3,6 +3,7 @@ import util as ut
 import numpy as np
 import pandas_ta as pta
 from plotly.subplots import make_subplots
+import pandas as pd
 
 # Get user input
 symbol = "BTCUSDT"
@@ -36,19 +37,30 @@ df['bgCol'] = 'red'
 df['bgCol'] = np.where(df['bullish'].shift(-1)==True,'green',df['bgCol'])
 df['bgCol'] = np.where(df['caution'].shift(-1)==True,'orange',df['bgCol'])
 # Set trailing stop loss
-df['trailStop'] = np.nan
-#Handle strategy entry
-df['position_size']=0
-df['buy_sell'] = np.where(df['bullish'] & ~df.caution & df.position_size == 0,'buy',np.nan)
-df['trailStop'] = np.where(df['buy_sell'] =='buy',np.nan,df['trailStop'])
-# Handle trailing stop
-df['temp_trailStop'] = df['low'].rolling(window=7).max() - np.where(df.caution.shift(-1), df.atrValue * 0.2 , df.atrValue)
-df['trailStop'] = np.where(df.position_size > 0,np.where((df.temp_trailStop > df.trailStop) | (df.trailStop == np.nan),df['temp_trailStop'],df['trailStop']),df['trailStop'])
-# Handle strategy exit
-df['buy_sell'] = np.where((df.close < df.trailStop) | (df.close < df.emaweek), 'sell', np.nan)
+df['trailStop']= np.nan
+position_size=0
+df['buy_sell'] = np.nan
 
-print(df.tail(90))
 
+#########################################################
+
+for i, row in df.iterrows():
+    #Handle strategy entry
+    if row.bullish and position_size==0 and not row.caution:
+        row.buy_sell = 'buy'
+        position_size=100
+        row.trailStop == np.nan 
+    #Handle trailing stop           
+    if position_size > 0:
+        temp_trailStop = pd.Series([row.low]).rolling(window=7).max() - np.where(not row.caution, row.atrValue * 0.2 , row.atrValue)
+        if (temp_trailStop > row.trailStop).any() or row.trailStop == np.nan:
+            row.trailStop = temp_trailStop
+    # Handle strategy exit
+    if (((row.close < row.trailStop) or (row.close < row.emaweek))) and position_size>0:
+        row.buy_sell = 'sell'
+        position_size=0
+
+print(df.tail(60))
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 # velas
 fig.add_trace(
