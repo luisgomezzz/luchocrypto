@@ -12,7 +12,7 @@ rsiMom = 70
 useRsi      = False
 
 # Get daily data
-df = ut.calculardf(symbol, marketTF)
+df = ut.calculardf(symbol, marketTF,50)
 # Get weekly data
 df_weekly = ut.calculardf(symbol, "1w")
 # Calculate EMA for weekly data
@@ -43,23 +43,27 @@ df['buy_sell'] = np.nan
 
 
 #########################################################
+df['temp_trailStop']=np.nan
 
 for i, row in df.iterrows():
     #Handle strategy entry
-    if row.bullish and position_size==0 and not row.caution:
-        row.buy_sell = 'buy'
+    if df.bullish[i] and position_size==0 and not df.caution[i]:
+        df.loc[i, 'buy_sell'] = 'buy'
         position_size=100
-        row.trailStop == np.nan 
-    #Handle trailing stop           
+        df.loc[i, 'trailStop'] = np.nan
+        
+    # Handle trailing stop
+    df.loc[:, 'temp_trailStop'] = df['low'].rolling(7).max() - (df.atrValue[i] * 0.2 if pd.Series(df.caution).shift(-1)[i] else df.atrValue[i])
+    #print((df.atrValue[i] * 0.2 if pd.Series(df.caution).shift(-1)[i] else df.atrValue[i]))
     if position_size > 0:
-        temp_trailStop = pd.Series([row.low]).rolling(window=7).max() - np.where(not row.caution, row.atrValue * 0.2 , row.atrValue)
-        if (temp_trailStop > row.trailStop).any() or row.trailStop == np.nan:
-            row.trailStop = temp_trailStop
+        if (pd.Series(row.temp_trailStop > row.trailStop).any() or pd.isna(row.trailStop)):
+            df.loc[i, 'trailStop'] = row.temp_trailStop
+    
     # Handle strategy exit
-    if (((row.close < row.trailStop) or (row.close < row.emaweek))) and position_size>0:
-        row.buy_sell = 'sell'
+    if (((df.close[i] < df.trailStop[i]) or (df.close[i] < df.emaweek[i]))) and position_size>0:
+        df.loc[i, 'buy_sell'] = 'sell'
         position_size=0
-
+    
 print(df.tail(60))
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 # velas
