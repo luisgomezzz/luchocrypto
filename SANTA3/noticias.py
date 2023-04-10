@@ -7,7 +7,7 @@ import constantes as cons
 
 cryptos = ['BTC','ETH','XRP','EOS','LTC','ETC','LINK','ADA','BNB','ATOM','ONT','NEO','IOST','ZRX',
 'DOGE','SXP','MKR','DOT','SOL','ICX','AVAX','FTM','FIL','MATIC','CHZ','SAND','LINA','C98','MASK','DYDX',
-'GALA','KLAY','OP','INJ','STG','LDO','APT','CFX','ARB'
+'GALA','KLAY','OP','INJ','STG','LDO','APT','CFX','ARB','LEVER'
 ] # Lista de criptomonedas
 filename = 'noticias.txt' # Archivo para guardar un registro de las noticias
 f = open(os.path.join(cons.pathroot,filename), 'a', encoding="utf-8")
