@@ -1,0 +1,78 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © ZenAndTheArtOfTrading / www.PineScriptMastery.com
+// @version=5
+strategy("Bitcoin Regime Filter Strategy", 
+     overlay=true, 
+     initial_capital=800, 
+     currency=currency.USDT,
+     default_qty_type=strategy.percent_of_equity, 
+     default_qty_value=10,
+     commission_type=strategy.commission.percent,
+     commission_value=0.1)
+
+// Get user input
+res         = input.timeframe(title="Timeframe", defval="W")
+len         = input.int(title="EMA Length", defval=20)
+marketTF    = input.timeframe(title="Market Timeframe", defval="D")
+useRsi      = input.bool(title="Use RSI Momentum Filter", defval=false)
+rsiMom      = input.int(title="RSI Momentum Threshold", defval=70)
+startTime   = input.time(title="Start Filter", defval=timestamp("01 Mar 2023 13:30 +0000"), group="Time Filter", tooltip="Start date & time to begin searching for setups")
+endTime     = input.time(title="End Filter", defval=timestamp("1 Jan 2099 19:30 +0000"), group="Time Filter", tooltip="End date & time to stop searching for setups")
+
+// Define custom security function
+f_sec(_market, _res, _exp) => request.security(_market, _res, _exp[barstate.isconfirmed ? 0 : 1])
+
+// Define date filter
+dateFilter(int st, int et) => time >= st and time <= et
+
+// Get EMA value
+ema = ta.ema(close, len)
+htfEmaValue = f_sec(syminfo.tickerid, res, ema)
+
+// Get ATR value
+atrValue = ta.atr(5)
+
+// Check if price is above or below EMA filter
+marketPrice = f_sec(syminfo.tickerid, marketTF, close)
+regimeFilter = marketPrice > (htfEmaValue + (atrValue * 0.25))
+
+// Calculate RSI
+rsiValue = ta.rsi(close, 7)
+
+// Get bullish momentum filter
+bullish = regimeFilter and (rsiValue > rsiMom or not useRsi)
+
+// Check for bearish volatility caution
+caution = bullish and ta.highest(high, 7) - low > (atrValue * 1.5)
+
+// Set momentum color
+bgCol = color.red
+if bullish[1]
+    bgCol := color.green
+if caution[1]
+    bgCol := color.orange
+
+// Change background color
+plotshape(1, color=bgCol, style=shape.square, location=location.bottom, size=size.auto, title="Momentum Strength")
+plot(htfEmaValue, color=close > htfEmaValue ? color.green : color.red, linewidth=2)
+
+// Store trailing ratchet stop loss
+var float trailStop = na
+
+// Handle strategy entry
+if bullish and strategy.position_size == 0 and dateFilter(startTime, endTime) and not caution
+    strategy.entry(id="Buy", direction=strategy.long)
+    trailStop := na
+
+// Handle trailing stop
+temp_trailStop = ta.highest(low, 7) - (caution[1] ? atrValue * 0.2 : atrValue)
+if strategy.position_size > 0
+    if temp_trailStop > trailStop or na(trailStop)
+        trailStop := temp_trailStop
+
+// Handle strategy exit
+if (close < trailStop or close < htfEmaValue)
+    strategy.close("Buy", comment="Sell")
+
+// Draw stop
+plot(strategy.position_size[1] > 0 ? trailStop : na, style=plot.style_linebr, color=color.red, title="Stop Loss")

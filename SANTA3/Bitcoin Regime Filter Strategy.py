@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 
 # Get user input
-symbol = "BTCUSDT"
+symbol = "DOGEUSDT"
 marketTF = "1d"
 rsiMom = 70
 useRsi = False
@@ -125,7 +125,29 @@ fig.add_trace(
         ),
                secondary_y=False
 )
+# trail stop
+fig.add_trace(
+            go.Scatter(
+            x=df['timestamp'],
+            y=df['trailStop'],
+            mode='markers+lines',
+            marker={'color': 'blue'}, 
+            line={'color': 'gray'},
+            name='trailing stop'
+        ),
+               secondary_y=True
+)
 
+fig.add_trace(
+            go.Scatter(x=df['timestamp'],
+               y=df['close'],
+               text=df['buy_sell'],
+               textposition='top right',
+               textfont=dict(color='black',size=16),
+               mode='text',
+               name='buy_sell')
+,secondary_y=True
+)
 fig.update_layout(title=f"{symbol}", height=800)
 fig.update_yaxes(title="Price $", secondary_y=True, showgrid=True)
 fig.update_yaxes(title="Volume $", secondary_y=False, showgrid=False)
