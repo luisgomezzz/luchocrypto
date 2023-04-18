@@ -477,9 +477,11 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
     if side=='SELL':
         if precioactual<S5: # si el precio anda por abajo de todos los muros
             if abs(variacion)<distanciasoportada:
-                if (df.close.iloc[-2] < df.upper2.iloc[-2]
-                and df.close.iloc[-3] > df.upper2.iloc[-3]
-                and precioactual < df.upper2.iloc[-1]):
+                if (
+                    df.close.iloc[-3] > df.upper.iloc[-3]
+                    and
+                    df.close.iloc[-2] < df.upper.iloc[-2]
+                    ):
                     salida = True
                 else:
                     print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
@@ -490,9 +492,11 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         else:        
             if precioactual<R4: # si el precio anda entre los muros
                 if abs(variacion)<distanciasoportada:
-                    if (df.close.iloc[-2] < df.upper2.iloc[-2]
-                    and df.close.iloc[-3] > df.upper2.iloc[-3]
-                    and precioactual < df.upper2.iloc[-1]):
+                    if (
+                        df.close.iloc[-3] > df.upper.iloc[-3]
+                        and
+                        df.close.iloc[-2] < df.upper.iloc[-2]
+                        ):
                         salida = True
                     else:
                         print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
@@ -507,9 +511,9 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         if precioactual>R5: # si el precio anda por arriba de todos los muros
             if abs(variacion)<distanciasoportada:
                 if  (
-                    df.close.iloc[-2] > df.lower2.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
-                    and df.close.iloc[-3] < df.lower2.iloc[-3] #antepenúltima vela cerró con colse menor que el limite bajo
-                    and precioactual > df.lower2.iloc[-1]
+                    df.close.iloc[-3] < df.lower.iloc[-3]
+                    and
+                    df.close.iloc[-2] > df.lower.iloc[-2] 
                     ):
                     salida = True
                 else:
@@ -522,10 +526,10 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
             if precioactual>S4:# si el precio anda entre los muros
                 if abs(variacion)<distanciasoportada:
                     if  (
-                    df.close.iloc[-2] > df.lower2.iloc[-2] #penúltima vela cerró con close mayor que limite bajo
-                    and df.close.iloc[-3] < df.lower2.iloc[-3] #antepenúltima vela cerró con colse menor que el limite bajo
-                    and precioactual > df.lower2.iloc[-1]
-                    ):
+                        df.close.iloc[-3] < df.lower.iloc[-3]
+                        and
+                        df.close.iloc[-2] > df.lower.iloc[-2] 
+                        ):
                         salida = True
                     else:
                         salida = False
@@ -611,7 +615,6 @@ def main() -> None:
                                 #################################CÁLCULOS
                                 # ####################################################################################################### 
                                 variaciontrigger=ut.leeconfiguracion("variaciontrigger")
-                                maximavariaciondiaria=ut.leeconfiguracion("maximavariaciondiaria")
                                 ventana=ut.leeconfiguracion('ventana')
                                 porcentajeentrada = ut.leeconfiguracion('porcentajeentrada')
 
@@ -681,42 +684,33 @@ def main() -> None:
                                 # #######################################################################################################
 
                                 if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
-                                    ###########para la variaciÓn diaria (aunque tomo 12 hs para atrás)
-                                    df2=ut.calculardf (par,'1h',12)
-                                    df2preciomenor=df2.low.min()
-                                    df2preciomayor=df2.high.max()
-                                    variaciondiaria = ut.truncate((((df2preciomayor/df2preciomenor)-1)*100),2) # se toma como si siempre fuese una subida ya que sería el caso más alto.
-                                    ###########
-                                    if variaciondiaria <= maximavariaciondiaria:
-                                        ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
-                                        if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
-                                            lado='SELL'
+                                    ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
+                                    if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
+                                        lado='SELL'
+                                        if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
+                                            ###################
+                                            ###### SHORT ######
+                                            ###################
+                                            ut.sound()
+                                            ut.sound()  
+                                            print("*********************************************************************************************")
+                                            ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2)))                                                    
+                                            trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
+                                            tradingflag=True
+
+                                    else:
+                                        if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
+                                            lado='BUY'
                                             if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
                                                 ###################
-                                                ###### SHORT ######
+                                                ###### LONG #######
                                                 ###################
                                                 ut.sound()
-                                                ut.sound()  
+                                                ut.sound()
                                                 print("*********************************************************************************************")
-                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
-                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
-                                                tradingflag=True
-
-                                        else:
-                                            if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
-                                                lado='BUY'
-                                                if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
-                                                    ###################
-                                                    ###### LONG #######
-                                                    ###################
-                                                    ut.sound()
-                                                    ut.sound()
-                                                    print("*********************************************************************************************")
-                                                    ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2))+"% - Variación diaria: "+str(variaciondiaria)+"%")                                                    
-                                                    trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-                                                    tradingflag=True  
-                                    else:
-                                        print(f"\n{par} - No se cumple condición. Variación diaria superior a {maximavariaciondiaria}. ({variaciondiaria})")
+                                                ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2)))                                                    
+                                                trading(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
+                                                tradingflag=True  
 
                                     #crea archivo lanzador por si quiero ejecutarlo manualmente
                                     lanzadorscript = "import sys"

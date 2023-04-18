@@ -27,10 +27,9 @@ def get_bollinger_bands(df):
     # calcular indicadores
     close = df['close']
     basis = talib.SMA(close, length)
-    dev = talib.STDDEV(close, length)
-    dev2 = mult * dev
-    df['upper2'] = basis + dev2
-    df['lower2'] = basis - dev2
+    dev = mult * talib.STDDEV(close, length)
+    df['upper'] = basis + dev
+    df['lower'] = basis - dev
     # imprimir resultados
     return df
 
