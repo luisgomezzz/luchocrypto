@@ -4,7 +4,7 @@ import util as ut
 import numpy as np
 import pandas as pd
 
-symbol='IDUSDT'
+symbol='DOGEUSDT'
 timeframe ='1m'
 df=ut.calculardf(symbol,timeframe)
 
