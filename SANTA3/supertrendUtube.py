@@ -103,103 +103,6 @@ def loopfiltradodemonedas ():
     while True:
         filtradodemonedas ()
 
-def malladecompensaciones(par,lado,entryprice,tamanio,distanciaentrecompensaciones,cantidadcompensaciones):
-    procentajeperdida=ut.leeconfiguracion("procentajeperdida")
-    ut.printandlog(cons.nombrelog,"Porcentaje de pérdida: "+str(procentajeperdida)) 
-    incrementocompensacionporc=ut.leeconfiguracion('incrementocompensacionporc')
-    ut.printandlog(cons.nombrelog,"Incremento porcentual entre compensaciones: "+str(incrementocompensacionporc))
-    if cons.exchange_name == 'kucoinfutures':
-        multiplier=float(cons.clientmarket.get_contract_detail(par)['multiplier'])
-    else:
-        multiplier=1     
-    balancetotal = ut.balancetotal()
-    perdida = (balancetotal*procentajeperdida/100)*-1
-    hayguita = True
-    distanciaporc = 0.0
-    cantidadtotal = 0.0
-    cantidadtotalusdt = 0.0  
-    precioinicial = entryprice
-    cantidad = abs(tamanio)
-    cantidadusdt = cantidad*entryprice*multiplier
-    cantidadtotal = cantidadtotal+cantidad
-    cantidadtotalusdt = cantidadtotalusdt+cantidadusdt
-    cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
-    if lado == 'BUY':
-        preciodeataque = precioinicial*(1-distanciaentrecompensaciones/2/100)
-    else:
-        preciodeataque = precioinicial*(1+distanciaentrecompensaciones/2/100)                                
-    cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)
-    preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque    
-    preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
-    i=0
-    #CREA COMPENSACIONES         
-    while (cantidadtotalconataqueusdt <= balancetotal*cons.apalancamientoreal # pregunta si supera mi capital
-        and (
-        (lado=='BUY' and preciodeataque > preciostopsanta)
-        or 
-        (lado=='SELL' and preciodeataque < preciostopsanta)
-        ) 
-        and i<=cantidadcompensaciones
-        and ut.getentryprice(par)!=0
-        ):
-        i=i+1
-        if i==1:
-            cantidad = cantidad
-        else:                
-            cantidad = cantidad*(1+incrementocompensacionporc/100)
-        distanciaporc = distanciaporc+distanciaentrecompensaciones              
-        hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)
-        if hayguita == True:
-            cantidadtotal = cantidadtotal+cantidadformateada
-            cantidadtotalusdt = cantidadtotalusdt+(cantidadformateada*preciolimit*multiplier)
-            cantidadtotalconataque = cantidadtotal+(cantidadtotal*3)
-            if lado == 'BUY':                                      
-                preciodeataque = preciolimit*(1-distanciaentrecompensaciones/2/100)                                            
-            else:
-                preciodeataque = preciolimit*(1+distanciaentrecompensaciones/2/100)
-            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadtotal*3*preciodeataque*multiplier)                
-            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque ##
-        ut.printandlog(cons.nombrelog,"Compensación "+str(i)+". Amount: "+str(cantidadformateada)+" - Price: "+str(preciolimit)+" - Volume: "+str(cantidadformateada*preciolimit)+" - Total Volume: "+str(cantidadtotalusdt))
-        preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier        
-    # CANCELA ÚLTIMA COMPENSACIÓN
-    try:
-        ut.printandlog(cons.nombrelog,"Cancela última compensación ("+str(i)+")")
-        cons.exchange.cancel_order(compensacionid, par)  
-        ut.printandlog(cons.nombrelog,"Cancelada. ")
-        cantidadtotal = cantidadtotal-cantidadformateada      
-        cantidadtotalusdt = cantidadtotalusdt-(cantidadformateada*preciolimit)   
-    except Exception as ex:
-        print("Error cancela última compensación: "+str(ex)+"\n")
-        pass                                                    
-    # PUNTO DE ATAQUE  
-    if cons.flagpuntodeataque ==1 and ut.getentryprice(par)!=0:
-        cantidad = cantidadtotal*3  #cantidad nueva para mandar a crear              
-        cantidadtotalconataque = cantidadtotal+cantidad
-        distanciaporc = (distanciaporc-distanciaentrecompensaciones)+(distanciaentrecompensaciones)
-        if lado =='SELL':
-            preciolimit = ut.getentryprice(par)*(1+(distanciaporc/100))   
-        else:
-            preciolimit = ut.getentryprice(par)*(1-(distanciaporc/100))
-        limitprice=ut.RoundToTickUp(par,preciolimit)
-        ut.printandlog(cons.nombrelog,"Punto de atque sugerido. Cantidad: "+str(cantidad)+". Precio: "+str(limitprice))
-        hayguita,preciolimit,cantidadformateada,compensacionid = ut.creacompensacion(par,cons.client,lado,cantidad,distanciaporc)    
-        if hayguita == False:
-            print("No se pudo crear la compensación de ataque.")
-            cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
-            preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque
-        else:
-            ut.printandlog(cons.nombrelog,"Ataque creado. "+"Cantidadformateada: "+str(cantidadformateada)+". preciolimit: "+str(preciolimit))     
-            cantidadtotalconataqueusdt = cantidadtotalusdt+(cantidadformateada*preciolimit)                                    
-            preciodondequedariaposicionalfinal = cantidadtotalconataqueusdt/cantidadtotalconataque
-    else:
-        cantidadtotalconataqueusdt = cantidadtotalusdt #seria la cantidad total sin ataque
-        preciodondequedariaposicionalfinal = cantidadtotalusdt/cantidadtotal # totales sin ataque        
-    # STOP LOSS
-    preciostopsanta= preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariaposicionalfinal,perdida)/multiplier
-    ut.printandlog(cons.nombrelog,"Precio Stop sugerido: "+str(preciostopsanta))
-    ut.creostoploss (par,lado,preciostopsanta,cantidadtotal)         
-    ut.printandlog(cons.nombrelog,"\n*********************************************************************************************")         
-
 def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):        
     cantidadcompensaciones=ut.leeconfiguracion('cantidadcompensaciones')
     ut.printandlog(cons.nombrelog,"Porcentaje de entrada: "+str(porcentajeentrada))    
@@ -210,16 +113,15 @@ def formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones):
         tamanio=ut.get_positionamt(par)
         #stop de precaución por si el precio varía rapidamente.
         if lado=='SELL':
-            preciostopprecaicion=entryprice*(1+((cantidadcompensaciones+3)*distanciaentrecompensaciones/100))
+            preciostopprecaicion=entryprice*(1+10/100)
         else:
-            preciostopprecaicion=entryprice*(1-((cantidadcompensaciones+3)*distanciaentrecompensaciones/100))
+            preciostopprecaicion=entryprice*(1-10/100)
         ut.creostoploss (par,lado,preciostopprecaicion)        
         ut.printandlog(cons.nombrelog,mensajeposicioncompleta+"\nQuantity: "+str(tamanio))
         ut.printandlog(cons.nombrelog,"distancia entre compensaciones: "+str(distanciaentrecompensaciones))
         #agrego el par al file
         with open(os.path.join(cons.pathroot, cons.operandofile), 'a') as filehandle:            
-            filehandle.writelines("%s\n" % place for place in [par])
-        malladecompensaciones(par,lado,entryprice,tamanio,distanciaentrecompensaciones,cantidadcompensaciones)            
+            filehandle.writelines("%s\n" % place for place in [par])      
     return posicioncreada        
 
 # MANEJO DE TPs
@@ -228,7 +130,7 @@ def creaactualizatps (par,lado,limitorders=[]):
     tp = 1
     porcentajeadesocupar=ut.leeconfiguracion("porcentajeadesocupar")
     dict = {     #porcentaje de variacion - porcentaje a desocupar   
-         1.15 : porcentajeadesocupar
+         10 : porcentajeadesocupar
     }
     profitnormalporc = 1 
     profitaltoporc = 2 # para tener el tp mas cerca en caso de estar pesado
@@ -274,69 +176,37 @@ def trading(par,lado,porcentajeentrada,distanciaentrecompensaciones):
     mensajelog=mensajelog+"\nBalance: "+str(ut.truncate(ut.balancetotal(),2))
     ut.printandlog(cons.nombrelog,mensajelog)    
     posicioncreada=formacioninicial(par,lado,porcentajeentrada,distanciaentrecompensaciones) 
-    thread_trading = threading.Thread(target=callback_updating,args=(par,lado), daemon=True)
+    thread_trading = threading.Thread(target=updating,args=(par,lado), daemon=True)
     thread_trading.start()
     return posicioncreada   
 
-async def updating(symbol,side):
+def updating(symbol,side):
     try:
-        print("\nupdating-CREA TPs..."+symbol)
-        compensacioncount = 0
-        stopengananciascreado = False
-        positionamtbk=ut.get_positionamt(symbol)
-        limitorders=creaactualizatps (symbol,side)        
-        client = await AsyncClient.create(cons.api_key, cons.api_secret)
-        bm = BinanceSocketManager(client)
-        # start any sockets here, i.e a trade socket
-        ts = bm.futures_user_socket()#-за фючърсният срийм или за спот стрийма
-        # then start receiving messages
-        if abs(ut.get_positionamt(symbol)) >= abs(positionamtbk): #Si en el transcurso de la creación de las compensaciones no se cerró la posición y no tocó un TP .
-            async with ts as tscm:
-                while True:
-                    res = await tscm.recv() #espera a recibir un mensaje
-                    if res['e']=='ACCOUNT_UPDATE' and res['a']['m']== "ORDER" :
-                        especifico=next((item for item in res['a']['P'] if item["ps"] == 'BOTH' and item["s"] == symbol), None)
-                        if especifico:
-                            pnl=float(especifico['up'])
-                            if pnl > 0.0 and stopengananciascreado == False:# stop en ganancias porque tocó un TP                                
-                                    print("\nupdating-CREA STOP EN GANANCIAS PORQUE TOCÓ UN TP..."+symbol)
-                                    stopenganancias=float(especifico['ep'])
-                                    ut.creostoploss (symbol,side,stopenganancias) 
-                                    stopengananciascreado = True
-                                    ut.sound("cash-register-purchase.mp3")  
-                                    #cierro todas las compensaciones ya que no sirven más. Dejo los STOP LOSS por las dudas
-                                    info = cons.client.futures_get_open_orders(symbol=symbol)
-                                    for i in range(len(info)):
-                                        if info[i]['type']=='LIMIT':
-                                            orid=(info[i]['orderId'])
-                                            cons.exchange.cancel_order(orid, symbol)                                    
-                                    if float(ut.get_positionamt(symbol))!=0.0:
-                                        if compensacioncount>=1:
-                                            #stop vela vela
-                                            thread_stopvelavela = threading.Thread(target=callback_stopvelavela,args=(symbol,side,stopenganancias), daemon=True)
-                                            thread_stopvelavela.start() 
-                                        else:
-                                            print(f"\n{symbol} - {side} - Se cierra la posición porque el tamaño es muy chico.")
-                                            ut.closeposition(symbol,side)
-                                            if '1' not in archivooperando.leer():
-                                                archivooperando.agregarsymbol('1')
-                            else:
-                                if pnl < 0.0 and stopengananciascreado == False:# take profit que persigue al precio cuando toma compensaciones                                 
-                                    print("\nupdating-ACTUALIZAR TPs PORQUE TOCÓ UNA COMPENSACIÓN..."+symbol)
-                                    compensacioncount=compensacioncount+1
-                                    limitorders=creaactualizatps (symbol,side,limitorders)
-                                    if compensacioncount<=1:
-                                        ut.sound()
-                                    else:
-                                        ut.sound("call-to-attention.mp3")
-                                else:
-                                    if pnl == 0.0:
-                                       break
-            await client.close_connection()
-        else:
-            print(f"\nSe cierra la posición porque tocó un TP al mismo momento en que se creaba o se cerró la posición mientras se creaban las compensaciones. ")
-            ut.closeposition(symbol,side)
-        print(f"Posición {symbol} cerrada. ")
+        
+        while(ut.get_positionamt(symbol)!=0):
+            df=ut.calculardf(symbol,cons.temporalidad)
+            df['sig'] = adx(df,dilen, adxlen)
+            df['direccion'] = pta.supertrend(df['high'], df['low'], df['close'], atrPeriod=atrPeriod, factor=factor)['SUPERTd_7_3.0']*-1
+            df['resta'] = df['direccion'] - df['direccion'].shift(1)
+            df['resta'].fillna(0)
+            df['rsi21']=lucho_rsi(df.close, 21)
+            df['rsi3']=lucho_rsi(df.close, 3)
+            df['rsi28']=lucho_rsi(df.close, 28)
+            df['entry'] = np.nan
+            df['entry'] = np.where((df.resta.shift(1) < 0) & (df.rsi21.shift(1) < 66) & (df.rsi3.shift(1) > 80) & (df.rsi28.shift(1) > 49) & (df.sig.shift(1) > 20), "BUY", np.where((df.resta.shift(1) > 0) & (df.rsi21.shift(1) > 34) & (df.rsi3.shift(1) < 20) & (df.rsi28.shift(1) < 51) & (df.sig.shift(1) > 20),"SELL",np.nan))
+            if side =='BUY':
+                if df.entry.iloc[-1] =='SELL':
+                    ut.closeposition(symbol,side)
+                    print(f"Posición {symbol} cerrada. ")
+                else:
+                    ut.sleep(10)
+            else:
+                if df.entry.iloc[-1] =='BUY':
+                    ut.closeposition(symbol,side)
+                    print(f"Posición {symbol} cerrada. ")
+                else:
+                    ut.sleep(10)
+        
         #cierra todo porque se terminó el trade
         ut.closeallopenorders(symbol)    
         #se quita la moneda del arhivo ya que no se está operando
@@ -356,17 +226,6 @@ async def updating(symbol,side):
         balancetotal=ut.balancetotal()
         reservas=ut.leeconfiguracion("reservas")
         print(f"\nTrading-Final del trade {symbol} en {side} - Saldo: {str(ut.truncate(balancetotal,2))} - PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
-    except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
-        pass
-
-def callback_updating(symbol,side):
-    try:               
-        loop = asyncio.new_event_loop() 
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(updating(symbol,side))
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
