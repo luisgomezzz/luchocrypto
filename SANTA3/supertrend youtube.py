@@ -54,6 +54,6 @@ df['rsi21']=lucho_rsi(df.close, 21)
 df['rsi3']=lucho_rsi(df.close, 3)
 df['rsi28']=lucho_rsi(df.close, 28)
 df['entry'] = np.nan
-df['entry'] = np.where((df.resta.shift(1) < 0) & (df.rsi21.shift(1) < 66) & (df.rsi3.shift(1) > 80) & (df.rsi28.shift(1) > 49) & (df.sig.shift(1) > 20), "BUY", np.where((df.resta.shift(1) > 0) & (df.rsi21.shift(1) > 34) & (df.rsi3.shift(1) < 20) & (df.rsi28.shift(1) < 51) & (df.sig.shift(1) > 20),"SELL",np.nan))
+df['entry'] = np.where((df.resta < 0) & (df.rsi21 < 66) & (df.rsi3 > 80) & (df.rsi28 > 49) & (df.sig > 20), "BUY", np.where((df.resta > 0) & (df.rsi21 > 34) & (df.rsi3 < 20) & (df.rsi28 < 51) & (df.sig > 20),"SELL",np.nan))
 
 print(df.tail(60))
