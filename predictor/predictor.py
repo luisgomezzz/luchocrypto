@@ -7,16 +7,17 @@ from keras.layers import LSTM
 from keras.layers import Dense
 from keras import optimizers
 from keras.models import Model
-from keras.layers import Dense, LSTM, Input, Activation, concatenate
+from keras.layers import Dense, LSTM, Input, Activation
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import util as ut
 from time import sleep
 import datetime as dt
+from tensorflow import keras
+
 ut.printandlog(cons.nombrelog,"arranca prediccion: ")
 
 # definicion
-
 backcandles = 100
 timeframe = '30m'
 
