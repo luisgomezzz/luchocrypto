@@ -20,7 +20,7 @@ ut.printandlog(cons.nombrelog,"Arranca Predictor: ")
 # definicion
 backcandles = 100 #velas hacia atrás que estudia.
 timeframe = '30m'
-generar_modelos = 1 # 1:entrena, guarda el modelo y predice - 0: solo predice
+generar_modelos = 0 # 1:entrena, guarda el modelo y predice - 0: solo predice
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
@@ -111,7 +111,7 @@ def main():
             sc = MinMaxScaler(feature_range=(0,1))
             deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
             print(deriv_y_pred_scaled[-1])
-            if float(deriv_y_pred_scaled[-1]) >= 0.6:
+            if float(deriv_y_pred_scaled[-1]) >= 0.7:
                 ut.sound()
                 ut.sound()
                 ut.sound()
