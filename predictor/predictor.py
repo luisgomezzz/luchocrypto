@@ -79,10 +79,14 @@ def obtiene_historial(symbol,timeframe):
     splitlimit = int(len(X)*0.8)
     X_train, X_test = X[:splitlimit], X[splitlimit:]
     y_train, y_test = y[:splitlimit], y[splitlimit:]
-    return X_train,y_train,X_test,y_test,cantidadcamposentrenar
+    #tendencia
+    ema20=ta.ema(data.Close, length=20)
+    ema50=ta.ema(data.Close, length=50)
+    tendencia=[1 if ema20[i]>=ema50[i] else -1 for i in range(len(data))]
+    return X_train,y_train,X_test,y_test,cantidadcamposentrenar,tendencia
 
 def entrena_modelo(symbol):
-    X_train,y_train,X_test,y_test,cantidadcamposentrenar=obtiene_historial(symbol,timeframe)
+    X_train,y_train,X_test,y_test,cantidadcamposentrenar,tendencia=obtiene_historial(symbol,timeframe)
     np.random.seed(10)
     lstm_input = Input(shape=(backcandles, cantidadcamposentrenar), name='lstm_input')
     lstm_layer1 = LSTM(150, return_sequences=True, name='lstm_layer1')(lstm_input)
@@ -104,7 +108,7 @@ def main():
     while True:
         for symbol in listamonedas:
             print('chequeo '+symbol)
-            X_train,y_train,X_test,y_test,cantidadcamposentrenar=obtiene_historial(symbol,timeframe)
+            X_train,y_train,X_test,y_test,cantidadcamposentrenar,tendencia=obtiene_historial(symbol,timeframe)
             model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
             y_pred = model.predict(X_test)
             deriv_y_pred = np.diff(y_pred, axis=0)
@@ -115,9 +119,9 @@ def main():
                 ut.sound()
                 ut.sound()
                 ut.sound()
-                ut.printandlog(cons.nombrelog,'Encontrado '+symbol+'. Pendiente: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-        print("duermo 15 min")    
-        sleep(900)
+                ut.printandlog(cons.nombrelog,'Encontrado '+symbol+'. Tendencia: '+str(tendencia[-1])+'. Pendiente: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+        print("duermo x min")    
+        sleep(300)
 
 if __name__ == '__main__':
     main()
