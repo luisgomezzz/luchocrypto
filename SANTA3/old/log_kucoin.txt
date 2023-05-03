@@ -1,0 +1,47 @@
+Par: INJUSDTM - Variación mecha: 5.18% - Variación diaria: 16.51%
+Trade - INJUSDTM - SELL - Hora:30/Mar/2023 17:39:00
+Balance: 50.71
+Porcentaje de entrada: 10
+Cantidad de compensaciones: 4
+Apalancamiento: 10
+EntryPrice: 0.0
+Quantity: -1.0
+distancia entre compensaciones: 1.7
+Porcentaje de pérdida: 5
+Incremento porcentual entre compensaciones: 30
+Compensación 1. Amount: 0 - Price: 0 - Volume: 0 - Total Volume: 4.878
+Compensación 2. Amount: 0 - Price: 0 - Volume: 0 - Total Volume: 4.878
+Compensación 3. Amount: 0 - Price: 0 - Volume: 0 - Total Volume: 4.878
+Compensación 4. Amount: 0 - Price: 0 - Volume: 0 - Total Volume: 4.878
+Compensación 5. Amount: 0 - Price: 0 - Volume: 0 - Total Volume: 4.878
+Cancela última compensación (5)
+Punto de atque sugerido. Cantidad: 3.0. Precio: 5.292
+Precio Stop sugerido: 7.413842003645
+
+*********************************************************************************************
+
+HBARUSDTM SELL - Variación último soporte: 1.83% - Distancia soportada: 5.0%
+
+Par: HBARUSDTM - Variación mecha: 5.09% - Variación diaria: 8.67%
+Trade - HBARUSDTM - SELL - Hora:31/Mar/2023 10:27:42
+Balance: 50.77
+Porcentaje de entrada: 10
+Cantidad de compensaciones: 4
+Apalancamiento: 10
+EntryPrice: 0.07408
+Quantity: -6.0
+distancia entre compensaciones: 1
+Porcentaje de pérdida: 5
+Incremento porcentual entre compensaciones: 30
+Compensación 1. Amount: 6.0 - Price: 0.07482 - Volume: 0.44892 - Total Volume: 8.934000000000001
+Compensación 2. Amount: 7.0 - Price: 0.07556 - Volume: 0.5289200000000001 - Total Volume: 14.223200000000002
+Compensación 3. Amount: 10.0 - Price: 0.0763 - Volume: 0.7630000000000001 - Total Volume: 21.8532
+Compensación 4. Amount: 13.0 - Price: 0.07704 - Volume: 1.00152 - Total Volume: 31.8684
+Compensación 5. Amount: 17.0 - Price: 0.07778 - Volume: 1.32226 - Total Volume: 45.091
+Cancela última compensación (5)
+Cancelada. 
+Punto de atque sugerido. Cantidad: 126.0. Precio: 0.07778
+Ataque creado. Cantidadformateada: 126.0. preciolimit: 0.07778
+Precio Stop sugerido: 0.03339733955341965
+
+*********************************************************************************************

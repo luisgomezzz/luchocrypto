@@ -25,6 +25,10 @@ cd ta-lib
 python setup.py install
 
 
+### en windows
+
+https://www.youtube.com/watch?v=-tHCAEZzUhc&ab_channel=AlexCarry
+
 ##################
 
 Sonidos

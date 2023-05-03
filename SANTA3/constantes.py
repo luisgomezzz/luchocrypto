@@ -53,7 +53,7 @@ if exchange_name =='binance':
 if exchange_name =='kucoin':
     nombrelog = "log_kucoin.txt" 
 if exchange_name =='finandy':
-    nombrelog = "log_finandy.txt"        
+    nombrelog = "log_finandy.txt"
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 operandofile = "operando.txt"
@@ -108,7 +108,6 @@ if exchange_name == 'binance':
     api_secret = binance_secret
     api_passphares = binance_passphares
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 0
 if exchange_name == 'kucoin':
     api_key = kucoin_key
     api_secret = kucoin_secret
@@ -117,18 +116,12 @@ if exchange_name == 'kucoin':
     client = kucoinClient(api_key, api_secret,api_passphares) 
     clienttrade = kucoinTrade(api_key, api_secret,api_passphares) 
     clientmarket = Market(url='https://api-futures.kucoin.com')
-    balanceobjetivo = 0 
 if exchange_name == 'finandy':
     api_key = finandy_key
     api_secret = finandy_secret
     api_passphares = finandy_passphares
     exchange_name = 'binance'
     client = binanceClient(api_key, api_secret,api_passphares) 
-    balanceobjetivo = 24.00+24.88+71.53+71.62+106.01+105.3+103.14+101.55+102.03+102.49-100+400+400+45+63.59+1500+99.9+199.80+100+100
-    #GOALS
-    #400 prestamo compra de dpto. [done]
-    #445 que puse la primera vez para aprender. 
-    #1500 para llegar al capital base. <<---
 
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
@@ -182,17 +175,21 @@ if answers['exchange']=='finandy':
 
 # Data to be written
 dictionary = {
-    "apalancamiento" : 10, #es 10 pero se coloca 20, 30, 40, etc. para poder tener saldo y crear más de una compensación de ataque en varias posiciones.
-    "ventana" : 40, #Ventana de búsqueda en minutos.   
-    "porcentajeentrada" : 10, 
-    "procentajeperdida" : 10,
+    "ventana" : 30, #Ventana de búsqueda en minutos.   
+    "porcentajeentrada" : 8,
+    "procentajeperdida" : 13,
     "incrementocompensacionporc" : 30, #porcentaje de incremento del tamaño de la compensacion con respecto a su anterior
-    "cantidadcompensaciones" : 8,
+    "cantidadcompensaciones" : 7,
     "variaciontrigger" : 5, #porcentaje de variación (en la ventana de 30 min) por la cual se toma posición. 
     "maximavariaciondiaria" : 50, #Máxima variación diaria de una moneda(20%). La maximavariaciondiaria tiene como propósito buscar si la moneda tuvo una variación superior a la indicada en las últimas 12hs, en cuyo caso se evita ingresar a un trade demasiado riesgoso. 
     "tradessimultaneos" : 3, #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt  
     "distanciaentrecompensacionesalta" : 1.7, #porcentaje de distancia entre compensaciones para monedas por debajo del top de capitalización
-    "distanciaentrecompensacionesbaja" : 1 #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
+    "distanciaentrecompensacionesbaja" : 1, #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
+    "reservas": 2965, #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
+    "sideflag": 0, # 0 ambos | 1 solo shorts | 2 solo longs
+    "sonidos": 1, # 1 sonido ON, 0 sonido OFF
+    "restriccionhoraria": 1, # 1 restricción ON, 0 restricción OFF
+    "porcentajeadesocupar": 50 # porcentaje de la posición que desocupa al tocar el tp.
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
@@ -203,3 +200,11 @@ if os.path.isfile(os.path.join(pathroot, "configuration.json")) == False:# si no
         outfile.write(json_object)
 
 url_stream = "wss://stream.binance.com:9443/ws/"
+
+apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total, dará el capital total disponible para usar en posición 
+# y compensaciones. Durante el código pueden usarse apalancamientos distintos para poder usar todo el capital apalancado
+# (apalancamientoreal*balancetotal) en la estrategia.
+
+#monedas que no quiero operar
+#BELUSDT moneda que ya ha hecho manipulaciones.
+mazmorra=['BELUSDT','RENUSDT']

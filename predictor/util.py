@@ -140,22 +140,17 @@ def volumeOf24h(par): #en usdt
                 break
     return float(vol)
 
-def sound(archivo=''):
-    sonidoactivado=leeconfiguracion("sonidos")
-    if sonidoactivado==1:
-        if archivo!='':
-            playsound(cons.pathsound+archivo)  
-        else:
-            duration = 200
-            freq = 800
-            # milliseconds
-            # Hz
-            # for windows
-            if os.name == 'nt':
-                ws.Beep(freq, duration)
-            # for mac and linux(here, os.name is 'posix')
-            else:
-                _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
+def sound():
+    duration = 200
+    freq = 800
+    # milliseconds
+    # Hz
+    # for windows
+    if os.name == 'nt':
+        ws.Beep(freq, duration)
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = os.system('play -nq -t alsa synth %s sin %s' % (duration/1000, freq))
 
 def printandlog(nombrelog,mensaje,pal=0,mode='a'):
    if pal==0: #print y log
