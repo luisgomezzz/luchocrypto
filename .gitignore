@@ -18,3 +18,5 @@ SANTA3/noticias.txt
 predictor/TALLER.py
 predictor/log_finandy.txt
 predictor/modelos/*
+predictor/__pycache__/constantes.cpython-310.pyc
+predictor/__pycache__/util.cpython-310.pyc
