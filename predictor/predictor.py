@@ -47,15 +47,13 @@ def obtiene_historial(symbol,timeframe):
         return df
     data['RSI']=ta.rsi(data.Close, length=15)
     data['EMAF']=ta.ema(data.Close, length=20)
-    data['EMAM']=ta.ema(data.Close, length=100)
-    data['EMAS']=ta.ema(data.Close, length=150)
+    data['EMAM']=ta.ema(data.Close, length=50)
+    data['EMAS']=ta.ema(data.Close, length=200)
     data['macd'], data['macd_signal'], data['macd_hist'] = talib.MACD(data['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
     data=get_bollinger_bands(data)
     data['Momentum6'] = ((data['Close'] - data['Close'].shift(6)) / data['Close'].shift(6)) * 100
     data['Variacion']=[((data.High[i]/data.Low[i])-1)*100 if data.Close[i]>=data.Open[i] else (((data.Low[i]/data.High[i])-1)*100) for i in range(len(data))]
-    data['Variacion']=round(data['Variacion'].shift(-1),2)
-    data['Target']=round(((data.High/data.Low)-1)*100,2)
-    data['Target']=data['Target'].shift(-1)
+    
     data.dropna(inplace=True)
     data.reset_index(inplace = True)
     data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades','Ignore','index'], axis=1, inplace=True)
@@ -82,7 +80,8 @@ def obtiene_historial(symbol,timeframe):
     #tendencia
     ema20=ta.ema(data.Close, length=20)
     ema50=ta.ema(data.Close, length=50)
-    tendencia=[1 if ema20[i]>=ema50[i] else -1 for i in range(len(data))]
+    ema200=ta.ema(data.Close, length=200)
+    tendencia=[1 if ema20[i]>ema50[i]>ema200[i] else (-1 if ema20[i]<ema50[i]<ema200[i] else 0) for i in range(len(data))]
     return X_train,y_train,X_test,y_test,cantidadcamposentrenar,tendencia
 
 def entrena_modelo(symbol):
@@ -112,8 +111,9 @@ def main():
             model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
             y_pred = model.predict(X_test)
             deriv_y_pred = np.diff(y_pred, axis=0)
+            deriv_y_pred = np.diff(deriv_y_pred, axis=0)
             sc = MinMaxScaler(feature_range=(0,1))
-            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
+            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)            
             print(deriv_y_pred_scaled[-1])
             if float(deriv_y_pred_scaled[-1]) >= 0.7:
                 ut.sound()
