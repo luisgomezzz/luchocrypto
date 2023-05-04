@@ -122,17 +122,17 @@ def main():
             deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)     
 
             print(deriv_y_pred_scaled[-1])
-            if float(deriv_y_pred_scaled[-1]) >= 0.8 or float(deriv_y_pred_scaled[-1]) <= 0.2:
-                ut.sound()
+            if float(deriv_y_pred_scaled[-1]) >= 0.85 or float(deriv_y_pred_scaled[-1]) <= 0.15:
                 ut.sound()
                 ut.sound()
                 if deriv_y_pred_scaled[-1]>=0.8:
-                    tendencia=1
+                    tendencia='BUY'
                 else:
-                    tendencia=-1
+                    tendencia='SELL'
                 ut.printandlog(cons.nombrelog,'Encontrado '+symbol+'. Tendencia: '+str(tendencia)+'. Pendiente: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
         print("duermo x min")    
-        sleep(600)
+        ut.printandlog(cons.nombrelog,"####################################################################")
+        sleep(900)
 
 if __name__ == '__main__':
     main()
