@@ -16,7 +16,7 @@ import datetime as dt
 from tensorflow import keras
 ut.printandlog(cons.nombrelog,"Arranca Predictor: ")
 backcandles=100
-generar_modelos = 1 # 1:entrena, guarda el modelo y predice - 0: solo predice
+generar_modelos = 0 # 1:entrena, guarda el modelo y predice - 0: solo predice
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
@@ -132,7 +132,7 @@ def main():
                     tendencia=-1
                 ut.printandlog(cons.nombrelog,'Encontrado '+symbol+'. Tendencia: '+str(tendencia)+'. Pendiente: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
         print("duermo x min")    
-        sleep(300)
+        sleep(600)
 
 if __name__ == '__main__':
     main()
