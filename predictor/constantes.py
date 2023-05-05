@@ -45,6 +45,8 @@ exchange =   exchange_class({
             },
             })
 
+margen = 'CROSSED'
+
 clear() #limpia terminal
 
 

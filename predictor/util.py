@@ -235,36 +235,10 @@ def leeconfiguracion(parameter='porcentajeentrada'):
     valor = json_object[parameter]        
     return valor 
 
-def apalancamientoseguncapital(symbol):
-    apalancamiento=0
-    try:
-        if exchange_name=='binance':
-            capitalapalancado = cons.apalancamientoreal*balancetotal()
-            result= cons.client.futures_leverage_bracket()
-            for x in range(len(result)):
-                if result[x]['symbol'] == symbol:
-                    lista =  result[x]['brackets']
-                    for y in range(len(lista)):
-                        if lista[y]['notionalCap'] > capitalapalancado:# and lista[y]['initialLeverage']>=cons.apalancamientoreal:
-                            apalancamiento = lista[y]['initialLeverage']
-                            break
-        if exchange_name=='kucoinfutures':
-            apalancamiento=cons.apalancamientoreal
-    except:
-        apalancamiento=0
-        print("\nNo hay valores de apalancamiento y notionalcap compatibles con la estrategia. "+symbol+"\n")
-    return(apalancamiento)
-
 def creoposicion (par,size,lado)->bool:         
     serror=True        
     try:
-        apalancamiento=apalancamientoseguncapital(par)
-        if apalancamiento < cons.apalancamientoreal:
-            micapital = balancetotal()
-            porc=truncate(leeconfiguracion('porcentajeentrada')/2,2)
-            size = float(micapital*porc/100)
-            printandlog(cons.nombrelog,f"Porcentaje de entrada redefinido al {porc}%: "+str(size))
-        printandlog(cons.nombrelog,"Apalancamiento: "+str(apalancamiento))        
+        apalancamiento=10
         if  exchange_name=='binance':    
             cons.client.futures_change_leverage(symbol=par, leverage=apalancamiento)
             try: 
@@ -418,7 +392,7 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
             if sizedesocupar<1:
                 sizedesocupar=1 # el size a desocupar no puede ser menor a 1 lot en kucoin
         ####################
-        apalancamiento=apalancamientoseguncapital(par)
+        apalancamiento=10
         creado = True 
         orderid = 0  
         if lado=='BUY':
