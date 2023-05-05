@@ -20,7 +20,7 @@ from binance.exceptions import BinanceAPIException
 import sys
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
-cantidad_posiciones = 4
+cantidad_posiciones = 3
 backcandles=100
 generar_modelos = 0 # 1:entrena, guarda el modelo y predice - 0: solo predice
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
@@ -33,9 +33,6 @@ posiciones={}
 if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
     with open(pathroot+"posiciones.json","w") as j:
         json.dump(posiciones,j, indent=4)
-# Lee el json
-with open(pathroot+"posiciones.json","r") as j:
-    posiciones=json.load(j)        
 
 def posicionpredictor(symbol,side,porcentajeentrada):   
     serror = True
@@ -144,6 +141,9 @@ def main():
         for symbol in listamonedas:
             entrena_modelo(symbol)
     while True:
+        # Lee el json
+        with open(pathroot+"posiciones.json","r") as j:
+            posiciones=json.load(j)         
         for symbol in listamonedas:
             print('chequeo '+symbol)
             
@@ -177,23 +177,29 @@ def main():
                     ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                     ut.sound()
                     ut.sound()
-            else: #cierra posicion
-                if posiciones[symbol]=='BUY':
-                    if deriv_y_pred[-1] < 0:
-                        posiciones.pop(symbol)
-                        with open(pathroot+"posiciones.json","w") as j:
-                            json.dump(posiciones,j, indent=4)                        
-                        ut.printandlog(cons.nombrelog,'Sale del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                        ut.sound()
-                        ut.sound()
-                else:
-                    if deriv_y_pred[-1] > 0:
-                        posiciones.pop(symbol)
-                        with open(pathroot+"posiciones.json","w") as j:
-                            json.dump(posiciones,j, indent=4)                           
-                        ut.printandlog(cons.nombrelog,'Sale del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                        ut.sound()
-                        ut.sound()
+            else: # posición ya creada
+                if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
+                    if posiciones[symbol]=='BUY':
+                        if deriv_y_pred[-1] < 0:
+                            posiciones.pop(symbol)
+                            with open(pathroot+"posiciones.json","w") as j:
+                                json.dump(posiciones,j, indent=4)                        
+                            ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                            ut.sound()
+                            ut.sound()
+                    else:
+                        if deriv_y_pred[-1] > 0:
+                            posiciones.pop(symbol)
+                            with open(pathroot+"posiciones.json","w") as j:
+                                json.dump(posiciones,j, indent=4)                           
+                            ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                            ut.sound()
+                            ut.sound()
+                else: # cerró por limit o manual y se elimina del diccionario
+                    posiciones.pop(symbol)
+                    with open(pathroot+"posiciones.json","w") as j:
+                        json.dump(posiciones,j, indent=4)          
+
         print("posiciones:")                    
         print(posiciones)
         print("duermo x min")    
