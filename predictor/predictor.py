@@ -14,13 +14,25 @@ import util as ut
 from time import sleep
 import datetime as dt
 from tensorflow import keras
-ut.printandlog(cons.nombrelog,"Arranca Predictor: ")
+import os
+import json
+ut.printandlog(cons.nombrelog,"PREDICTOR")
+
 backcandles=100
 generar_modelos = 0 # 1:entrena, guarda el modelo y predice - 0: solo predice
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
 , 'RNDRUSDT', 'CFXUSDT' , 'IDUSDT' , 'ARBUSDT']
+# Crea el file json si no existe
+pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
+posiciones={}
+if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
+    with open(pathroot+"posiciones.json","w") as j:
+        json.dump(posiciones,j, indent=4)
+# Lee el json
+with open(pathroot+"posiciones.json","r") as j:
+    posiciones=json.load(j)        
 
 def obtiene_historial(symbol):
     client = cons.client
@@ -45,6 +57,7 @@ def obtiene_historial(symbol):
         basis = talib.SMA(close, length)
         dev = mult * talib.STDDEV(close, length)
         df['upper'] = basis + dev
+        df['lower'] = basis - dev
         return df
 
     data['RSI']=ta.rsi(data.Close, length=15)
@@ -62,7 +75,6 @@ def obtiene_historial(symbol):
     cantidad_campos_entrenar=len(data.columns)-1
     data_set = data
     pd.set_option('display.max_columns', None)
-    data_set.tail(30)
 
     #################################################################################################################
 
@@ -83,9 +95,7 @@ def obtiene_historial(symbol):
     splitlimit = int(len(X)*0.8)
     X_train, X_test = X[:splitlimit], X[splitlimit:]
     y_train, y_test = y[:splitlimit], y[splitlimit:]
-
-    #################################################################################################################
-   
+    #################################################################################################################   
     return X_train,y_train,X_test,y_test,cantidad_campos_entrenar
 
 def entrena_modelo(symbol):
@@ -119,20 +129,46 @@ def main():
             y_pred = model.predict(X_test)
             deriv_y_pred = np.diff(y_pred, axis=0)
             sc = MinMaxScaler(feature_range=(0,1))
-            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)     
+            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)  
 
             print(deriv_y_pred_scaled[-1])
-            if float(deriv_y_pred_scaled[-1]) >= 0.85 or float(deriv_y_pred_scaled[-1]) <= 0.15:
-                ut.sound()
-                ut.sound()
-                if deriv_y_pred_scaled[-1]>=0.8:
+            
+            tendencia=''
+            if symbol not in posiciones:
+                if float(deriv_y_pred_scaled[-1]) >= 0.85:
                     tendencia='BUY'
                 else:
-                    tendencia='SELL'
-                ut.printandlog(cons.nombrelog,'Encontrado '+symbol+'. Tendencia: '+str(tendencia)+'. Pendiente: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                    if float(deriv_y_pred_scaled[-1]) <= 0.15:
+                        tendencia='SELL'
+                if tendencia !='' and len(posiciones)<4:            
+                    posiciones[symbol]=tendencia
+                    with open(pathroot+"posiciones.json","w") as j:
+                        json.dump(posiciones,j, indent=4)
+                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Lado: '+str(tendencia)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                    ut.sound()
+                    ut.sound()
+            else:
+                if posiciones[symbol]=='BUY':
+                    if deriv_y_pred[-1] < 0:
+                        posiciones.pop(symbol)
+                        with open(pathroot+"posiciones.json","w") as j:
+                            json.dump(posiciones,j, indent=4)                        
+                        ut.printandlog(cons.nombrelog,'Sale del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                        ut.sound()
+                        ut.sound()
+                else:
+                    if deriv_y_pred[-1] > 0:
+                        posiciones.pop(symbol)
+                        with open(pathroot+"posiciones.json","w") as j:
+                            json.dump(posiciones,j, indent=4)                           
+                        ut.printandlog(cons.nombrelog,'Sale del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                        ut.sound()
+                        ut.sound()
+        print("posiciones:")                    
+        print(posiciones)
         print("duermo x min")    
         ut.printandlog(cons.nombrelog,"####################################################################")
-        sleep(900)
+        sleep(60)
 
 if __name__ == '__main__':
     main()

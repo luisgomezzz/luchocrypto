@@ -20,3 +20,5 @@ predictor/log_finandy.txt
 predictor/modelos/*
 predictor/__pycache__/constantes.cpython-310.pyc
 predictor/__pycache__/util.cpython-310.pyc
+predictor/posiciones.json
+.vscode/settings.json
