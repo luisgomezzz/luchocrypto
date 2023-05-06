@@ -20,9 +20,14 @@ from binance.exceptions import BinanceAPIException
 import sys
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
-cantidad_posiciones = 3
+cantidad_posiciones = 4
 backcandles=100
-generar_modelos = 0 # 1:entrena, guarda el modelo y predice - 0: solo predice
+
+# 0: solo predice
+# 1: entrena, guarda el modelo y predice
+# 2: entrena y guarda el modelo
+modo_ejecucion = 0 
+
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
@@ -72,7 +77,6 @@ def obtiene_historial(symbol):
     client = cons.client
     #################################################################################################################  
     timeframe='30m'
-    backcandles = 100 
     historical_data = client.get_historical_klines(symbol, timeframe)
     data = pd.DataFrame(historical_data)
     data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
@@ -137,74 +141,84 @@ def entrena_modelo(symbol):
 
 # programa principal
 def main():
-    if generar_modelos==1:
-        for symbol in listamonedas:
-            entrena_modelo(symbol)
-    while True:
-        # Lee el json
-        with open(pathroot+"posiciones.json","r") as j:
-            posiciones=json.load(j)         
-        for symbol in listamonedas:
-            print('chequeo '+symbol)
-            
-            X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
-            data['atr']=ta.atr(data.High, data.Low, data.Close)
+    if modo_ejecucion in [0,1,2]:
 
-            model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
+        if modo_ejecucion in [1,2]:
+            for symbol in listamonedas:
+                entrena_modelo(symbol)
+        
+        if modo_ejecucion in [0,1]:
 
-            y_pred = model.predict(X_test)
-            deriv_y_pred = np.diff(y_pred, axis=0)
-            sc = MinMaxScaler(feature_range=(0,1))
-            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)  
+            while True:
+                # Lee el json
+                with open(pathroot+"posiciones.json","r") as j:
+                    posiciones=json.load(j)        
+                ut.printandlog(cons.nombrelog,"START "+str(posiciones))
+                for symbol in listamonedas:
+                    print('chequeo '+symbol)
+                    
+                    X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
+                    data['atr']=ta.atr(data.High, data.Low, data.Close)
 
-            print(deriv_y_pred_scaled[-1])
-            
-            side=''
-            if symbol not in posiciones: #crea posicion
-                if float(deriv_y_pred_scaled[-1]) >= 0.85:
-                    side='BUY'
-                    stopprice=data.lower.iloc[-1]-data.atr.iloc[-1]
-                else:
-                    if float(deriv_y_pred_scaled[-1]) <= 0.15:
-                        side='SELL'
-                        stopprice=data.upper.iloc[-1]+data.atr.iloc[-1]
-                if side !='' and len(posiciones) < cantidad_posiciones:      
-                    posicionpredictor(symbol,side,porcentajeentrada=100) 
-                    ut.creostoploss (symbol,side,stopprice)     
-                    posiciones[symbol]=side
-                    with open(pathroot+"posiciones.json","w") as j:
-                        json.dump(posiciones,j, indent=4)
-                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                    ut.sound()
-                    ut.sound()
-            else: # posición ya creada
-                if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
-                    if posiciones[symbol]=='BUY':
-                        if deriv_y_pred[-1] < 0:
+                    model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
+
+                    y_pred = model.predict(X_test)
+                    deriv_y_pred = np.diff(y_pred, axis=0)
+                    sc = MinMaxScaler(feature_range=(0,1))
+                    deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)  
+
+                    print(deriv_y_pred_scaled[-1])
+                    
+                    side=''
+                    if symbol not in posiciones: #crea posicion
+                        if float(deriv_y_pred_scaled[-1]) >= 0.85:
+                            side='BUY'
+                            stopprice=data.lower.iloc[-1]-data.atr.iloc[-1]
+                        else:
+                            if float(deriv_y_pred_scaled[-1]) <= 0.15:
+                                side='SELL'
+                                stopprice=data.upper.iloc[-1]+data.atr.iloc[-1]
+                        if side !='' and len(posiciones) < cantidad_posiciones:      
+                            posicionpredictor(symbol,side,porcentajeentrada=90) 
+                            ut.creostoploss (symbol,side,stopprice)     
+                            posiciones[symbol]=side
+                            with open(pathroot+"posiciones.json","w") as j:
+                                json.dump(posiciones,j, indent=4)
+                            ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                            ut.sound()
+                            ut.sound()
+                    else: # posición ya creada
+                        if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
+                            ut.printandlog(cons.nombrelog,symbol+". deriv_y_pred_scaled: "+str(deriv_y_pred_scaled[-1])+". deriv_y_pred: "+str(deriv_y_pred[-1]))
+                            if posiciones[symbol]=='BUY':
+                                if deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < 0.85:
+                                    ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                    ut.sound()
+                                    ut.sound()
+                                    posiciones.pop(symbol)
+                                    with open(pathroot+"posiciones.json","w") as j:
+                                        json.dump(posiciones,j, indent=4)  
+                                    ut.closeallopenorders(symbol)
+                                    ut.closeposition(symbol,side)                                    
+                            else:
+                                if deriv_y_pred[-1] > 0 or deriv_y_pred_scaled[-1] > 0.15:
+                                    ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                    ut.sound()
+                                    ut.sound()                            
+                                    posiciones.pop(symbol)
+                                    with open(pathroot+"posiciones.json","w") as j:
+                                        json.dump(posiciones,j, indent=4)                           
+                                    ut.closeallopenorders(symbol)
+                                    ut.closeposition(symbol,side)                                    
+                        else: # cerró por limit o manual y se elimina del diccionario
                             posiciones.pop(symbol)
                             with open(pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)                        
-                            ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                            ut.sound()
-                            ut.sound()
-                    else:
-                        if deriv_y_pred[-1] > 0:
-                            posiciones.pop(symbol)
-                            with open(pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)                           
-                            ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                            ut.sound()
-                            ut.sound()
-                else: # cerró por limit o manual y se elimina del diccionario
-                    posiciones.pop(symbol)
-                    with open(pathroot+"posiciones.json","w") as j:
-                        json.dump(posiciones,j, indent=4)          
+                                json.dump(posiciones,j, indent=4)
+                            ut.closeallopenorders(symbol)              
 
-        print("posiciones:")                    
-        print(posiciones)
-        print("duermo x min")    
-        ut.printandlog(cons.nombrelog,"####################################################################")
-        sleep(60)
+                ut.printandlog(cons.nombrelog,"END "+str(posiciones))
+                ut.printandlog(cons.nombrelog,"####################################################################")
+                sleep(60)
 
 if __name__ == '__main__':
     main()
