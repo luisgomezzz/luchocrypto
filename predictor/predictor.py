@@ -18,6 +18,7 @@ import os
 import json
 from binance.exceptions import BinanceAPIException
 import sys
+import inquirer
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
 cantidad_posiciones = 4
@@ -26,7 +27,23 @@ backcandles=100
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
 # 2: entrena y guarda el modelo
-modo_ejecucion = 0 
+
+#EXCHANGE SELECT
+questions = [
+    inquirer.List('modo',
+                    message="Seleccionar modo: ",
+                    choices=["Tradear.","Entrenar, guardar el modelo y tradear.","Entrenar y guardar el modelo."],
+                ),
+]
+answers = inquirer.prompt(questions)
+modo_seleccionado=answers['modo']
+
+if modo_seleccionado == "Tradear.":
+    modo_ejecucion=0
+if modo_seleccionado == "Entrenar, guardar el modelo y tradear.":
+    modo_ejecucion=1
+if modo_seleccionado == "Entrenar y guardar el modelo.":
+    modo_ejecucion=2
 
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
