@@ -612,4 +612,16 @@ def closeposition(symbol,side):
         lado='SELL'
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
-        cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+        try:
+            cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+        except BinanceAPIException as a:
+            print(a.message,"No se pudo cerrar la posición.")
+            serror=False
+            pass     
+        except Exception as falla:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+            serror=False
+            pass
+ 

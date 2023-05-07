@@ -21,7 +21,7 @@ import sys
 import inquirer
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
-cantidad_posiciones = 4
+cantidad_posiciones = 3
 backcandles=100
 
 # 0: solo predice
@@ -48,7 +48,9 @@ if modo_seleccionado == "Entrenar y guardar el modelo.":
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
-, 'RNDRUSDT', 'CFXUSDT' , 'IDUSDT' , 'ARBUSDT']
+, 'RNDRUSDT', 
+#'CFXUSDT' , 
+'IDUSDT' , 'ARBUSDT']
 # Crea el file json si no existe
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 posiciones={}
@@ -181,6 +183,7 @@ def main():
 
                     y_pred = model.predict(X_test)
                     deriv_y_pred = np.diff(y_pred, axis=0)
+                    #deriv_y_pred = np.diff(deriv_y_pred, axis=0)
                     sc = MinMaxScaler(feature_range=(0,1))
                     deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)  
 
@@ -188,11 +191,11 @@ def main():
                     
                     side=''
                     if symbol not in posiciones: #crea posicion
-                        if float(deriv_y_pred_scaled[-1]) >= 0.85:
+                        if float(deriv_y_pred_scaled[-1]) >= 0.9:
                             side='BUY'
                             stopprice=data.lower.iloc[-1]-data.atr.iloc[-1]
                         else:
-                            if float(deriv_y_pred_scaled[-1]) <= 0.15:
+                            if float(deriv_y_pred_scaled[-1]) <= 0.1:
                                 side='SELL'
                                 stopprice=data.upper.iloc[-1]+data.atr.iloc[-1]
                         if side !='' and len(posiciones) < cantidad_posiciones:      
@@ -208,7 +211,7 @@ def main():
                         if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
                             ut.printandlog(cons.nombrelog,symbol+". deriv_y_pred_scaled: "+str(deriv_y_pred_scaled[-1])+". deriv_y_pred: "+str(deriv_y_pred[-1]))
                             if posiciones[symbol]=='BUY':
-                                if deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < 0.85:
+                                if deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < 0.9:
                                     ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound()
@@ -218,7 +221,7 @@ def main():
                                     ut.closeallopenorders(symbol)
                                     ut.closeposition(symbol,side)                                    
                             else:
-                                if deriv_y_pred[-1] > 0 or deriv_y_pred_scaled[-1] > 0.15:
+                                if deriv_y_pred[-1] > 0 or deriv_y_pred_scaled[-1] > 0.1:
                                     ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound()                            
