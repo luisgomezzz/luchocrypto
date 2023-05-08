@@ -140,9 +140,7 @@ def volumeOf24h(par): #en usdt
                 break
     return float(vol)
 
-def sound():
-    duration = 200
-    freq = 800
+def sound(duration = 200, freq = 800):
     # milliseconds
     # Hz
     # for windows

@@ -27,8 +27,6 @@ backcandles=100
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
 # 2: entrena y guarda el modelo
-
-#EXCHANGE SELECT
 questions = [
     inquirer.List('modo',
                     message="Seleccionar modo: ",
@@ -37,7 +35,6 @@ questions = [
 ]
 answers = inquirer.prompt(questions)
 modo_seleccionado=answers['modo']
-
 if modo_seleccionado == "Tradear.":
     modo_ejecucion=0
 if modo_seleccionado == "Entrenar, guardar el modelo y tradear.":
@@ -45,11 +42,14 @@ if modo_seleccionado == "Entrenar, guardar el modelo y tradear.":
 if modo_seleccionado == "Entrenar y guardar el modelo.":
     modo_ejecucion=2
 
+umbralalto = 0.8
+umbralbajo = 0.2
+
 listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
 , 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
 , 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
 , 'RNDRUSDT', 
-#'CFXUSDT' , 
+'CFXUSDT' , 
 'IDUSDT' , 'ARBUSDT']
 # Crea el file json si no existe
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
@@ -165,6 +165,7 @@ def main():
         if modo_ejecucion in [1,2]:
             for symbol in listamonedas:
                 entrena_modelo(symbol)
+            print("Fin del entrenamiento de modelos. ")
         
         if modo_ejecucion in [0,1]:
 
@@ -172,7 +173,7 @@ def main():
                 # Lee el json
                 with open(pathroot+"posiciones.json","r") as j:
                     posiciones=json.load(j)        
-                ut.printandlog(cons.nombrelog,"START "+str(posiciones))
+                #ut.printandlog(cons.nombrelog,"START "+str(posiciones))
                 for symbol in listamonedas:
                     print('chequeo '+symbol)
                     
@@ -191,14 +192,15 @@ def main():
                     
                     side=''
                     if symbol not in posiciones: #crea posicion
-                        if float(deriv_y_pred_scaled[-1]) >= 0.9:
+                        if float(deriv_y_pred_scaled[-1]) >= umbralalto:
                             side='BUY'
-                            stopprice=data.lower.iloc[-1]-data.atr.iloc[-1]
+                            stopprice=data.Close.iloc[-1]-1.5*data.atr.iloc[-1]
                         else:
-                            if float(deriv_y_pred_scaled[-1]) <= 0.1:
+                            if float(deriv_y_pred_scaled[-1]) <= umbralbajo:
                                 side='SELL'
-                                stopprice=data.upper.iloc[-1]+data.atr.iloc[-1]
-                        if side !='' and len(posiciones) < cantidad_posiciones:      
+                                stopprice=data.Close.iloc[-1]+1.5*data.atr.iloc[-1]
+                        if side !='' and len(posiciones) < cantidad_posiciones:    
+                            ut.closeallopenorders(symbol)  
                             posicionpredictor(symbol,side,porcentajeentrada=90) 
                             ut.creostoploss (symbol,side,stopprice)     
                             posiciones[symbol]=side
@@ -209,35 +211,35 @@ def main():
                             ut.sound()
                     else: # posición ya creada
                         if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
-                            ut.printandlog(cons.nombrelog,symbol+". deriv_y_pred_scaled: "+str(deriv_y_pred_scaled[-1])+". deriv_y_pred: "+str(deriv_y_pred[-1]))
-                            if posiciones[symbol]=='BUY':
-                                if deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < 0.9:
-                                    ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                                    ut.sound()
-                                    ut.sound()
-                                    posiciones.pop(symbol)
-                                    with open(pathroot+"posiciones.json","w") as j:
-                                        json.dump(posiciones,j, indent=4)  
-                                    ut.closeallopenorders(symbol)
-                                    ut.closeposition(symbol,side)                                    
-                            else:
-                                if deriv_y_pred[-1] > 0 or deriv_y_pred_scaled[-1] > 0.1:
-                                    ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                                    ut.sound()
-                                    ut.sound()                            
-                                    posiciones.pop(symbol)
-                                    with open(pathroot+"posiciones.json","w") as j:
-                                        json.dump(posiciones,j, indent=4)                           
-                                    ut.closeallopenorders(symbol)
-                                    ut.closeposition(symbol,side)                                    
+                            #ut.printandlog(cons.nombrelog,symbol+". deriv_y_pred_scaled: "+str(deriv_y_pred_scaled[-1])+". deriv_y_pred: "+str(deriv_y_pred[-1]))
+                            if (
+                                ((deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < umbralalto) and posiciones[symbol]=='BUY')
+                                or
+                                ((deriv_y_pred[-1] > 0 or deriv_y_pred_scaled[-1] > umbralbajo) and posiciones[symbol]=='SELL')
+                                ):
+                                ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred: '+str(deriv_y_pred[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                ut.sound(500,600)
+                                print("se pone nuevo SL")
+                                if posiciones[symbol]=='BUY':
+                                    stopprice=data.Close.iloc[-1]-data.atr.iloc[-1]/3
+                                    profit_price = ut.getentryprice(symbol)*(1+0.05/100)
+                                else:
+                                    stopprice=data.Close.iloc[-1]+data.atr.iloc[-1]/3
+                                    profit_price = ut.getentryprice(symbol)*(1-0.05/100)
+                                ut.creostoploss (symbol,posiciones[symbol],stopprice)                                   
+                                if ut.pnl(symbol) < 0.0:
+                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=side)
+                                posiciones.pop(symbol)
+                                with open(pathroot+"posiciones.json","w") as j:
+                                    json.dump(posiciones,j, indent=4)  
                         else: # cerró por limit o manual y se elimina del diccionario
                             posiciones.pop(symbol)
                             with open(pathroot+"posiciones.json","w") as j:
                                 json.dump(posiciones,j, indent=4)
                             ut.closeallopenorders(symbol)              
 
-                ut.printandlog(cons.nombrelog,"END "+str(posiciones))
-                ut.printandlog(cons.nombrelog,"####################################################################")
+                #ut.printandlog(cons.nombrelog,"END "+str(posiciones))
+                #ut.printandlog(cons.nombrelog,"####################################################################")
                 sleep(60)
 
 if __name__ == '__main__':
