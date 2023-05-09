@@ -228,7 +228,7 @@ def main():
                                     profit_price = ut.getentryprice(symbol)*(1-0.05/100)
                                 ut.creostoploss (symbol,posiciones[symbol],stopprice)                                   
                                 if ut.pnl(symbol) < 0.0:
-                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=side)
+                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])
                                 posiciones.pop(symbol)
                                 with open(pathroot+"posiciones.json","w") as j:
                                     json.dump(posiciones,j, indent=4)  
