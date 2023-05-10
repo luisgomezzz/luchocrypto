@@ -173,7 +173,6 @@ def main():
                 # Lee el json
                 with open(pathroot+"posiciones.json","r") as j:
                     posiciones=json.load(j)        
-                #ut.printandlog(cons.nombrelog,"START "+str(posiciones))
                 for symbol in listamonedas:
                     print('chequeo '+symbol)
                     
@@ -184,14 +183,14 @@ def main():
 
                     y_pred = model.predict(X_test)
                     deriv_y_pred = np.diff(y_pred, axis=0)
-                    #deriv_y_pred = np.diff(deriv_y_pred, axis=0)
                     sc = MinMaxScaler(feature_range=(0,1))
                     deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)  
 
                     print(deriv_y_pred_scaled[-1])
                     
+                    # CREA POSICION
                     side=''
-                    if symbol not in posiciones: #crea posicion
+                    if symbol not in posiciones:
                         if float(deriv_y_pred_scaled[-1]) >= umbralalto:
                             side='BUY'
                             stopprice=data.Close.iloc[-1]-1.5*data.atr.iloc[-1]
@@ -199,8 +198,7 @@ def main():
                             if float(deriv_y_pred_scaled[-1]) <= umbralbajo:
                                 side='SELL'
                                 stopprice=data.Close.iloc[-1]+1.5*data.atr.iloc[-1]
-                        if side !='' and len(posiciones) < cantidad_posiciones:    
-                            ut.closeallopenorders(symbol)  
+                        if side !='' and len(posiciones) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                             posicionpredictor(symbol,side,porcentajeentrada=90) 
                             ut.creostoploss (symbol,side,stopprice)     
                             posiciones[symbol]=side
@@ -209,9 +207,9 @@ def main():
                             ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                             ut.sound()
                             ut.sound()
-                    else: # posición ya creada
+                    # ANALIZA POSICION YA CREADA        
+                    else: 
                         if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
-                            #ut.printandlog(cons.nombrelog,symbol+". deriv_y_pred_scaled: "+str(deriv_y_pred_scaled[-1])+". deriv_y_pred: "+str(deriv_y_pred[-1]))
                             if (
                                 ((deriv_y_pred[-1] < 0 or deriv_y_pred_scaled[-1] < umbralalto) and posiciones[symbol]=='BUY')
                                 or
@@ -221,10 +219,10 @@ def main():
                                 ut.sound(500,600)
                                 print("se pone nuevo SL")
                                 if posiciones[symbol]=='BUY':
-                                    stopprice=data.Close.iloc[-1]-data.atr.iloc[-1]/3
+                                    stopprice=data.Close.iloc[-1]-data.atr.iloc[-1]/5
                                     profit_price = ut.getentryprice(symbol)*(1+0.05/100)
                                 else:
-                                    stopprice=data.Close.iloc[-1]+data.atr.iloc[-1]/3
+                                    stopprice=data.Close.iloc[-1]+data.atr.iloc[-1]/5
                                     profit_price = ut.getentryprice(symbol)*(1-0.05/100)
                                 ut.creostoploss (symbol,posiciones[symbol],stopprice)                                   
                                 if ut.pnl(symbol) < 0.0:
@@ -238,8 +236,6 @@ def main():
                                 json.dump(posiciones,j, indent=4)
                             ut.closeallopenorders(symbol)              
 
-                #ut.printandlog(cons.nombrelog,"END "+str(posiciones))
-                #ut.printandlog(cons.nombrelog,"####################################################################")
                 sleep(60)
 
 if __name__ == '__main__':
