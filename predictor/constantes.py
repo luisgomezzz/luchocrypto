@@ -3,18 +3,8 @@ import os
 import ccxt as ccxt
 from binance.client import Client as binanceClient
 from colors import *
-import sys
+import json
 
-RED   = "\033[1;31m"  
-BLUE  = "\033[1;34m"
-CYAN  = "\033[1;36m"
-GREEN = "\033[0;32m"
-RESET = "\033[0;0m"
-BOLD    = "\033[;1m"
-REVERSE = "\033[;7m"
-YELLOW = "\33[33m"
-
-sys.stdout.write(RED)
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
 
 def clear():  
@@ -24,6 +14,8 @@ def clear():
     # for mac and linux(here, os.name is 'posix')
     else:
         _ = system('clear')
+
+clear() #limpia terminal        
 
 ##FILES
 nombrelog = "log_finandy.txt"
@@ -47,6 +39,17 @@ exchange =   exchange_class({
 
 margen = 'CROSSED'
 
-clear() #limpia terminal
+# Crea el file de posiciones si no existe
+posiciones={}
+if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
+    with open(pathroot+"posiciones.json","w") as j:
+        json.dump(posiciones,j, indent=4)
 
+# Crea el file de configuracion si no existe
+configuracion= {
+    "cantidad_posiciones" : 3 # Cantidad máxima de posiciones
+    }
+if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
+    with open(pathroot+"configuracion.json","w") as j:
+        json.dump(configuracion,j, indent=4)
 

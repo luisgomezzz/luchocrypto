@@ -22,3 +22,4 @@ predictor/__pycache__/constantes.cpython-310.pyc
 predictor/__pycache__/util.cpython-310.pyc
 predictor/posiciones.json
 .vscode/settings.json
+predictor/configuracion.json
