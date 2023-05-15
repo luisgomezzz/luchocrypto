@@ -44,12 +44,12 @@ if modo_seleccionado == "Entrenar y guardar el modelo.":
 umbralalto = 0.8
 umbralbajo = 0.2
 
-listamonedas = ['BTCUSDT' , 'ETHUSDT' , 'XRPUSDT' , 'LTCUSDT' , 'LINKUSDT', 'ADAUSDT' , 'BNBUSDT' , 'ATOMUSDT'
-, 'DOGEUSDT', 'RLCUSDT' , 'DOTUSDT' , 'SOLUSDT' , 'AVAXUSDT', 'FTMUSDT' , 'TOMOUSDT', 'FILUSDT' , 'MATICUSDT'
-, 'ALPHAUSDT', 'HBARUSDT', 'LINAUSDT', 'DYDXUSDT', 'CTSIUSDT', 'OPUSDT' , 'INJUSDT' , 'ICPUSDT' , 'APTUSDT' 
-, 'RNDRUSDT', 
-'CFXUSDT' , 
-'IDUSDT' , 'ARBUSDT']
+listamonedas = ['BTCUSDT'   ,'ETHUSDT'   ,'BCHUSDT'   ,'XRPUSDT'   ,'EOSUSDT'   ,'LTCUSDT'   ,'ETCUSDT'   ,'LINKUSDT'  ,
+'ADAUSDT'   ,'BNBUSDT'   ,'ATOMUSDT'  ,'DOGEUSDT'  ,'KAVAUSDT'  ,'DOTUSDT'   ,'SOLUSDT'   ,'AVAXUSDT'  ,'FTMUSDT'   ,
+'TOMOUSDT'  ,'FILUSDT'   ,'MATICUSDT' ,'LINAUSDT'  ,'MASKUSDT'  ,'DYDXUSDT'  ,'GALAUSDT'  ,'ARPAUSDT'  ,'ANTUSDT'   ,'GMTUSDT'   ,
+'APEUSDT'   ,'JASMYUSDT' ,'OPUSDT'    ,'INJUSDT'   ,'LDOUSDT'   ,'APTUSDT'   ,'RNDRUSDT'  ,'CFXUSDT'   ,'STXUSDT'   ,
+'IDUSDT'    ,'ARBUSDT'   ,'EDUUSDT'   ,'SUIUSDT'
+]
 
 def posicionpredictor(symbol,side,porcentajeentrada):   
     serror = True
@@ -89,7 +89,14 @@ def obtiene_historial(symbol):
     client = cons.client
     #################################################################################################################  
     timeframe='30m'
-    historical_data = client.get_historical_klines(symbol, timeframe)
+    leido=False
+    while leido==False:
+        try:
+            historical_data = client.get_historical_klines(symbol, timeframe)
+            leido = True
+        except:
+            print("intento leer de nuevo...")
+            pass
     data = pd.DataFrame(historical_data)
     data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
                         'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
@@ -153,89 +160,108 @@ def entrena_modelo(symbol):
 
 # programa principal
 def main():
-    if modo_ejecucion in [0,1,2]:
+    try:
+        if modo_ejecucion in [0,1,2]:
 
-        if modo_ejecucion in [1,2]:
-            for symbol in listamonedas:
-                entrena_modelo(symbol)
-            print("Fin del entrenamiento de modelos. ")
-        
-        if modo_ejecucion in [0,1]:
-
-            while True:
-                # Lee archivo de configuracion
-                with open(cons.pathroot+"configuracion.json","r") as j:
-                    dic_configuracion=json.load(j) 
-                cantidad_posiciones = dic_configuracion['cantidad_posiciones']
-                # Lee archivo de posiciones
-                with open(cons.pathroot+"posiciones.json","r") as j:
-                    posiciones=json.load(j)        
+            if modo_ejecucion in [1,2]:
                 for symbol in listamonedas:
-                    print('chequeo '+symbol)
-                    
-                    X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
-                    data['atr']=ta.atr(data.High, data.Low, data.Close)
+                    entrena_modelo(symbol)
+                print("Fin del entrenamiento de modelos. ")
+            
+            if modo_ejecucion in [0,1]:
 
-                    model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
+                while True:
+                    # Lee archivo de configuracion
+                    with open(cons.pathroot+"configuracion.json","r") as j:
+                        dic_configuracion=json.load(j) 
+                    cantidad_posiciones = dic_configuracion['cantidad_posiciones']
+                    # Lee archivo de posiciones
+                    with open(cons.pathroot+"posiciones.json","r") as j:
+                        posiciones=json.load(j)        
+                    for symbol in listamonedas:
+                        print('chequeo '+symbol)
+                        
+                        X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
+                        
+                        if len(data)>=800:# chequea que haya suficiente historial para que la prediccion sea coherente.
+                            data['atr']=ta.atr(data.High, data.Low, data.Close)
 
-                    y_pred = model.predict(X_test)
-                    deriv_y_pred = np.diff(y_pred, axis=0)
-                    deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
-                    sc = MinMaxScaler(feature_range=(0,1))
-                    deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
-                    deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)                    
+                            model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
 
-                    print(f"derivada 1ra: {deriv_y_pred_scaled[-1]}, derivada 2da: {deriv_y_pred_scaled2[-1]}")
-                    # CREA POSICION
-                    side=''
-                    if symbol not in posiciones:
-                        if float(deriv_y_pred_scaled2[-1]) >= umbralalto:
-                            side='BUY'
-                            stopprice=data.Close.iloc[-1]-1.5*data.atr.iloc[-1]
-                        else:
-                            if float(deriv_y_pred_scaled2[-1]) <= umbralbajo:
-                                side='SELL'
-                                stopprice=data.Close.iloc[-1]+1.5*data.atr.iloc[-1]
-                        if side !='' and len(posiciones) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
-                            posicionpredictor(symbol,side,porcentajeentrada=90) 
-                            ut.creostoploss (symbol,side,stopprice)     
-                            posiciones[symbol]=side
-                            with open(cons.pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)
-                            ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                            ut.sound()
-                            ut.sound()
-                    # ANALIZA POSICION YA CREADA        
-                    else: 
-                        if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
-                            if (
-                                (deriv_y_pred_scaled2[-1] < umbralbajo and posiciones[symbol]=='BUY')
-                                or
-                                (deriv_y_pred_scaled2[-1] > umbralalto and posiciones[symbol]=='SELL')
-                                ):
-                                ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                                ut.sound(500,600)
-                                print("Nuevo SL...")
-                                if posiciones[symbol]=='BUY':
-                                    stopprice=data.Close.iloc[-1]-data.atr.iloc[-1]/5
-                                    profit_price = ut.getentryprice(symbol)*(1+0.05/100)
+                            y_pred = model.predict(X_test)
+                            deriv_y_pred = np.diff(y_pred, axis=0)
+                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
+                            sc = MinMaxScaler(feature_range=(0,1))
+                            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
+                            deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)                    
+
+                            print(f"derivada 1ra: {deriv_y_pred_scaled[-1]}, derivada 2da: {deriv_y_pred_scaled2[-1]}")
+                            # CREA POSICION
+                            side=''
+                            if symbol not in posiciones:
+                                ###BUY###
+                                if  deriv_y_pred_scaled[-1] > umbralalto and deriv_y_pred_scaled2[-2] > umbralalto and y_test[-1] > 0.5:
+                                    side='BUY'
+                                    stop_price = data.Close.iloc[-1]-1.5*data.atr.iloc[-1]
+                                    profit_price = data.Close.iloc[-1]+data.atr.iloc[-1]
                                 else:
-                                    stopprice=data.Close.iloc[-1]+data.atr.iloc[-1]/5
-                                    profit_price = ut.getentryprice(symbol)*(1-0.05/100)
-                                ut.creostoploss (symbol,posiciones[symbol],stopprice)                                   
-                                if ut.pnl(symbol) < 0.0:
-                                    print("Crea Take Profit...")
-                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])
-                                posiciones.pop(symbol)
-                                with open(cons.pathroot+"posiciones.json","w") as j:
-                                    json.dump(posiciones,j, indent=4)  
-                        else: # cerró por limit o manual y se elimina del diccionario
-                            posiciones.pop(symbol)
-                            with open(cons.pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)
-                            ut.closeallopenorders(symbol)              
+                                    ###SELL###
+                                    if deriv_y_pred_scaled[-1] < umbralbajo and deriv_y_pred_scaled2[-2] < umbralbajo and y_test[-1] < 0.5:
+                                        side='SELL'
+                                        stop_price = data.Close.iloc[-1]+1.5*data.atr.iloc[-1]
+                                        profit_price = data.Close.iloc[-1]-data.atr.iloc[-1]
+                                if side !='' and len(posiciones) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
+                                    posiciones[symbol]=side
+                                    with open(cons.pathroot+"posiciones.json","w") as j:
+                                        json.dump(posiciones,j, indent=4)
+                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                    ut.sound()
+                                    ut.sound() 
+                                    #######                                   
+                                    posicionpredictor(symbol,side,porcentajeentrada=90) 
+                                    # STOP LOSS Y TAKE PROFIT DE SEGURIDAD.
+                                    ut.creostoploss (symbol,side,stop_price)   
+                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
 
-                sleep(60)
+                            # CERRAR POSICION
+                            else: 
+                                if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
+                                    if (
+                                        (deriv_y_pred_scaled[-1] < umbralalto and posiciones[symbol]=='BUY')
+                                        or
+                                        (deriv_y_pred_scaled[-1] > umbralbajo and posiciones[symbol]=='SELL')
+                                        ):
+                                        ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                        ut.sound(500,600)
+                                        #STOP LOSS PARA RETENER GANANCIA O PERDIDA DEBIDO A QUE LA TENDENCIA TERMINÓ
+                                        print("Nuevo SL...")
+                                        if posiciones[symbol]=='BUY':
+                                            stop_price=data.Close.iloc[-1]-data.atr.iloc[-1]/2
+                                            profit_price = ut.getentryprice(symbol)*(1+0.05/100)
+                                        else:
+                                            stop_price=data.Close.iloc[-1]+data.atr.iloc[-1]/2
+                                            profit_price = ut.getentryprice(symbol)*(1-0.05/100)
+                                        ut.creostoploss (symbol,posiciones[symbol],stop_price)
+                                        # TAKE PROFIT CUANDO SE ESTÁ EN PÉRDIDA Y SE TERMINÓ LA TENDENCIA. BUSCA SALIR DE LA POSICION.
+                                        if ut.pnl(symbol) < 0.0:
+                                            print("Crea Take Profit...")
+                                            ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])
+                                        posiciones.pop(symbol)
+                                        with open(cons.pathroot+"posiciones.json","w") as j:
+                                            json.dump(posiciones,j, indent=4)  
+                                else: # cerró por limit o manual y se elimina del diccionario. TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
+                                    posiciones.pop(symbol)
+                                    with open(cons.pathroot+"posiciones.json","w") as j:
+                                        json.dump(posiciones,j, indent=4)
+                                    ut.closeallopenorders(symbol)              
+
+                    sleep(60)
+
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
 
 if __name__ == '__main__':
     main()
