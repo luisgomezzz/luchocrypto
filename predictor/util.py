@@ -7,11 +7,9 @@ import math
 from time import sleep
 from binance.exceptions import BinanceAPIException
 from binance.helpers import round_step_size
-from requests import Session
 import json
 import math
 import ccxt as ccxt
-from numerize import numerize
 from playsound import playsound
 
 exchange_name=cons.exchange_name
@@ -55,30 +53,6 @@ def RoundToTickUp(par,numero):
     convertido=truncate((math.floor(numero / resolucion) * resolucion),cantidaddecimales)
     return float(convertido)
 
-def lista_de_monedas ():
-    lista_de_monedas = []
-    mazmorra = cons.mazmorra
-    try:
-        if exchange_name =='binance':
-            exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
-            for s in exchange_info:
-                try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
-                        lista_de_monedas.append(s['symbol'])
-                except Exception as ex:
-                    pass    
-        if exchange_name =='kucoinfutures':
-            exchange_info = cons.clientmarket.get_contracts_list()
-            for index in range(len(exchange_info)):
-                try:
-                    lista_de_monedas.append(exchange_info[index]['symbol'])
-                except Exception as ex:
-                    pass   
-    except:
-        print("\nError al obtener la lista de monedas...\n")
-        pass
-    return lista_de_monedas  
-
 def timeindex(df):
     # if you encounter a "year is out of range" error the timestamp
     # may be in milliseconds, try `ts /= 1000` in that case
@@ -104,41 +78,6 @@ def calculardf (par,temporalidad,ventana=500):
             print("\nIntento leer otra vez...\n")
             pass
     return df      
-
-def equipoliquidando ():
-    listademonedas = lista_de_monedas()
-    dict={'inicio':[0,0]}
-    dict.clear()
-    temporalidad='1d'
-    ventana = 30
-    variacionporc = 10
-    for par in listademonedas:
-        try:            
-            sys.stdout.write("\r"+par+"\033[K")
-            sys.stdout.flush()   
-            if 'USDT' in par:
-                df=calculardf (par,temporalidad,ventana)
-                df['liquidando'] = (df.close >= df.open*(1+variacionporc/100)) & (df.high - df.close >= df.close-df.open) 
-                if True in set(df['liquidando']):
-                    dict[par]=[max(df.close),max(df.high)]
-        except Exception as ex:
-            pass        
-        except KeyboardInterrupt as ky:
-            print("\nSalida solicitada. ")
-            sys.exit()           
-    return dict      
-
-def volumeOf24h(par): #en usdt
-    vol=0.0
-    if exchange_name == 'binance':
-        vol= cons.client.futures_ticker(symbol=par)['quoteVolume']
-    if exchange_name == 'kucoinfutures':
-        datos=cons.exchange.fetch_markets()
-        for i in range(len(datos)):
-            if datos[i]['id']==par:
-                vol=datos[i]['info']['volumeOf24h']*currentprice(par)
-                break
-    return float(vol)
 
 def sound(duration = 200, freq = 800):
     # milliseconds
@@ -289,12 +228,6 @@ def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
             pass
     return positionamt
 
-def get_positionamtusdt(par):
-    precioactualusdt=currentprice(par)
-    positionamt=get_positionamt(par)
-    tamanioposusdt=positionamt*precioactualusdt
-    return tamanioposusdt    
-
 def get_tick_size(symbol) -> float:
     tick_size = 0.0
     try:
@@ -334,52 +267,6 @@ def get_priceprecision(par):
             break         
     return priceprecision
 
-def creacompensacion(par,client,lado,tamanio,distanciaporc):
-    if lado =='SELL':
-        preciolimit = getentryprice(par)*(1+(distanciaporc/100))   
-    else:
-        preciolimit = getentryprice(par)*(1-(distanciaporc/100))
-    limitprice=RoundToTickUp(par,preciolimit)
-    try:
-        if exchange_name=='binance':
-            tamanioformateado = truncate(abs(tamanio),get_quantityprecision(par))
-            order=client.futures_create_order(symbol=par, side=lado, type='LIMIT', timeInForce='GTC', quantity=tamanioformateado,price=limitprice)      
-            return True,float(order['price']),float(order['origQty']),order['orderId']
-        if exchange_name=='kucoinfutures':   ##revisar kucoin porque cambió la lógica de elección de leverage.
-            apalancamiento=cons.apalancamientoreal
-            tamanioformateado = int(tamanio)
-            maxLeverage = cons.clientmarket.get_contract_detail(par)['maxLeverage']
-            if maxLeverage < apalancamiento:
-                apalancamiento=int(maxLeverage)
-            else:
-                apalancamiento=int(apalancamiento)
-            i=0
-            creada=False
-            while creada==False:                        
-                try:
-                    order=cons.clienttrade.create_limit_order(symbol=par, side=lado, size=tamanioformateado,price=limitprice,lever=apalancamiento)
-                    detalle=(cons.clienttrade.get_order_details(order['orderId']))
-                    creada=True
-                    return True,float(detalle['price']),float(detalle['size']),order['orderId']
-                except ccxt.RateLimitExceeded as e:
-                    now = cons.exchange.milliseconds()
-                    datetime = cons.exchange.iso8601(now)
-                    print(datetime, i, type(e).__name__, str(e))
-                    cons.exchange.sleep(10000)
-                    pass
-                except Exception as e:
-                    print(type(e).__name__, str(e))
-                    raise e
-                i += 1
-    except BinanceAPIException as a:                                       
-        print("Except 8",a.status_code,a.message)
-        return False,0,0,0     
-    except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
-        return False,0,0,0
-
 def creotakeprofit(par,preciolimit,posicionporc,lado):
     try:
         ### exchange details
@@ -415,28 +302,6 @@ def creotakeprofit(par,preciolimit,posicionporc,lado):
         orderid = 0
         pass    
     return creado,orderid        
-
-def get_preciostopvelavela (par,lado,temporalidad):
-    porc=0.2 #porcentaje de distancia 
-    cantidad = 0
-    while cantidad!=2:# se asegura q traiga 2 registros para que pueda calcular el color de las velas
-        df=calculardf (par,temporalidad,2) 
-        cantidad=len(df)
-    if df.open.iloc[-2]<df.close.iloc[-2]:
-        colorvelaanterior='verde'
-    else:
-        if df.open.iloc[-2]>df.close.iloc[-2]:
-            colorvelaanterior='rojo'
-        else:        
-            colorvelaanterior='nada'
-    if lado=='SELL' and colorvelaanterior=='rojo':
-        preciostopvelavela=df.high.iloc[-2]*(1+porc/100)
-    else:
-        if lado=='BUY' and colorvelaanterior=='verde':
-            preciostopvelavela=df.low.iloc[-2]*(1-porc/100)
-        else:
-            preciostopvelavela=0.0
-    return preciostopvelavela    
 
 def creostoploss (symbol,side,stopprice,amount=0):   
     creado = False
@@ -508,91 +373,6 @@ def pnl(par):
             pass
     return pnl        
 
-def coingeckoinfo (par,dato='market_cap'):
-    '''
-    {'id': 'binancecoin', 'symbol': 'bnb', 'name': 'BNB', 'image': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1644979850', 
-    'current_price': 282.13, 'market_cap': 45966534569, 'market_cap_rank': 4, 'fully_diluted_valuation': 56304980752, 
-    'total_volume': 1748519199, 'high_24h': 291.05, 'low_24h': 272.34, 'price_change_24h': -3.749382261274775, 
-    'price_change_percentage_24h': -1.31152, 'market_cap_change_24h': -772981310.7671661, 'market_cap_change_percentage_24h': -1.65381,
-    'circulating_supply': 163276974.63, 'total_supply': 163276974.63, 'max_supply': 200000000.0, 'ath': 686.31, 
-    'ath_change_percentage': -58.97972, 'ath_date': '2021-05-10T07:24:17.097Z', 'atl': 0.0398177, 'atl_change_percentage': 706934.61939, 
-    'atl_date': '2017-10-19T00:00:00.000Z', 'roi': None, 'last_updated': '2022-11-12T14:45:04.478Z'}
-    '''
-    symbol = (par[0:par.find('USDT')]).lower()
-    url = 'https://api.coingecko.com/api/v3/coins/list' 
-    session = Session()
-    response = session.get(url)
-    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-    id=''
-    valor=0
-    for i in range(len(info)):
-        if info[i]['symbol']==symbol:
-            id=info[i]['id']
-            break
-    if id!='':
-        urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-        parameters = {}
-        session = Session()
-        response = session.get(urldetalle, params=parameters)
-        info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-        valor = info[0][dato]
-    else:
-        valor = 0
-    return valor
-
-def capitalizacion(par):
-    cap=0.0
-    # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
-    #busqueda en binance
-    if exchange_name == 'kucoinfutures':
-        if par == 'XBTUSDTM': # en kucoin BTC es 'XBTUSDTM'
-            par = 'BTCUSDTM'
-        par=par[0:-1]# si se eligió kucoin se le saca el ultimo caracter al símbolo.
-    clientcap = cons.binanceClient(cons.binance_key, cons.binance_secret,cons.binance_passphares) 
-    info = clientcap.get_products()
-    lista=info['data']
-    for i in range(len(lista)):
-        if lista[i]['s']==par:
-            cap = float(lista[i]['c']*lista[i]['cs'])
-            break
-    if cap==0.0:
-        #busqueda en coingecko
-        try:
-            cap=float(coingeckoinfo (par,dato='market_cap'))
-        except:
-            cap=0.0
-            pass
-    return cap    
-
-def construye_tabla_formatos():
-    for estilo in range(8):
-        for colortexto in range(30,38):
-            cad_cod = ''
-            for colorfondo in range(40,48): 
-                fmto = ';'.join([str(estilo), 
-                                 str(colortexto),
-                                 str(colorfondo)]) 
-                cad_cod+="\033["+fmto+"m "+fmto+" \033[0m" 
-            print(cad_cod)
-        print('\n')
-
-def rankingcap (lista_de_monedas):
-    dict = {        
-            'nada' : 0.0
-    }
-    dict.clear()
-    for s in lista_de_monedas:
-        try:  
-            par = s
-            dict[par] = capitalizacion(par)
-        except Exception as ex:
-            pass        
-        except KeyboardInterrupt as ky:
-            print("\nSalida solicitada. ")
-            sys.exit()
-    ranking= (sorted([(v, k) for k, v in dict.items()], reverse=True))      
-    for index in range(len(lista_de_monedas)):
-        print(str(ranking[index][1])+' - '+str(numerize.numerize(ranking[index][0])))
 
 #descargar audio desde google translator
 #from gtts import gTTS
@@ -621,5 +401,19 @@ def closeposition(symbol,side):
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
             serror=False
+            pass 
+
+def get_cantidad_posiciones(): 
+    leido = False
+    cantidad_posiciones = 0
+    while leido == False:
+        try:
+            if exchange_name =='binance':
+                position = cons.exchange.fetch_balance()['info']['positions']
+                for i in range(len(position)):
+                    if float(position[i]['positionAmt'])!=0.0:
+                        cantidad_posiciones=cantidad_posiciones+1
+            leido = True
+        except:
             pass
- 
+    return cantidad_posiciones
