@@ -56,16 +56,16 @@ def RoundToTickUp(par,numero):
 def timeindex(df):
     # if you encounter a "year is out of range" error the timestamp
     # may be in milliseconds, try `ts /= 1000` in that case
-    df['indice']=(pd.to_datetime(df['time']/1000,unit='s')) 
-    df['timestamp']=df.indice
-    df.set_index('indice', inplace=True)
+    df['Indice']=(pd.to_datetime(df['Time']/1000,unit='s')) 
+    df['Timestamp']=df.Indice
+    df.set_index('Indice', inplace=True)
 
-def calculardf (par,temporalidad,ventana=500):
+def calculardf (par,temporalidad):
     df = pd.DataFrame()
     while True:
         try:            
-            barsindicators = cons.exchange.fetch_ohlcv(par,timeframe=temporalidad,limit=ventana)
-            df = pd.DataFrame(barsindicators,columns=['time','open','high','low','close','volume'])
+            barsindicators = cons.exchange.fetch_ohlcv(par,timeframe=temporalidad)
+            df = pd.DataFrame(barsindicators,columns=['Time','Open','High','Low','Close','Volume'])
             timeindex(df) #Formatea el campo time para luego calcular las señales
             break
         except KeyboardInterrupt:

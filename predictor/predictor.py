@@ -197,15 +197,15 @@ def main():
                             side=''
                             if symbol not in posiciones:
                                 ###BUY###
-                                if  float(deriv_y_pred_scaled[-1]) >= 0.9 and y_test[-1] > 0.5:
+                                if  float(deriv_y_pred_scaled[-1]) >= 0.75 and y_test[-1] > 0.5:
                                     side='BUY'
-                                    stop_price = data.Close.iloc[-1]-3*data.atr.iloc[-1]
+                                    stop_price = data.Close.iloc[-1]-data.atr.iloc[-1]
                                     profit_price = data.Close.iloc[-1]+data.atr.iloc[-1]
                                 else:
                                     ###SELL###
-                                    if float(deriv_y_pred_scaled[-1]) <= 0.1 and y_test[-1] < 0.5:
+                                    if float(deriv_y_pred_scaled[-1]) <= 0.25 and y_test[-1] < 0.5:
                                         side='SELL'
-                                        stop_price = data.Close.iloc[-1]+3*data.atr.iloc[-1]
+                                        stop_price = data.Close.iloc[-1]+data.atr.iloc[-1]
                                         profit_price = data.Close.iloc[-1]-data.atr.iloc[-1]
                                 if side !='' and ut.get_cantidad_posiciones() < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
@@ -224,9 +224,9 @@ def main():
                             else: 
                                 if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
                                     if (
-                                        (deriv_y_pred_scaled[-1] < 0.85 and posiciones[symbol]=='BUY')
+                                        (deriv_y_pred_scaled[-1] < 0.5 and posiciones[symbol]=='BUY')
                                         or
-                                        (deriv_y_pred_scaled[-1] > 0.15 and posiciones[symbol]=='SELL')
+                                        (deriv_y_pred_scaled[-1] > 0.5 and posiciones[symbol]=='SELL')
                                         ):
                                         ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                         ut.sound(500,600)
