@@ -22,6 +22,8 @@ import inquirer
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
 backcandles=100
+umbralbajo=0.25
+umbralalto=0.75
 
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
@@ -197,21 +199,21 @@ def main():
                             side=''
                             if symbol not in posiciones:
                                 ###BUY###
-                                if  float(deriv_y_pred_scaled[-1]) >= 0.75 and y_test[-1] > 0.5:
+                                if  deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] <= umbralbajo and y_test[-1] > 0.5:
                                     side='BUY'
-                                    stop_price = data.Close.iloc[-1]-data.atr.iloc[-1]
+                                    stop_price = data.Close.iloc[-1]*(1-3/100)# stop al 3% en contra
                                     profit_price = data.Close.iloc[-1]+data.atr.iloc[-1]
                                 else:
                                     ###SELL###
-                                    if float(deriv_y_pred_scaled[-1]) <= 0.25 and y_test[-1] < 0.5:
+                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] >= umbralalto and y_test[-1] < 0.5:
                                         side='SELL'
-                                        stop_price = data.Close.iloc[-1]+data.atr.iloc[-1]
+                                        stop_price = data.Close.iloc[-1]*(1+3/100)# stop al 3% en contra
                                         profit_price = data.Close.iloc[-1]-data.atr.iloc[-1]
                                 if side !='' and ut.get_cantidad_posiciones() < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
-                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound() 
                                     #######                                   
@@ -224,28 +226,23 @@ def main():
                             else: 
                                 if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
                                     if (
-                                        (deriv_y_pred_scaled[-1] < 0.5 and posiciones[symbol]=='BUY')
+                                        (deriv_y_pred_scaled2[-1] <= umbralbajo and posiciones[symbol]=='BUY')
                                         or
-                                        (deriv_y_pred_scaled[-1] > 0.5 and posiciones[symbol]=='SELL')
+                                        (deriv_y_pred_scaled2[-1] >= umbralalto and posiciones[symbol]=='SELL')
                                         ):
-                                        ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled: '+str(deriv_y_pred_scaled[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                        ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                         ut.sound(500,600)
                                         #STOP LOSS PARA RETENER GANANCIA O PERDIDA DEBIDO A QUE LA TENDENCIA TERMINÓ                                        
+                                        print("Nuevo SL...")
                                         if posiciones[symbol]=='BUY':
                                             stop_price=data.Close.iloc[-1]-data.atr.iloc[-1]
-                                            profit_price = ut.getentryprice(symbol)*(1+0.1/100)
                                         else:
                                             stop_price=data.Close.iloc[-1]+data.atr.iloc[-1]
-                                            profit_price = ut.getentryprice(symbol)*(1-0.1/100)
-                                        print("Nuevo SL...")    
                                         ut.creostoploss (symbol,posiciones[symbol],stop_price)
-                                        # TAKE PROFIT CUANDO SE ESTÁ EN PÉRDIDA Y SE TERMINÓ LA TENDENCIA. BUSCA SALIR DE LA POSICION.
-                                        #if ut.pnl(symbol) < 0.0:
-                                        #    print("Crea Take Profit...")
-                                        #    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])
                                         posiciones.pop(symbol)
                                         with open(cons.pathroot+"posiciones.json","w") as j:
                                             json.dump(posiciones,j, indent=4)  
+                                
                                 else: # cerró por limit o manual y se elimina del diccionario. TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
                                     posiciones.pop(symbol)
                                     with open(cons.pathroot+"posiciones.json","w") as j:
