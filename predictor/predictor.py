@@ -84,6 +84,51 @@ def get_bollinger_bands(df):
     df['lower'] = basis - dev
     return df 
 
+def checkhl(data_back, data_forward, hl):
+    if hl == 'high' or hl == 'High':
+        ref = data_back[len(data_back)-1]
+        for i in range(len(data_back)-1):
+            if ref < data_back[i]:
+                return 0
+        for i in range(len(data_forward)):
+            if ref <= data_forward[i]:
+                return 0
+        return 1
+    if hl == 'low' or hl == 'Low':
+        ref = data_back[len(data_back)-1]
+        for i in range(len(data_back)-1):
+            if ref > data_back[i]:
+                return 0
+        for i in range(len(data_forward)):
+            if ref >= data_forward[i]:
+                return 0
+        return 1
+    
+def pivot(data, LBL, LBR, highlow):
+    df=data.copy()
+    left = []
+    right = []
+    pivots=[]
+    df['pivot']=0.0
+    i=0
+    last_value=0.0
+    for index, row in df.iterrows():
+        pivots.append(0.0)
+        if i < LBL + 1:
+            left.append(df.Close[i])
+        if i > LBL:
+            right.append(df.Close[i])
+        if i > LBL + LBR:
+            left.append(right[0])
+            left.pop(0)
+            right.pop(0)
+            if checkhl(left, right, highlow):
+                pivots[i - LBR] = df.Close[i - LBR]
+                last_value = df.Close[i - LBR]
+        df.at[index,'pivot'] = last_value
+        i=i+1
+    return df['pivot']
+
 def obtiene_historial(symbol):
     client = cons.client
     #################################################################################################################  
@@ -110,6 +155,8 @@ def obtiene_historial(symbol):
     data['EMAS']=ta.ema(data.Close, length=200)
     data['macd'], data['macd_signal'], data['macd_hist'] = talib.MACD(data['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
     data=get_bollinger_bands(data)
+    data['pivot_high'] = pivot(data, 24, 24, 'high')
+    data['pivot_low'] = pivot(data, 24, 24, 'low')
     data['TARGET'] = data['Close'].shift(-1)
 
     data.dropna(inplace=True)
@@ -199,13 +246,13 @@ def main():
                             side=''
                             if symbol not in posiciones:
                                 ###BUY###
-                                if  deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] <= umbralbajo and y_test[-1] > 0.5:
+                                if  deriv_y_pred_scaled2[-1] >= umbralalto and y_test[-1] > 0.5:
                                     side='BUY'
                                     stop_price = data.Close.iloc[-1]*(1-3/100)# stop al 3% en contra
                                     profit_price = data.Close.iloc[-1]+data.atr.iloc[-1]
                                 else:
                                     ###SELL###
-                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] >= umbralalto and y_test[-1] < 0.5:
+                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and y_test[-1] < 0.5:
                                         side='SELL'
                                         stop_price = data.Close.iloc[-1]*(1+3/100)# stop al 3% en contra
                                         profit_price = data.Close.iloc[-1]-data.atr.iloc[-1]
@@ -224,26 +271,9 @@ def main():
 
                             # CERRAR POSICION
                             else: 
-                                if ut.get_positionamt(symbol)!=0.0: #pregunta ya que pudo haber cerrado por limit o manual
-                                    if (
-                                        (deriv_y_pred_scaled2[-1] <= umbralbajo and posiciones[symbol]=='BUY')
-                                        or
-                                        (deriv_y_pred_scaled2[-1] >= umbralalto and posiciones[symbol]=='SELL')
-                                        ):
-                                        ut.printandlog(cons.nombrelog,'Salga del trade '+symbol+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                                        ut.sound(500,600)
-                                        #STOP LOSS PARA RETENER GANANCIA O PERDIDA DEBIDO A QUE LA TENDENCIA TERMINÓ                                        
-                                        print("Nuevo SL...")
-                                        if posiciones[symbol]=='BUY':
-                                            stop_price=data.Close.iloc[-1]-data.atr.iloc[-1]
-                                        else:
-                                            stop_price=data.Close.iloc[-1]+data.atr.iloc[-1]
-                                        ut.creostoploss (symbol,posiciones[symbol],stop_price)
-                                        posiciones.pop(symbol)
-                                        with open(cons.pathroot+"posiciones.json","w") as j:
-                                            json.dump(posiciones,j, indent=4)  
-                                
-                                else: # cerró por limit o manual y se elimina del diccionario. TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
+                                if ut.get_positionamt(symbol)==0.0: 
+                                    # Se cerró la posición por limit o manual y se elimina del diccionario. 
+                                    # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
                                     posiciones.pop(symbol)
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
