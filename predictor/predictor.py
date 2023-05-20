@@ -22,8 +22,8 @@ import inquirer
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
 backcandles=100
-umbralbajo=0.25
-umbralalto=0.75
+umbralbajo=0.15
+umbralalto=0.85
 
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
@@ -229,8 +229,7 @@ def main():
                         
                         X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
                         
-                        if len(data)>=800:# chequea que haya suficiente historial para que la prediccion sea coherente.
-                            data['atr']=ta.atr(data.High, data.Low, data.Close)
+                        if len(data)>=800:# chequea que haya suficiente historial para que la prediccion sea coherente.                            
 
                             model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
 
@@ -245,17 +244,17 @@ def main():
                             # CREA POSICION
                             side=''
                             if symbol not in posiciones:
+                                data['atr']=ta.atr(data.High, data.Low, data.Close)
+                                atr=data.atr.iloc[-1]
                                 ###BUY###
                                 if  deriv_y_pred_scaled2[-1] >= umbralalto and y_test[-1] > 0.5:
                                     side='BUY'
-                                    stop_price = data.Close.iloc[-1]*(1-3/100)# stop al 3% en contra
-                                    profit_price = data.Close.iloc[-1]+data.atr.iloc[-1]
+                                    atr=atr*1
                                 else:
                                     ###SELL###
                                     if deriv_y_pred_scaled2[-1] <= umbralbajo and y_test[-1] < 0.5:
                                         side='SELL'
-                                        stop_price = data.Close.iloc[-1]*(1+3/100)# stop al 3% en contra
-                                        profit_price = data.Close.iloc[-1]-data.atr.iloc[-1]
+                                        atr=atr*-1
                                 if side !='' and ut.get_cantidad_posiciones() < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
@@ -263,11 +262,14 @@ def main():
                                     ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound() 
-                                    #######                                   
                                     posicionpredictor(symbol,side,porcentajeentrada=90) 
-                                    # STOP LOSS Y TAKE PROFIT DE SEGURIDAD.
-                                    ut.creostoploss (symbol,side,stop_price)   
-                                    ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
+                                    # STOP LOSS Y TAKE PROFIT 
+                                    entry_price = ut.getentryprice(symbol)
+                                    if entry_price!=0.0:
+                                        profit_price = entry_price + 3*atr
+                                        stop_price = entry_price - 1.5*atr                                        
+                                        ut.creostoploss (symbol,side,stop_price)                                       
+                                        ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
 
                             # CERRAR POSICION
                             else: 
