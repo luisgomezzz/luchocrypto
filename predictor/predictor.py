@@ -234,11 +234,14 @@ def main():
                             model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
 
                             y_pred = model.predict(X_test)
-                            deriv_y_pred = np.diff(y_pred, axis=0, prepend=0)
-                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0, prepend=0)
+                            deriv_y_pred = np.diff(y_pred, axis=0)
+                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
                             sc = MinMaxScaler(feature_range=(0,1))
                             deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
-                            deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)                    
+                            deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
+                            deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)
+                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
+                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante                    
 
                             print(f"derivada 1ra: {deriv_y_pred_scaled[-1]}, derivada 2da: {deriv_y_pred_scaled2[-1]}")
                             # CREA POSICION
