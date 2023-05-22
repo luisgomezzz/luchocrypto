@@ -47,7 +47,7 @@ if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
 
 # Crea el file de configuracion si no existe
 configuracion= {
-    "cantidad_posiciones" : 3 # Cantidad máxima de posiciones
+    "cantidad_posiciones" : 2 # Cantidad máxima de posiciones
     }
 if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
     with open(pathroot+"configuracion.json","w") as j:

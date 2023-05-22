@@ -234,8 +234,8 @@ def main():
                             model = keras.models.load_model('predictor/modelos/model'+symbol+'.h5')
 
                             y_pred = model.predict(X_test)
-                            deriv_y_pred = np.diff(y_pred, axis=0)
-                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
+                            deriv_y_pred = np.diff(y_pred, axis=0, prepend=0)
+                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0, prepend=0)
                             sc = MinMaxScaler(feature_range=(0,1))
                             deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
                             deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)                    
