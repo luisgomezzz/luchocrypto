@@ -183,7 +183,6 @@ def obtiene_historial(symbol):
 def entrena_modelo(symbol):
     X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
     print('entrena '+symbol)
-
     np.random.seed(10)
     lstm_input = Input(shape=(backcandles, cantidad_campos_entrenar), name='lstm_input')
     lstm_layer1 = LSTM(150, return_sequences=True, name='lstm_layer1')(lstm_input)
@@ -193,9 +192,26 @@ def entrena_modelo(symbol):
     model = Model(inputs=lstm_input, outputs=output_layer)
     adam = optimizers.Adam()
     model.compile(optimizer=adam, loss='mse')
-    history=model.fit(x=X_train, y=y_train, batch_size=15, epochs=30, shuffle=True, validation_split=0.1)
-    
+    history=model.fit(x=X_train, y=y_train, batch_size=15, epochs=30, shuffle=True, validation_split=0.1)    
     model.save('predictor/modelos/model'+symbol+'.h5')
+
+def filtrado_de_monedas (): 
+    print("filtrado_de_monedas...")   
+    lista_de_monedas_filtradas = []
+    lista_de_monedas = ut.lista_de_monedas ()
+    for par in lista_de_monedas:
+        try:  
+            volumeOf24h=ut.volumeOf24h(par)
+            capitalizacion=ut.capitalizacion(par)
+            if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
+                lista_de_monedas_filtradas.append(par)
+        except Exception as ex:
+            pass        
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()   
+    print("Fin de filtrado_de_monedas.")   
+    return lista_de_monedas_filtradas    
 
 # programa principal
 def main():
@@ -207,13 +223,18 @@ def main():
             listamonedas.append(x)
     
     try:
-        if modo_ejecucion in [0,1,2]:
+        if modo_ejecucion in [0,1,2]: # solo opciones válidas
 
-            if modo_ejecucion in [1,2]:
+            if modo_ejecucion in [1,2] or len(listamonedas)==0: 
+                listamonedas=filtrado_de_monedas()
                 for symbol in listamonedas:
                     entrena_modelo(symbol)
+                ## Escribe el archivo de monedas filtradas
+                with open(cons.pathroot+"lista_monedas_filtradas.txt", 'w') as fp:
+                    for item in listamonedas:
+                        fp.write("%s\n" % item)
                 print("Fin del entrenamiento de modelos. ")
-            
+
             if modo_ejecucion in [0,1]:
 
                 while True:

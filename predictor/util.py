@@ -11,6 +11,7 @@ import json
 import math
 import ccxt as ccxt
 from playsound import playsound
+from requests import Session
 
 exchange_name=cons.exchange_name
 
@@ -417,3 +418,95 @@ def get_cantidad_posiciones():
         except:
             pass
     return cantidad_posiciones
+
+def volumeOf24h(par): #en usdt
+    vol=0.0
+    if exchange_name == 'binance':
+        vol= cons.client.futures_ticker(symbol=par)['quoteVolume']
+    if exchange_name == 'kucoinfutures':
+        datos=cons.exchange.fetch_markets()
+        for i in range(len(datos)):
+            if datos[i]['id']==par:
+                vol=datos[i]['info']['volumeOf24h']*currentprice(par)
+                break
+    return float(vol)
+
+def coingeckoinfo (par,dato='market_cap'):
+    '''
+    {'id': 'binancecoin', 'symbol': 'bnb', 'name': 'BNB', 'image': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1644979850', 
+    'current_price': 282.13, 'market_cap': 45966534569, 'market_cap_rank': 4, 'fully_diluted_valuation': 56304980752, 
+    'total_volume': 1748519199, 'high_24h': 291.05, 'low_24h': 272.34, 'price_change_24h': -3.749382261274775, 
+    'price_change_percentage_24h': -1.31152, 'market_cap_change_24h': -772981310.7671661, 'market_cap_change_percentage_24h': -1.65381,
+    'circulating_supply': 163276974.63, 'total_supply': 163276974.63, 'max_supply': 200000000.0, 'ath': 686.31, 
+    'ath_change_percentage': -58.97972, 'ath_date': '2021-05-10T07:24:17.097Z', 'atl': 0.0398177, 'atl_change_percentage': 706934.61939, 
+    'atl_date': '2017-10-19T00:00:00.000Z', 'roi': None, 'last_updated': '2022-11-12T14:45:04.478Z'}
+    '''
+    symbol = (par[0:par.find('USDT')]).lower()
+    url = 'https://api.coingecko.com/api/v3/coins/list' 
+    session = Session()
+    response = session.get(url)
+    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+    id=''
+    valor=0
+    for i in range(len(info)):
+        if info[i]['symbol']==symbol:
+            id=info[i]['id']
+            break
+    if id!='':
+        urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
+        parameters = {}
+        session = Session()
+        response = session.get(urldetalle, params=parameters)
+        info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
+        valor = info[0][dato]
+    else:
+        valor = 0
+    return valor
+
+def capitalizacion(par):
+    cap=0.0
+    # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
+    #busqueda en binance
+    if exchange_name == 'kucoinfutures':
+        if par == 'XBTUSDTM': # en kucoin BTC es 'XBTUSDTM'
+            par = 'BTCUSDTM'
+        par=par[0:-1]# si se eligió kucoin se le saca el ultimo caracter al símbolo.
+    clientcap = cons.binanceClient(cons.api_key, cons.api_secret,cons.api_passphares) 
+    info = clientcap.get_products()
+    lista=info['data']
+    for i in range(len(lista)):
+        if lista[i]['s']==par:
+            cap = float(lista[i]['c']*lista[i]['cs'])
+            break
+    if cap==0.0:
+        #busqueda en coingecko
+        try:
+            cap=float(coingeckoinfo (par,dato='market_cap'))
+        except:
+            cap=0.0
+            pass
+    return cap  
+
+def lista_de_monedas ():
+    lista_de_monedas = []
+    mazmorra = cons.mazmorra
+    try:
+        if exchange_name =='binance':
+            exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
+            for s in exchange_info:
+                try:
+                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
+                        lista_de_monedas.append(s['symbol'])
+                except Exception as ex:
+                    pass    
+        if exchange_name =='kucoinfutures':
+            exchange_info = cons.clientmarket.get_contracts_list()
+            for index in range(len(exchange_info)):
+                try:
+                    lista_de_monedas.append(exchange_info[index]['symbol'])
+                except Exception as ex:
+                    pass   
+    except:
+        print("\nError al obtener la lista de monedas...\n")
+        pass
+    return lista_de_monedas 

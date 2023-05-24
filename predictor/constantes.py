@@ -56,3 +56,10 @@ if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
     with open(pathroot+"configuracion.json","w") as j:
         json.dump(configuracion,j, indent=4)
 
+minvolumen24h = float(100000000)
+
+mincapitalizacion = float(10000000)
+
+#monedas que no quiero operar
+#BELUSDT moneda que ya ha hecho manipulaciones.
+mazmorra=['BELUSDT','RENUSDT']
