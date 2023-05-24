@@ -24,3 +24,4 @@ predictor/posiciones.json
 .vscode/settings.json
 predictor/configuracion.json
 predictor/__pycache__/*
+predictor/lista_monedas_filtradas.txt

@@ -43,13 +43,6 @@ if modo_seleccionado == "Entrenar, guardar el modelo y tradear.":
 if modo_seleccionado == "Entrenar y guardar el modelo.":
     modo_ejecucion=2
 
-listamonedas = ['BTCUSDT'   ,'ETHUSDT'   ,'BCHUSDT'   ,'XRPUSDT'   ,'EOSUSDT'   ,'LTCUSDT'   ,'ETCUSDT'   ,'LINKUSDT'  ,
-'ADAUSDT'   ,'BNBUSDT'   ,'ATOMUSDT'  ,'DOGEUSDT'  ,'KAVAUSDT'  ,'DOTUSDT'   ,'SOLUSDT'   ,'AVAXUSDT'  ,'FTMUSDT'   ,
-'TOMOUSDT'  ,'FILUSDT'   ,'MATICUSDT' ,'LINAUSDT'  ,'MASKUSDT'  ,'DYDXUSDT'  ,'GALAUSDT'  ,'ARPAUSDT'  ,'ANTUSDT'   ,'GMTUSDT'   ,
-'APEUSDT'   ,'JASMYUSDT' ,'OPUSDT'    ,'INJUSDT'   ,'LDOUSDT'   ,'APTUSDT'   ,'RNDRUSDT'  ,'CFXUSDT'   ,'STXUSDT'   ,
-'IDUSDT'    ,'ARBUSDT'   ,'EDUUSDT'   ,'SUIUSDT'
-]
-
 def posicionpredictor(symbol,side,porcentajeentrada):   
     serror = True
     micapital = ut.balancetotal()
@@ -206,6 +199,13 @@ def entrena_modelo(symbol):
 
 # programa principal
 def main():
+    #Lee archivo de mmonedas filtradas
+    listamonedas=[]
+    with open(cons.pathroot+"lista_monedas_filtradas.txt", 'r') as fp:
+        for line in fp:
+            x = line[:-1]
+            listamonedas.append(x)
+    
     try:
         if modo_ejecucion in [0,1,2]:
 

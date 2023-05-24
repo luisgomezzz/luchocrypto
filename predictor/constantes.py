@@ -21,6 +21,9 @@ clear() #limpia terminal
 nombrelog = "log_finandy.txt"
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
+lista_monedas_filtradas = "lista_monedas_filtradas.txt"
+f = open(os.path.join(pathroot, lista_monedas_filtradas), 'a',encoding="utf-8")
+f.close() 
 
 api_key="qycthSI8s5HH0b95MxH3lFKPPUeZu8mCSgztp00x2d7SdHmfOp2U9qBeCCbxPyDg"
 api_secret="zeJqYkyWzBIdGDMmyfUnofQiThirgEgOCDYvS3rzcq4yle1afD7YEQkciCI43yNs"
