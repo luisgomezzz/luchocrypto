@@ -280,7 +280,7 @@ def main():
                                     if deriv_y_pred_scaled2[-1] <= umbralbajo and y_test[-1] < 0.5:
                                         side='SELL'
                                         atr=atr*-1
-                                if side !='' and ut.get_cantidad_posiciones() < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
+                                if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
@@ -299,7 +299,7 @@ def main():
                             # CERRAR POSICION
                             else: 
                                 if ut.get_positionamt(symbol)==0.0: 
-                                    # Se cerró la posición por limit o manual y se elimina del diccionario. 
+                                    # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
                                     # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
                                     posiciones.pop(symbol)
                                     with open(cons.pathroot+"posiciones.json","w") as j:

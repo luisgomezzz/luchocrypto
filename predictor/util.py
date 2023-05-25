@@ -404,21 +404,6 @@ def closeposition(symbol,side):
             serror=False
             pass 
 
-def get_cantidad_posiciones(): 
-    leido = False
-    cantidad_posiciones = 0
-    while leido == False:
-        try:
-            if exchange_name =='binance':
-                position = cons.exchange.fetch_balance()['info']['positions']
-                for i in range(len(position)):
-                    if float(position[i]['positionAmt'])!=0.0:
-                        cantidad_posiciones=cantidad_posiciones+1
-            leido = True
-        except:
-            pass
-    return cantidad_posiciones
-
 def volumeOf24h(par): #en usdt
     vol=0.0
     if exchange_name == 'binance':
@@ -510,3 +495,19 @@ def lista_de_monedas ():
         print("\nError al obtener la lista de monedas...\n")
         pass
     return lista_de_monedas 
+
+def get_posiciones_abiertas(): 
+    leido = False
+    lista_posiciones = []
+    while leido == False:
+        try:
+            if exchange_name =='binance':
+                position = cons.exchange.fetch_balance()['info']['positions']
+                for i in range(len(position)):
+                    print(position[i])
+                    if float(position[i]['positionAmt'])!=0.0:
+                        lista_posiciones.append(position[i]['symbol'])
+            leido = True
+        except:
+            pass
+    return lista_posiciones
