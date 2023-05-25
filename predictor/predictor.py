@@ -287,11 +287,11 @@ def main():
                                     ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+'. deriv_y_pred_scaled2: '+str(deriv_y_pred_scaled2[-1])+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound() 
-                                    posicionpredictor(symbol,side,porcentajeentrada=90) 
+                                    posicionpredictor(symbol,side,porcentajeentrada=100) 
                                     # STOP LOSS Y TAKE PROFIT 
                                     entry_price = ut.getentryprice(symbol)
                                     if entry_price!=0.0:
-                                        profit_price = entry_price + 3*atr
+                                        profit_price = entry_price + 1*atr
                                         stop_price = entry_price - 1.5*atr                                        
                                         ut.creostoploss (symbol,side,stop_price)                                       
                                         ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
