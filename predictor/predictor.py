@@ -298,13 +298,20 @@ def main():
 
                             # CERRAR POSICION
                             else: 
-                                if ut.get_positionamt(symbol)==0.0: 
+                                if ut.get_positionamt(symbol)!=0.0: 
+                                    #cambio de tendencia
+                                    if ((deriv_y_pred_scaled2[-1] <= umbralbajo and posiciones[symbol]=='BUY') 
+                                        or
+                                        (deriv_y_pred_scaled2[-1] >= umbralalto and posiciones[symbol]=='SELL')):
+                                        ut.sound(duration = 700, freq = 400)
+                                        ut.sound(duration = 700, freq = 400)
+                                else:
                                     # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
                                     # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
                                     posiciones.pop(symbol)
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
-                                    ut.closeallopenorders(symbol)              
+                                    ut.closeallopenorders(symbol)
 
                     sleep(60)
 

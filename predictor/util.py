@@ -498,16 +498,15 @@ def lista_de_monedas ():
 
 def get_posiciones_abiertas(): 
     leido = False
-    lista_posiciones = []
+    dict_posiciones = {}
     while leido == False:
         try:
             if exchange_name =='binance':
                 position = cons.exchange.fetch_balance()['info']['positions']
                 for i in range(len(position)):
-                    print(position[i])
                     if float(position[i]['positionAmt'])!=0.0:
-                        lista_posiciones.append(position[i]['symbol'])
+                        dict_posiciones[position[i]['symbol']]=position[i]['positionSide']
             leido = True
         except:
             pass
-    return lista_posiciones
+    return dict_posiciones
