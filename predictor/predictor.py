@@ -19,9 +19,11 @@ import json
 from binance.exceptions import BinanceAPIException
 import sys
 import inquirer
+from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import StandardScaler
 ut.printandlog(cons.nombrelog,"PREDICTOR")
 
-backcandles=100
+backcandles=40
 umbralbajo=0.15
 umbralalto=0.85
 
@@ -160,8 +162,12 @@ def obtiene_historial(symbol):
     data_set = data
     pd.set_option('display.max_columns', None)
     #################################################################################################################
-    sc = MinMaxScaler(feature_range=(0,1))
-    data_set_scaled = sc.fit_transform(data_set)
+    # formatea datos
+
+    data_set_scaled = MinMaxScaler(feature_range=(0, 1)).fit_transform(data_set)
+    #data_set_scaled = StandardScaler().fit_transform(data_set)
+    #data_set_scaled = RobustScaler().fit_transform(data_set)
+
     # multiple feature from data provided to the model
     X = []
     backcandles = 100
@@ -183,16 +189,17 @@ def obtiene_historial(symbol):
 def entrena_modelo(symbol):
     X_train,y_train,X_test,y_test,cantidad_campos_entrenar,data=obtiene_historial(symbol)
     print('entrena '+symbol)
+
     np.random.seed(10)
     lstm_input = Input(shape=(backcandles, cantidad_campos_entrenar), name='lstm_input')
-    lstm_layer1 = LSTM(150, return_sequences=True, name='lstm_layer1')(lstm_input)
-    lstm_layer2 = LSTM(150, name='lstm_layer2')(lstm_layer1)
-    dense_layer = Dense(1, name='dense_layer')(lstm_layer2)
-    output_layer = Activation('linear', name='output')(dense_layer)
-    model = Model(inputs=lstm_input, outputs=output_layer)
+    inputs = LSTM(150, name='first_layer')(lstm_input)
+    inputs = Dense(1, name='dense_layer')(inputs)
+    output = Activation('linear', name='output')(inputs)
+    model = Model(inputs=lstm_input, outputs=output)
     adam = optimizers.Adam()
     model.compile(optimizer=adam, loss='mse')
-    history=model.fit(x=X_train, y=y_train, batch_size=15, epochs=30, shuffle=True, validation_split=0.1)    
+    history=model.fit(x=X_train, y=y_train, batch_size=15, epochs=30, shuffle=True, validation_split=0.1)
+
     model.save('predictor/modelos/model'+symbol+'.h5')
 
 def filtrado_de_monedas (): 
@@ -257,13 +264,11 @@ def main():
                             y_pred = model.predict(X_test)
                             deriv_y_pred = np.diff(y_pred, axis=0)
                             deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
-                            sc = MinMaxScaler(feature_range=(0,1))
-                            deriv_y_pred_scaled = sc.fit_transform(deriv_y_pred)
-                            deriv_y_pred_scaled2 = sc.fit_transform(deriv_y_pred2)
-
+                            deriv_y_pred_scaled = MinMaxScaler(feature_range=(0, 1)).fit_transform(deriv_y_pred)
+                            deriv_y_pred_scaled2 = MinMaxScaler(feature_range=(0, 1)).fit_transform(deriv_y_pred2)
                             deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
                             deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
-                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante                  
+                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
 
                             print(f"derivada 1ra: {deriv_y_pred_scaled[-1]}, derivada 2da: {deriv_y_pred_scaled2[-1]}")
                             # CREA POSICION
