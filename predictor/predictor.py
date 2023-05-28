@@ -170,7 +170,6 @@ def obtiene_historial(symbol):
 
     # multiple feature from data provided to the model
     X = []
-    backcandles = 100
     for j in range(cantidad_campos_entrenar):
         X.append([])
         for i in range(backcandles, data_set_scaled.shape[0]):#backcandles+2
