@@ -192,24 +192,24 @@ def main():
                             deriv_y_pred = deriv_y_pred.reshape(-1, 1)
                             deriv_y_pred2 = deriv_y_pred2.reshape(-1, 1)
                             # Escalar las derivadas
-                            scaler1 = MinMaxScaler(feature_range=(0, 1))
-                            deriv_y_pred_scaled = scaler1.fit_transform(deriv_y_pred)
-                            #scaler2 = MinMaxScaler(feature_range=(0, 1))
-                            #deriv_y_pred_scaled2 = scaler2.fit_transform(deriv_y_pred2)
+                            #scaler1 = MinMaxScaler(feature_range=(0, 1))
+                            #deriv_y_pred_scaled = scaler1.fit_transform(deriv_y_pred)
+                            scaler2 = MinMaxScaler(feature_range=(0, 1))
+                            deriv_y_pred_scaled2 = scaler2.fit_transform(deriv_y_pred2)
 
-                            print(f"derivada 1ra: {deriv_y_pred_scaled[-1]}")
+                            print(f"derivada: {deriv_y_pred_scaled2[-1]}")
                             # CREA POSICION
                             side=''
                             if symbol not in posiciones:
                                 data['atr']=ta.atr(data.High, data.Low, data.Close)
                                 atr=data.atr.iloc[-1]
                                 ###BUY###
-                                if  deriv_y_pred_scaled[-1] >= umbralalto and y_test[-1] > 0.5:
+                                if  deriv_y_pred_scaled2[-1] >= umbralalto and y_test[-1] > 0.5:
                                     side='BUY'
                                     atr=atr*1
                                 else:
                                     ###SELL###
-                                    if deriv_y_pred_scaled[-1] <= umbralbajo and y_test[-1] < 0.5:
+                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and y_test[-1] < 0.5:
                                         side='SELL'
                                         atr=atr*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
