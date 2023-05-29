@@ -196,9 +196,9 @@ def main():
                             deriv_y_pred_scaled = scaler1.fit_transform(deriv_y_pred)
                             scaler2 = MinMaxScaler(feature_range=(0, 1))
                             deriv_y_pred_scaled2 = scaler2.fit_transform(deriv_y_pred2)
-                            deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
-                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
-                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, 0.0, axis=0)#para mover 1 posicion hacia adelante
+                            deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, deriv_y_pred_scaled[0], axis=0)#para mover 1 posicion hacia adelante
+                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
+                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
 
                             print(f"derivada: {deriv_y_pred_scaled2[-1]}")
                             # CREA POSICION
@@ -206,13 +206,16 @@ def main():
                             if symbol not in posiciones:
                                 data['atr']=ta.atr(data.High, data.Low, data.Close)
                                 atr=data.atr.iloc[-1]
+                                ema20=data.ta.ema(20).iloc[-1] 
+                                ema50=data.ta.ema(50).iloc[-1]
+                                ema200=data.ta.ema(200).iloc[-1]
                                 ###BUY###
-                                if  deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] > umbralbajo and y_test[-1] > 0.5:
+                                if  deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] > umbralbajo and ema20 > ema50 > ema200:
                                     side='BUY'
                                     atr=atr*1
                                 else:
                                     ###SELL###
-                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] < umbralalto and y_test[-1] < 0.5:
+                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] < umbralalto and ema20 < ema50 < ema200:
                                         side='SELL'
                                         atr=atr*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
