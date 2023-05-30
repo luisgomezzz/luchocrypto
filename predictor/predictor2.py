@@ -17,8 +17,8 @@ import constantes as cons
 
 ut.printandlog(cons.nombrelog,"PREDICTOR2")
 
-umbralbajo=0.2
-umbralalto=0.8
+umbralbajo=0.3
+umbralalto=0.7
 
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
@@ -71,6 +71,9 @@ def obtiene_historial(symbol):
         try:
             historical_data = client.get_historical_klines(symbol, timeframe)
             leido = True
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()              
         except:
             print("intento leer de nuevo...")
             pass
@@ -230,7 +233,7 @@ def main():
                                     entry_price = ut.getentryprice(symbol)
                                     if entry_price!=0.0:
                                         profit_price = entry_price + 1*atr
-                                        stop_price = entry_price - 1.5*atr                                        
+                                        stop_price = ema200
                                         ut.creostoploss (symbol,side,stop_price)                                       
                                         ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
 
@@ -243,8 +246,6 @@ def main():
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
                                     ut.closeallopenorders(symbol)
-
-                    sleep(60)
 
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
