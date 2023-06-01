@@ -14,6 +14,7 @@ import numpy as np
 from keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
 import constantes as cons
+from datetime import datetime
 
 ut.printandlog(cons.nombrelog,"PREDICTOR2")
 
@@ -146,8 +147,24 @@ def filtrado_de_monedas ():
     print("Fin de filtrado_de_monedas.")   
     return lista_de_monedas_filtradas    
 
+def calcular_porcentaje_tiempo(df, temporalidad):
+    # Calcula el porcentaje de tiempo transcurrido desde la última fila hasta el momento.
+    # se usa para entrar temprano en el trade.
+    tiempo_vela = pd.Timedelta(minutes=temporalidad)
+    tiempo_transcurrido = dt.datetime.today() - (df.index[-1] - dt.timedelta(hours=3))  
+    porcentaje_tiempo = (tiempo_transcurrido.total_seconds() / tiempo_vela.total_seconds()) * 100
+    return porcentaje_tiempo
+
 # programa principal
 def main():
+    vueltas=0
+    minutes_diff=0 
+    balancetotal=ut.balancetotal()
+    reservas = 2965
+    ##############START        
+    print("Saldo: "+str(ut.truncate(balancetotal,2)))
+    print(f"PNL acumulado: {str(ut.truncate(balancetotal-reservas,2))}")
+
     #Lee archivo de mmonedas filtradas
     listamonedas=[]
     with open(cons.pathroot+"lista_monedas_filtradas.txt", 'r') as fp:
@@ -171,6 +188,7 @@ def main():
             if modo_ejecucion in [0,1]:
 
                 while True:
+
                     # Lee archivo de configuracion
                     with open(cons.pathroot+"configuracion.json","r") as j:
                         dic_configuracion=json.load(j) 
@@ -179,7 +197,17 @@ def main():
                     with open(cons.pathroot+"posiciones.json","r") as j:
                         posiciones=json.load(j)        
                     for symbol in listamonedas:
-                        print('chequeo '+symbol)
+                        # para calcular tiempo de vuelta completa                
+                        if vueltas == 0:
+                            datetime_start = datetime.today()
+                            vueltas = 1
+                        else:
+                            if vueltas == len(listamonedas):
+                                datetime_end = datetime.today()
+                                minutes_diff = (datetime_end - datetime_start).total_seconds() / 60.0
+                                vueltas = 0
+                            else:
+                                vueltas = vueltas+1                        
                         
                         X_train,y_train,X_test,y_test,data=obtiene_historial(symbol)
                         
@@ -187,7 +215,7 @@ def main():
 
                             lstm = keras.models.load_model('predictor/modelos/lstm'+symbol+'.h5')
 
-                            y_pred = lstm.predict(X_test)
+                            y_pred = lstm.predict(X_test,verbose = 0)
                             # Calcular las derivadas
                             deriv_y_pred = np.diff(y_pred, axis=0)
                             deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
@@ -202,8 +230,7 @@ def main():
                             deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, deriv_y_pred_scaled[0], axis=0)#para mover 1 posicion hacia adelante
                             deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
                             deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
-
-                            print(f"derivada: {deriv_y_pred_scaled2[-1]}")
+                            
                             # CREA POSICION
                             side=''
                             if symbol not in posiciones:
@@ -212,13 +239,14 @@ def main():
                                 ema20=data.ta.ema(20).iloc[-1] 
                                 ema50=data.ta.ema(50).iloc[-1]
                                 ema200=data.ta.ema(200).iloc[-1]
+                                tiempo_transcurrido = calcular_porcentaje_tiempo(data, temporalidad=30) < 25
                                 ###BUY###
-                                if  deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] > umbralbajo and ema20 > ema50 > ema200:
+                                if  tiempo_transcurrido and deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] > umbralbajo and ema20 > ema50 > ema200:
                                     side='BUY'
                                     atr=atr*1
                                 else:
                                     ###SELL###
-                                    if deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] < umbralalto and ema20 < ema50 < ema200:
+                                    if tiempo_transcurrido and deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] < umbralalto and ema20 < ema50 < ema200:
                                         side='SELL'
                                         atr=atr*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
@@ -239,6 +267,7 @@ def main():
 
                             # CERRAR POSICION
                             else: 
+                                
                                 if ut.get_positionamt(symbol)==0.0: 
                                     # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
                                     # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
@@ -247,10 +276,13 @@ def main():
                                         json.dump(posiciones,j, indent=4)
                                     ut.closeallopenorders(symbol)
 
+                        sys.stdout.write(f"\r{symbol} - T. vuelta: {ut.truncate(minutes_diff,2)} \033[K")
+                        sys.stdout.flush()  
+
     except Exception as falla:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
         pass  
 
 if __name__ == '__main__':
