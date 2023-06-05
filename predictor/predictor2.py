@@ -18,8 +18,8 @@ from datetime import datetime
 
 ut.printandlog(cons.nombrelog,"PREDICTOR2")
 
-umbralbajo=0.3
-umbralalto=0.7
+umbralbajo=0.2
+umbralalto=0.8
 
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
