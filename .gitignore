@@ -25,3 +25,4 @@ predictor/posiciones.json
 predictor/configuracion.json
 predictor/__pycache__/*
 predictor/lista_monedas_filtradas.txt
+predictor/Predictor2.html

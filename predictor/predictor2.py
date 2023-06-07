@@ -234,26 +234,30 @@ def main():
                             # CREA POSICION
                             side=''
                             if symbol not in posiciones:
+                                data['ema20']=data.ta.ema(20)
+                                data['ema50']=data.ta.ema(50)
+                                data['ema200']=data.ta.ema(200)
                                 data['atr']=ta.atr(data.High, data.Low, data.Close)
-                                atr=data.atr.iloc[-1]
-                                ema20=data.ta.ema(20).iloc[-1] 
-                                ema50=data.ta.ema(50).iloc[-1]
-                                ema200=data.ta.ema(200).iloc[-1]
+                                data=data.tail(200)
+                                data_copy = data.copy()
+                                data_copy['deriv'] = deriv_y_pred_scaled2
+                                data=data_copy
+
                                 tiempo_transcurrido = calcular_porcentaje_tiempo(data, temporalidad=30) < 25
                                 ###BUY###
-                                if  tiempo_transcurrido and deriv_y_pred_scaled2[-1] >= umbralalto and deriv_y_pred_scaled2[-2] > umbralbajo and ema20 > ema50 > ema200:
+                                if  tiempo_transcurrido and data.Close[-1] > data.ema20[-1] > data.ema50[-1] > data.ema200[-1] and data.deriv[-1] >= umbralalto and data.deriv[-2] > umbralbajo:
                                     side='BUY'
-                                    atr=atr*1
+                                    atr=data.atr[-1]*1
                                 else:
                                     ###SELL###
-                                    if tiempo_transcurrido and deriv_y_pred_scaled2[-1] <= umbralbajo and deriv_y_pred_scaled2[-2] < umbralalto and ema20 < ema50 < ema200:
+                                    if tiempo_transcurrido and data.Close[-1] < data.ema20[-1] < data.ema50[-1] < data.ema200[-1] and data.deriv[-1] <= umbralbajo and data.deriv[-2] < umbralalto:
                                         side='SELL'
-                                        atr=atr*-1
+                                        atr=data.atr[-1]*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
-                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))+" - Derivada: "+str(deriv_y_pred_scaled2[-1]))
                                     ut.sound()
                                     ut.sound() 
                                     posicionpredictor(symbol,side,porcentajeentrada=100) 
@@ -261,7 +265,7 @@ def main():
                                     entry_price = ut.getentryprice(symbol)
                                     if entry_price!=0.0:
                                         profit_price = entry_price + 1*atr
-                                        stop_price = ema200
+                                        stop_price = data.ema200[-1]
                                         ut.creostoploss (symbol,side,stop_price)                                       
                                         ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
 
