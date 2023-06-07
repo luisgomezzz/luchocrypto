@@ -62,4 +62,4 @@ mincapitalizacion = float(10000000)
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.
-mazmorra=['BELUSDT','RENUSDT']
+mazmorra=['BELUSDT','RENUSDT','BTCUSDT','ETHUSDT']
