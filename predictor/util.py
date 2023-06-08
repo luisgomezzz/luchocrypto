@@ -14,6 +14,9 @@ from playsound import playsound
 from requests import Session
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+import keras 
+import pandas_ta as ta
+import matplotlib.pyplot as plt
 
 exchange_name=cons.exchange_name
 
@@ -202,7 +205,7 @@ def creoposicion (par,size,lado)->bool:
         serror=False
         pass
     except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         serror=False
@@ -376,7 +379,6 @@ def pnl(par):
             pass
     return pnl        
 
-
 #descargar audio desde google translator
 #from gtts import gTTS
 #tts = gTTS('The team is liquidating tokens.')
@@ -515,9 +517,9 @@ def get_posiciones_abiertas():
 
 def obtiene_historial(symbol):
     client = cons.client
-    #################################################################################################################  
     timeframe='30m'
     leido=False
+    n_steps = cons.n_steps
     while leido==False:
         try:
             historical_data = client.get_historical_klines(symbol, timeframe)
@@ -526,7 +528,7 @@ def obtiene_historial(symbol):
             print("\nSalida solicitada. ")
             sys.exit()              
         except:
-            print("intento leer de nuevo...")
+            print("Intento leer de nuevo...")
             pass
     data = pd.DataFrame(historical_data)
     data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
@@ -537,32 +539,70 @@ def obtiene_historial(symbol):
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     data['timestamp']=data['Open Time']
     data.set_index('timestamp', inplace=True)
-
     data.dropna(inplace=True)
     data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
             'Ignore'], axis=1, inplace=True)
     stock_data = data
-    pd.set_option('display.max_columns', None)
-    
+    pd.set_option('display.max_columns', None)    
     X_feat = stock_data.iloc[:,0:3]
-    #X_ft = StandardScaler().fit_transform(X_feat.values)
-
     X_ft = MinMaxScaler(feature_range=(0, 1)).fit_transform(X_feat.values)
     X_ft = pd.DataFrame(columns=X_feat.columns,data=X_ft,index=X_feat.index)
-
     def ltsm_split (data,n_steps):
         X, y = [], []
         for i in range(len(data)-n_steps+1):
             X.append(data[i:i + n_steps, :-1])
             y.append(data[i + n_steps-1, -1])
         return np.array(X),np.array(y)
-
-    X1, y1 = ltsm_split(X_ft.values, n_steps=cons.n_steps)
-
+    X1, y1 = ltsm_split(X_ft.values, n_steps=n_steps)
     train_split =0.8
     split_idx = int(np.ceil(len(X1)*train_split))
-
     X_train , X_test = X1[:split_idx], X1[split_idx:]
-    y_train , y_test = y1[:split_idx], y1[split_idx:]
-    #################################################################################################################   
+    y_train , y_test = y1[:split_idx], y1[split_idx:]       
     return X_train,y_train,X_test,y_test,data
+
+def estrategia(symbol,plot=False):
+    n_steps = cons.n_steps
+    umbralbajo=0.3
+    umbralalto=0.7
+    _,_,X_test,y_test,data=obtiene_historial(symbol)
+    # CARGA EL MODELO GUARDADO Y PREDICE
+    lstm = keras.models.load_model('predictor/modelos/lstm'+symbol+'.h5')
+    y_pred = lstm.predict(X_test,verbose = 0)
+    # CALCULOS
+    deriv_y_pred2 = (np.diff(np.diff(y_pred, axis=0), axis=0)).reshape(-1, 1)
+    deriv_y_pred_scaled2 = MinMaxScaler(feature_range=(0, 1)).fit_transform(deriv_y_pred2)
+    deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
+    deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
+    data['ema20']=data.ta.ema(20)
+    data['ema50']=data.ta.ema(50)
+    data['ema200']=data.ta.ema(200)
+    data['atr']=ta.atr(data.High, data.Low, data.Close)
+    data=data.tail(200)
+    data_copy = data.copy()
+    data_copy['deriv'] = deriv_y_pred_scaled2
+    data=data_copy
+    data['signal']=  np.where( (data.ema20 > data.ema50) & (data.ema50 > data.ema200) & (data.deriv >= umbralalto) & (data.deriv.shift(1) > umbralbajo),1,
+                (np.where( (data.ema20 < data.ema50) & (data.ema50 < data.ema200) & (data.deriv <= umbralbajo) & (data.deriv.shift(1) < umbralalto),-1,
+                        0)))
+    data['take_profit']=np.where(data.signal==1,data.Close+data.atr,np.where(data.signal==-1,data.Close-data.atr,0))
+    data['stop_loss']=data.ema200
+    # GRAFICA
+    if plot==True:
+        plt.figure(figsize=(14, 5))
+        time_index = range(n_steps-1, n_steps-1+len(y_pred))
+        for i in time_index:
+            plt.axvline(x=i, color='lightgray')
+        plt.xlim(0,len(y_test))
+        plt.axhline(y = umbralalto, color = 'orange', linestyle = '-')
+        plt.axhline(y = umbralbajo, color = 'orange', linestyle = '-')
+        plt.plot(y_test, label='Close',color = 'black')
+        plt.plot( y_pred[:, -1, 0], label='Prediction',color = 'blue')
+        plt.plot( deriv_y_pred_scaled2, label='Derivative 2 (Scaled)', color='red')
+        plt.xlabel('Time Scale')
+        plt.ylabel('Scaled USDT')
+        plt.legend()
+        plt.gcf().autofmt_xdate()
+        plt.title(symbol)
+        plt.show()
+
+    return data

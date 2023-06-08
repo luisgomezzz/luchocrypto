@@ -65,6 +65,3 @@ mincapitalizacion = float(10000000)
 mazmorra=['BELUSDT','RENUSDT','BTCUSDT','ETHUSDT']
 
 n_steps = 1
-
-umbralbajo=0.2
-umbralalto=0.8

@@ -149,62 +149,34 @@ def main():
                             else:
                                 vueltas = vueltas+1                        
                         
-                        #obtiene la data
-                        X_train,y_train,X_test,y_test,data=ut.obtiene_historial(symbol)
+                        data = ut.estrategia(symbol)
                         
-                        if len(data)>=800:# chequea que haya suficiente historial para que la prediccion sea coherente.                            
-                            
-                            #carga el modelo guardado y predice
-                            lstm = keras.models.load_model('predictor/modelos/lstm'+symbol+'.h5')
-                            y_pred = lstm.predict(X_test,verbose = 0)
-
-                            deriv_y_pred = np.diff(y_pred, axis=0)
-                            deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
-                            deriv_y_pred = deriv_y_pred.reshape(-1, 1)
-                            deriv_y_pred2 = deriv_y_pred2.reshape(-1, 1)
-                            scaler1 = MinMaxScaler(feature_range=(0, 1))
-                            deriv_y_pred_scaled = scaler1.fit_transform(deriv_y_pred)
-                            scaler2 = MinMaxScaler(feature_range=(0, 1))
-                            deriv_y_pred_scaled2 = scaler2.fit_transform(deriv_y_pred2)
-                            deriv_y_pred_scaled = np.insert(deriv_y_pred_scaled, 0, deriv_y_pred_scaled[0], axis=0)#para mover 1 posicion hacia adelante
-                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
-                            deriv_y_pred_scaled2 = np.insert(deriv_y_pred_scaled2, 0, deriv_y_pred_scaled2[0], axis=0)#para mover 1 posicion hacia adelante
+                        if len(data)>=200:# chequea que haya suficiente historial para que la prediccion sea coherente. 
                             
                             # CREA POSICION
                             side=''
                             if symbol not in posiciones:
-                                data['ema20']=data.ta.ema(20)
-                                data['ema50']=data.ta.ema(50)
-                                data['ema200']=data.ta.ema(200)
-                                data['atr']=ta.atr(data.High, data.Low, data.Close)
-                                data=data.tail(200)
-                                data_copy = data.copy()
-                                data_copy['deriv'] = deriv_y_pred_scaled2
-                                data=data_copy
-
                                 tiempo_transcurrido = calcular_porcentaje_tiempo(data, temporalidad=30) < 25
                                 ###BUY###
-                                if  tiempo_transcurrido and data.Close[-1] > data.ema20[-1] > data.ema50[-1] > data.ema200[-1] and data.deriv[-1] >= cons.umbralalto and data.deriv[-2] > cons.umbralbajo:
+                                if  tiempo_transcurrido and data.signal[-1] ==1:
                                     side='BUY'
-                                    atr=data.atr[-1]*1
                                 else:
                                     ###SELL###
-                                    if tiempo_transcurrido and data.Close[-1] < data.ema20[-1] < data.ema50[-1] < data.ema200[-1] and data.deriv[-1] <= cons.umbralbajo and data.deriv[-2] < cons.umbralalto:
+                                    if tiempo_transcurrido and data.signal[-1] ==-1:
                                         side='SELL'
-                                        atr=data.atr[-1]*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
                                         json.dump(posiciones,j, indent=4)
-                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S'))+" - Derivada: "+str(deriv_y_pred_scaled2[-1]))
+                                    ut.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                     ut.sound()
                                     ut.sound() 
                                     posicionpredictor(symbol,side,porcentajeentrada=100) 
                                     # STOP LOSS Y TAKE PROFIT 
                                     entry_price = ut.getentryprice(symbol)
                                     if entry_price!=0.0:
-                                        profit_price = entry_price + 1*atr
-                                        stop_price = data.ema200[-1]
+                                        profit_price = data.take_profit[-1]
+                                        stop_price = data.stop_loss[-1]
                                         ut.creostoploss (symbol,side,stop_price)                                       
                                         ut.creotakeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
 
@@ -223,7 +195,7 @@ def main():
                         sys.stdout.flush()  
 
     except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
         pass  
