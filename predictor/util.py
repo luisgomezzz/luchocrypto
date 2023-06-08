@@ -12,6 +12,8 @@ import math
 import ccxt as ccxt
 from playsound import playsound
 from requests import Session
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 exchange_name=cons.exchange_name
 
@@ -510,3 +512,57 @@ def get_posiciones_abiertas():
         except:
             pass
     return dict_posiciones
+
+def obtiene_historial(symbol):
+    client = cons.client
+    #################################################################################################################  
+    timeframe='30m'
+    leido=False
+    while leido==False:
+        try:
+            historical_data = client.get_historical_klines(symbol, timeframe)
+            leido = True
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()              
+        except:
+            print("intento leer de nuevo...")
+            pass
+    data = pd.DataFrame(historical_data)
+    data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
+                        'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
+    data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
+    data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
+    numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
+    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+    data['timestamp']=data['Open Time']
+    data.set_index('timestamp', inplace=True)
+
+    data.dropna(inplace=True)
+    data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
+            'Ignore'], axis=1, inplace=True)
+    stock_data = data
+    pd.set_option('display.max_columns', None)
+    
+    X_feat = stock_data.iloc[:,0:3]
+    #X_ft = StandardScaler().fit_transform(X_feat.values)
+
+    X_ft = MinMaxScaler(feature_range=(0, 1)).fit_transform(X_feat.values)
+    X_ft = pd.DataFrame(columns=X_feat.columns,data=X_ft,index=X_feat.index)
+
+    def ltsm_split (data,n_steps):
+        X, y = [], []
+        for i in range(len(data)-n_steps+1):
+            X.append(data[i:i + n_steps, :-1])
+            y.append(data[i + n_steps-1, -1])
+        return np.array(X),np.array(y)
+
+    X1, y1 = ltsm_split(X_ft.values, n_steps=cons.n_steps)
+
+    train_split =0.8
+    split_idx = int(np.ceil(len(X1)*train_split))
+
+    X_train , X_test = X1[:split_idx], X1[split_idx:]
+    y_train , y_test = y1[:split_idx], y1[split_idx:]
+    #################################################################################################################   
+    return X_train,y_train,X_test,y_test,data

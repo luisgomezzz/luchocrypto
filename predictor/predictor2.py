@@ -12,14 +12,10 @@ import inquirer
 import pandas as pd
 import numpy as np
 from keras.models import Sequential
-from sklearn.preprocessing import MinMaxScaler
 import constantes as cons
 from datetime import datetime
-
+from sklearn.preprocessing import MinMaxScaler
 ut.printandlog(cons.nombrelog,"PREDICTOR2")
-
-umbralbajo=0.2
-umbralalto=0.8
 
 # 0: solo predice
 # 1: entrena, guarda el modelo y predice
@@ -63,64 +59,8 @@ def posicionpredictor(symbol,side,porcentajeentrada):
         pass
     return serror, mensaje 
 
-def obtiene_historial(symbol):
-    client = cons.client
-    #################################################################################################################  
-    timeframe='30m'
-    leido=False
-    while leido==False:
-        try:
-            historical_data = client.get_historical_klines(symbol, timeframe)
-            leido = True
-        except KeyboardInterrupt as ky:
-            print("\nSalida solicitada. ")
-            sys.exit()              
-        except:
-            print("intento leer de nuevo...")
-            pass
-    data = pd.DataFrame(historical_data)
-    data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
-                        'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
-    data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
-    data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
-    numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
-    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-    data['timestamp']=data['Open Time']
-    data.set_index('timestamp', inplace=True)
-
-    data.dropna(inplace=True)
-    data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
-            'Ignore'], axis=1, inplace=True)
-    stock_data = data
-    pd.set_option('display.max_columns', None)
-
-    #################################################################################################################
-    X_feat = stock_data.iloc[:,0:3]
-    #X_ft = StandardScaler().fit_transform(X_feat.values)
-
-    X_ft = MinMaxScaler(feature_range=(0, 1)).fit_transform(X_feat.values)
-    X_ft = pd.DataFrame(columns=X_feat.columns,data=X_ft,index=X_feat.index)
-
-    def ltsm_split (data,n_steps):
-        X, y = [], []
-        for i in range(len(data)-n_steps+1):
-            X.append(data[i:i + n_steps, :-1])
-            y.append(data[i + n_steps-1, -1])
-        return np.array(X),np.array(y)
-
-    n_steps=1
-    X1, y1 = ltsm_split(X_ft.values, n_steps=n_steps)
-
-    train_split =0.8
-    split_idx = int(np.ceil(len(X1)*train_split))
-
-    X_train , X_test = X1[:split_idx], X1[split_idx:]
-    y_train , y_test = y1[:split_idx], y1[split_idx:]
-    #################################################################################################################   
-    return X_train,y_train,X_test,y_test,data
-
 def entrena_modelo(symbol):
-    X_train,y_train,X_test,y_test,data=obtiene_historial(symbol)
+    X_train,y_train,X_test,y_test,data=ut.obtiene_historial(symbol)
     print('entrena '+symbol)
     lstm=Sequential()
     lstm.add(LSTM(32,input_shape=(X_train.shape[1],X_train.shape[2]),activation='relu',return_sequences=True))
@@ -209,20 +149,19 @@ def main():
                             else:
                                 vueltas = vueltas+1                        
                         
-                        X_train,y_train,X_test,y_test,data=obtiene_historial(symbol)
+                        #obtiene la data
+                        X_train,y_train,X_test,y_test,data=ut.obtiene_historial(symbol)
                         
                         if len(data)>=800:# chequea que haya suficiente historial para que la prediccion sea coherente.                            
-
+                            
+                            #carga el modelo guardado y predice
                             lstm = keras.models.load_model('predictor/modelos/lstm'+symbol+'.h5')
-
                             y_pred = lstm.predict(X_test,verbose = 0)
-                            # Calcular las derivadas
+
                             deriv_y_pred = np.diff(y_pred, axis=0)
                             deriv_y_pred2 = np.diff(deriv_y_pred, axis=0)
-                            # Ajustar la forma de deriv_y_pred
                             deriv_y_pred = deriv_y_pred.reshape(-1, 1)
                             deriv_y_pred2 = deriv_y_pred2.reshape(-1, 1)
-                            # Escalar las derivadas
                             scaler1 = MinMaxScaler(feature_range=(0, 1))
                             deriv_y_pred_scaled = scaler1.fit_transform(deriv_y_pred)
                             scaler2 = MinMaxScaler(feature_range=(0, 1))
@@ -245,12 +184,12 @@ def main():
 
                                 tiempo_transcurrido = calcular_porcentaje_tiempo(data, temporalidad=30) < 25
                                 ###BUY###
-                                if  tiempo_transcurrido and data.Close[-1] > data.ema20[-1] > data.ema50[-1] > data.ema200[-1] and data.deriv[-1] >= umbralalto and data.deriv[-2] > umbralbajo:
+                                if  tiempo_transcurrido and data.Close[-1] > data.ema20[-1] > data.ema50[-1] > data.ema200[-1] and data.deriv[-1] >= cons.umbralalto and data.deriv[-2] > cons.umbralbajo:
                                     side='BUY'
                                     atr=data.atr[-1]*1
                                 else:
                                     ###SELL###
-                                    if tiempo_transcurrido and data.Close[-1] < data.ema20[-1] < data.ema50[-1] < data.ema200[-1] and data.deriv[-1] <= umbralbajo and data.deriv[-2] < umbralalto:
+                                    if tiempo_transcurrido and data.Close[-1] < data.ema20[-1] < data.ema50[-1] < data.ema200[-1] and data.deriv[-1] <= cons.umbralbajo and data.deriv[-2] < cons.umbralalto:
                                         side='SELL'
                                         atr=data.atr[-1]*-1
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
