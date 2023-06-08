@@ -560,13 +560,13 @@ def obtiene_historial(symbol):
     y_train , y_test = y1[:split_idx], y1[split_idx:]       
     return X_train,y_train,X_test,y_test,data
 
-def estrategia(symbol,plot=False):
+def estrategia(symbol,plot=False,path='predictor/modelos/lstm'):
     n_steps = cons.n_steps
     umbralbajo=0.3
     umbralalto=0.7
     _,_,X_test,y_test,data=obtiene_historial(symbol)
     # CARGA EL MODELO GUARDADO Y PREDICE
-    lstm = keras.models.load_model('predictor/modelos/lstm'+symbol+'.h5')
+    lstm = keras.models.load_model(path+symbol+'.h5')
     y_pred = lstm.predict(X_test,verbose = 0)
     # CALCULOS
     deriv_y_pred2 = (np.diff(np.diff(y_pred, axis=0), axis=0)).reshape(-1, 1)
