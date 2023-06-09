@@ -50,8 +50,13 @@ if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
 
 # Crea el file de configuracion si no existe
 configuracion= {
-    "cantidad_posiciones" : 1 # Cantidad máxima de posiciones
-    }
+    "cantidad_posiciones": 2,
+    "umbralbajo": 0.3,
+    "umbralalto": 0.7,
+    "mult_take_profit": 1,
+    "mult_stop_loss": 3
+}
+
 if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
     with open(pathroot+"configuracion.json","w") as j:
         json.dump(configuracion,j, indent=4)
