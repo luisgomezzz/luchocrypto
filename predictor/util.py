@@ -17,6 +17,7 @@ import numpy as np
 import keras 
 import pandas_ta as ta
 import matplotlib.pyplot as plt
+from backtesting import Backtest, Strategy
 
 exchange_name=cons.exchange_name
 
@@ -561,9 +562,13 @@ def obtiene_historial(symbol):
     return X_train,y_train,X_test,y_test,data
 
 def estrategia(symbol,plot=False,path='predictor/modelos/lstm'):
+    with open(cons.pathroot+"configuracion.json","r") as j:
+        dic_configuracion=json.load(j) 
+        umbralbajo = dic_configuracion['umbralbajo']
+        umbralalto = dic_configuracion['umbralalto']
+        mult_take_profit = dic_configuracion['mult_take_profit']
+        mult_stop_loss = dic_configuracion['mult_stop_loss']
     n_steps = cons.n_steps
-    umbralbajo=0.3
-    umbralalto=0.7
     _,_,X_test,y_test,data=obtiene_historial(symbol)
     # CARGA EL MODELO GUARDADO Y PREDICE
     lstm = keras.models.load_model(path+symbol+'.h5')
@@ -584,8 +589,9 @@ def estrategia(symbol,plot=False,path='predictor/modelos/lstm'):
     data['signal']=  np.where( (data.ema20 > data.ema50) & (data.ema50 > data.ema200) & (data.deriv >= umbralalto) & (data.deriv.shift(1) > umbralbajo),1,
                 (np.where( (data.ema20 < data.ema50) & (data.ema50 < data.ema200) & (data.deriv <= umbralbajo) & (data.deriv.shift(1) < umbralalto),-1,
                         0)))
-    data['take_profit']=np.where(data.signal==1,data.Close+data.atr,np.where(data.signal==-1,data.Close-data.atr,0))
-    data['stop_loss']=data.ema200
+    
+    data['take_profit'] =np.where(data.signal==1,data.Close+(data.atr*mult_take_profit) ,np.where(data.signal==-1,data.Close-(data.atr*mult_take_profit),0))
+    data['stop_loss']   =np.where(data.signal==1,data.Close-(data.atr*mult_stop_loss)   ,np.where(data.signal==-1,data.Close+(data.atr*mult_stop_loss),0))
     # GRAFICA
     if plot==True:
         plt.figure(figsize=(14, 5))
@@ -604,5 +610,27 @@ def estrategia(symbol,plot=False,path='predictor/modelos/lstm'):
         plt.gcf().autofmt_xdate()
         plt.title(symbol)
         plt.show()
-
     return data
+
+def backtesting_validation(data,print_output=False): 
+    class Predictor2(Strategy):
+        def init(self):
+            pass    
+        def next(self):
+            if not self.position:
+                if self.data.signal[-1] ==1:
+                    self.buy(size=100, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
+                elif self.data.signal[-1] ==-1:
+                    self.sell(size=100, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
+            else:
+                pass
+    bt = Backtest(data, Predictor2, cash=1000, commission=.002, exclusive_orders=True)
+    output = bt.run()
+    if print_output:
+        print(output[17])
+        print(output[6])
+        print(output[18])
+    if output[6] > 0 and output[18] >50:
+        return True
+    else:
+        return False

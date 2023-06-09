@@ -1,20 +1,16 @@
-import pandas_ta as ta
 from keras.layers import Dense, LSTM
 import util as ut
-from time import sleep
 import datetime as dt
-from tensorflow import keras
 import os
 import json
 from binance.exceptions import BinanceAPIException
 import sys
 import inquirer
 import pandas as pd
-import numpy as np
 from keras.models import Sequential
 import constantes as cons
 from datetime import datetime
-from sklearn.preprocessing import MinMaxScaler
+
 ut.printandlog(cons.nombrelog,"PREDICTOR2")
 
 # 0: solo predice
@@ -159,11 +155,13 @@ def main():
                                 tiempo_transcurrido = calcular_porcentaje_tiempo(data, temporalidad=30) < 25
                                 ###BUY###
                                 if  tiempo_transcurrido and data.signal[-1] ==1:
-                                    side='BUY'
+                                    if ut.backtesting_validation(data):
+                                        side='BUY'
                                 else:
                                     ###SELL###
                                     if tiempo_transcurrido and data.signal[-1] ==-1:
-                                        side='SELL'
+                                        if ut.backtesting_validation(data):
+                                            side='SELL'
                                 if side !='' and len(ut.get_posiciones_abiertas()) < cantidad_posiciones and ut.get_positionamt(symbol)==0.0:    
                                     posiciones[symbol]=side
                                     with open(cons.pathroot+"posiciones.json","w") as j:
