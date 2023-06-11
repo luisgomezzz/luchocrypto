@@ -51,8 +51,8 @@ if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
 # Crea el file de configuracion si no existe
 configuracion= {
     "cantidad_posiciones": 2,
-    "umbralbajo": 0.3,
-    "umbralalto": 0.7,
+    "umbralbajo": 0.2,
+    "umbralalto": 0.8,
     "mult_take_profit": 1,
     "mult_stop_loss": 3
 }

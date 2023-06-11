@@ -603,7 +603,7 @@ def estrategia(symbol,plot=False,path='predictor/modelos/lstm'):
         plt.axhline(y = umbralbajo, color = 'orange', linestyle = '-')
         plt.plot(y_test, label='Close',color = 'black')
         plt.plot( y_pred[:, -1, 0], label='Prediction',color = 'blue')
-        plt.plot( deriv_y_pred_scaled2, label='Derivative 2 (Scaled)', color='red')
+        plt.plot( deriv_y_pred_scaled2, label='Derivative 2', color='red')
         plt.xlabel('Time Scale')
         plt.ylabel('Scaled USDT')
         plt.legend()
