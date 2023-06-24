@@ -5,6 +5,7 @@ import json
 import sys
 import constantes as cons
 from datetime import datetime
+from time import sleep
 
 md.printandlog(cons.nombrelog,"FENIX")
 
@@ -91,8 +92,10 @@ def main():
                                 json.dump(posiciones,j, indent=4)
                             md.closeallopenorders(symbol)
 
-                sys.stdomd.write(f"\r{symbol} - T. vuelta: {md.truncate(minutes_diff,2)} \033[K")
-                sys.stdomd.flush()  
+                sys.stdout.write(f"\r{symbol} - T. vuelta: {md.truncate(minutes_diff,2)} \033[K")
+                sys.stdout.flush()  
+            
+            sleep(10)
 
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()

@@ -1,0 +1,17 @@
+{
+    "ventana": 30,
+    "porcentajeentrada": 10,
+    "procentajeperdida": 5,
+    "incrementocompensacionporc": 30,
+    "cantidadcompensaciones": 4,
+    "variaciontrigger": 5,
+    "maximavariaciondiaria": 50,
+    "tradessimultaneos": 0,
+    "distanciaentrecompensacionesalta": 1.7,
+    "distanciaentrecompensacionesbaja": 1,
+    "reservas": 2965,
+    "sideflag": 0,
+    "sonidos": 1,
+    "restriccionhoraria": 1,
+    "porcentajeadesocupar": 50
+}

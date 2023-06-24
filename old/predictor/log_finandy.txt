@@ -1,0 +1,218 @@
+
+Entra en Trade BTCUSDT. Side: SELL. deriv_y_pred_scaled2: [0.06907299] - hora: 23/May/2023 10:30:55
+Entra en Trade RNDRUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8799101] - hora: 23/May/2023 10:32:46
+Entra en Trade ADAUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8761194] - hora: 23/May/2023 12:26:03
+Entra en Trade RNDRUSDT. Side: BUY. deriv_y_pred_scaled2: [0.89647204] - hora: 23/May/2023 12:33:04
+Entra en Trade AVAXUSDT. Side: SELL. deriv_y_pred_scaled2: [0.14488405] - hora: 23/May/2023 14:00:16
+Entra en Trade ARPAUSDT. Side: BUY. deriv_y_pred_scaled2: [0.88084376] - hora: 23/May/2023 14:53:42
+Entra en Trade LINAUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 23/May/2023 15:02:52
+Entra en Trade TOMOUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9381684] - hora: 23/May/2023 16:57:23
+PREDICTOR
+PREDICTOR
+Entra en Trade ARPAUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8609296] - hora: 23/May/2023 21:03:11
+Entra en Trade ARPAUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8609296] - hora: 23/May/2023 21:27:45
+Entra en Trade APTUSDT. Side: SELL. deriv_y_pred_scaled2: [0.14382929] - hora: 23/May/2023 22:01:29
+PREDICTOR
+Entra en Trade EOSUSDT. Side: SELL. deriv_y_pred_scaled2: [0.03553858] - hora: 24/May/2023 11:30:10
+Entra en Trade LDOUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 24/May/2023 12:03:11
+PREDICTOR
+Entra en Trade RNDRUSDT. Side: BUY. deriv_y_pred_scaled2: [0.90544665] - hora: 24/May/2023 13:14:24
+Entra en Trade ATOMUSDT. Side: SELL. deriv_y_pred_scaled2: [0.04272225] - hora: 24/May/2023 14:02:38
+Entra en Trade EDUUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 24/May/2023 17:00:25
+Entra en Trade EDUUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 24/May/2023 17:10:29
+Entra en Trade LDOUSDT. Side: BUY. deriv_y_pred_scaled2: [0.95424795] - hora: 24/May/2023 17:25:54
+PREDICTOR
+Entra en Trade RNDRUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 24/May/2023 18:07:25
+PREDICTOR
+PREDICTOR
+Entra en Trade EOSUSDT. Side: SELL. deriv_y_pred_scaled2: [0.1071443] - hora: 24/May/2023 23:03:01
+Entra en Trade XRPUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9441051] - hora: 24/May/2023 23:30:11
+Entra en Trade NEOUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8607607] - hora: 24/May/2023 23:30:50
+PREDICTOR
+Entra en Trade EDUUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 10:00:30
+PREDICTOR
+Entra en Trade LDOUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 10:16:16
+Entra en Trade INJUSDT. Side: SELL. deriv_y_pred_scaled2: [0.00637573] - hora: 25/May/2023 10:31:29
+Entra en Trade LDOUSDT. Side: SELL. deriv_y_pred_scaled2: [0.10045761] - hora: 25/May/2023 13:31:04
+PREDICTOR
+PREDICTOR
+PREDICTOR
+PREDICTOR
+Entra en Trade LTCUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 21:00:39
+Entra en Trade MATICUSDT. Side: BUY. deriv_y_pred_scaled2: [0.89343786] - hora: 25/May/2023 22:00:47
+Entra en Trade XRPUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 22:31:10
+Entra en Trade XRPUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 22:39:12
+PREDICTOR
+Entra en Trade XRPUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 25/May/2023 22:58:55
+Entra en Trade LTCUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9830059] - hora: 25/May/2023 23:14:21
+Entra en Trade INJUSDT. Side: SELL. deriv_y_pred_scaled2: [0.11535472] - hora: 26/May/2023 05:13:53
+Entra en Trade HIGHUSDT. Side: BUY. deriv_y_pred_scaled2: [0.90997386] - hora: 26/May/2023 08:45:47
+Entra en Trade MATICUSDT. Side: BUY. deriv_y_pred_scaled2: [1.] - hora: 26/May/2023 09:30:57
+Entra en Trade MATICUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8984667] - hora: 26/May/2023 10:44:24
+Entra en Trade ARBUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9706327] - hora: 26/May/2023 11:02:31
+Entra en Trade ARBUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9706327] - hora: 26/May/2023 11:28:38
+Entra en Trade CFXUSDT. Side: BUY. deriv_y_pred_scaled2: [0.8663589] - hora: 26/May/2023 12:00:04
+Entra en Trade EDUUSDT. Side: BUY. deriv_y_pred_scaled2: [0.85492074] - hora: 26/May/2023 12:00:18
+Entra en Trade HIGHUSDT. Side: BUY. deriv_y_pred_scaled2: [0.91074294] - hora: 26/May/2023 12:43:52
+Entra en Trade INJUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 26/May/2023 13:14:36
+Entra en Trade LDOUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 26/May/2023 14:31:12
+PREDICTOR
+Entra en Trade ADAUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 26/May/2023 17:00:17
+PREDICTOR
+PREDICTOR
+Entra en Trade ARBUSDT. Side: BUY. deriv_y_pred_scaled2: [0.9507407] - hora: 27/May/2023 10:08:40
+Entra en Trade SUIUSDT. Side: SELL. deriv_y_pred_scaled2: [0.09818929] - hora: 27/May/2023 11:30:34
+Entra en Trade BTCUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 27/May/2023 11:31:45
+PREDICTOR
+PREDICTOR
+PREDICTOR
+PREDICTOR
+PREDICTOR
+Entra en Trade LINAUSDT. Side: BUY. deriv_y_pred_scaled2: [0.89367974] - hora: 27/May/2023 23:30:15
+Entra en Trade MASKUSDT. Side: SELL. deriv_y_pred_scaled2: [0.] - hora: 27/May/2023 23:40:10
+PREDICTOR
+PREDICTOR
+Entra en Trade ARPAUSDT. Side: SELL. deriv_y_pred_scaled2: [-0.61028636] - hora: 28/May/2023 11:31:33
+Entra en Trade INJUSDT. Side: BUY. deriv_y_pred_scaled2: [0.72589016] - hora: 28/May/2023 11:31:44
+Entra en Trade ARPAUSDT. Side: SELL. deriv_y_pred_scaled2: [-0.6101191] - hora: 28/May/2023 11:52:12
+Entra en Trade INJUSDT. Side: BUY. deriv_y_pred_scaled2: [0.72527593] - hora: 28/May/2023 11:52:22
+Entra en Trade HIGHUSDT. Side: BUY. deriv_y_pred_scaled2: [0.7830849] - hora: 28/May/2023 13:00:42
+PREDICTOR2
+PREDICTOR2
+Entra en Trade MASKUSDT. Side: BUY - hora: 28/May/2023 22:42:50
+PREDICTOR2
+Entra en Trade NEOUSDT. Side: BUY - hora: 28/May/2023 22:54:25
+Entra en Trade SOLUSDT. Side: BUY - hora: 28/May/2023 22:56:36
+PREDICTOR2
+Entra en Trade SUIUSDT. Side: SELL - hora: 29/May/2023 09:31:21
+Entra en Trade SUIUSDT. Side: SELL - hora: 29/May/2023 09:42:21
+PREDICTOR2
+Entra en Trade LINAUSDT. Side: BUY - hora: 29/May/2023 13:23:11
+Entra en Trade LDOUSDT. Side: BUY - hora: 29/May/2023 13:27:34
+Entra en Trade NEOUSDT. Side: BUY - hora: 29/May/2023 14:55:33
+Entra en Trade XRPUSDT. Side: BUY - hora: 29/May/2023 16:25:23
+Entra en Trade LDOUSDT. Side: BUY - hora: 29/May/2023 17:50:08
+PREDICTOR2
+Entra en Trade APTUSDT. Side: BUY - hora: 29/May/2023 20:00:21
+Entra en Trade LTCUSDT. Side: BUY - hora: 29/May/2023 20:14:37
+PREDICTOR2
+Entra en Trade OPUSDT. Side: SELL - hora: 30/May/2023 09:45:08
+PREDICTOR2
+PREDICTOR2
+Entra en Trade LTCUSDT. Side: BUY - hora: 30/May/2023 10:04:08
+Entra en Trade FTMUSDT. Side: SELL - hora: 30/May/2023 11:00:19
+Entra en Trade MASKUSDT. Side: BUY - hora: 30/May/2023 11:45:24
+Entra en Trade ARBUSDT. Side: BUY - hora: 30/May/2023 11:53:30
+Entra en Trade XRPUSDT. Side: BUY - hora: 30/May/2023 13:10:43
+Entra en Trade XRPUSDT. Side: BUY - hora: 30/May/2023 13:16:33
+Entra en Trade XRPUSDT. Side: BUY - hora: 30/May/2023 13:28:08
+Entra en Trade FTMUSDT. Side: SELL - hora: 30/May/2023 13:30:28
+PREDICTOR2
+PREDICTOR2
+Entra en Trade OPUSDT. Side: SELL - hora: 30/May/2023 13:50:23
+Entra en Trade LDOUSDT. Side: BUY - hora: 30/May/2023 15:00:10
+Entra en Trade XRPUSDT. Side: BUY - hora: 30/May/2023 16:00:35
+Entra en Trade SOLUSDT. Side: BUY - hora: 30/May/2023 18:00:22
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+Entra en Trade SUIUSDT. Side: SELL - hora: 31/May/2023 06:00:04
+Entra en Trade CFXUSDT. Side: SELL - hora: 31/May/2023 06:00:43
+Entra en Trade CFXUSDT. Side: SELL - hora: 31/May/2023 06:04:44
+PREDICTOR2
+Entra en Trade ARPAUSDT. Side: SELL - hora: 31/May/2023 13:33:27
+Entra en Trade ARPAUSDT. Side: SELL - hora: 31/May/2023 13:38:25
+Entra en Trade OPUSDT. Side: SELL - hora: 31/May/2023 15:00:39
+Entra en Trade APTUSDT. Side: SELL - hora: 31/May/2023 17:00:49
+Entra en Trade APTUSDT. Side: SELL - hora: 31/May/2023 18:00:25
+Entra en Trade APTUSDT. Side: SELL - hora: 31/May/2023 18:24:46
+Entra en Trade LINAUSDT. Side: BUY - hora: 31/May/2023 19:38:54
+PREDICTOR2
+PREDICTOR2
+Entra en Trade ADAUSDT. Side: SELL - hora: 01/Jun/2023 09:00:37
+Entra en Trade ADAUSDT. Side: SELL - hora: 01/Jun/2023 09:13:59
+Entra en Trade KEYUSDT. Side: BUY - hora: 01/Jun/2023 10:06:03
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+Entra en Trade LINAUSDT. Side: BUY - hora: 01/Jun/2023 11:30:11
+Entra en Trade AGIXUSDT. Side: SELL - hora: 01/Jun/2023 12:30:16
+Entra en Trade AGIXUSDT. Side: SELL - hora: 01/Jun/2023 14:30:07
+Entra en Trade SANDUSDT. Side: BUY - hora: 01/Jun/2023 15:00:37
+Entra en Trade OCEANUSDT. Side: BUY - hora: 01/Jun/2023 15:31:35
+Entra en Trade SANDUSDT. Side: BUY - hora: 01/Jun/2023 17:30:02
+PREDICTOR2
+PREDICTOR2
+Entra en Trade SANDUSDT. Side: BUY - hora: 01/Jun/2023 21:00:20
+Entra en Trade ARPAUSDT. Side: SELL - hora: 01/Jun/2023 21:30:24
+PREDICTOR2
+Entra en Trade SUIUSDT. Side: SELL - hora: 02/Jun/2023 09:00:18
+Entra en Trade OCEANUSDT. Side: BUY - hora: 02/Jun/2023 09:31:10
+Entra en Trade INJUSDT. Side: BUY - hora: 02/Jun/2023 09:31:24
+Entra en Trade CFXUSDT. Side: SELL - hora: 02/Jun/2023 11:00:12
+Entra en Trade SUIUSDT. Side: SELL - hora: 02/Jun/2023 11:00:25
+Entra en Trade SANDUSDT. Side: BUY - hora: 02/Jun/2023 11:30:30
+Entra en Trade OCEANUSDT. Side: BUY - hora: 02/Jun/2023 12:03:47
+Entra en Trade SUIUSDT. Side: SELL - hora: 02/Jun/2023 12:30:17
+Entra en Trade SUIUSDT. Side: SELL - hora: 02/Jun/2023 13:30:27
+Entra en Trade ACHUSDT. Side: BUY - hora: 02/Jun/2023 14:00:31
+Entra en Trade ACHUSDT. Side: BUY - hora: 02/Jun/2023 16:00:38
+Entra en Trade SUIUSDT. Side: SELL - hora: 02/Jun/2023 17:00:27
+PREDICTOR2
+Entra en Trade CFXUSDT. Side: SELL - hora: 03/Jun/2023 14:30:07
+Entra en Trade SXPUSDT. Side: BUY - hora: 03/Jun/2023 14:32:14
+Entra en Trade LDOUSDT. Side: BUY - hora: 03/Jun/2023 14:33:46
+Entra en Trade OPUSDT. Side: BUY - hora: 03/Jun/2023 19:30:02
+Entra en Trade BNBUSDT. Side: SELL - hora: 03/Jun/2023 22:00:24
+PREDICTOR2
+Entra en Trade RNDRUSDT. Side: BUY - hora: 04/Jun/2023 09:36:46
+Entra en Trade XRPUSDT. Side: BUY - hora: 04/Jun/2023 10:00:15
+Entra en Trade INJUSDT. Side: BUY - hora: 04/Jun/2023 11:01:37
+PREDICTOR2
+Entra en Trade SANDUSDT. Side: BUY - hora: 04/Jun/2023 12:30:33
+PREDICTOR2
+Entra en Trade ARPAUSDT. Side: SELL - hora: 04/Jun/2023 15:10:21
+Entra en Trade ARPAUSDT. Side: SELL - hora: 04/Jun/2023 15:30:15
+PREDICTOR2
+Entra en Trade LTCUSDT. Side: SELL - hora: 04/Jun/2023 19:25:33
+Entra en Trade INJUSDT. Side: SELL - hora: 04/Jun/2023 19:30:09
+Entra en Trade CFXUSDT. Side: BUY - hora: 04/Jun/2023 19:35:13
+PREDICTOR2
+Entra en Trade BTCUSDT. Side: BUY - hora: 04/Jun/2023 20:15:18
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+Entra en Trade INJUSDT. Side: SELL - hora: 07/Jun/2023 09:00:53
+PREDICTOR2
+Entra en Trade STXUSDT. Side: BUY - hora: 07/Jun/2023 10:00:24 - Derivada: [0.81061876]
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+Entra en Trade MASKUSDT. Side: SELL - hora: 08/Jun/2023 09:30:14
+PREDICTOR2
+PREDICTOR2
+Entra en Trade MATICUSDT. Side: SELL - hora: 08/Jun/2023 16:01:50
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+PREDICTOR2
+Entra en Trade STORJUSDT. Side: BUY - hora: 09/Jun/2023 00:01:22
