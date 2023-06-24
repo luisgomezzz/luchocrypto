@@ -26,3 +26,5 @@ predictor/configuracion.json
 predictor/__pycache__/*
 predictor/lista_monedas_filtradas.txt
 predictor/Predictor2.html
+FENIX/__pycache__/util.cpython-310.pyc
+FENIX/__pycache__/constantes.cpython-310.pyc
