@@ -28,3 +28,8 @@ predictor/lista_monedas_filtradas.txt
 predictor/Predictor2.html
 FENIX/__pycache__/util.cpython-310.pyc
 FENIX/__pycache__/constantes.cpython-310.pyc
+FENIX/posiciones.json
+FENIX/log_finandy.txt
+FENIX/lista_monedas_filtradas.txt
+FENIX/Fenix.html
+FENIX/configuracion.json
