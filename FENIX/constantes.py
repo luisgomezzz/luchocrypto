@@ -50,11 +50,7 @@ if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
 
 # Crea el file de configuracion si no existe
 configuracion= {
-    "cantidad_posiciones": 2,
-    "umbralbajo": 0.2,
-    "umbralalto": 0.8,
-    "mult_take_profit": 1,
-    "mult_stop_loss": 3
+    "cantidad_posiciones": 2
 }
 
 if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
@@ -62,11 +58,9 @@ if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
         json.dump(configuracion,j, indent=4)
 
 minvolumen24h = float(100000000)
-
 mincapitalizacion = float(10000000)
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.
-mazmorra=['BELUSDT','RENUSDT','BTCUSDT','ETHUSDT']
+mazmorra=['BTCUSDT','ETHUSDT']
 
-n_steps = 1
