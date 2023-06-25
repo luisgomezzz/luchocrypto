@@ -219,6 +219,11 @@ def get_bollinger_bands(df):
     # imprimir resultados
     return df
 
+def vwap(df):
+    v = df['Volume'].values
+    tp = (df['Low'] + df['Close'] + df['High']).div(3).values
+    return (tp * v).cumsum() / v.cumsum()
+
 def obtiene_historial(symbol):
     client = cons.client
     timeframe='30m'
@@ -239,11 +244,10 @@ def obtiene_historial(symbol):
         data['ema20']=data.ta.ema(20)
         data['ema50']=data.ta.ema(50)
         data['ema200']=data.ta.ema(200)
-        data['atr']=ta.atr(data.High, data.Low, data.Close)
+        data['atr']=ta.atr(data.High, data.Low, data.Close)        
         data = get_bollinger_bands(data)
-        # Calcular el promedio de volumen de las últimas X velas
-        periods = 20  # Número de velas a considerar para el promedio de volumen
-        data['avg_volume'] = data['Volume'].rolling(periods).mean()
+        data['avg_volume'] = data['Volume'].rolling(20).mean()
+        data['vwap'] = vwap(data)
         return data
     except KeyboardInterrupt as ky:
         print("\nSalida solicitada. ")
@@ -255,7 +259,7 @@ def obtiene_historial(symbol):
 def EMA(data,length):
     return data.ta.ema(length)
 
-def backtesting(data,symbol): 
+def backtesting(data): 
     balance=1000
     class Fenix(Strategy):
         def init(self):
@@ -273,9 +277,7 @@ def backtesting(data,symbol):
     bt = Backtest(data, Fenix, cash=balance, commission=.002, exclusive_orders=True)
     output = bt.run()
     #bt.plot()
-    resultado= output[4]-balance
-    if resultado>15:
-        print(symbol+" - "+str(resultado))
+    return output
 
 def estrategia(data):
     mult_take_profit = 1
