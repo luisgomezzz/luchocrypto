@@ -51,20 +51,20 @@ def main():
                         vueltas = vueltas+1                        
                 
                 data = md.obtiene_historial(symbol)
+                data = md.estrategia(data)
                 
                 if True:
                     
                     # CREA POSICION
                     side=''
-                    if symbol not in posiciones:
-                        tiempo_transcurrido = md.calcular_porcentaje_tiempo(data, temporalidad=30) < 25
+                    if symbol not in posiciones:                        
                         ###BUY###
-                        if  tiempo_transcurrido and data.signal[-1] ==1:
-                                side='BUY'
+                        if  data.signal[-1] ==1:
+                            side='BUY'
                         else:
                             ###SELL###
-                            if tiempo_transcurrido and data.signal[-1] ==-1:
-                                    side='SELL'
+                            if data.signal[-1] ==-1:
+                                side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
                             posiciones[symbol]=side
                             with open(cons.pathroot+"posiciones.json","w") as j:

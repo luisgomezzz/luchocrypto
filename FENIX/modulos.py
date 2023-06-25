@@ -4,11 +4,8 @@ import constantes as cons
 import os
 import winsound as ws
 import math
-from time import sleep
 from binance.exceptions import BinanceAPIException
-from binance.helpers import round_step_size
 import json
-import math
 import ccxt as ccxt
 from requests import Session
 import numpy as np
@@ -210,17 +207,6 @@ def capitalizacion(par):
             pass
     return cap  
 
-def calcular_porcentaje_tiempo(df, temporalidad):
-    # Calcula el porcentaje de tiempo transcurrido desde la última fila hasta el momento.
-    # se usa para entrar temprano en el trade.
-    tiempo_vela = pd.Timedelta(minutes=temporalidad)
-    tiempo_transcurrido = dt.datetime.today() - (df.index[-1] - dt.timedelta(hours=3))  
-    porcentaje_tiempo = (tiempo_transcurrido.total_seconds() / tiempo_vela.total_seconds()) * 100
-    return porcentaje_tiempo
-
-mult_take_profit = 1
-mult_stop_loss = 1
-
 def get_bollinger_bands(df):
     mult = 2.0
     length = 20
@@ -295,6 +281,8 @@ def backtesting(data,symbol):
         print(symbol+" - "+str(resultado))
 
 def estrategia(data):
+    mult_take_profit = 1
+    mult_stop_loss = 1
     data['signal'] = np.where(
         (data.ema20 > data.ema50) & 
         (data.ema50 > data.ema200) & 
@@ -312,19 +300,19 @@ def estrategia(data):
     )    
     data['take_profit'] = np.where(
         data.signal == 1,
-        data.Close + (data.atr * mult_take_profit ),  # Aumentar el multiplicador de take profit
+        data.Close + (data.atr * mult_take_profit),
         np.where(
             data.signal == -1,
-            data.Close - (data.atr * mult_stop_loss),  # Utilizar el multiplicador de stop loss original
+            data.Close - (data.atr * mult_take_profit),  
             0
         )
     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  # Utilizar el multiplicador de stop loss original
+        data.Close - (data.atr * mult_stop_loss),  
         np.where(
             data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  # Utilizar el multiplicador de stop loss original
+            data.Close + (data.atr * mult_stop_loss),  
             0
         )
     )

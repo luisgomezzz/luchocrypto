@@ -2,7 +2,6 @@ from os import system, name
 import os
 import ccxt as ccxt
 from binance.client import Client as binanceClient
-from colors import *
 import json
 
 pathroot=os.path.dirname(os.path.abspath(__file__))+'/'
