@@ -222,38 +222,35 @@ def get_bollinger_bands(df):
 def obtiene_historial(symbol):
     client = cons.client
     timeframe='30m'
-    leido=False
-    while leido==False:
-        try:
-            historical_data = client.get_historical_klines(symbol, timeframe)
-            leido = True
-        except KeyboardInterrupt as ky:
-            print("\nSalida solicitada. ")
-            sys.exit()              
-        except:
-            print("Intento leer de nuevo...")
-            pass
-    data = pd.DataFrame(historical_data)
-    data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
-                        'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
-    data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
-    data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
-    numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
-    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-    data['timestamp']=data['Open Time']
-    data.set_index('timestamp', inplace=True)
-    data.dropna(inplace=True)
-    data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
-            'Ignore'], axis=1, inplace=True)    
-    data['ema20']=data.ta.ema(20)
-    data['ema50']=data.ta.ema(50)
-    data['ema200']=data.ta.ema(200)
-    data['atr']=ta.atr(data.High, data.Low, data.Close)
-    data = get_bollinger_bands(data)
-    # Calcular el promedio de volumen de las últimas X velas
-    periods = 20  # Número de velas a considerar para el promedio de volumen
-    data['avg_volume'] = data['Volume'].rolling(periods).mean()
-    return data
+    try:
+        historical_data = client.get_historical_klines(symbol, timeframe)
+        data = pd.DataFrame(historical_data)
+        data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
+                            'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
+        data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
+        data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
+        numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
+        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+        data['timestamp']=data['Open Time']
+        data.set_index('timestamp', inplace=True)
+        data.dropna(inplace=True)
+        data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
+                'Ignore'], axis=1, inplace=True)    
+        data['ema20']=data.ta.ema(20)
+        data['ema50']=data.ta.ema(50)
+        data['ema200']=data.ta.ema(200)
+        data['atr']=ta.atr(data.High, data.Low, data.Close)
+        data = get_bollinger_bands(data)
+        # Calcular el promedio de volumen de las últimas X velas
+        periods = 20  # Número de velas a considerar para el promedio de volumen
+        data['avg_volume'] = data['Volume'].rolling(periods).mean()
+        return data
+    except KeyboardInterrupt as ky:
+        print("\nSalida solicitada. ")
+        sys.exit()              
+    except:
+        print("Falla leyendo...")
+        pass
 
 def EMA(data,length):
     return data.ta.ema(length)
@@ -276,8 +273,8 @@ def backtesting(data,symbol):
     bt = Backtest(data, Fenix, cash=balance, commission=.002, exclusive_orders=True)
     output = bt.run()
     #bt.plot()
-    resultado= output[4]-1000
-    if resultado>0:
+    resultado= output[4]-balance
+    if resultado>15:
         print(symbol+" - "+str(resultado))
 
 def estrategia(data):

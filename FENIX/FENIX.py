@@ -50,10 +50,9 @@ def main():
                     else:
                         vueltas = vueltas+1                        
                 
-                data = md.obtiene_historial(symbol)
-                data = md.estrategia(data)
-                
-                if True:
+                try:
+                    data = md.obtiene_historial(symbol)
+                    data = md.estrategia(data)
                     
                     # CREA POSICION
                     side=''
@@ -91,10 +90,13 @@ def main():
                             with open(cons.pathroot+"posiciones.json","w") as j:
                                 json.dump(posiciones,j, indent=4)
                             md.closeallopenorders(symbol)
+                
+                except:
+                    pass        
 
                 sys.stdout.write(f"\r{symbol} - T. vuelta: {md.truncate(minutes_diff,2)} \033[K")
                 sys.stdout.flush()  
-            
+
             sleep(10)
 
     except Exception as falla:
