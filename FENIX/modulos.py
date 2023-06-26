@@ -247,7 +247,8 @@ def obtiene_historial(symbol):
         data['atr']=ta.atr(data.High, data.Low, data.Close)        
         data = get_bollinger_bands(data)
         data['avg_volume'] = data['Volume'].rolling(20).mean()
-        data['vwap'] = vwap(data)
+        #data['vwap'] = vwap(data)
+        data['vwap'] = ta.vwap(data.High, data.Low, data.Close, data.Volume)
         return data
     except KeyboardInterrupt as ky:
         print("\nSalida solicitada. ")
@@ -279,7 +280,15 @@ def backtesting(data):
     #bt.plot()
     return output
 
-def estrategia(data):
+def estrategia_bb(data):
+    '''
+    STXUSDT
+    SUIUSDT
+    MANAUSDT
+    MAGICUSDT
+    LQTYUSDT
+    JOEUSDT
+    '''
     mult_take_profit = 1
     mult_stop_loss = 1
     data['signal'] = np.where(
@@ -454,10 +463,53 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         orderid = 0
         pass
     except Exception as falla:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         creado = False
         orderid = 0
         pass    
     return creado,orderid        
+
+def estrategia_vwap(data):
+    '''
+    THETAUSDT
+    BANDUSDT
+    SFPUSDT
+    IMXUSDT
+    WOOUSDT
+    IDUSDT
+    SUIUSDT
+    '''
+    mult_take_profit = 2
+    mult_stop_loss = 1
+    data['signal'] = np.where(
+        (data.Close.shift(1) < data.vwap.shift(1)) &
+        (data.Close > data.vwap),
+        1,
+        np.where(
+            (data.Close.shift(1) > data.vwap.shift(1)) &
+            (data.Close < data.vwap),
+            -1,
+            0
+        )
+    )    
+    data['take_profit'] = np.where(
+        data.signal == 1,
+        data.Close + (data.atr * mult_take_profit),
+        np.where(
+            data.signal == -1,
+            data.Close - (data.atr * mult_take_profit),  
+            0
+        )
+    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close - (data.atr * mult_stop_loss),  
+        np.where(
+            data.signal == -1,
+            data.Close + (data.atr * mult_stop_loss),  
+            0
+        )
+    )
+    return data

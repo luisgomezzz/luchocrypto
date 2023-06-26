@@ -52,7 +52,7 @@ def main():
                 
                 try:
                     data = md.obtiene_historial(symbol)
-                    data = md.estrategia(data)
+                    data = md.estrategia_bb(data)
                     
                     # CREA POSICION
                     side=''
@@ -104,6 +104,9 @@ def main():
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
         pass  
+    except KeyboardInterrupt:
+        print("\nSalida solicitada. ")
+        sys.exit()    
 
 if __name__ == '__main__':
     main()
