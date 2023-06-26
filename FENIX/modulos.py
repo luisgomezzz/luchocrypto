@@ -280,52 +280,6 @@ def backtesting(data):
     #bt.plot()
     return output
 
-def estrategia_bb(data):
-    '''
-    STXUSDT
-    SUIUSDT
-    MANAUSDT
-    MAGICUSDT
-    LQTYUSDT
-    JOEUSDT
-    '''
-    mult_take_profit = 1
-    mult_stop_loss = 1
-    data['signal'] = np.where(
-        (data.ema20 > data.ema50) & 
-        (data.ema50 > data.ema200) & 
-        (data.Close.shift(1) < data.lower.shift(1)) & 
-        (data.Volume > data.avg_volume),
-        1,
-        np.where(
-            (data.ema20 < data.ema50) & 
-            (data.ema50 < data.ema200) & 
-            (data.Close.shift(1) > data.upper.shift(1)) & 
-            (data.Volume > data.avg_volume),
-            -1,
-            0
-        )
-    )    
-    data['take_profit'] = np.where(
-        data.signal == 1,
-        data.Close + (data.atr * mult_take_profit),
-        np.where(
-            data.signal == -1,
-            data.Close - (data.atr * mult_take_profit),  
-            0
-        )
-    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  
-        np.where(
-            data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  
-            0
-        )
-    )
-    return data
-
 def get_posiciones_abiertas(): 
     leido = False
     dict_posiciones = {}
@@ -470,6 +424,52 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         orderid = 0
         pass    
     return creado,orderid        
+
+def estrategia_bb(data):
+    '''
+    STXUSDT
+    SUIUSDT
+    MANAUSDT
+    MAGICUSDT
+    LQTYUSDT
+    JOEUSDT
+    '''
+    mult_take_profit = 1
+    mult_stop_loss = 1
+    data['signal'] = np.where(
+        (data.ema20 > data.ema50) & 
+        (data.ema50 > data.ema200) & 
+        (data.Close.shift(1) < data.lower.shift(1)) & 
+        (data.Volume > data.avg_volume),
+        1,
+        np.where(
+            (data.ema20 < data.ema50) & 
+            (data.ema50 < data.ema200) & 
+            (data.Close.shift(1) > data.upper.shift(1)) & 
+            (data.Volume > data.avg_volume),
+            -1,
+            0
+        )
+    )    
+    data['take_profit'] = np.where(
+        data.signal == 1,
+        data.Close + (data.atr * mult_take_profit),
+        np.where(
+            data.signal == -1,
+            data.Close - (data.atr * mult_take_profit),  
+            0
+        )
+    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close - (data.atr * mult_stop_loss),  
+        np.where(
+            data.signal == -1,
+            data.Close + (data.atr * mult_stop_loss),  
+            0
+        )
+    )
+    return data
 
 def estrategia_vwap(data):
     '''
