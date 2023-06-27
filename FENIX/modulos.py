@@ -224,9 +224,8 @@ def vwap(df):
     tp = (df['Low'] + df['Close'] + df['High']).div(3).values
     return (tp * v).cumsum() / v.cumsum()
 
-def obtiene_historial(symbol):
-    client = cons.client
-    timeframe='30m'
+def obtiene_historial(symbol,timeframe='30m'):
+    client = cons.client    
     try:
         historical_data = client.get_historical_klines(symbol, timeframe)
         data = pd.DataFrame(historical_data)
@@ -239,7 +238,7 @@ def obtiene_historial(symbol):
         data['timestamp']=data['Open Time']
         data.set_index('timestamp', inplace=True)
         data.dropna(inplace=True)
-        data.drop(['Open Time','Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
+        data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
                 'Ignore'], axis=1, inplace=True)    
         data['ema20']=data.ta.ema(20)
         data['ema50']=data.ta.ema(50)
@@ -261,21 +260,18 @@ def EMA(data,length):
     return data.ta.ema(length)
 
 def backtesting(data): 
-    balance=1000
     class Fenix(Strategy):
         def init(self):
-            self.ema20 = self.I(EMA, data, 20, color="green")
-            self.ema50 = self.I(EMA, data, 50,color="yellow")
-            self.ema200 = self.I(EMA, data, 200, color="grey")
+            pass
         def next(self):
             if not self.position:
                 if self.data.signal[-1] ==1:
-                    self.buy(size=balance, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
+                    self.buy(size=1000, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
                 elif self.data.signal[-1] ==-1:
-                    self.sell(size=balance, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
+                    self.sell(size=1000, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
             else:
                 pass
-    bt = Backtest(data, Fenix, cash=balance, commission=.002, exclusive_orders=True)
+    bt = Backtest(data, Fenix, cash=1000, commission=.002, exclusive_orders=True)
     output = bt.run()
     #bt.plot()
     return output
@@ -427,15 +423,16 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
 
 def estrategia_bb(data):
     '''
-    STXUSDT
-    SUIUSDT
-    MANAUSDT
-    MAGICUSDT
-    LQTYUSDT
-    JOEUSDT
+CRVUSDT
+RUNEUSDT
+MAGICUSDT
+STXUSDT
+SUIUSDT
+COMBOUSDT
+
     '''
     mult_take_profit = 1
-    mult_stop_loss = 1
+    mult_stop_loss = 1.5
     data['signal'] = np.where(
         (data.ema20 > data.ema50) & 
         (data.ema50 > data.ema200) & 
@@ -481,16 +478,16 @@ def estrategia_vwap(data):
     IDUSDT
     SUIUSDT
     '''
-    mult_take_profit = 2
+    mult_take_profit = 1
     mult_stop_loss = 1
     data['signal'] = np.where(
-        (data.Close.shift(1) < data.vwap.shift(1)) &
-        (data.Close > data.vwap),
-        1,
+        (data.Close.shift(2) < data.vwap.shift(2)) &
+        (data.Close.shift(1) > data.vwap.shift(1)) 
+        ,1,
         np.where(
-            (data.Close.shift(1) > data.vwap.shift(1)) &
-            (data.Close < data.vwap),
-            -1,
+            (data.Close.shift(2) > data.vwap.shift(2)) &
+            (data.Close.shift(1) < data.vwap.shift(1))
+            ,-1,
             0
         )
     )    
