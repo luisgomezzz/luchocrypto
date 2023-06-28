@@ -35,3 +35,6 @@ FENIX/Fenix.html
 FENIX/configuracion.json
 FENIX/__pycache__/modulos.cpython-310.pyc
 FENIX/noticias.txt
+FENIX/TALLER.py
+FENIX/products.csv
+FENIX/prices.csv
