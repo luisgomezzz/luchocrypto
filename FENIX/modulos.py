@@ -10,9 +10,9 @@ import ccxt as ccxt
 from requests import Session
 import numpy as np
 import pandas_ta as ta
-import datetime as dt
-from backtesting import Backtest, Strategy
+from backtesting import Backtest
 import talib
+from backtesting.lib import TrailingStrategy
 
 def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
@@ -259,21 +259,25 @@ def obtiene_historial(symbol,timeframe='30m'):
 def EMA(data,length):
     return data.ta.ema(length)
 
-def backtesting(data): 
-    class Fenix(Strategy):
+def backtesting(data,n_atr=5,plot=False):
+    #Sets the future trailing stop-loss as some multiple (n_atr) average true bar ranges away from the current price.
+    class Fenix(TrailingStrategy):
         def init(self):
-            pass
-        def next(self):
-            if not self.position:
-                if self.data.signal[-1] ==1:
-                    self.buy(size=1000, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
-                elif self.data.signal[-1] ==-1:
-                    self.sell(size=1000, sl=self.data.stop_loss[-1] , tp=self.data.take_profit[-1])
-            else:
+            super().init()
+            super().set_trailing_sl(n_atr)
+        def next(self):       
+            super().next()
+            if self.position:
                 pass
-    bt = Backtest(data, Fenix, cash=1000, commission=.002, exclusive_orders=True)
+            else:   
+                if self.data.signal[-1]==1:
+                    self.buy(size=1000,sl=self.data.stop_loss[-1])
+                elif self.data.signal[-1]==-1:
+                    self.sell(size=1000,sl=self.data.stop_loss[-1])
+    bt = Backtest(data, Fenix, cash=1000)
     output = bt.run()
-    #bt.plot()
+    if plot:
+        bt.plot()
     return output
 
 def get_posiciones_abiertas(): 
