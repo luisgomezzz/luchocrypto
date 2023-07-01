@@ -259,50 +259,37 @@ def obtiene_historial(symbol,timeframe='30m'):
 def EMA(data,length):
     return data.ta.ema(length)
 
+def set_atr_periods(data, periods: int = 100):
+    """
+    Set the lookback period for computing ATR. The default value
+    of 100 ensures a _stable_ ATR.
+    """
+    h, l, c_prev = data.High, data.Low, pd.Series(data.Close).shift(1)
+    tr = np.max([h - l, (c_prev - h).abs(), (c_prev - l).abs()], axis=0)
+    atr = pd.Series(tr).rolling(periods).mean().bfill().values    
+    return atr
+
+n_atr = 5
+
 class TrailingStrategy(Strategy):
-    __n_atr = 6.
-    __atr = None
-
     def init(self):
-        super().init()
-        self.set_atr_periods()
-
-    def set_atr_periods(self, periods: int = 100):
-        """
-        Set the lookback period for computing ATR. The default value
-        of 100 ensures a _stable_ ATR.
-        """
-        h, l, c_prev = self.data.High, self.data.Low, pd.Series(self.data.Close).shift(1)
-        tr = np.max([h - l, (c_prev - h).abs(), (c_prev - l).abs()], axis=0)
-        atr = pd.Series(tr).rolling(periods).mean().bfill().values
-        self.__atr = atr
-        return self.__atr
-
-    def set_trailing_sl(self, n_atr: float = 6):
-        """
-        Sets the future trailing stop-loss as some multiple (`n_atr`)
-        average true bar ranges away from the current price.
-        """
-        self.__n_atr = n_atr
-
-    def next(self):
+        super().init()        
+    def next(self):        
         super().next()
-        # Can't use index=-1 because self.__atr is not an Indicator type
         index = len(self.data)-1
+        atr = set_atr_periods(self.data)
         for trade in self.trades:
             if trade.is_long:
                 trade.sl = max(trade.sl or -np.inf,
-                               self.data.Close[index] - self.__atr[index] * self.__n_atr)
+                               self.data.Close[index] - atr[index] * n_atr)
             else:
                 trade.sl = min(trade.sl or np.inf,
-                               self.data.Close[index] + self.__atr[index] * self.__n_atr)
+                               self.data.Close[index] + atr[index] * n_atr)
 
-def backtesting(data,n_atr=5,plot=False):
-    #Sets the future trailing stop-loss as some multiple (n_atr) average true bar ranges away from the current price.
+def backtesting(data,plot=False):
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
-            super().set_trailing_sl(n_atr)
         def next(self):       
             super().next()
             if self.position:

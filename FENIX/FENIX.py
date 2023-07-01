@@ -6,8 +6,33 @@ import sys
 import constantes as cons
 from datetime import datetime
 from time import sleep
+import threading
+import numpy as np
 
 md.printandlog(cons.nombrelog,"FENIX")
+
+def actualiza_trailing_stop(symbol):
+    trailing_stop_price = 0.0
+    ultimo_trailing_stop_price = trailing_stop_price
+    while True:
+        positionamt = md.get_positionamt(symbol)
+        if positionamt == 0:
+            print(f"actualiza_trailing_stop {symbol} - Ya se cerró la posicion. ")
+            break
+        else:
+            data = md.obtiene_historial(symbol)
+            atr = md.set_atr_periods(data)
+            if positionamt>0: #Es un long
+                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * md.n_atr)
+                side='BUY'
+            else: # Es un short
+                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * md.n_atr)
+                side='SELL'
+            if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
+                print(f"Actualizo Trailing stop {symbol} - {side}.")
+                md.crea_stoploss (symbol,side,trailing_stop_price)
+                ultimo_trailing_stop_price = trailing_stop_price
+        sleep(900) # duerme 15 minutos (revisaria 2 veces por vela de 30 minutos)
 
 # programa principal
 def main():
@@ -77,8 +102,10 @@ def main():
                             if entry_price!=0.0:
                                 profit_price = data.take_profit[-1]
                                 stop_price = data.stop_loss[-1]
-                                md.crea_stoploss (symbol,side,stop_price)                                       
+                                md.crea_stoploss (symbol,side,stop_price)
                                 md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
+                                hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
+                                hilo.start()  
 
                     # CERRAR POSICION
                     else: 
