@@ -103,7 +103,7 @@ def main():
                                 profit_price = data.take_profit[-1]
                                 stop_price = data.stop_loss[-1]
                                 md.crea_stoploss (symbol,side,stop_price)
-                                md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
+                                #md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 hilo.start()  
 
