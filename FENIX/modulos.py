@@ -252,9 +252,11 @@ def obtiene_historial(symbol,timeframe='30m'):
     except KeyboardInterrupt as ky:
         print("\nSalida solicitada. ")
         sys.exit()              
-    except:
-        print("Falla leyendo...")
-        pass
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
 
 def EMA(data,length):
     return data.ta.ema(length)
@@ -463,17 +465,17 @@ COMBOUSDT
     mult_take_profit = 1
     mult_stop_loss = 1.5
     data['signal'] = np.where(
-        (data.ema20 > data.ema50) & 
-        (data.ema50 > data.ema200) & 
-        (data.Close.shift(1) < data.lower.shift(1)) & 
-        (data.Volume > data.avg_volume),
-        1,
+        (data.ema20 > data.ema50) 
+        &(data.ema50 > data.ema200) 
+        &(data.Close.shift(1) < data.lower.shift(1)) 
+        &(data.Volume > data.avg_volume)
+        ,1,
         np.where(
-            (data.ema20 < data.ema50) & 
-            (data.ema50 < data.ema200) & 
-            (data.Close.shift(1) > data.upper.shift(1)) & 
-            (data.Volume > data.avg_volume),
-            -1,
+            (data.ema20 < data.ema50) 
+            &(data.ema50 < data.ema200)
+            &(data.Close.shift(1) > data.upper.shift(1))
+            &(data.Volume > data.avg_volume)
+            ,-1,
             0
         )
     )    

@@ -99,10 +99,10 @@ def main():
                             md.crea_posicion(symbol,side,porcentajeentrada=100) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
-                            if entry_price!=0.0:
-                                profit_price = data.take_profit[-1]
+                            if entry_price!=0.0:                                
                                 stop_price = data.stop_loss[-1]
                                 md.crea_stoploss (symbol,side,stop_price)
+                                #profit_price = data.take_profit[-1]
                                 #md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 hilo.start()  
