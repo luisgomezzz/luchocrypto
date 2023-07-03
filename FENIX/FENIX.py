@@ -10,14 +10,22 @@ import threading
 import numpy as np
 
 md.printandlog(cons.nombrelog,"FENIX")
+posiciones={}
 
 def actualiza_trailing_stop(symbol):
     trailing_stop_price = 0.0
     ultimo_trailing_stop_price = trailing_stop_price
+    global posiciones
     while True:
         positionamt = md.get_positionamt(symbol)
-        if positionamt == 0:
+        if positionamt == 0.0:
             print(f"actualiza_trailing_stop {symbol} - Ya se cerró la posicion. ")
+            # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
+            # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
+            posiciones.pop(symbol)
+            with open(cons.pathroot+"posiciones.json","w") as j:
+                json.dump(posiciones,j, indent=4)
+            md.closeallopenorders(symbol)            
             break
         else:
             data = md.obtiene_historial(symbol)
@@ -32,7 +40,7 @@ def actualiza_trailing_stop(symbol):
                 print(f"Actualizo Trailing stop {symbol} - {side}.")
                 md.crea_stoploss (symbol,side,trailing_stop_price)
                 ultimo_trailing_stop_price = trailing_stop_price
-        sleep(900) # duerme 15 minutos (revisaria 2 veces por vela de 30 minutos)
+        sleep(60) 
 
 # programa principal
 def main():
@@ -40,6 +48,7 @@ def main():
     minutes_diff=0 
     balancetotal=md.balancetotal()
     reservas = 2965
+    global posiciones
     ##############START        
     print("Saldo: "+str(md.truncate(balancetotal,2)))
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
@@ -107,24 +116,13 @@ def main():
                                 hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 hilo.start()  
 
-                    # CERRAR POSICION
-                    else: 
-                        
-                        if md.get_positionamt(symbol)==0.0: 
-                            # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
-                            # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
-                            posiciones.pop(symbol)
-                            with open(cons.pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)
-                            md.closeallopenorders(symbol)
-                
                 except:
                     pass        
 
                 sys.stdout.write(f"\r{symbol} - T. vuelta: {md.truncate(minutes_diff,2)} \033[K")
                 sys.stdout.flush()  
 
-            sleep(10)
+            #sleep(10)
 
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
