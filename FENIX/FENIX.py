@@ -16,6 +16,7 @@ def actualiza_trailing_stop(symbol):
     trailing_stop_price = 0.0
     ultimo_trailing_stop_price = trailing_stop_price
     global posiciones
+    trailing_stop_id_anterior = 0
     while True:
         positionamt = md.get_positionamt(symbol)
         if positionamt == 0.0:
@@ -38,8 +39,19 @@ def actualiza_trailing_stop(symbol):
                 side='SELL'
             if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
                 print(f"Actualizo Trailing stop {symbol} - {side}.")
-                md.crea_stoploss (symbol,side,trailing_stop_price)
+                creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
                 ultimo_trailing_stop_price = trailing_stop_price
+                if creado==True:
+                    if trailing_stop_id_anterior==0:
+                        trailing_stop_id_anterior=trailing_stop_id
+                    else:
+                        try:
+                            cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+                            trailing_stop_id_anterior=trailing_stop_id
+                            print("\nTrailing_stop_id anterior cancelado. "+symbol)
+                        except:
+                            trailing_stop_id_anterior=trailing_stop_id
+                            pass
         sleep(60) 
 
 # programa principal

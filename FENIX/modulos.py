@@ -499,25 +499,17 @@ COMBOUSDT
     )
     return data
 
-def estrategia_vwap(data):
-    '''
-    THETAUSDT
-    BANDUSDT
-    SFPUSDT
-    IMXUSDT
-    WOOUSDT
-    IDUSDT
-    SUIUSDT
-    '''
+def estrategia_santa(data):
+    #solo en caso de timeframe 1m     
+    data['maximo'] = data['High'].rolling(30).max()
+    data['minimo'] = data['Low'].rolling(30).min()
     mult_take_profit = 1
-    mult_stop_loss = 1
+    mult_stop_loss = 5
     data['signal'] = np.where(
-        (data.Close.shift(2) < data.vwap.shift(2)) &
-        (data.Close.shift(1) > data.vwap.shift(1)) 
+        (data.maximo*0.95 <= data.Close) 
         ,1,
         np.where(
-            (data.Close.shift(2) > data.vwap.shift(2)) &
-            (data.Close.shift(1) < data.vwap.shift(1))
+            (data.minimo*1.05 >= data.Close)
             ,-1,
             0
         )
