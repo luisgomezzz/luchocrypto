@@ -96,6 +96,10 @@ def main():
                     else:
                         vueltas = vueltas+1                        
                 
+                if md.salida_solicitada_flag:
+                    print("Salida solicitada. ")
+                    sys.exit()
+
                 try:
                     data = md.obtiene_historial(symbol)
                     data = md.estrategia_bb(data)
@@ -123,8 +127,8 @@ def main():
                             if entry_price!=0.0:                                
                                 stop_price = data.stop_loss[-1]
                                 md.crea_stoploss (symbol,side,stop_price)
-                                #profit_price = data.take_profit[-1]
-                                #md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
+                                profit_price = data.take_profit[-1]
+                                md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 hilo.start()  
 
@@ -134,16 +138,13 @@ def main():
                 sys.stdout.write(f"\r{symbol} - T. vuelta: {md.truncate(minutes_diff,2)} \033[K")
                 sys.stdout.flush()  
 
-            #sleep(10)
-
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
         pass  
     except KeyboardInterrupt:
-        print("\nSalida solicitada. ")
-        sys.exit()    
+        md.salida_solicitada()
 
 if __name__ == '__main__':
     main()

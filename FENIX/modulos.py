@@ -14,6 +14,8 @@ from backtesting import Backtest
 import talib
 from backtesting import Strategy
 
+salida_solicitada_flag = False
+
 def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
@@ -224,6 +226,10 @@ def vwap(df):
     tp = (df['Low'] + df['Close'] + df['High']).div(3).values
     return (tp * v).cumsum() / v.cumsum()
 
+def salida_solicitada():    
+    global salida_solicitada_flag
+    salida_solicitada_flag = True
+
 def obtiene_historial(symbol,timeframe='30m'):
     client = cons.client    
     try:
@@ -249,9 +255,8 @@ def obtiene_historial(symbol,timeframe='30m'):
         #data['vwap'] = vwap(data)
         data['vwap'] = ta.vwap(data.High, data.Low, data.Close, data.Volume)
         return data
-    except KeyboardInterrupt as ky:
-        print("\nSalida solicitada. ")
-        sys.exit()              
+    except KeyboardInterrupt:        
+        salida_solicitada()
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -288,7 +293,7 @@ class TrailingStrategy(Strategy):
                 trade.sl = min(trade.sl or np.inf,
                                self.data.Close[index] + atr[index] * n_atr)
 
-def backtesting(data,plot=False):
+def backtesting(data,plot_flag=False, tp_flag=False):
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
@@ -297,13 +302,17 @@ def backtesting(data,plot=False):
             if self.position:
                 pass
             else:   
+                if tp_flag==False:
+                    tp_value = None
+                else:
+                    tp_value = self.data.take_profit[-1]
                 if self.data.signal[-1]==1:
-                    self.buy(size=1000,sl=self.data.stop_loss[-1])
+                    self.buy(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
                 elif self.data.signal[-1]==-1:
-                    self.sell(size=1000,sl=self.data.stop_loss[-1])
+                    self.sell(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
     bt = Backtest(data, Fenix, cash=1000)
     output = bt.run()
-    if plot:
+    if plot_flag:
         bt.plot()
     return output
 
@@ -481,10 +490,12 @@ COMBOUSDT
     )    
     data['take_profit'] = np.where(
         data.signal == 1,
-        data.Close + (data.atr * mult_take_profit),
+        #data.Close + (data.atr * mult_take_profit),
+        data.upper,
         np.where(
             data.signal == -1,
-            data.Close - (data.atr * mult_take_profit),  
+            #data.Close - (data.atr * mult_take_profit),  
+            data.lower,
             0
         )
     )
