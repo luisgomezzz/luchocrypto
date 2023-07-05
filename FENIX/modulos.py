@@ -293,7 +293,7 @@ class TrailingStrategy(Strategy):
                 trade.sl = min(trade.sl or np.inf,
                                self.data.Close[index] + atr[index] * n_atr)
 
-def backtesting(data,plot_flag=False, tp_flag=False):
+def backtesting(data, plot_flag=False, tp_flag=False):
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
@@ -515,12 +515,14 @@ def estrategia_santa(data):
     data['maximo'] = data['High'].rolling(30).max()
     data['minimo'] = data['Low'].rolling(30).min()
     mult_take_profit = 1
-    mult_stop_loss = 5
+    mult_stop_loss = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 <= data.Close) 
+        &(data.Volume > data.avg_volume)
         ,1,
         np.where(
             (data.minimo*1.05 >= data.Close)
+            &(data.Volume > data.avg_volume)
             ,-1,
             0
         )
