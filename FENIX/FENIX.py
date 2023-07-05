@@ -20,7 +20,7 @@ def actualiza_trailing_stop(symbol):
     while True:
         positionamt = md.get_positionamt(symbol)
         if positionamt == 0.0:
-            print(f"actualiza_trailing_stop {symbol} - Ya se cerró la posicion. ")
+            print(f"\nActualiza_trailing_stop {symbol} - Ya se cerró la posicion. ")
             # Se cerró la posición por limit o manual y se elimina del diccionario y archivo. 
             # TAMBIEN SE CIERRAN LAS ORDENES QUE PUEDEN HABER QUEDADO ABIERTAS.
             posiciones.pop(symbol)
@@ -38,7 +38,7 @@ def actualiza_trailing_stop(symbol):
                 trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * md.n_atr)
                 side='SELL'
             if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
-                print(f"Actualizo Trailing stop {symbol} - {side}.")
+                print(f"\nActualizo Trailing stop {symbol} - {side}.")
                 creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
                 ultimo_trailing_stop_price = trailing_stop_price
                 if creado==True:
