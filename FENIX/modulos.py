@@ -511,18 +511,19 @@ COMBOUSDT
     return data
 
 def estrategia_santa(data):
+    np.seterr(divide='ignore', invalid='ignore')
     #solo en caso de timeframe 1m     
-    data['maximo'] = data['High'].rolling(30).max()
-    data['minimo'] = data['Low'].rolling(30).min()
+    data['maximo'] = data['Close'].rolling(30).max()
+    data['minimo'] = data['Close'].rolling(30).min()
     mult_take_profit = 1
     mult_stop_loss = 1.5
     data['signal'] = np.where(
-        (data.maximo*0.95 <= data.Close) 
-        &(data.Volume > data.avg_volume)
+        (data.maximo*0.95 >= data.Close) 
+        #&(data.Volume > data.avg_volume)
         ,1,
         np.where(
-            (data.minimo*1.05 >= data.Close)
-            &(data.Volume > data.avg_volume)
+            (data.minimo*1.05 <= data.Close)
+            #&(data.Volume > data.avg_volume)
             ,-1,
             0
         )
