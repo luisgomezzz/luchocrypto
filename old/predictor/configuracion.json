@@ -1,0 +1,7 @@
+{
+    "cantidad_posiciones": 1,
+    "umbralbajo": 0.2,
+    "umbralalto": 0.8,
+    "mult_take_profit": 1,
+    "mult_stop_loss": 3
+}
