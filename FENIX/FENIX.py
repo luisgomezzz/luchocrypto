@@ -97,7 +97,7 @@ def main():
                         vueltas = vueltas+1                        
                 
                 if md.salida_solicitada_flag:
-                    print("Salida solicitada. ")
+                    print("\nSalida solicitada. ")
                     sys.exit()
 
                 try:
@@ -115,16 +115,16 @@ def main():
                             if data.signal[-1] ==-1:
                                 side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
-                            posiciones[symbol]=side
-                            with open(cons.pathroot+"posiciones.json","w") as j:
-                                json.dump(posiciones,j, indent=4)
-                            md.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                             md.sound()
                             md.sound() 
                             md.crea_posicion(symbol,side,porcentajeentrada=100) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
+                                posiciones[symbol]=side
+                                with open(cons.pathroot+"posiciones.json","w") as j:
+                                    json.dump(posiciones,j, indent=4)
+                                md.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                                 stop_price = data.stop_loss[-1]
                                 md.crea_stoploss (symbol,side,stop_price)
                                 profit_price = data.take_profit[-1]
