@@ -511,7 +511,7 @@ def estrategia_santa(data,tp_flag = True):
     np.seterr(divide='ignore', invalid='ignore')
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
-    data['n_atr'] = 1
+    data['n_atr'] = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
         #&(data.Volume > data.avg_volume)
