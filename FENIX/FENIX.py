@@ -30,12 +30,13 @@ def actualiza_trailing_stop(symbol):
             break
         else:
             data = md.obtiene_historial(symbol)
+            data = md.estrategia_bb(data) # se vuelve a calcular la estrategia para obtener el n_atr
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
-                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * md.n_atr)
+                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
                 side='BUY'
             else: # Es un short
-                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * md.n_atr)
+                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * data.n_atr[-1])
                 side='SELL'
             if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
                 print(f"\nActualizo Trailing stop {symbol} - {side}.")

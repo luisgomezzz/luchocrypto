@@ -252,8 +252,6 @@ def obtiene_historial(symbol,timeframe='30m'):
         data['atr']=ta.atr(data.High, data.Low, data.Close)        
         data = get_bollinger_bands(data)
         data['avg_volume'] = data['Volume'].rolling(20).mean()
-        #data['vwap'] = vwap(data)
-        data['vwap'] = ta.vwap(data.High, data.Low, data.Close, data.Volume)
         return data
     except KeyboardInterrupt:        
         salida_solicitada()
@@ -276,8 +274,6 @@ def set_atr_periods(data, periods: int = 100):
     atr = pd.Series(tr).rolling(periods).mean().bfill().values    
     return atr
 
-n_atr = 5
-
 class TrailingStrategy(Strategy):
     def init(self):
         super().init()        
@@ -288,12 +284,12 @@ class TrailingStrategy(Strategy):
         for trade in self.trades:
             if trade.is_long:
                 trade.sl = max(trade.sl or -np.inf,
-                               self.data.Close[index] - atr[index] * n_atr)
+                               self.data.Close[index] - atr[index] * self.data.n_atr[index])
             else:
                 trade.sl = min(trade.sl or np.inf,
-                               self.data.Close[index] + atr[index] * n_atr)
+                               self.data.Close[index] + atr[index] * self.data.n_atr[index])
 
-def backtesting(data, plot_flag=False, tp_flag=False):
+def backtesting(data, plot_flag=False):
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
@@ -302,7 +298,7 @@ def backtesting(data, plot_flag=False, tp_flag=False):
             if self.position:
                 pass
             else:   
-                if tp_flag==False:
+                if np.isnan(data.take_profit[-1]):
                     tp_value = None
                 else:
                     tp_value = self.data.take_profit[-1]
@@ -461,7 +457,7 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         pass    
     return creado,orderid        
 
-def estrategia_bb(data):
+def estrategia_bb(data,tp_flag=True):
     '''
 CRVUSDT
 RUNEUSDT
@@ -473,6 +469,7 @@ COMBOUSDT
     '''
     mult_take_profit = 1
     mult_stop_loss = 1.5
+    data['n_atr'] = 5
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
@@ -489,16 +486,16 @@ COMBOUSDT
         )
     )    
     data['take_profit'] = np.where(
-        data.signal == 1,
-        #data.Close + (data.atr * mult_take_profit),
-        data.upper,
-        np.where(
-            data.signal == -1,
-            #data.Close - (data.atr * mult_take_profit),  
-            data.lower,
-            0
-        )
-    )
+                                tp_flag,np.where(
+                                            data.signal == 1,
+                                            data.upper,
+                                            np.where(
+                                                data.signal == -1,
+                                                data.lower,
+                                                0
+                                                )   
+                                            ),np.NaN
+                                )
     data['stop_loss'] = np.where(
         data.signal == 1,
         data.Close - (data.atr * mult_stop_loss),  
@@ -510,39 +507,42 @@ COMBOUSDT
     )
     return data
 
-def estrategia_santa(data):
+def estrategia_santa(data,tp_flag = True):
     np.seterr(divide='ignore', invalid='ignore')
-    #solo en caso de timeframe 1m     
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
-    mult_take_profit = 1
-    mult_stop_loss = 1.5
+    data['n_atr'] = 1
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
         #&(data.Volume > data.avg_volume)
+        &(data.Close.shift(1) < data.lower.shift(1))
         ,1,
         np.where(
             (data.minimo*1.05 <= data.Close)
             #&(data.Volume > data.avg_volume)
+            &(data.Close.shift(1) > data.upper.shift(1))
             ,-1,
             0
         )
     )    
     data['take_profit'] = np.where(
-        data.signal == 1,
-        data.Close + (data.atr * mult_take_profit),
-        np.where(
-            data.signal == -1,
-            data.Close - (data.atr * mult_take_profit),  
-            0
-        )
-    )
+                                tp_flag,
+                                np.where(
+                                        data.signal == 1,
+                                        data.Close*1.02,
+                                        np.where(
+                                                data.signal == -1,
+                                                data.Close*0.98,  
+                                                0
+                                                )
+                                        ),np.NaN
+                                    )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  
+        data.Close*0.9,  
         np.where(
             data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  
+            data.Close*1.1,
             0
         )
     )
