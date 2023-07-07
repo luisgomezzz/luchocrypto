@@ -29,8 +29,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = md.obtiene_historial(symbol)
-            data = md.estrategia_bb(data) # se vuelve a calcular la estrategia para obtener el n_atr
+            data = md.estrategia_bb(symbol) 
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -102,8 +101,8 @@ def main():
                     sys.exit()
 
                 try:
-                    data = md.obtiene_historial(symbol)
-                    data = md.estrategia_bb(data)
+
+                    data = md.estrategia_bb(symbol)
                     
                     # CREA POSICION
                     side=''

@@ -230,7 +230,7 @@ def salida_solicitada():
     global salida_solicitada_flag
     salida_solicitada_flag = True
 
-def obtiene_historial(symbol,timeframe='30m'):
+def obtiene_historial(symbol,timeframe):
     client = cons.client    
     try:
         historical_data = client.get_historical_klines(symbol, timeframe)
@@ -457,7 +457,7 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         pass    
     return creado,orderid        
 
-def estrategia_bb(data,tp_flag=True):
+def estrategia_bb(symbol,tp_flag=True):
     '''
 CRVUSDT
 RUNEUSDT
@@ -467,6 +467,7 @@ SUIUSDT
 COMBOUSDT
 
     '''
+    data = obtiene_historial(symbol,'30m')
     mult_take_profit = 1
     mult_stop_loss = 1.5
     data['n_atr'] = 5
@@ -507,8 +508,9 @@ COMBOUSDT
     )
     return data
 
-def estrategia_santa(data,tp_flag = True):
+def estrategia_santa(symbol,tp_flag = True):
     np.seterr(divide='ignore', invalid='ignore')
+    data = obtiene_historial(symbol,'1m')
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
     data['n_atr'] = 1.5
