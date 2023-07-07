@@ -9,7 +9,7 @@ from time import sleep
 import threading
 import numpy as np
 
-md.printandlog(cons.nombrelog,"FENIX")
+md.printandlog(cons.nombrelog,"FENIX_santa")
 posiciones={}
 
 def actualiza_trailing_stop(symbol):
@@ -29,7 +29,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = md.estrategia_bb(symbol) 
+            data = md.estrategia_santa(symbol) 
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -66,11 +66,11 @@ def main():
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
 
     #Lee archivo de mmonedas filtradas
-    listamonedas=[]
-    with open(cons.pathroot+"lista_monedas_filtradas.txt", 'r') as fp:
-        for line in fp:
-            x = line[:-1]
-            listamonedas.append(x)
+    listamonedas=[
+    'BELUSDT',
+    'BTSUSDT',
+    'XVGUSDT'
+    ]
     
     try:
 
@@ -102,7 +102,7 @@ def main():
 
                 try:
 
-                    data = md.estrategia_bb(symbol)
+                    data = md.estrategia_santa(symbol)
                     
                     # CREA POSICION
                     side=''

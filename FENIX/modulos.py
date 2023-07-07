@@ -255,6 +255,10 @@ def obtiene_historial(symbol,timeframe):
         return data
     except KeyboardInterrupt:        
         salida_solicitada()
+    except BinanceAPIException as e:
+        if e.message!="Invalid symbol.":
+            print("\nError binance - Par:",symbol,"-",e.status_code,e.message)                            
+        pass        
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -508,7 +512,7 @@ COMBOUSDT
     )
     return data
 
-def estrategia_santa(symbol,tp_flag = True):
+def estrategia_santa(symbol,tp_flag = False):
     np.seterr(divide='ignore', invalid='ignore')
     data = obtiene_historial(symbol,'1m')
     data['maximo'] = data['Close'].rolling(30).max()
