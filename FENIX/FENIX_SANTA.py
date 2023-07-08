@@ -69,7 +69,8 @@ def main():
     listamonedas=[
     'BELUSDT',
     'BTSUSDT',
-    'XVGUSDT'
+    'XVGUSDT',
+    'SRMUSDT'
     ]
     
     try:

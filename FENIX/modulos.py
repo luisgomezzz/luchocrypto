@@ -520,12 +520,12 @@ def estrategia_santa(symbol,tp_flag = False):
     data['n_atr'] = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
-        #&(data.Volume > data.avg_volume)
+        &(data.Volume > data.avg_volume)
         &(data.Close.shift(1) < data.lower.shift(1))
         ,1,
         np.where(
             (data.minimo*1.05 <= data.Close)
-            #&(data.Volume > data.avg_volume)
+            &(data.Volume > data.avg_volume)
             &(data.Close.shift(1) > data.upper.shift(1))
             ,-1,
             0
@@ -545,10 +545,10 @@ def estrategia_santa(symbol,tp_flag = False):
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close*0.9,  
+        data.Close*0.5,  
         np.where(
             data.signal == -1,
-            data.Close*1.1,
+            data.Close*1.5,
             0
         )
     )
