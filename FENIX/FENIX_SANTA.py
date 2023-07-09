@@ -67,10 +67,43 @@ def main():
 
     #Lee archivo de mmonedas filtradas
     listamonedas=[
-    'BELUSDT',
-    'BTSUSDT',
-    'XVGUSDT',
-    'SRMUSDT'
+    'EOSUSDT',
+    'ADAUSDT',
+    'THETAUSDT',
+    'OMGUSDT',
+    'SXPUSDT',
+    'KAVAUSDT',
+    'CRVUSDT',
+    'SUSHIUSDT',
+    'ICXUSDT',
+    'STORJUSDT',
+    'FLMUSDT',
+    'TOMOUSDT',
+    'MATICUSDT',
+    'ALPHAUSDT',
+    'CHRUSDT',
+    'MANAUSDT',
+    'DENTUSDT',
+    'CELRUSDT',
+    'IOTXUSDT',
+    'AUDIOUSDT',
+    'RAYUSDT',
+    'GALAUSDT',
+    'CTSIUSDT',
+    'PEOPLEUSDT',
+    'FLOWUSDT',
+    'DARUSDT',
+    'STGUSDT',
+    'MAGICUSDT',
+    'STXUSDT',
+    'ACHUSDT',
+    'CKBUSDT',
+    'TRUUSDT',
+    'LQTYUSDT',
+    'TLMUSDT',
+    'SUIUSDT',
+    'KEYUSDT',
+    'COMBOUSDT'
     ]
     
     try:
