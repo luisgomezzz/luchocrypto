@@ -479,13 +479,11 @@ COMBOUSDT
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
         &(data.Close.shift(1) < data.lower.shift(1)) 
-        &(data.Volume > data.avg_volume)
         ,1,
         np.where(
             (data.ema20 < data.ema50) 
             &(data.ema50 < data.ema200)
             &(data.Close.shift(1) > data.upper.shift(1))
-            &(data.Volume > data.avg_volume)
             ,-1,
             0
         )
@@ -514,18 +512,16 @@ COMBOUSDT
 
 def estrategia_santa(symbol,tp_flag = False):
     np.seterr(divide='ignore', invalid='ignore')
-    data = obtiene_historial(symbol,'1m')
+    data = obtiene_historial(symbol,'15m')
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
     data['n_atr'] = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
-        &(data.Volume > data.avg_volume)
         &(data.Close.shift(1) < data.lower.shift(1))
         ,1,
         np.where(
             (data.minimo*1.05 <= data.Close)
-            &(data.Volume > data.avg_volume)
             &(data.Close.shift(1) > data.upper.shift(1))
             ,-1,
             0
