@@ -478,12 +478,14 @@ COMBOUSDT
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
-        &(data.Close.shift(1) < data.lower.shift(1)) 
+        &(data.Close.shift(2) < data.lower.shift(2))
+        &(data.Close.shift(1) > data.lower.shift(1))        
         ,1,
         np.where(
             (data.ema20 < data.ema50) 
             &(data.ema50 < data.ema200)
-            &(data.Close.shift(1) > data.upper.shift(1))
+            &(data.Close.shift(2) > data.upper.shift(2))
+            &(data.Close.shift(1) < data.upper.shift(1))            
             ,-1,
             0
         )
