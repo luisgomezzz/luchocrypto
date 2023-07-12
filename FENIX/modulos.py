@@ -512,7 +512,7 @@ COMBOUSDT
     )
     return data
 
-def estrategia_santa(symbol,tp_flag = False):
+def estrategia_santa(symbol,tp_flag = True):
     np.seterr(divide='ignore', invalid='ignore')
     data = obtiene_historial(symbol,'15m')
     data['maximo'] = data['Close'].rolling(30).max()
@@ -520,11 +520,13 @@ def estrategia_santa(symbol,tp_flag = False):
     data['n_atr'] = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
-        &(data.Close.shift(1) < data.lower.shift(1))
+        &(data.Close.shift(1) > data.lower.shift(1))
+        &(data.Close.shift(1) <= data.minimo.shift(1))
         ,1,
         np.where(
             (data.minimo*1.05 <= data.Close)
-            &(data.Close.shift(1) > data.upper.shift(1))
+            &(data.Close.shift(1) < data.upper.shift(1))
+            &(data.Close.shift(1) >= data.maximo.shift(1))
             ,-1,
             0
         )
@@ -533,10 +535,10 @@ def estrategia_santa(symbol,tp_flag = False):
                                 tp_flag,
                                 np.where(
                                         data.signal == 1,
-                                        data.Close*1.02,
+                                        data.Close+data.atr,
                                         np.where(
                                                 data.signal == -1,
-                                                data.Close*0.98,  
+                                                data.Close-data.atr,  
                                                 0
                                                 )
                                         ),np.NaN
