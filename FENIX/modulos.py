@@ -234,7 +234,8 @@ def obtiene_historial(symbol,timeframe):
             data['ema200']=data.ta.ema(200)
             data['atr']=ta.atr(data.High, data.Low, data.Close)        
             data = get_bollinger_bands(data)
-            data['avg_volume'] = data['Volume'].rolling(20).mean()            
+            data['avg_volume'] = data['Volume'].rolling(20).mean()   
+            data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. En la estrategia se pone el valor real.
         except KeyboardInterrupt:        
             salida_solicitada()
         except BinanceAPIException as e:
@@ -408,7 +409,7 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         pass    
     return creado,orderid        
 
-def filtradodemonedas ():    
+def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar manipulacion.
     lista = lista_de_monedas ()
     lista_filtrada = []
     for symbol in lista:
@@ -469,9 +470,7 @@ def estrategia_bb(symbol,tp_flag=True):
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
     data['variacion'] = ((btc_data['High'].rolling(2).max()/btc_data['Low'].rolling(2).min())-1)*100
-    mult_take_profit = 1
-    mult_stop_loss = 1.5
-    data['n_atr'] = 5
+    data['n_atr'] = 5 # para el trailing stop
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
@@ -502,10 +501,10 @@ def estrategia_bb(symbol,tp_flag=True):
                                 )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  
+        data.Close-1.5*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  
+            data.Close+1.5*data.atr,
             0
         )
     )
@@ -519,7 +518,7 @@ def estrategia_santa(symbol,tp_flag = True):
     data['variacion'] = ((btc_data['High'].rolling(4).max()/btc_data['Low'].rolling(4).min())-1)*100    
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
-    data['n_atr'] = 1.5
+    data['n_atr'] = 1.5 # para el trailing stop
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
         &(data.Close.shift(1) > data.lower.shift(1))
@@ -557,3 +556,72 @@ def estrategia_santa(symbol,tp_flag = True):
         )
     )
     return data
+
+def estrategia_volatil(symbol, tp_flag=True):
+    timeframe = '30m'
+    data = obtiene_historial(symbol, timeframe)
+    atr_multiplier = 2.0  # Multiplicador para el ATR    
+    # Cálculo del ATR (Average True Range)
+    data['ATR'] = data['High'] - data['Low']
+    data['ATR'] = data['ATR'].rolling(window=14).mean()    
+    # Cálculo de las bandas de Bollinger
+    data['SMA'] = data['Close'].rolling(window=20).mean()
+    data['std_dev'] = data['Close'].rolling(window=20).std()
+    data['upper_band'] = data['SMA'] + (data['std_dev'] * atr_multiplier)
+    data['lower_band'] = data['SMA'] - (data['std_dev'] * atr_multiplier)
+    data['n_atr'] = 5 # para el trailing stop
+    # Generación de señales de trading
+    data['signal'] = np.where(
+        (data['Close'] > data['upper_band']), -1,  # Señal de venta
+        np.where(
+            (data['Close'] < data['lower_band']), 1,  # Señal de compra
+            0  # Sin señal
+        )
+    )    
+    # Establecimiento de niveles de toma de ganancias y stop-loss
+    data['take_profit'] = np.where(
+        tp_flag,
+        np.where(
+            data['signal'] == 1,
+            data['Close'] + (data['ATR'] * atr_multiplier),
+            np.where(
+                data['signal'] == -1,
+                data['Close'] - (data['ATR'] * atr_multiplier),
+                np.NaN
+            )
+        ),
+        np.NaN
+    )    
+    data['stop_loss'] = np.where(
+        data['signal'] == 1,
+        data['Close'] - (data['ATR'] * atr_multiplier),
+        np.where(
+            data['signal'] == -1,
+            data['Close'] + (data['ATR'] * atr_multiplier),
+            np.NaN
+        )
+    )    
+    return data
+
+def estrategia_variacion_precio(symbol):
+    # Monitoreo de la variación de precio de Bitcoin
+    btc_data = obtiene_historial('BTCUSDT', '1h')
+    btc_data['variacion'] = (btc_data['Close'] - btc_data['Close'].shift(1)) / btc_data['Close'].shift(1) * 100
+
+    # Identificación de una criptomoneda correlacionada
+    alt_data = obtiene_historial(symbol, '1h')
+    correlation = btc_data['variacion'].rolling(window=50).corr(alt_data['Close'].pct_change())
+
+    # Establecimiento de señales de entrada
+    threshold = 1.5  # Umbral de correlación
+    enter_signal = correlation > threshold
+
+    # Gestión de riesgos
+    stop_loss = 0.98  # Nivel de stop-loss (2% de pérdida)
+    take_profit = 1.02  # Nivel de toma de ganancias (2% de ganancia)
+
+    alt_data['signal'] = np.where(enter_signal.shift() & enter_signal, 1, 0)
+    alt_data['take_profit'] = np.where(alt_data['signal'] != alt_data['signal'].shift(), alt_data['Close'] * take_profit, np.NaN)
+    alt_data['stop_loss'] = np.where(alt_data['signal'] != alt_data['signal'].shift(), alt_data['Close'] * stop_loss, np.NaN)
+
+    return alt_data
