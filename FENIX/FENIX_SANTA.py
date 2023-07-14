@@ -9,7 +9,18 @@ from time import sleep
 import threading
 import numpy as np
 
-md.printandlog(cons.nombrelog,"FENIX_santa")
+RED   = "\033[1;31m"  
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+YELLOW = "\33[33m"
+
+sys.stdout.write(BLUE) 
+
+md.printandlog(cons.nombrelog,"FENIX SANTA")
 posiciones={}
 
 def actualiza_trailing_stop(symbol):
@@ -67,27 +78,39 @@ def main():
 
     #Lee archivo de mmonedas filtradas
     listamonedas=[
-'SUSHIUSDT',
-'SKLUSDT',
-'HFTUSDT',
-'EDUUSDT',
 'EOSUSDT',
 'ONTUSDT',
-'BATUSDT',
-'ALGOUSDT',
-'OMGUSDT',
-'FLMUSDT',
+'THETAUSDT',
+'ZILUSDT',
+'SUSHIUSDT',
+'BLZUSDT',
+'MATICUSDT',
 'OCEANUSDT',
-'CVCUSDT',
-'RVNUSDT',
-'SCUSDT',
+'SKLUSDT',
+'GRTUSDT',
+'1INCHUSDT',
+'ANKRUSDT',
+'STMXUSDT',
+'NKNUSDT',
+'DGBUSDT',
 'BAKEUSDT',
-'MAGICUSDT',
+'RAYUSDT',
+'C98USDT',
+'ARPAUSDT',
+'DUSKUSDT',
+'FLOWUSDT',
+'WOOUSDT',
+'DARUSDT',
 'AGIXUSDT',
-'ACHUSDT',
 'TRUUSDT',
+'AMBUSDT',
 'RDNTUSDT',
-'SUIUSDT'
+'HFTUSDT',
+'EDUUSDT',
+'SUIUSDT',
+'KEYUSDT',
+'COMBOUSDT',
+'XVGUSDT'
 ]
     
     try:
@@ -130,8 +153,9 @@ def main():
                             side='BUY'
                         else:
                             ###SELL###
-                            if data.signal[-1] ==-1:
-                                side='SELL'
+                            pass
+                            #if data.signal[-1] ==-1:
+                            #    side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
                             md.sound()
                             md.sound() 

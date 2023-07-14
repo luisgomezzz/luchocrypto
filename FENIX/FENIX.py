@@ -9,7 +9,18 @@ from time import sleep
 import threading
 import numpy as np
 
-md.printandlog(cons.nombrelog,"FENIX")
+RED   = "\033[1;31m"  
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+YELLOW = "\33[33m"
+
+sys.stdout.write(YELLOW) 
+
+md.printandlog(cons.nombrelog,"FENIX BB")
 posiciones={}
 
 def actualiza_trailing_stop(symbol):

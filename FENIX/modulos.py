@@ -232,38 +232,43 @@ def salida_solicitada():
 
 def obtiene_historial(symbol,timeframe):
     client = cons.client    
-    try:
-        historical_data = client.get_historical_klines(symbol, timeframe)
-        data = pd.DataFrame(historical_data)
-        data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
-                            'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
-        data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
-        data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
-        numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
-        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-        data['timestamp']=data['Open Time']
-        data.set_index('timestamp', inplace=True)
-        data.dropna(inplace=True)
-        data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
-                'Ignore'], axis=1, inplace=True)    
-        data['ema20']=data.ta.ema(20)
-        data['ema50']=data.ta.ema(50)
-        data['ema200']=data.ta.ema(200)
-        data['atr']=ta.atr(data.High, data.Low, data.Close)        
-        data = get_bollinger_bands(data)
-        data['avg_volume'] = data['Volume'].rolling(20).mean()
-        return data
-    except KeyboardInterrupt:        
-        salida_solicitada()
-    except BinanceAPIException as e:
-        if e.message!="Invalid symbol.":
-            print("\nError binance - Par:",symbol,"-",e.status_code,e.message)                            
-        pass        
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
-        pass  
+    leido = False
+    while leido == False:
+        try:
+            historical_data = client.get_historical_klines(symbol, timeframe)
+            leido = True
+            data = pd.DataFrame(historical_data)
+            data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
+                                'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
+            data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
+            data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
+            numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
+            data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+            data['timestamp']=data['Open Time']
+            data.set_index('timestamp', inplace=True)
+            data.dropna(inplace=True)
+            data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
+                    'Ignore'], axis=1, inplace=True)    
+            data['ema20']=data.ta.ema(20)
+            data['ema50']=data.ta.ema(50)
+            data['ema200']=data.ta.ema(200)
+            data['atr']=ta.atr(data.High, data.Low, data.Close)        
+            data = get_bollinger_bands(data)
+            data['avg_volume'] = data['Volume'].rolling(20).mean()            
+        except KeyboardInterrupt:        
+            salida_solicitada()
+        except BinanceAPIException as e:
+            if e.message=="Invalid symbol.":                
+                leido = True
+            else:
+                print("\nError binance - Par:",symbol,"-",e.status_code,e.message)          
+            pass        
+        except Exception as falla:
+            _, _, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(f"Error leyendo historial {symbol}. Intento otra vez. \n")
+            pass  
+    return data
 
 def EMA(data,length):
     return data.ta.ema(length)
@@ -462,16 +467,10 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
     return creado,orderid        
 
 def estrategia_bb(symbol,tp_flag=True):
-    '''
-CRVUSDT
-RUNEUSDT
-MAGICUSDT
-STXUSDT
-SUIUSDT
-COMBOUSDT
-
-    '''
-    data = obtiene_historial(symbol,'30m')
+    timeframe = '30m'
+    data = obtiene_historial(symbol,timeframe)
+    btc_data = obtiene_historial("BTCUSDT",timeframe)
+    data['variacion'] = ((btc_data['High'].rolling(2).max()/btc_data['Low'].rolling(2).min())-1)*100
     mult_take_profit = 1
     mult_stop_loss = 1.5
     data['n_atr'] = 5
@@ -479,13 +478,15 @@ COMBOUSDT
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
         &(data.Close.shift(2) < data.lower.shift(2))
-        &(data.Close.shift(1) > data.lower.shift(1))        
+        &(data.Close.shift(1) > data.lower.shift(1)) 
+        &(data.variacion < 0.8)
         ,1,
         np.where(
             (data.ema20 < data.ema50) 
             &(data.ema50 < data.ema200)
             &(data.Close.shift(2) > data.upper.shift(2))
-            &(data.Close.shift(1) < data.upper.shift(1))            
+            &(data.Close.shift(1) < data.upper.shift(1))      
+            &(data.variacion < 0.8)
             ,-1,
             0
         )
@@ -514,19 +515,24 @@ COMBOUSDT
 
 def estrategia_santa(symbol,tp_flag = True):
     np.seterr(divide='ignore', invalid='ignore')
-    data = obtiene_historial(symbol,'15m')
+    timeframe = '15m'
+    data = obtiene_historial(symbol,timeframe)
+    btc_data = obtiene_historial("BTCUSDT",timeframe)
+    data['variacion'] = ((btc_data['High'].rolling(4).max()/btc_data['Low'].rolling(4).min())-1)*100    
     data['maximo'] = data['Close'].rolling(30).max()
     data['minimo'] = data['Close'].rolling(30).min()
     data['n_atr'] = 1.5
     data['signal'] = np.where(
         (data.maximo*0.95 >= data.Close) 
         &(data.Close.shift(1) > data.lower.shift(1))
-        &(data.Close.shift(1) <= data.minimo.shift(1))
+        &(data.Close <= data.minimo.shift(1))
+        &(data.variacion < 0.8)
         ,1,
         np.where(
             (data.minimo*1.05 <= data.Close)
             &(data.Close.shift(1) < data.upper.shift(1))
-            &(data.Close.shift(1) >= data.maximo.shift(1))
+            &(data.Close >= data.maximo.shift(1))
+            &(data.variacion < 0.8)
             ,-1,
             0
         )
