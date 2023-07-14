@@ -189,26 +189,6 @@ def coingeckoinfo (par,dato='market_cap'):
         valor = 0
     return valor
 
-def capitalizacion(par):
-    cap=0.0
-    # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
-    #busqueda en binance
-    clientcap = cons.binanceClient(cons.api_key, cons.api_secret,cons.api_passphares) 
-    info = clientcap.get_products()
-    lista=info['data']
-    for i in range(len(lista)):
-        if lista[i]['s']==par:
-            cap = float(lista[i]['c']*lista[i]['cs'])
-            break
-    if cap==0.0:
-        #busqueda en coingecko
-        try:
-            cap=float(coingeckoinfo (par,dato='market_cap'))
-        except:
-            cap=0.0
-            pass
-    return cap  
-
 def get_bollinger_bands(df):
     mult = 2.0
     length = 20
@@ -282,44 +262,6 @@ def set_atr_periods(data, periods: int = 100):
     tr = np.max([h - l, (c_prev - h).abs(), (c_prev - l).abs()], axis=0)
     atr = pd.Series(tr).rolling(periods).mean().bfill().values    
     return atr
-
-class TrailingStrategy(Strategy):
-    def init(self):
-        super().init()        
-    def next(self):        
-        super().next()
-        index = len(self.data)-1
-        atr = set_atr_periods(self.data)
-        for trade in self.trades:
-            if trade.is_long:
-                trade.sl = max(trade.sl or -np.inf,
-                               self.data.Close[index] - atr[index] * self.data.n_atr[index])
-            else:
-                trade.sl = min(trade.sl or np.inf,
-                               self.data.Close[index] + atr[index] * self.data.n_atr[index])
-
-def backtesting(data, plot_flag=False):
-    class Fenix(TrailingStrategy):
-        def init(self):
-            super().init()
-        def next(self):       
-            super().next()
-            if self.position:
-                pass
-            else:   
-                if np.isnan(data.take_profit[-1]):
-                    tp_value = None
-                else:
-                    tp_value = self.data.take_profit[-1]
-                if self.data.signal[-1]==1:
-                    self.buy(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
-                elif self.data.signal[-1]==-1:
-                    self.sell(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
-    bt = Backtest(data, Fenix, cash=1000)
-    output = bt.run()
-    if plot_flag:
-        bt.plot()
-    return output
 
 def get_posiciones_abiertas(): 
     leido = False
@@ -465,6 +407,62 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         orderid = 0
         pass    
     return creado,orderid        
+
+def filtradodemonedas ():    
+    lista = lista_de_monedas ()
+    lista_filtrada = []
+    for symbol in lista:
+        try:  
+            vol= volumeOf24h(symbol)
+            if vol >= cons.minvolumen24h:
+                lista_filtrada.append(symbol)
+        except Exception as falla:
+            _, _, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+            pass     
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()   
+    return lista_filtrada
+
+class TrailingStrategy(Strategy):
+    def init(self):
+        super().init()        
+    def next(self):        
+        super().next()
+        index = len(self.data)-1
+        atr = set_atr_periods(self.data)
+        for trade in self.trades:
+            if trade.is_long:
+                trade.sl = max(trade.sl or -np.inf,
+                               self.data.Close[index] - atr[index] * self.data.n_atr[index])
+            else:
+                trade.sl = min(trade.sl or np.inf,
+                               self.data.Close[index] + atr[index] * self.data.n_atr[index])
+
+def backtesting(data, plot_flag=False):
+    class Fenix(TrailingStrategy):
+        def init(self):
+            super().init()
+        def next(self):       
+            super().next()
+            if self.position:
+                pass
+            else:   
+                if np.isnan(data.take_profit[-1]):
+                    tp_value = None
+                else:
+                    tp_value = self.data.take_profit[-1]
+                if self.data.signal[-1]==1:
+                    self.buy(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
+                elif self.data.signal[-1]==-1:
+                    self.sell(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
+    bt = Backtest(data, Fenix, cash=1000)
+    output = bt.run()
+    if plot_flag:
+        bt.plot()
+    return output
 
 def estrategia_bb(symbol,tp_flag=True):
     timeframe = '30m'

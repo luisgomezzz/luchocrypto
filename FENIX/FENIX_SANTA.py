@@ -153,9 +153,8 @@ def main():
                             side='BUY'
                         else:
                             ###SELL###
-                            pass
-                            #if data.signal[-1] ==-1:
-                            #    side='SELL'
+                            if data.signal[-1] ==-1:
+                                side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
                             md.sound()
                             md.sound() 
