@@ -466,11 +466,12 @@ def backtesting(data, plot_flag=False):
     return output
 
 def estrategia_bb(symbol,tp_flag=True):
-    timeframe = '30m'
+    timeframe = '1m'
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
-    data['variacion'] = ((btc_data['High'].rolling(2).max()/btc_data['Low'].rolling(2).min())-1)*100
+    data['variacion'] = ((btc_data['Close'].rolling(30).max()/btc_data['Close'].rolling(30).min())-1)*100
     data['n_atr'] = 5 # para el trailing stop
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
@@ -491,10 +492,10 @@ def estrategia_bb(symbol,tp_flag=True):
     data['take_profit'] = np.where(
                                 tp_flag,np.where(
                                             data.signal == 1,
-                                            data.upper,
+                                            data.Close + data.atr,
                                             np.where(
                                                 data.signal == -1,
-                                                data.lower,
+                                                data.Close - data.atr,
                                                 0
                                                 )   
                                             ),np.NaN

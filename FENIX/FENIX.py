@@ -8,6 +8,7 @@ from datetime import datetime
 from time import sleep
 import threading
 import numpy as np
+import inquirer
 
 RED   = "\033[1;31m"  
 BLUE  = "\033[1;34m"
@@ -17,10 +18,30 @@ RESET = "\033[0;0m"
 BOLD    = "\033[;1m"
 REVERSE = "\033[;7m"
 YELLOW = "\33[33m"
-
-sys.stdout.write(BLUE) 
-
-md.printandlog(cons.nombrelog,"FENIX BB")
+#EXCHANGE SELECT
+questions = [
+inquirer.List('Estrategia',
+                message="Seleccionar estrategia: ",
+                choices=['estrategia_bb','estrategia_santa', 'sigo_variacion_bitcoin'],
+            ),
+]
+answers = inquirer.prompt(questions)
+estrategia_name=answers['Estrategia']
+if estrategia_name=='estrategia_bb':
+    sys.stdout.write(BLUE)
+if estrategia_name=='estrategia_santa':
+    sys.stdout.write(GREEN)
+if estrategia_name=='sigo_variacion_bitcoin':
+    sys.stdout.write(YELLOW)    
+md.printandlog(cons.nombrelog, estrategia_name)        
+def dataframe_estrategia(symbol,estrategia_name):
+    if estrategia_name=='estrategia_bb':
+        data = md.estrategia_bb(symbol)
+    if estrategia_name=='estrategia_santa':
+        data = md.estrategia_santa(symbol)
+    if estrategia_name=='sigo_variacion_bitcoin':
+        data = md.sigo_variacion_bitcoin(symbol)
+    return data
 posiciones={}
 
 def actualiza_trailing_stop(symbol):
@@ -40,7 +61,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = md.estrategia_bb(symbol) 
+            data = dataframe_estrategia(symbol,estrategia_name)
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -63,7 +84,6 @@ def actualiza_trailing_stop(symbol):
                         except:
                             trailing_stop_id_anterior=trailing_stop_id
                             pass
-        sleep(60) 
 
 # programa principal
 def main():
@@ -113,7 +133,7 @@ def main():
 
                 try:
 
-                    data = md.estrategia_bb(symbol)
+                    data = dataframe_estrategia(symbol,estrategia_name)
                     
                     # CREA POSICION
                     side=''
