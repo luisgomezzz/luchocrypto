@@ -557,13 +557,14 @@ def estrategia_santa(symbol,tp_flag = True):
     )
     return data
 
-def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = False):
+def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = True):
     # Si bitcoin varía en un porc% se entra al mercado con symbol para seguir la tendencia y obtener ganancias.
     data = obtiene_historial(symbol,timeframe)
     data_btc = obtiene_historial('BTCUSDT',timeframe)
     data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
     data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
     data.n_atr = 1.5
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
     data['signal'] = np.where(
         (data_btc.Close >= data_btc.maximo.shift(1))
         &(data_btc.Close >= data_btc.minimo.shift(1)*(1+porc/100))
