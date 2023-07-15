@@ -557,71 +557,42 @@ def estrategia_santa(symbol,tp_flag = True):
     )
     return data
 
-def estrategia_volatil(symbol, tp_flag=True):
-    timeframe = '30m'
-    data = obtiene_historial(symbol, timeframe)
-    atr_multiplier = 2.0  # Multiplicador para el ATR    
-    # Cálculo del ATR (Average True Range)
-    data['ATR'] = data['High'] - data['Low']
-    data['ATR'] = data['ATR'].rolling(window=14).mean()    
-    # Cálculo de las bandas de Bollinger
-    data['SMA'] = data['Close'].rolling(window=20).mean()
-    data['std_dev'] = data['Close'].rolling(window=20).std()
-    data['upper_band'] = data['SMA'] + (data['std_dev'] * atr_multiplier)
-    data['lower_band'] = data['SMA'] - (data['std_dev'] * atr_multiplier)
-    data['n_atr'] = 5 # para el trailing stop
-    # Generación de señales de trading
+def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = False):
+    # Si bitcoin varía en un porc% se entra al mercado con symbol para seguir la tendencia y obtener ganancias.
+    data = obtiene_historial(symbol,timeframe)
+    data_btc = obtiene_historial('BTCUSDT',timeframe)
+    data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
+    data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
+    data.n_atr = 1.5
     data['signal'] = np.where(
-        (data['Close'] > data['upper_band']), -1,  # Señal de venta
+        (data_btc.Close >= data_btc.maximo.shift(1))
+        &(data_btc.Close >= data_btc.minimo.shift(1)*(1+porc/100))
+        ,1,
         np.where(
-            (data['Close'] < data['lower_band']), 1,  # Señal de compra
-            0  # Sin señal
+            (data_btc.Close  <= data_btc.minimo.shift(1))
+            &(data_btc.Close <= data_btc.maximo.shift(1)*(1-porc/100))        
+            ,-1,
+            0
         )
-    )    
-    # Establecimiento de niveles de toma de ganancias y stop-loss
-    data['take_profit'] = np.where(
-        tp_flag,
-        np.where(
-            data['signal'] == 1,
-            data['Close'] + (data['ATR'] * atr_multiplier),
-            np.where(
-                data['signal'] == -1,
-                data['Close'] - (data['ATR'] * atr_multiplier),
-                np.NaN
-            )
-        ),
-        np.NaN
-    )    
+    )  
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close+data.atr,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close-data.atr,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
     data['stop_loss'] = np.where(
-        data['signal'] == 1,
-        data['Close'] - (data['ATR'] * atr_multiplier),
+        data.signal == 1,
+        data.Close-1.5*data.atr,  
         np.where(
-            data['signal'] == -1,
-            data['Close'] + (data['ATR'] * atr_multiplier),
-            np.NaN
+            data.signal == -1,
+            data.Close+1.5*data.atr,
+            0
         )
     )    
     return data
-
-def estrategia_variacion_precio(symbol):
-    # Monitoreo de la variación de precio de Bitcoin
-    btc_data = obtiene_historial('BTCUSDT', '1h')
-    btc_data['variacion'] = (btc_data['Close'] - btc_data['Close'].shift(1)) / btc_data['Close'].shift(1) * 100
-
-    # Identificación de una criptomoneda correlacionada
-    alt_data = obtiene_historial(symbol, '1h')
-    correlation = btc_data['variacion'].rolling(window=50).corr(alt_data['Close'].pct_change())
-
-    # Establecimiento de señales de entrada
-    threshold = 1.5  # Umbral de correlación
-    enter_signal = correlation > threshold
-
-    # Gestión de riesgos
-    stop_loss = 0.98  # Nivel de stop-loss (2% de pérdida)
-    take_profit = 1.02  # Nivel de toma de ganancias (2% de ganancia)
-
-    alt_data['signal'] = np.where(enter_signal.shift() & enter_signal, 1, 0)
-    alt_data['take_profit'] = np.where(alt_data['signal'] != alt_data['signal'].shift(), alt_data['Close'] * take_profit, np.NaN)
-    alt_data['stop_loss'] = np.where(alt_data['signal'] != alt_data['signal'].shift(), alt_data['Close'] * stop_loss, np.NaN)
-
-    return alt_data

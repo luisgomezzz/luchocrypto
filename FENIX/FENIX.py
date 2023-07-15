@@ -18,7 +18,7 @@ BOLD    = "\033[;1m"
 REVERSE = "\033[;7m"
 YELLOW = "\33[33m"
 
-sys.stdout.write(YELLOW) 
+sys.stdout.write(BLUE) 
 
 md.printandlog(cons.nombrelog,"FENIX BB")
 posiciones={}

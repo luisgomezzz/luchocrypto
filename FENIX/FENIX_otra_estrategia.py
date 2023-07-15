@@ -18,9 +18,9 @@ BOLD    = "\033[;1m"
 REVERSE = "\033[;7m"
 YELLOW = "\33[33m"
 
-sys.stdout.write(BLUE) 
+sys.stdout.write(YELLOW) 
 
-md.printandlog(cons.nombrelog,"FENIX SANTA")
+md.printandlog(cons.nombrelog,"FENIX_otra_estrategia")
 posiciones={}
 
 def actualiza_trailing_stop(symbol):
@@ -40,7 +40,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = md.estrategia_santa(symbol) 
+            data = md.sigo_variacion_bitcoin(symbol) 
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -63,7 +63,6 @@ def actualiza_trailing_stop(symbol):
                         except:
                             trailing_stop_id_anterior=trailing_stop_id
                             pass
-        sleep(60) 
 
 # programa principal
 def main():
@@ -77,11 +76,10 @@ def main():
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
 
     #Lee archivo de mmonedas filtradas
-    listamonedas= ['BCHUSDT', 'XRPUSDT', 'EOSUSDT', 'LTCUSDT', 'TRXUSDT', 'ETCUSDT', 'LINKUSDT', 'XLMUSDT', 'ADAUSDT', 'BNBUSDT', 'ATOMUSDT', 'ALGOUSDT', 
-         'KNCUSDT', 'COMPUSDT', 'DOGEUSDT', 'KAVAUSDT', 'WAVESUSDT', 'MKRUSDT', 'SNXUSDT', 'DOTUSDT', 'CRVUSDT', 'SOLUSDT', 'STORJUSDT', 'UNIUSDT', 
-         'AVAXUSDT', 'FTMUSDT', 'TOMOUSDT', 'NEARUSDT', 'AAVEUSDT', 'FILUSDT', 'MATICUSDT', 'AXSUSDT', 'SANDUSDT', 'XEMUSDT', 'MANAUSDT', 'LINAUSDT', 
-         'MTLUSDT', '1000SHIBUSDT', 'MASKUSDT', 'DYDXUSDT', '1000XECUSDT', 'GALAUSDT', 'FLOWUSDT', 'GMTUSDT', 'APEUSDT', 'OPUSDT', 'INJUSDT', 'LDOUSDT', 
-         'APTUSDT', 'FETUSDT', 'RNDRUSDT', 'AGIXUSDT', 'PHBUSDT', 'CFXUSDT', 'STXUSDT', 'LQTYUSDT', 'ARBUSDT', 'SUIUSDT', '1000PEPEUSDT', 'XVGUSDT']
+    listamonedas= ['XRPUSDT','EOSUSDT','XLMUSDT','ADAUSDT','ALGOUSDT','DOGEUSDT','KAVAUSDT','CRVUSDT',
+'STORJUSDT','FTMUSDT','MATICUSDT','SANDUSDT','MANAUSDT','GMTUSDT','PHBUSDT','STXUSDT',
+'LQTYUSDT','SUIUSDT'
+]
     
     try:
 
@@ -113,7 +111,7 @@ def main():
 
                 try:
 
-                    data = md.estrategia_santa(symbol)
+                    data = md.sigo_variacion_bitcoin(symbol)
                     
                     # CREA POSICION
                     side=''
