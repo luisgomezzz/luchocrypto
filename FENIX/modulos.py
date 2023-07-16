@@ -470,7 +470,7 @@ def estrategia_bb(symbol,tp_flag=True):
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
     data['variacion'] = ((btc_data['Close'].rolling(30).max()/btc_data['Close'].rolling(30).min())-1)*100
-    data['n_atr'] = 5 # para el trailing stop
+    data['n_atr'] = 50 # para el trailing stop
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
@@ -564,7 +564,7 @@ def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = T
     data_btc = obtiene_historial('BTCUSDT',timeframe)
     data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
     data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
-    data.n_atr = 1.5
+    data.n_atr = 50
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
     data['signal'] = np.where(
         (data_btc.Close >= data_btc.maximo.shift(1))
