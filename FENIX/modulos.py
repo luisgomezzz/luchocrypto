@@ -560,41 +560,47 @@ def estrategia_santa(symbol,tp_flag = True):
 
 def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = True):
     # Si bitcoin varía en un porc% se entra al mercado con symbol para seguir la tendencia y obtener ganancias.
-    data = obtiene_historial(symbol,timeframe)
-    data_btc = obtiene_historial('BTCUSDT',timeframe)
-    data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
-    data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
-    data.n_atr = 50
-    data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
-    data['signal'] = np.where(
-        (data_btc.Close >= data_btc.maximo.shift(1))
-        &(data_btc.Close >= data_btc.minimo.shift(1)*(1+porc/100))
-        ,1,
-        np.where(
-            (data_btc.Close  <= data_btc.minimo.shift(1))
-            &(data_btc.Close <= data_btc.maximo.shift(1)*(1-porc/100))        
-            ,-1,
-            0
-        )
-    )  
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close+data.atr,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close-data.atr,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close-1.5*data.atr,  
-        np.where(
-            data.signal == -1,
-            data.Close+1.5*data.atr,
-            0
-        )
-    )    
-    return data
+    try:
+        data = obtiene_historial(symbol,timeframe)
+        data_btc = obtiene_historial('BTCUSDT',timeframe)
+        data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
+        data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
+        data.n_atr = 50
+        data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
+        data['signal'] = np.where(
+            (data_btc.Close >= data_btc.maximo.shift(1))
+            &(data_btc.Close >= data_btc.minimo.shift(1)*(1+porc/100))
+            ,1,
+            np.where(
+                (data_btc.Close  <= data_btc.minimo.shift(1))
+                &(data_btc.Close <= data_btc.maximo.shift(1)*(1-porc/100))        
+                ,-1,
+                0
+            )
+        )  
+        data['take_profit'] =   np.where(
+                                tp_flag,np.where(
+                                data.signal == 1,
+                                data.Close+data.atr,
+                                np.where(
+                                        data.signal == -1,
+                                        data.Close-data.atr,  
+                                        0
+                                        )
+                                ),np.NaN
+                                        )
+        data['stop_loss'] = np.where(
+            data.signal == 1,
+            data.Close-1.5*data.atr,  
+            np.where(
+                data.signal == -1,
+                data.Close+1.5*data.atr,
+                0
+            )
+        )    
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass   
