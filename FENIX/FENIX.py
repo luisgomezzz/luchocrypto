@@ -33,7 +33,9 @@ if estrategia_name=='estrategia_santa':
     sys.stdout.write(GREEN)
 if estrategia_name=='sigo_variacion_bitcoin':
     sys.stdout.write(YELLOW)    
-md.printandlog(cons.nombrelog, estrategia_name)        
+
+md.printandlog(cons.nombrelog, estrategia_name)   
+
 def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_bb':
         data = md.estrategia_bb(symbol)
@@ -42,6 +44,7 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='sigo_variacion_bitcoin':
         data = md.sigo_variacion_bitcoin(symbol)
     return data
+
 posiciones={}
 
 def actualiza_trailing_stop(symbol):

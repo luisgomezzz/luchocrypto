@@ -563,17 +563,18 @@ def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = T
     try:
         data = obtiene_historial(symbol,timeframe)
         data_btc = obtiene_historial('BTCUSDT',timeframe)
-        data_btc['maximo'] = data_btc['Close'].rolling(ventana).max()
-        data_btc['minimo'] = data_btc['Close'].rolling(ventana).min()
+        data['close_btc'] = data_btc.Close
+        data['maximo_btc'] = data['close_btc'].rolling(ventana).max()
+        data['minimo_btc'] = data['close_btc'].rolling(ventana).min()
         data.n_atr = 50
         data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
         data['signal'] = np.where(
-            (data_btc.Close >= data_btc.maximo.shift(1))
-            &(data_btc.Close >= data_btc.minimo.shift(1)*(1+porc/100))
+            (data.close_btc >= data.maximo_btc.shift(1))
+            &(data.close_btc >= data.minimo_btc.shift(1)*(1+porc/100))
             ,1,
             np.where(
-                (data_btc.Close  <= data_btc.minimo.shift(1))
-                &(data_btc.Close <= data_btc.maximo.shift(1)*(1-porc/100))        
+                (data.close_btc  <= data.minimo_btc.shift(1))
+                &(data.close_btc <= data.maximo_btc.shift(1)*(1-porc/100))        
                 ,-1,
                 0
             )
