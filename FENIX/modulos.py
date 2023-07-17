@@ -467,24 +467,25 @@ def backtesting(data, plot_flag=False):
 
 def estrategia_bb(symbol,tp_flag=True):
     timeframe = '15m'
+    ventana = 2
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
-    data['variacion_btc'] = ((btc_data['Close'].rolling(2).max()/btc_data['Close'].rolling(2).min())-1)*100
+    data['variacion_btc'] = ((btc_data['Close'].rolling(ventana).max()/btc_data['Close'].rolling(ventana).min())-1)*100
     data['n_atr'] = 50 # para el trailing stop
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
     data['signal'] = np.where(
-        (data.ema20 > data.ema50) 
-        &(data.ema50 > data.ema200) 
+         (data.ema20.shift(1) > data.ema50.shift(1)) 
+        &(data.ema50.shift(1) > data.ema200.shift(1)) 
         &(data.Close.shift(2) < data.lower.shift(2))
         &(data.Close.shift(1) > data.lower.shift(1))
-        &(data.variacion_btc < 0.8)
+        &(data.variacion_btc.shift(1) < 0.2)        
         ,1,
         np.where(
-            (data.ema20 < data.ema50) 
-            &(data.ema50 < data.ema200)
+            (data.ema20.shift(1) < data.ema50.shift(1)) 
+            &(data.ema50.shift(1) < data.ema200.shift(1))
             &(data.Close.shift(2) > data.upper.shift(2))
             &(data.Close.shift(1) < data.upper.shift(1))
-            &(data.variacion_btc < 0.8)
+            &(data.variacion_btc.shift(1) < 0.2)
             ,-1,
             0
         )
@@ -509,10 +510,10 @@ def estrategia_bb(symbol,tp_flag=True):
             0
         )
     )
-    if symbol != 'XRPUSDT':
-        data['signal']=0
-        data['take_profit']=0
-        data['stop_loss']=0
+    #if symbol != 'XRPUSDT':
+    #    data['signal']=0
+    #    data['take_profit']=0
+    #    data['stop_loss']=0
     return data
 
 def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = True):
