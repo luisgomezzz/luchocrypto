@@ -582,20 +582,20 @@ def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = T
         data['take_profit'] =   np.where(
                                 tp_flag,np.where(
                                 data.signal == 1,
-                                data.Close+data.atr,
+                                data.Close + 3*data.atr,
                                 np.where(
                                         data.signal == -1,
-                                        data.Close-data.atr,  
+                                        data.Close - 3*data.atr,  
                                         0
                                         )
                                 ),np.NaN
                                         )
         data['stop_loss'] = np.where(
             data.signal == 1,
-            data.Close-1.5*data.atr,  
+            data.Close - 1.5*data.atr,  
             np.where(
                 data.signal == -1,
-                data.Close+1.5*data.atr,
+                data.Close + 1.5*data.atr,
                 0
             )
         )    
