@@ -515,7 +515,7 @@ def estrategia_bb(symbol,tp_flag=True):
         data['stop_loss']=0
     return data
 
-def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = True):
+def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = True):
     # Si bitcoin varía en un porc% se entra al mercado con symbol para seguir la tendencia y obtener ganancias.
     try:
         data = obtiene_historial(symbol,timeframe)
@@ -526,12 +526,12 @@ def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = T
         data.n_atr = 50
         data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
         data['signal'] = np.where(
-            (data.close_btc >= data.maximo_btc.shift(1))
-            &(data.close_btc >= data.minimo_btc.shift(1)*(1+porc/100))
+            (data.close_btc.shift(1) >= data.maximo_btc.shift(2))
+            &(data.close_btc.shift(1) >= data.minimo_btc.shift(2)*(1+porc/100))
             ,1,
             np.where(
-                (data.close_btc  <= data.minimo_btc.shift(1))
-                &(data.close_btc <= data.maximo_btc.shift(1)*(1-porc/100))        
+                (data.close_btc.shift(1)  <= data.minimo_btc.shift(2))
+                &(data.close_btc.shift(1) <= data.maximo_btc.shift(2)*(1-porc/100))        
                 ,-1,
                 0
             )
