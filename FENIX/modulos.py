@@ -524,7 +524,7 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         data['maximo_btc'] = data['close_btc'].rolling(ventana).max()
         data['minimo_btc'] = data['close_btc'].rolling(ventana).min()
         data.n_atr = 50
-        data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
+        data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
         data['signal'] = np.where(
             (data.close_btc.shift(1) >= data.maximo_btc.shift(2))
             &(data.close_btc.shift(1) >= data.minimo_btc.shift(2)*(1+porc/100))
