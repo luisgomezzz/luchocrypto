@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_bb','estrategia_santa', 'sigo_variacion_bitcoin'],
+                choices=['estrategia_bb', 'sigo_variacion_bitcoin'],
             ),
 ]
 answers = inquirer.prompt(questions)

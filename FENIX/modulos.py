@@ -466,25 +466,25 @@ def backtesting(data, plot_flag=False):
     return output
 
 def estrategia_bb(symbol,tp_flag=True):
-    timeframe = '1m'
+    timeframe = '15m'
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
-    data['variacion'] = ((btc_data['Close'].rolling(30).max()/btc_data['Close'].rolling(30).min())-1)*100
+    data['variacion_btc'] = ((btc_data['Close'].rolling(2).max()/btc_data['Close'].rolling(2).min())-1)*100
     data['n_atr'] = 50 # para el trailing stop
-    data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
     data['signal'] = np.where(
         (data.ema20 > data.ema50) 
         &(data.ema50 > data.ema200) 
         &(data.Close.shift(2) < data.lower.shift(2))
-        &(data.Close.shift(1) > data.lower.shift(1)) 
-        &(data.variacion < 0.8)
+        &(data.Close.shift(1) > data.lower.shift(1))
+        &(data.variacion_btc < 0.8)
         ,1,
         np.where(
             (data.ema20 < data.ema50) 
             &(data.ema50 < data.ema200)
             &(data.Close.shift(2) > data.upper.shift(2))
-            &(data.Close.shift(1) < data.upper.shift(1))      
-            &(data.variacion < 0.8)
+            &(data.Close.shift(1) < data.upper.shift(1))
+            &(data.variacion_btc < 0.8)
             ,-1,
             0
         )
@@ -492,70 +492,27 @@ def estrategia_bb(symbol,tp_flag=True):
     data['take_profit'] = np.where(
                                 tp_flag,np.where(
                                             data.signal == 1,
-                                            data.Close + data.atr,
+                                            data.Close + 2*data.atr,
                                             np.where(
                                                 data.signal == -1,
-                                                data.Close - data.atr,
+                                                data.Close - 2*data.atr,
                                                 0
                                                 )   
                                             ),np.NaN
                                 )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close-1.5*data.atr,  
+        data.Close - 1.5*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close+1.5*data.atr,
+            data.Close + 1.5*data.atr,
             0
         )
     )
-    return data
-
-def estrategia_santa(symbol,tp_flag = True):
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '15m'
-    data = obtiene_historial(symbol,timeframe)
-    btc_data = obtiene_historial("BTCUSDT",timeframe)
-    data['variacion'] = ((btc_data['High'].rolling(4).max()/btc_data['Low'].rolling(4).min())-1)*100    
-    data['maximo'] = data['Close'].rolling(30).max()
-    data['minimo'] = data['Close'].rolling(30).min()
-    data['n_atr'] = 1.5 # para el trailing stop
-    data['signal'] = np.where(
-        (data.maximo*0.95 >= data.Close) 
-        &(data.Close.shift(1) > data.lower.shift(1))
-        &(data.Close <= data.minimo.shift(1))
-        &(data.variacion < 0.8)
-        ,1,
-        np.where(
-            (data.minimo*1.05 <= data.Close)
-            &(data.Close.shift(1) < data.upper.shift(1))
-            &(data.Close >= data.maximo.shift(1))
-            &(data.variacion < 0.8)
-            ,-1,
-            0
-        )
-    )    
-    data['take_profit'] = np.where(
-                                tp_flag,
-                                np.where(
-                                        data.signal == 1,
-                                        data.Close+data.atr,
-                                        np.where(
-                                                data.signal == -1,
-                                                data.Close-data.atr,  
-                                                0
-                                                )
-                                        ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close-1.5*data.atr,  
-        np.where(
-            data.signal == -1,
-            data.Close+1.5*data.atr,
-            0
-        )
-    )
+    if symbol != 'XRPUSDT':
+        data['signal']=0
+        data['take_profit']=0
+        data['stop_loss']=0
     return data
 
 def sigo_variacion_bitcoin(symbol,timeframe='1m',porc=0.8,ventana=30,tp_flag = True):
