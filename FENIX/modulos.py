@@ -189,9 +189,7 @@ def coingeckoinfo (par,dato='market_cap'):
         valor = 0
     return valor
 
-def get_bollinger_bands(df):
-    mult = 2.0
-    length = 20
+def get_bollinger_bands(df,mult = 2.0,length = 20):
     # calcular indicadores
     close = df['Close']
     basis = talib.SMA(close, length)
@@ -233,8 +231,6 @@ def obtiene_historial(symbol,timeframe):
             data['ema50']=data.ta.ema(50)
             data['ema200']=data.ta.ema(200)
             data['atr']=ta.atr(data.High, data.Low, data.Close)        
-            data = get_bollinger_bands(data)
-            data['avg_volume'] = data['Volume'].rolling(20).mean()   
             data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. En la estrategia se pone el valor real.
         except KeyboardInterrupt:        
             salida_solicitada()
@@ -467,25 +463,24 @@ def backtesting(data, plot_flag=False):
 
 def estrategia_bb(symbol,tp_flag=True):
     timeframe = '15m'
-    ventana = 2
+    ventana = 7
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
     data['variacion_btc'] = ((btc_data['Close'].rolling(ventana).max()/btc_data['Close'].rolling(ventana).min())-1)*100
     data['n_atr'] = 50 # para el trailing stop
-    data['atr']=ta.atr(data.High, data.Low, data.Close, length=2)
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
+    get_bollinger_bands(data,mult = 1.5,length = 20)
     data['signal'] = np.where(
          (data.ema20.shift(1) > data.ema50.shift(1)) 
         &(data.ema50.shift(1) > data.ema200.shift(1)) 
-        &(data.Close.shift(2) < data.lower.shift(2))
-        &(data.Close.shift(1) > data.lower.shift(1))
-        &(data.variacion_btc.shift(1) < 0.2)        
+        &(data.Close.shift(1) < data.lower.shift(1))
+        &(data.variacion_btc.shift(1) < 0.8)        
         ,1,
         np.where(
-            (data.ema20.shift(1) < data.ema50.shift(1)) 
+             (data.ema20.shift(1) < data.ema50.shift(1)) 
             &(data.ema50.shift(1) < data.ema200.shift(1))
-            &(data.Close.shift(2) > data.upper.shift(2))
-            &(data.Close.shift(1) < data.upper.shift(1))
-            &(data.variacion_btc.shift(1) < 0.2)
+            &(data.Close.shift(1) > data.upper.shift(1))
+            &(data.variacion_btc.shift(1) < 0.8)
             ,-1,
             0
         )
@@ -493,20 +488,20 @@ def estrategia_bb(symbol,tp_flag=True):
     data['take_profit'] = np.where(
                                 tp_flag,np.where(
                                             data.signal == 1,
-                                            data.Close + 2*data.atr,
+                                            data.upper,
                                             np.where(
                                                 data.signal == -1,
-                                                data.Close - 2*data.atr,
+                                                data.lower,
                                                 0
                                                 )   
                                             ),np.NaN
                                 )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - 1.5*data.atr,  
+        data.Close - 1*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close + 1.5*data.atr,
+            data.Close + 1*data.atr,
             0
         )
     )
