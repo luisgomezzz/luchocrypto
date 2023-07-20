@@ -558,3 +558,58 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass   
+
+def estrategia_santa(symbol,tp_flag = True):
+    np.seterr(divide='ignore', invalid='ignore')
+    timeframe = '15m'
+    ventana = 2
+    porc_alto = 5
+    porc_bajo = 3
+    ## variacion de btc aprox
+    data = obtiene_historial(symbol,timeframe)
+    btc_data = obtiene_historial("BTCUSDT",timeframe)
+    data['variacion_btc'] = ((btc_data['High'].rolling(ventana).max()/btc_data['Low'].rolling(ventana).min())-1)*100 # aprox
+    #variacion de symbol
+    data['maximo'] = data['Close'].rolling(ventana).max()
+    data['minimo'] = data['Close'].rolling(ventana).min()
+    data.n_atr = 1.5
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
+    data['macdh']=ta.macd(data.Close)['MACDh_12_26_9']
+    data['signal'] = np.where(
+         (data.Close.shift(1) >= data.maximo.shift(2)) # para que solo sea reentrada
+        &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) # variacion desde
+        &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) # variacion hasta
+        &(data.variacion_btc.shift(1) < 1) # bitcoin variacion pequeña
+        #&(data.macdh.shift(1) < 0)
+        ,-1,
+        np.where(
+             (data.Close.shift(1) <= data.minimo.shift(2))
+            &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100))
+            &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100))
+            &(data.variacion_btc.shift(1) < 1)
+            #&(data.macdh.shift(1) > 0)
+            ,1,
+            0
+        )
+    )  
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close + 2*data.atr,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close - 2*data.atr,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close - 50*data.atr,  
+        np.where(
+            data.signal == -1,
+            data.Close + 50*data.atr,
+            0
+        )
+    )    
+    return data    
