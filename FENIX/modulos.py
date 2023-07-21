@@ -560,6 +560,7 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         pass   
 
 def estrategia_santa(symbol,tp_flag = True):
+    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
     timeframe = '15m'
     ventana = 2
@@ -605,14 +606,15 @@ def estrategia_santa(symbol,tp_flag = True):
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - 50*data.atr,  
+        data.Close - 2*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close + 50*data.atr,
+            data.Close + 2*data.atr,
             0
         )
     )    
-    if symbol not in ('FLOWUSDT','SUIUSDT'):
+    # de las monedas de "lista_monedas_filtradas.txt" se filtran las que están probadas mediante backtesting.
+    if symbol not in ('FLOWUSDT','SUIUSDT','MAVUSDT','1INCHUSDT'):
         data.signal=0
         data.take_profit=0
         data.stop_loss = 0
