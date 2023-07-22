@@ -596,20 +596,20 @@ def estrategia_santa(symbol,tp_flag = True):
     data['take_profit'] =   np.where(
                             tp_flag,np.where(
                             data.signal == 1,
-                            data.Close + 3*data.atr,
+                            data.Close + 5*data.atr,
                             np.where(
                                     data.signal == -1,
-                                    data.Close - 3*data.atr,  
+                                    data.Close - 5*data.atr,  
                                     0
                                     )
                             ),np.NaN
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - 1.5*data.atr,  
+        data.Close - 5*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close + 1.5*data.atr,
+            data.Close + 5*data.atr,
             0
         )
     )    
