@@ -519,7 +519,7 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         data['close_btc'] = data_btc.Close
         data['maximo_btc'] = data['close_btc'].rolling(ventana).max()
         data['minimo_btc'] = data['close_btc'].rolling(ventana).min()
-        data.n_atr = 50
+        data.n_atr = 1.5
         data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
         data['signal'] = np.where(
             (data.close_btc.shift(1) >= data.maximo_btc.shift(2))
@@ -545,10 +545,10 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
                                         )
         data['stop_loss'] = np.where(
             data.signal == 1,
-            data.Close - 1.5*data.atr,  
+            data.Close - 5*data.atr,  # se exagera colocando 5 ya que el stop lo realiza el trailing
             np.where(
                 data.signal == -1,
-                data.Close + 1.5*data.atr,
+                data.Close + 5*data.atr,
                 0
             )
         )    
@@ -568,11 +568,11 @@ def estrategia_santa(symbol,tp_flag = True):
     porc_bajo = 3
     ## variacion de btc aprox
     data = obtiene_historial(symbol,timeframe)
-    btc_data = obtiene_historial("BTCUSDT",timeframe)
-    data['variacion_btc'] = ((btc_data['High'].rolling(ventana).max()/btc_data['Low'].rolling(ventana).min())-1)*100 # aprox
+    #btc_data = obtiene_historial("BTCUSDT",timeframe)
+    #data['variacion_btc'] = ((btc_data['High'].rolling(ventana).max()/btc_data['Low'].rolling(ventana).min())-1)*100 # aprox
     #variacion de symbol
-    data['maximo'] = data['Close'].rolling(ventana).max()
-    data['minimo'] = data['Close'].rolling(ventana).min()
+    data['maximo'] = data['High'].rolling(ventana).max()
+    data['minimo'] = data['Low'].rolling(ventana).min()
     data.n_atr = 1.5
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
     get_bollinger_bands(data)
@@ -580,14 +580,14 @@ def estrategia_santa(symbol,tp_flag = True):
          (data.Close.shift(1) >= data.maximo.shift(2)) # para que solo sea reentrada
         &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) # variacion desde
         &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) # variacion hasta
-        &(data.variacion_btc.shift(1) < 0.8) # bitcoin variacion pequeña
+        #&(data.variacion_btc.shift(1) < 0.8) # bitcoin variacion pequeña
         &(data.Close.shift(1) > data.upper.shift(1))
         ,-1,
         np.where(
              (data.Close.shift(1) <= data.minimo.shift(2))
             &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100))
             &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100))
-            &(data.variacion_btc.shift(1) < 0.8)
+            #&(data.variacion_btc.shift(1) < 0.8)
             &(data.Close.shift(1) < data.lower.shift(1))
             ,1,
             0
@@ -596,26 +596,21 @@ def estrategia_santa(symbol,tp_flag = True):
     data['take_profit'] =   np.where(
                             tp_flag,np.where(
                             data.signal == 1,
-                            data.Close + 5*data.atr,
+                            data.Close + 3*data.atr,
                             np.where(
                                     data.signal == -1,
-                                    data.Close - 5*data.atr,  
+                                    data.Close - 3*data.atr,  
                                     0
                                     )
                             ),np.NaN
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - 5*data.atr,  
+        data.Close - 5*data.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
         np.where(
             data.signal == -1,
             data.Close + 5*data.atr,
             0
         )
     )    
-    # de las monedas de "lista_monedas_filtradas.txt" se filtran las que están probadas mediante backtesting.
-    if symbol not in ('FLOWUSDT','SUIUSDT','1INCHUSDT'):
-        data.signal=0
-        data.take_profit=0
-        data.stop_loss = 0
     return data    
