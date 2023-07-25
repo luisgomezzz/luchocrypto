@@ -552,6 +552,15 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
                 0
             )
         )    
+        # de las monedas de "lista_monedas_filtradas.txt" se filtran las que están probadas mediante backtesting.
+        if symbol not in ('KNCUSDT',
+                        'OMGUSDT',
+                        'IMXUSDT',
+                        'MAGICUSDT',
+                        'SUIUSDT'):
+            data.signal=0
+            data.take_profit=0
+            data.stop_loss = 0            
         return data
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
