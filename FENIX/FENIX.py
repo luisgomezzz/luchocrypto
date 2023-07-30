@@ -22,19 +22,19 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_triangulos','estrategia_santa'],
+                choices=['estrategia_santa','estrategia_triangulos'],
             ),
 ]
 answers = inquirer.prompt(questions)
 estrategia_name=answers['Estrategia']
-if estrategia_name=='estrategia_bb':
-    sys.stdout.write(BLUE)
 if estrategia_name=='estrategia_santa':
     sys.stdout.write(GREEN)
-if estrategia_name=='sigo_variacion_bitcoin':
-    sys.stdout.write(YELLOW)
 if estrategia_name=='estrategia_triangulos':
     sys.stdout.write(CYAN)    
+
+lista_monedas_filtradas = estrategia_name+"_symbols.txt"
+f = open(os.path.join(cons.pathroot, lista_monedas_filtradas), 'a',encoding="utf-8")
+f.close()     
 
 md.printandlog(cons.nombrelog, estrategia_name)   
 
@@ -105,7 +105,7 @@ def main():
 
     #Lee archivo de mmonedas filtradas
     listamonedas=[]
-    with open(cons.pathroot+"lista_monedas_filtradas.txt", 'r') as fp:
+    with open(cons.pathroot+lista_monedas_filtradas, 'r') as fp:
         for line in fp:
             x = line[:-1]
             listamonedas.append(x)
