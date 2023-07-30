@@ -705,20 +705,28 @@ def estrategia_triangulos(symbol,tp_flag = True,print_lines_flag = False):
             #if print_lines_flag:
             #    print(f"Candleid: {candleid} - linea inferior {df.iloc[candleid].lower_line}")
             #   señales
-            if (df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
+            if (    df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
                 and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line
+                and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
+                and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line
                 and df.iloc[candleid-1].lower_line!=0
                 and df.iloc[candleid-1].upper_line!=0
+                and df.iloc[candleid-2].lower_line!=0
+                and df.iloc[candleid-2].upper_line!=0
                 ):
                 df.loc[[candleid],"signal"] = -1
                 if print_lines_flag:
                     print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
                     print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
                     print(df.iloc[candleid-1].Close)
-            elif    (df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
+            elif    (   df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
                     and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line
+                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
+                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line
                     and df.iloc[candleid-1].lower_line!=0
                     and df.iloc[candleid-1].upper_line!=0
+                    and df.iloc[candleid-2].lower_line!=0
+                    and df.iloc[candleid-2].upper_line!=0
                     ):
                 df.loc[[candleid],"signal"] = 1
                 if print_lines_flag:
@@ -728,10 +736,10 @@ def estrategia_triangulos(symbol,tp_flag = True,print_lines_flag = False):
     df['take_profit'] =   np.where(
                             tp_flag,np.where(
                             df.signal == 1,
-                            df.Close + 3*df.atr,
+                            df.Close + 5*df.atr,
                             np.where(
                                     df.signal == -1,
-                                    df.Close - 3*df.atr,  
+                                    df.Close - 5*df.atr,  
                                     0
                                     )
                             ),np.NaN
