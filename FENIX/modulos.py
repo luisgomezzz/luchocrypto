@@ -615,7 +615,7 @@ def estrategia_santa(symbol,tp_flag = True):
     )    
     return data    
 
-def estrategia_triangulos(symbol,tp_flag = True,print_lines_flag = False):
+def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     from scipy.stats import linregress
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
@@ -746,10 +746,10 @@ def estrategia_triangulos(symbol,tp_flag = True,print_lines_flag = False):
                                     )
     df['stop_loss'] = np.where(
         df.signal == 1,
-        df.Close - 5*df.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
+        df.Close - 1.5*df.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
         np.where(
             df.signal == -1,
-            df.Close + 5*df.atr,
+            df.Close + 1.5*df.atr,
             0
         )
     ) 
