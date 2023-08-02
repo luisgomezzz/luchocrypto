@@ -565,7 +565,7 @@ def estrategia_santa(symbol,tp_flag = True):
     timeframe = '15m'
     ventana = 2
     porc_alto = 5
-    porc_bajo = 3
+    porc_bajo = 4
     ## variacion de btc aprox
     data = obtiene_historial(symbol,timeframe)
     #btc_data = obtiene_historial("BTCUSDT",timeframe)
@@ -736,10 +736,10 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     df['take_profit'] =   np.where(
                             tp_flag,np.where(
                             df.signal == 1,
-                            df.Close + 5*df.atr,
+                            df.Close + 3*df.atr,
                             np.where(
                                     df.signal == -1,
-                                    df.Close - 5*df.atr,  
+                                    df.Close - 3*df.atr,  
                                     0
                                     )
                             ),np.NaN
