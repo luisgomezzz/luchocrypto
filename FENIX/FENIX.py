@@ -32,10 +32,6 @@ if estrategia_name=='estrategia_santa':
 if estrategia_name=='estrategia_triangulos':
     sys.stdout.write(CYAN)    
 
-lista_monedas_filtradas = estrategia_name+"_symbols.txt"
-f = open(os.path.join(cons.pathroot, lista_monedas_filtradas), 'a',encoding="utf-8")
-f.close()     
-
 md.printandlog(cons.nombrelog, estrategia_name)   
 
 def dataframe_estrategia(symbol,estrategia_name):
@@ -50,6 +46,7 @@ def dataframe_estrategia(symbol,estrategia_name):
     return data
 
 posiciones={}
+lista_monedas_filtradas = estrategia_name+"_symbols.txt"
 
 def actualiza_trailing_stop(symbol):
     trailing_stop_price = 0.0
@@ -103,13 +100,6 @@ def main():
     print("Saldo: "+str(md.truncate(balancetotal,2)))
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
 
-    #Lee archivo de mmonedas filtradas
-    listamonedas=[]
-    with open(cons.pathroot+lista_monedas_filtradas, 'r') as fp:
-        for line in fp:
-            x = line[:-1]
-            listamonedas.append(x)
-    
     try:
 
         while True:
@@ -120,7 +110,17 @@ def main():
             cantidad_posiciones = dic_configuracion['cantidad_posiciones']
             # Lee archivo de posiciones
             with open(cons.pathroot+"posiciones.json","r") as j:
-                posiciones=json.load(j)        
+                posiciones=json.load(j)    
+
+            #Lee archivo de mmonedas filtradas
+            listamonedas=[]            
+            f = open(os.path.join(cons.pathroot, lista_monedas_filtradas), 'a',encoding="utf-8")
+            f.close()      
+            with open(cons.pathroot+lista_monedas_filtradas, 'r') as fp:
+                for line in fp:
+                    x = line[:-1]
+                    listamonedas.append(x)
+
             for symbol in listamonedas:
                 # para calcular tiempo de vuelta completa                
                 if vueltas == 0:
