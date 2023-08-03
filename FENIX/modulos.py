@@ -676,17 +676,11 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
         slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
         slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)            
         if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.00001 and slmax<-0.0001:
-            #print(f"{symbol} - {candleid} - triangulo desc")
             df.loc[[candleid],'signal'] = 2
-            #break
         if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and abs(slmax)<=0.00001:
-            #print(f"{symbol} - {candleid} - triangulo asc")
             df.loc[[candleid],'signal'] = 3
-            #break
         if abs(rmax)>=0.9 and abs(rmin)>=0.9 and slmin>=0.0001 and slmax<=-0.0001:
-            #print(f"{symbol} - {candleid} - triangulo comun")
             df.loc[[candleid],'signal'] = 4
-            #break  
         if df.iloc[candleid].signal in (2,3,4):
             # Ecuación de la línea superior
             xssup = xxmax
@@ -694,45 +688,32 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             pendiente = (yssup[1]-yssup[0])/(xssup[1]-xssup[0])
             intersecciony = yssup[0]-pendiente*xssup[0]
             df.loc[[candleid],"upper_line"]=pendiente*candleid+intersecciony      
-            #if print_lines_flag:  
-            #    print(f"Candleid: {candleid} - linea superior {df.iloc[candleid].upper_line}")        
             # Ecuación de la línea inferior
             xsinf = xxmin
             ysinf = slmin*xxmin + intercmin
             pendiente = (ysinf[1]-ysinf[0])/(xsinf[1]-xsinf[0])
             intersecciony = ysinf[0]-pendiente*xsinf[0]
             df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
-            #if print_lines_flag:
-            #    print(f"Candleid: {candleid} - linea inferior {df.iloc[candleid].lower_line}")
+            
             #   señales
-            if (    df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
-                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line
-                and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
-                and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line
+            if (    df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line - df.iloc[candleid-1].atr/2
+                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line - df.iloc[candleid-1].atr/2
                 and df.iloc[candleid-1].lower_line!=0
                 and df.iloc[candleid-1].upper_line!=0
-                and df.iloc[candleid-2].lower_line!=0
-                and df.iloc[candleid-2].upper_line!=0
                 ):
                 df.loc[[candleid],"signal"] = -1
-                if print_lines_flag:
-                    print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
-                    print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
-                    print(df.iloc[candleid-1].Close)
-            elif    (   df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
-                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line
-                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
-                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line
+            elif    (   df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line + df.iloc[candleid-1].atr/2
+                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line + df.iloc[candleid-1].atr/2
                     and df.iloc[candleid-1].lower_line!=0
                     and df.iloc[candleid-1].upper_line!=0
-                    and df.iloc[candleid-2].lower_line!=0
-                    and df.iloc[candleid-2].upper_line!=0
                     ):
                 df.loc[[candleid],"signal"] = 1
-                if print_lines_flag:
-                    print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
-                    print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
-                    print(df.iloc[candleid-1].Close)
+            
+            # imprimo lugares donde se da la condición
+            if print_lines_flag and df.iloc[candleid].signal in (1,-1):
+                print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
+                print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
+                print(f"Precio Close-1: {df.iloc[candleid-1].Close}")
     df['take_profit'] =   np.where(
                             tp_flag,np.where(
                             df.signal == 1,
@@ -747,9 +728,11 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     df['stop_loss'] = np.where(
         df.signal == 1,
         df.Close - 1.5*df.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
+        #df.lower_line,
         np.where(
             df.signal == -1,
             df.Close + 1.5*df.atr,
+            #df.upper_line,
             0
         )
     ) 
