@@ -696,16 +696,16 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
             
             #   señales
-            if (    df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line - df.iloc[candleid-1].atr/2
-                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line - df.iloc[candleid-1].atr/2
-                and df.iloc[candleid-1].lower_line!=0
-                and df.iloc[candleid-1].upper_line!=0
+            if (    df.iloc[candleid].Close < df.iloc[candleid].lower_line - df.iloc[candleid].atr/2
+                and df.iloc[candleid].Close < df.iloc[candleid].upper_line - df.iloc[candleid].atr/2
+                and df.iloc[candleid].lower_line!=0
+                and df.iloc[candleid].upper_line!=0
                 ):
                 df.loc[[candleid],"signal"] = -1
-            elif    (   df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line + df.iloc[candleid-1].atr/2
-                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line + df.iloc[candleid-1].atr/2
-                    and df.iloc[candleid-1].lower_line!=0
-                    and df.iloc[candleid-1].upper_line!=0
+            elif    (   df.iloc[candleid].Close > df.iloc[candleid].lower_line + df.iloc[candleid].atr/2
+                    and df.iloc[candleid].Close > df.iloc[candleid].upper_line + df.iloc[candleid].atr/2
+                    and df.iloc[candleid].lower_line!=0
+                    and df.iloc[candleid].upper_line!=0
                     ):
                 df.loc[[candleid],"signal"] = 1
             
