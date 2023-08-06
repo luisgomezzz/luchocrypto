@@ -243,7 +243,7 @@ def obtiene_historial(symbol,timeframe):
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f"Error leyendo historial {symbol}. Intento otra vez. \n")
+            print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
             pass  
     return data
 
@@ -696,18 +696,16 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
             
             #   señales
-            if (    df.iloc[candleid].Close < df.iloc[candleid].lower_line - df.iloc[candleid].atr/2
-                and df.iloc[candleid].Close < df.iloc[candleid].upper_line - df.iloc[candleid].atr/2
-                and df.iloc[candleid].lower_line!=0
-                and df.iloc[candleid].upper_line!=0
-                ):
-                df.loc[[candleid],"signal"] = -1
-            elif    (   df.iloc[candleid].Close > df.iloc[candleid].lower_line + df.iloc[candleid].atr/2
-                    and df.iloc[candleid].Close > df.iloc[candleid].upper_line + df.iloc[candleid].atr/2
-                    and df.iloc[candleid].lower_line!=0
-                    and df.iloc[candleid].upper_line!=0
-                    ):
-                df.loc[[candleid],"signal"] = 1
+                    # Confirmación para entrada larga (long)
+            if df.iloc[candleid].signal == 2 and df.iloc[candleid].Close > df.iloc[candleid].upper_line:
+                df.loc[[candleid], 'signal'] = 1
+
+            # Confirmación para entrada corta (short)
+            elif df.iloc[candleid].signal == 3 and df.iloc[candleid].Close < df.iloc[candleid].lower_line:
+                df.loc[[candleid], 'signal'] = -1
+            else:
+                df.loc[[candleid], 'signal'] = 0  # No se cumple la confirmación, se descarta la señal
+
             
             # imprimo lugares donde se da la condición
             if print_lines_flag and df.iloc[candleid].signal in (1,-1):
