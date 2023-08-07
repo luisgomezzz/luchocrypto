@@ -5,7 +5,7 @@ import asyncio
 par='API3USDT'
 distanciaentrecompensaciones = 1.7
 porcentajeentrada = 8
-lado='SELL'
+lado='BUY'
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 #san.trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
