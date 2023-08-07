@@ -438,7 +438,9 @@ class TrailingStrategy(Strategy):
                 trade.sl = min(trade.sl or np.inf,
                                self.data.Close[index] + atr[index] * self.data.n_atr[index])
 
-def backtesting(data, plot_flag=False):
+def backtesting(data, plot_flag=False,porcentajeentrada=100):
+    balance = 1000
+    size= 1000*porcentajeentrada/100
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
@@ -452,10 +454,10 @@ def backtesting(data, plot_flag=False):
                 else:
                     tp_value = self.data.take_profit[-1]
                 if self.data.signal[-1]==1:
-                    self.buy(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
+                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
                 elif self.data.signal[-1]==-1:
-                    self.sell(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
-    bt = Backtest(data, Fenix, cash=1000)
+                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+    bt = Backtest(data, Fenix, cash=balance)
     output = bt.run()
     if plot_flag:
         bt.plot()
@@ -560,12 +562,13 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         pass   
 
 def estrategia_santa(symbol,tp_flag = True):
+    estrategia_santa = 10
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
     timeframe = '15m'
     ventana = 2
-    porc_alto = 5
-    porc_bajo = 4
+    porc_alto = 10
+    porc_bajo = 5
     ## variacion de btc aprox
     data = obtiene_historial(symbol,timeframe)
     #btc_data = obtiene_historial("BTCUSDT",timeframe)
@@ -596,24 +599,24 @@ def estrategia_santa(symbol,tp_flag = True):
     data['take_profit'] =   np.where(
                             tp_flag,np.where(
                             data.signal == 1,
-                            data.Close + 3*data.atr,
+                            data.Close*1.01,
                             np.where(
                                     data.signal == -1,
-                                    data.Close - 3*data.atr,  
+                                    data.Close*0.99,  
                                     0
                                     )
                             ),np.NaN
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - 5*data.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
+        data.Close*0.87,    # se exagera colocando 5 ya que el stop lo realiza el trailing
         np.where(
             data.signal == -1,
-            data.Close + 5*data.atr,
+            data.Close*1.13,
             0
         )
     )    
-    return data    
+    return data ,estrategia_santa   
 
 def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     from scipy.stats import linregress

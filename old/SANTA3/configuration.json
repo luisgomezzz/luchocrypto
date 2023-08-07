@@ -6,7 +6,7 @@
     "cantidadcompensaciones": 4,
     "variaciontrigger": 5,
     "maximavariaciondiaria": 50,
-    "tradessimultaneos": 0,
+    "tradessimultaneos": 2,
     "distanciaentrecompensacionesalta": 1.7,
     "distanciaentrecompensacionesbaja": 1,
     "reservas": 2965,

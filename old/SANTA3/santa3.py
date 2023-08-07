@@ -83,10 +83,13 @@ def filtradodemonedas ():
     lista_de_monedas = ut.lista_de_monedas ()
     for par in lista_de_monedas:
         try:  
+            '''
             volumeOf24h=ut.volumeOf24h(par)
             capitalizacion=ut.capitalizacion(par)
             if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
                 dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
+            '''
+            dict_monedas_filtradas_aux={'AGLDUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 'CELOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 'IMXUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 'PENDLEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},'API3USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}}
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:

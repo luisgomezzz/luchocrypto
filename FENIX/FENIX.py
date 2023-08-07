@@ -35,15 +35,16 @@ if estrategia_name=='estrategia_triangulos':
 md.printandlog(cons.nombrelog, estrategia_name)   
 
 def dataframe_estrategia(symbol,estrategia_name):
+    porcentajeentrada=100
     if estrategia_name=='estrategia_bb':
         data = md.estrategia_bb(symbol)
     if estrategia_name=='estrategia_santa':
-        data = md.estrategia_santa(symbol)
+        data,porcentajeentrada = md.estrategia_santa(symbol)
     if estrategia_name=='sigo_variacion_bitcoin':
         data = md.sigo_variacion_bitcoin(symbol)
     if estrategia_name=='estrategia_triangulos':
         data = md.estrategia_triangulos(symbol)        
-    return data
+    return data, porcentajeentrada
 
 posiciones={}
 lista_monedas_filtradas = estrategia_name+"_symbols.txt"
@@ -65,7 +66,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = dataframe_estrategia(symbol,estrategia_name)
+            data,_ = dataframe_estrategia(symbol,estrategia_name)
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -140,7 +141,7 @@ def main():
 
                 try:
 
-                    data = dataframe_estrategia(symbol,estrategia_name)
+                    data,porcentajeentrada = dataframe_estrategia(symbol,estrategia_name)
                     
                     # CREA POSICION
                     side=''
@@ -155,7 +156,7 @@ def main():
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
                             md.sound()
                             md.sound() 
-                            md.crea_posicion(symbol,side,porcentajeentrada=100) 
+                            md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
