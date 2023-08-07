@@ -5130,3 +5130,32 @@ Encontrado. Pendiente: [0.63956153] - hora: 01/May/2023 03:41:17
 Encontrado. Pendiente: [0.63956153] - hora: 01/May/2023 03:56:19
 Encontrado. Pendiente: [0.6125562] - hora: 01/May/2023 04:41:25
 Encontrado. Pendiente: [0.6125562] - hora: 01/May/2023 04:56:28
+
+API3USDT BUY - Variación último soporte: 0.07% - Distancia soportada: 13.6%
+
+Par: API3USDT - Variación mecha: 6.41
+Trade - API3USDT - BUY - Hora:07/Aug/2023 05:29:00
+Balance: 544.73
+Porcentaje de entrada: 8
+Cantidad de compensaciones: 7
+Apalancamiento: 20
+EntryPrice: 1.199
+Quantity: 36.3
+distancia entre compensaciones: 1.7
+Porcentaje de pérdida: 13
+Incremento porcentual entre compensaciones: 30
+Compensación 1. Amount: 36.3 - Price: 1.178 - Volume: 42.761399999999995 - Total Volume: 86.2851
+Compensación 2. Amount: 47.1 - Price: 1.158 - Volume: 54.541799999999995 - Total Volume: 140.8269
+Compensación 3. Amount: 61.3 - Price: 1.137 - Volume: 69.6981 - Total Volume: 210.52499999999998
+Compensación 4. Amount: 79.7 - Price: 1.117 - Volume: 89.0249 - Total Volume: 299.5499
+Compensación 5. Amount: 103.6 - Price: 1.097 - Volume: 113.6492 - Total Volume: 413.1991
+Compensación 6. Amount: 134.7 - Price: 1.076 - Volume: 144.9372 - Total Volume: 558.1363
+Compensación 7. Amount: 175.2 - Price: 1.056 - Volume: 185.0112 - Total Volume: 743.1475
+Compensación 8. Amount: 227.7 - Price: 1.035 - Volume: 235.66949999999997 - Total Volume: 978.817
+Cancela última compensación (8)
+Cancelada. 
+Punto de atque sugerido. Cantidad: 2022.5999999999995. Precio: 1.035
+Ataque creado. Cantidadformateada: 2022.5. preciolimit: 1.035
+Precio Stop sugerido: 1.025519613539232
+
+*********************************************************************************************

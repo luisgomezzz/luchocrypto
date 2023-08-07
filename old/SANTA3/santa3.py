@@ -89,7 +89,14 @@ def filtradodemonedas ():
             if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
                 dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
             '''
-            dict_monedas_filtradas_aux={'AGLDUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 'CELOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 'IMXUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 'PENDLEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},'API3USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}}
+            dict_monedas_filtradas_aux={
+                                        'AGLDUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
+                                        'CELOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
+                                        'IMXUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
+                                        'PENDLEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
+                                        'API3USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
+                                        'BTCUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}
+                                        }
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
@@ -505,8 +512,9 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
                         print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                         salida = False
                 else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    salida = False
+                    #print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+                    #salida = False
+                    salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
                 salida = False
@@ -538,8 +546,9 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
                         salida = False
                         print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
                 else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    salida = False                    
+                    #print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+                    #salida = False
+                    salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
                 salida = False

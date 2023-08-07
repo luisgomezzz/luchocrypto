@@ -2,9 +2,9 @@ import sys
 sys.path.insert(1,'./')
 import santa3 as san
 import asyncio
-par='CTSIUSDT'
+par='API3USDT'
 distanciaentrecompensaciones = 1.7
-porcentajeentrada = 10
+porcentajeentrada = 8
 lado='SELL'
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
