@@ -576,7 +576,7 @@ def estrategia_santa(symbol,tp_flag = True):
     #variacion de symbol
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
-    data.n_atr = 1.5
+    data.n_atr = 50
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
     get_bollinger_bands(data)
     data['signal'] = np.where(
@@ -697,18 +697,35 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             pendiente = (ysinf[1]-ysinf[0])/(xsinf[1]-xsinf[0])
             intersecciony = ysinf[0]-pendiente*xsinf[0]
             df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
-            
+            # TENDENCIA
+            if df.iloc[candleid].ema20 > df.iloc[candleid].ema50 > df.iloc[candleid].ema200:
+                tendencia = 1
+            else: 
+                if df.iloc[candleid].ema20 < df.iloc[candleid].ema50 < df.iloc[candleid].ema200:
+                    tendencia = -1
+                else:
+                    tendencia = 0
             #   señales
-            if  (   df.iloc[candleid].Close > df.iloc[candleid].lower_line + df.iloc[candleid].atr/2
-                    and df.iloc[candleid].Close > df.iloc[candleid].upper_line + df.iloc[candleid].atr/2
-                    and df.iloc[candleid].lower_line!=0
-                    and df.iloc[candleid].upper_line!=0
+            if  (       df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
+                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line 
+                    and df.iloc[candleid-1].lower_line!=0
+                    and df.iloc[candleid-1].upper_line!=0
+                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
+                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
+                    and df.iloc[candleid-2].lower_line!=0
+                    and df.iloc[candleid-2].upper_line!=0
+                    and tendencia == 1
                 ):
                 df.loc[[candleid],"signal"] = 1
-            elif (    df.iloc[candleid].Close < df.iloc[candleid].lower_line - df.iloc[candleid].atr/2
-                and df.iloc[candleid].Close < df.iloc[candleid].upper_line - df.iloc[candleid].atr/2
-                and df.iloc[candleid].lower_line!=0
-                and df.iloc[candleid].upper_line!=0
+            elif (  df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
+                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line 
+                and df.iloc[candleid-1].lower_line!=0
+                and df.iloc[candleid-1].upper_line!=0
+                and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
+                and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
+                and df.iloc[candleid-2].lower_line!=0
+                and df.iloc[candleid-2].upper_line!=0
+                and tendencia == -1
                 ):
                 df.loc[[candleid],"signal"] = -1
             
@@ -720,21 +737,21 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     df['take_profit'] =   np.where(
                             tp_flag,np.where(
                             df.signal == 1,
-                            df.Close + 3*df.atr,
+                            df.Close + 2*df.atr,
                             np.where(
                                     df.signal == -1,
-                                    df.Close - 3*df.atr,  
+                                    df.Close - 2*df.atr,  
                                     0
                                     )
                             ),np.NaN
                                     )
     df['stop_loss'] = np.where(
         df.signal == 1,
-        df.Close - 1.5*df.atr,    # se exagera colocando 5 ya que el stop lo realiza el trailing
+        df.lower_line,    # se exagera colocando 5 ya que el stop lo realiza el trailing
         #df.lower_line,
         np.where(
             df.signal == -1,
-            df.Close + 1.5*df.atr,
+            df.upper_line,
             #df.upper_line,
             0
         )
@@ -789,3 +806,49 @@ def dibuja_patrones_triangulos (df,candleid):
     fig.show()
     print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
     print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
+
+def backtestingsanta(data, plot_flag=False,porcentajeentrada=10):
+    balance = 1000
+    try:
+        class Fenix(TrailingStrategy):
+            def init(self):
+                super().init()
+            def next(self):       
+                super().next()
+                if self.position:
+                    pass
+                    if self.position.pl_pct>=.01 or self.position.pl_pct<=-.13:
+                        print(self.position.pl_pct)
+                        self.position.close()
+                else:   
+                    if np.isnan(data.take_profit[-1]):
+                        tp_value = None
+                    else:
+                        tp_value = self.data.take_profit[-1]
+                    if self.data.signal[-1]==1:
+                        self.buy(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
+                        #self.buy(limit=self.data.Close[-1]*0.98)
+                        #self.buy(limit=self.data.Close*0.96)
+                        #self.buy(limit=self.data.Close*0.94)
+                        #self.buy(limit=self.data.Close*0.92)
+                        #self.buy(limit=self.data.Close*0.90)
+                        #self.buy(limit=self.data.Close*0.88)
+                        #self.buy(limit=self.data.Close*0.86)
+                    elif self.data.signal[-1]==-1:
+                        self.sell(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
+                        #self.buy(limit=self.data.Close[-1]*1.01)
+                        #self.buy(limit=self.data.Close*1.03)
+                        #self.buy(limit=self.data.Close*1.05)
+                        #self.buy(limit=self.data.Close*1.07)
+                        #self.buy(limit=self.data.Close*1.09)
+                        #self.buy(limit=self.data.Close*1.11)
+                        #self.buy(limit=self.data.Close*1.13)
+        bt = Backtest(data, Fenix, cash=balance)
+        output = bt.run()
+        if plot_flag:
+            bt.plot()
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+    return output
