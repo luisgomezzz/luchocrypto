@@ -807,7 +807,7 @@ def dibuja_patrones_triangulos (df,candleid):
     print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
     print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
 
-def backtestingsanta(data, plot_flag=False,porcentajeentrada=10):
+def backtestingsanta(data, plot_flag=False):
     balance = 1000
     try:
         class Fenix(TrailingStrategy):
@@ -815,8 +815,9 @@ def backtestingsanta(data, plot_flag=False,porcentajeentrada=10):
                 super().init()
             def next(self):       
                 super().next()
-                if self.position:
-                    pass
+                if self.position:                    
+                    print(f"Trades entry_price: {self.trades[0].entry_price} - entry_time: {self.trades[0].entry_time} - pl_pct: {self.trades[0].pl_pct}")
+                    #pass
                     if self.position.pl_pct>=.01 or self.position.pl_pct<=-.13:
                         print(self.position.pl_pct)
                         self.position.close()
@@ -827,22 +828,8 @@ def backtestingsanta(data, plot_flag=False,porcentajeentrada=10):
                         tp_value = self.data.take_profit[-1]
                     if self.data.signal[-1]==1:
                         self.buy(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
-                        #self.buy(limit=self.data.Close[-1]*0.98)
-                        #self.buy(limit=self.data.Close*0.96)
-                        #self.buy(limit=self.data.Close*0.94)
-                        #self.buy(limit=self.data.Close*0.92)
-                        #self.buy(limit=self.data.Close*0.90)
-                        #self.buy(limit=self.data.Close*0.88)
-                        #self.buy(limit=self.data.Close*0.86)
                     elif self.data.signal[-1]==-1:
                         self.sell(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
-                        #self.buy(limit=self.data.Close[-1]*1.01)
-                        #self.buy(limit=self.data.Close*1.03)
-                        #self.buy(limit=self.data.Close*1.05)
-                        #self.buy(limit=self.data.Close*1.07)
-                        #self.buy(limit=self.data.Close*1.09)
-                        #self.buy(limit=self.data.Close*1.11)
-                        #self.buy(limit=self.data.Close*1.13)
         bt = Backtest(data, Fenix, cash=balance)
         output = bt.run()
         if plot_flag:
