@@ -503,69 +503,71 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         variacion =((proximomuro/preciosoporta)-1)*100
     if side=='SELL':
         if precioactual<S5: # si el precio anda por abajo de todos los muros
-            if abs(variacion)<distanciasoportada:
-                if (
-                    df.close.iloc[-3] > df.upper.iloc[-3]
-                    and
-                    df.close.iloc[-2] < df.upper.iloc[-2]
-                    ):
-                    salida = True
-                else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
-                    salida = False
-            else:
-                print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                salida = False
+            #if abs(variacion)<distanciasoportada:
+            #    if (
+            #        df.close.iloc[-3] > df.upper.iloc[-3]
+            #        and
+            #        df.close.iloc[-2] < df.upper.iloc[-2]
+            #        ):
+            #        salida = True
+            #    else:
+            #        print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
+            #        salida = False
+            #else:
+            #    print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+            #    salida = False
+            salida = True
         else:        
             if precioactual<R4: # si el precio anda entre los muros
-                if abs(variacion)<distanciasoportada:
-                    if (
-                        df.close.iloc[-3] > df.upper.iloc[-3]
-                        and
-                        df.close.iloc[-2] < df.upper.iloc[-2]
-                        ):
-                        salida = True
-                    else:
-                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                        salida = False
-                else:
-                    #print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    #salida = False
-                    salida = True
+                #if abs(variacion)<distanciasoportada:
+                #    if (
+                #        df.close.iloc[-3] > df.upper.iloc[-3]
+                #        and
+                #        df.close.iloc[-2] < df.upper.iloc[-2]
+                #        ):
+                #        salida = True
+                #    else:
+                #        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                #        salida = False
+                #else:
+                #    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+                #    salida = False
+                salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
                 salida = False
     else:
         if precioactual>R5: # si el precio anda por arriba de todos los muros
-            if abs(variacion)<distanciasoportada:
-                if  (
-                    df.close.iloc[-3] < df.lower.iloc[-3]
-                    and
-                    df.close.iloc[-2] > df.lower.iloc[-2] 
-                    ):
-                    salida = True
-                else:
-                    salida = False
-                    print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-            else:
-                print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                salida = False                
+            #if abs(variacion)<distanciasoportada:
+            #    if  (
+            #        df.close.iloc[-3] < df.lower.iloc[-3]
+            #        and
+            #        df.close.iloc[-2] > df.lower.iloc[-2] 
+            #        ):
+            #        salida = True
+            #    else:
+            #        salida = False
+            #        print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+            #else:
+            #    print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+            #    salida = False
+            salida = True
         else:
             if precioactual>S4:# si el precio anda entre los muros
-                if abs(variacion)<distanciasoportada:
-                    if  (
-                        df.close.iloc[-3] < df.lower.iloc[-3]
-                        and
-                        df.close.iloc[-2] > df.lower.iloc[-2] 
-                        ):
-                        salida = True
-                    else:
-                        salida = False
-                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                else:
-                    #print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    #salida = False
-                    salida = True
+                #if abs(variacion)<distanciasoportada:
+                #    if  (
+                #        df.close.iloc[-3] < df.lower.iloc[-3]
+                #        and
+                #        df.close.iloc[-2] > df.lower.iloc[-2] 
+                #        ):
+                #        salida = True
+                #    else:
+                #        salida = False
+                #        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
+                #else:
+                #    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
+                #    salida = False
+                salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
                 salida = False
@@ -693,11 +695,11 @@ def main() -> None:
                                     distanciaentrecompensaciones = ut.leeconfiguracion('distanciaentrecompensacionesalta')                                 
 
                                 precioactual=ut.currentprice(par)
-                                if precioactual>=preciomayor*(1-0.5/100):
+                                if precioactual>=preciomayor*(1-0.5/100): # solo toma reentradas. El 0.5 es amortiguacion ya que a lo mejor bajó un poco.
                                     flechamecha = " ↑"
                                     variacionmecha = ((precioactual/preciomenor)-1)*100
                                 else:
-                                    if precioactual<preciomenor*(1+0.5/100):
+                                    if precioactual<preciomenor*(1+0.5/100): # solo toma reentradas. El 0.5 es amortiguacion ya que a lo mejor subió un poco.
                                         flechamecha = " ↓"
                                         variacionmecha = ((precioactual/preciomayor)-1)*-100       
                                     else:
