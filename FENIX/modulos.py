@@ -823,7 +823,6 @@ def backtestingsanta(data, plot_flag=False):
                         tp_value = self.data.take_profit[-1]
                     if self.data.signal[-1]==1:
                         self.buy(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
-                        #self.precio_entrada = self.trades[0].entry_price
                         current_price = self.data.Close[-1]
                         self.buy(limit=current_price*0.983, size=0.13)
                         self.buy(limit=current_price*0.966289, size=0.169)
@@ -834,7 +833,6 @@ def backtestingsanta(data, plot_flag=False):
                         self.buy(limit=current_price*0.886899939, size=0.62748517)                        
                     elif self.data.signal[-1]==-1:
                         self.sell(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
-                        #self.precio_entrada = self.trades[0].entry_price
                         current_price = self.data.Close[-1]
                         self.sell(limit=current_price*1.017, size=0.13)
                         self.sell(limit=current_price*1.034289, size=0.169)
