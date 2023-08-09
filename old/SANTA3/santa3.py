@@ -90,12 +90,11 @@ def filtradodemonedas ():
                 dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
             '''
             dict_monedas_filtradas_aux={
-                                        'AGLDUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
-                                        'CELOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
-                                        'IMXUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
-                                        'PENDLEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
-                                        'API3USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
-                                        'BTCUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}
+                                        'HBARUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
+                                        'C98USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
+                                        'COMPUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
+                                        'APEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
+                                        'TOMOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}
                                         }
         except Exception as ex:
             pass        
