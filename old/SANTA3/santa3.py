@@ -91,10 +91,11 @@ def filtradodemonedas ():
             '''
             dict_monedas_filtradas_aux={
                                         'HBARUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
-                                        'C98USDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
-                                        'COMPUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}, 
-                                        'APEUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0},
-                                        'TOMOUSDT': {'volumeOf24h': 0.0, 'capitalizacion': 0.0}
+                                        'C98USDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
+                                        'COMPUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}, 
+                                        'APEUSDT': {'volumeOf24h': 0, 'capitalizacion': 0},
+                                        'TOMOUSDT': {'volumeOf24h': 0, 'capitalizacion': 0},
+                                        'BTCUSDT': {'volumeOf24h': 0, 'capitalizacion': 0}
                                         }
         except Exception as ex:
             pass        
