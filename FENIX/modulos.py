@@ -231,7 +231,6 @@ def obtiene_historial(symbol,timeframe):
             data['ema50']=data.ta.ema(50)
             data['ema200']=data.ta.ema(200)
             data['atr']=ta.atr(data.High, data.Low, data.Close)        
-            data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. En la estrategia se pone el valor real.
         except KeyboardInterrupt:        
             salida_solicitada()
         except BinanceAPIException as e:
@@ -437,17 +436,26 @@ class TrailingStrategy(Strategy):
             else:
                 trade.sl = min(trade.sl or np.inf,
                                self.data.Close[index] + atr[index] * self.data.n_atr[index])
-
+                
 def backtesting(data, plot_flag=False,porcentajeentrada=100):
     balance = 1000
     size= 1000*porcentajeentrada/100
+    def ema(data):
+        indi=ta.ema(data.Close.s,length=21)
+        return indi.to_numpy()
+    def sma(data):
+        indi=ta.sma(data.Close.s,length=20)
+        return indi.to_numpy()    
     class Fenix(TrailingStrategy):
         def init(self):
             super().init()
+            self.ema = self.I(ema,self.data)
+            self.sma = self.I(sma,self.data)
         def next(self):       
             super().next()
             if self.position:
-                pass
+                if self.data.cierra[-1]==True:
+                    self.position.close()                    
             else:   
                 if np.isnan(data.take_profit[-1]):
                     tp_value = None
@@ -469,7 +477,7 @@ def estrategia_bb(symbol,tp_flag=True):
     data = obtiene_historial(symbol,timeframe)
     btc_data = obtiene_historial("BTCUSDT",timeframe)
     data['variacion_btc'] = ((btc_data['Close'].rolling(ventana).max()/btc_data['Close'].rolling(ventana).min())-1)*100
-    data['n_atr'] = 50 # para el trailing stop
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
     get_bollinger_bands(data,mult = 1.5,length = 20)
     data['signal'] = np.where(
@@ -507,6 +515,7 @@ def estrategia_bb(symbol,tp_flag=True):
             0
         )
     )
+    data['cierra'] = False
     #if symbol != 'XRPUSDT':
     #    data['signal']=0
     #    data['take_profit']=0
@@ -521,7 +530,7 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         data['close_btc'] = data_btc.Close
         data['maximo_btc'] = data['close_btc'].rolling(ventana).max()
         data['minimo_btc'] = data['close_btc'].rolling(ventana).min()
-        data.n_atr = 1.5
+        data['n_atr'] = 1.5
         data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
         data['signal'] = np.where(
             (data.close_btc.shift(1) >= data.maximo_btc.shift(2))
@@ -553,7 +562,8 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
                 data.Close + 5*data.atr,
                 0
             )
-        )    
+        )
+        data['cierra'] = False    
         return data
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
@@ -572,7 +582,7 @@ def estrategia_santa(symbol,tp_flag = True):
     data = obtiene_historial(symbol,timeframe)
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
-    data.n_atr = 50
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
     get_bollinger_bands(data)
     data['signal'] = np.where(
@@ -609,7 +619,8 @@ def estrategia_santa(symbol,tp_flag = True):
             data.Close*1.13,
             0
         )
-    )    
+    )
+    data['cierra'] = False
     return data,porcentajeentrada   
 
 def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
@@ -648,7 +659,7 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     df=df[df['Volume']!=0]
     df.reset_index(drop=True, inplace=True)
     df.isna().sum()
-    df["n_atr"] = 1.5
+    df['n_atr'] = 1.5 
     df["pivot"] = df.apply(lambda x: pivotid(df, x.name,3,3), axis=1)
     df["pointpos"] = df.apply(lambda row: pointpos(row), axis=1)
     df["signal"]=0
@@ -750,6 +761,7 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             0
         )
     ) 
+    df['cierra'] = False
     df["timestamp"] = df["Open Time"]   
     df.set_index('timestamp', inplace=True)
     return df        
@@ -850,3 +862,71 @@ def backtestingsanta(data, plot_flag=False):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
     return output
+
+def estrategia_adrian(symbol,tp_flag = False):
+    porcentajeentrada = 100
+    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
+    np.seterr(divide='ignore', invalid='ignore')
+    timeframe = '15m'
+    data = obtiene_historial(symbol,timeframe)
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
+    data['sma20']=ta.sma(data.Close,length=20)
+    data['ema21']=ta.ema(data.Close,length=21)
+    data['signal'] = np.where(
+        (data.Close.shift(1) > data.sma20.shift(1))
+        &(data.Close.shift(1) > data.ema21.shift(1)) 
+        ,1,
+        np.where(
+            (data.Close.shift(1) < data.sma20.shift(1))
+            &(data.Close.shift(1) < data.ema21.shift(1)) 
+            ,-1,
+            0
+        )
+    )  
+    # SL y TP no son necesarios ya que la estrategia cierra el trade cuando cruza la ema y sma
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close*1.01,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close*0.99,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close*0.87,    
+        np.where(
+            data.signal == -1,
+            data.Close*1.13,
+            0
+        )
+    )    
+    data['cierra'] = np.where(        
+        (data.ema21.shift(1) > data.sma20.shift(1))
+        &(data.Close.shift(1) > data.ema21.shift(1))
+        &((data.Close.shift(2) < data.ema21.shift(2)) | (data.Close.shift(3) < data.ema21.shift(3))),
+        True,    
+        np.where(
+                (data.sma20.shift(1) > data.ema21.shift(1))
+                &(data.Close.shift(1) > data.sma20.shift(1))
+                &((data.Close.shift(2) < data.sma20.shift(2)) | (data.Close.shift(3) < data.sma20.shift(3))),
+            True,
+            np.where(
+                (data.sma20.shift(1) < data.ema21.shift(1))
+                &(data.Close.shift(1) < data.sma20.shift(1))
+                &((data.Close.shift(2) > data.sma20.shift(2)) | (data.Close.shift(3) > data.sma20.shift(3))),
+            True,
+            np.where(
+                (data.ema21.shift(1) < data.sma20.shift(1))
+                &(data.Close.shift(1) < data.ema21.shift(1))
+                &((data.Close.shift(2) > data.ema21.shift(2)) | (data.Close.shift(3) > data.ema21.shift(3))),
+            True,
+            False
+        )
+        )
+        )
+    )    
+    return data,porcentajeentrada

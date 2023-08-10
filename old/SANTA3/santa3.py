@@ -83,37 +83,11 @@ def filtradodemonedas ():
     lista_de_monedas = ut.lista_de_monedas ()
     for par in lista_de_monedas:
         try:  
-            '''
             volumeOf24h=ut.volumeOf24h(par)
-            capitalizacion=ut.capitalizacion(par)
-            if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
-                dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
-            '''
-            dict_monedas_filtradas_aux={
-'BTCUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'LINKUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'LTCUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'BCHUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'WLDUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'IDUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'HBARUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'BNBUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'STXUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'XLMUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'MKRUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'ALGOUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'DOGEUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'XRPUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'OPUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'ARBUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'MATICUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'APEUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'SOLUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'TOMOUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'EOSUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'ADAUSDT':{'volumeOf24h':0,'capitalizacion':0},
-'SUIUSDT':{'volumeOf24h':0,'capitalizacion':0}
-}
+            # por ahora dejo de funcionar la obtencion de la capitalizacion porque binance cambió ciertas funciones
+            #capitalizacion=ut.capitalizacion(par)
+            if volumeOf24h >= cons.minvolumen24h:# and capitalizacion >= cons.mincapitalizacion:
+                dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":0}
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
