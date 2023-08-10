@@ -868,17 +868,23 @@ def estrategia_adrian(symbol,tp_flag = False):
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
     timeframe = '15m'
+    ventana = 1
+    porc = 2
     data = obtiene_historial(symbol,timeframe)
     data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
     data['sma20']=ta.sma(data.Close,length=20)
     data['ema21']=ta.ema(data.Close,length=21)
+    data['maximo'] = data['High'].rolling(ventana).max()
+    data['minimo'] = data['Low'].rolling(ventana).min()
     data['signal'] = np.where(
         (data.Close.shift(1) > data.sma20.shift(1))
         &(data.Close.shift(1) > data.ema21.shift(1)) 
+        #&((data.Close.shift(1) >= data.minimo.shift(2)*(1+porc/100)) | (data.Close.shift(1) <= data.maximo.shift(2)*(1-porc/100)))
         ,1,
         np.where(
             (data.Close.shift(1) < data.sma20.shift(1))
             &(data.Close.shift(1) < data.ema21.shift(1)) 
+            #&((data.Close.shift(1) >= data.minimo.shift(2)*(1+porc/100)) | (data.Close.shift(1) <= data.maximo.shift(2)*(1-porc/100)))
             ,-1,
             0
         )
@@ -904,29 +910,19 @@ def estrategia_adrian(symbol,tp_flag = False):
             0
         )
     )    
-    data['cierra'] = np.where(        
-        (data.ema21.shift(1) > data.sma20.shift(1))
-        &(data.Close.shift(1) > data.ema21.shift(1))
-        &((data.Close.shift(2) < data.ema21.shift(2)) | (data.Close.shift(3) < data.ema21.shift(3))),
-        True,    
-        np.where(
-                (data.sma20.shift(1) > data.ema21.shift(1))
-                &(data.Close.shift(1) > data.sma20.shift(1))
-                &((data.Close.shift(2) < data.sma20.shift(2)) | (data.Close.shift(3) < data.sma20.shift(3))),
-            True,
-            np.where(
-                (data.sma20.shift(1) < data.ema21.shift(1))
-                &(data.Close.shift(1) < data.sma20.shift(1))
-                &((data.Close.shift(2) > data.sma20.shift(2)) | (data.Close.shift(3) > data.sma20.shift(3))),
-            True,
-            np.where(
-                (data.ema21.shift(1) < data.sma20.shift(1))
-                &(data.Close.shift(1) < data.ema21.shift(1))
-                &((data.Close.shift(2) > data.ema21.shift(2)) | (data.Close.shift(3) > data.ema21.shift(3))),
-            True,
-            False
-        )
-        )
-        )
-    )    
+    data['cierra'] = np.where(
+        (data.signal.shift(1) != data.signal.shift(2))
+        &((data.signal.shift(1) ==1) | (data.signal.shift(1) ==-1)),
+        True,
+        False
+    )
     return data,porcentajeentrada
+
+def closeposition(symbol,side):
+    if side=='SELL':
+        lado='BUY'
+    else:
+        lado='SELL'
+    quantity=abs(get_positionamt(symbol))
+    if quantity!=0.0:
+        cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    

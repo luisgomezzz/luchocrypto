@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_santa','estrategia_triangulos'],
+                choices=['estrategia_santa','estrategia_triangulos','estrategia_adrian'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -30,7 +30,9 @@ estrategia_name=answers['Estrategia']
 if estrategia_name=='estrategia_santa':
     sys.stdout.write(GREEN)
 if estrategia_name=='estrategia_triangulos':
-    sys.stdout.write(CYAN)    
+    sys.stdout.write(CYAN)  
+if estrategia_name=='estrategia_adrian':
+    sys.stdout.write(REVERSE)        
 
 md.printandlog(cons.nombrelog, estrategia_name)   
 
@@ -43,7 +45,9 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='sigo_variacion_bitcoin':
         data = md.sigo_variacion_bitcoin(symbol)
     if estrategia_name=='estrategia_triangulos':
-        data = md.estrategia_triangulos(symbol)        
+        data = md.estrategia_triangulos(symbol)   
+    if estrategia_name=='estrategia_adrian':
+        data,porcentajeentrada = md.estrategia_adrian(symbol)                
     return data, porcentajeentrada
 
 posiciones={}
@@ -74,21 +78,24 @@ def actualiza_trailing_stop(symbol):
             else: # Es un short
                 trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * data.n_atr[-1])
                 side='SELL'
-            if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
-                print(f"\nActualizo Trailing stop {symbol} - {side}.")
-                creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
-                ultimo_trailing_stop_price = trailing_stop_price
-                if creado==True:
-                    if trailing_stop_id_anterior==0:
-                        trailing_stop_id_anterior=trailing_stop_id
-                    else:
-                        try:
-                            cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+            if data.cierra[-1]==True:
+                md.closeposition(symbol,side)
+            else:
+                if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
+                    print(f"\nActualizo Trailing stop {symbol} - {side}.")
+                    creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
+                    ultimo_trailing_stop_price = trailing_stop_price
+                    if creado==True:
+                        if trailing_stop_id_anterior==0:
                             trailing_stop_id_anterior=trailing_stop_id
-                            print("\nTrailing_stop_id anterior cancelado. "+symbol)
-                        except:
-                            trailing_stop_id_anterior=trailing_stop_id
-                            pass
+                        else:
+                            try:
+                                cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+                                trailing_stop_id_anterior=trailing_stop_id
+                                print("\nTrailing_stop_id anterior cancelado. "+symbol)
+                            except:
+                                trailing_stop_id_anterior=trailing_stop_id
+                                pass
 
 # programa principal
 def main():
