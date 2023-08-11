@@ -813,7 +813,7 @@ def dibuja_patrones_triangulos (df,candleid):
     print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
     print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
 
-def backtestingsanta(data, plot_flag=False):
+def backtestingsanta(data, plot_flag=False, debug = False):
     balance = 1000    
     output = None
     try:
@@ -860,7 +860,8 @@ def backtestingsanta(data, plot_flag=False):
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+        if debug == True:
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
     return output
 
 def estrategia_adrian(symbol,tp_flag = False):

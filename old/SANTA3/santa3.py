@@ -79,6 +79,8 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
     return preciostop   
 
 def filtradodemonedas ():    
+    sys.path.insert(0, 'C:/LUCHO/personal/repopersonal/luchocrypto/FENIX')
+    import modulos as md        
     dict_monedas_filtradas_aux = {}
     lista_de_monedas = ut.lista_de_monedas ()
     for par in lista_de_monedas:
@@ -93,9 +95,25 @@ def filtradodemonedas ():
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit()   
+    dict_filtrada = {}
+    import warnings
+    warnings.filterwarnings("ignore")
+    for symbol in dict_monedas_filtradas_aux:    
+        try:
+            data,_ = md.estrategia_santa(symbol,tp_flag = True)
+            resultado = md.backtestingsanta(data, plot_flag = False)
+            if resultado['Return [%]'] >= 0:
+                    dict_filtrada[symbol]={"volumeOf24h":dict_monedas_filtradas_aux[symbol]['volumeOf24h'],"capitalizacion":0}
+            else:
+                print(f"agregar a mazmorra: {symbol}")
+        except Exception as ex:
+            pass        
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit() 
     global dict_monedas_filtradas_nueva
-    dict_monedas_filtradas_nueva = dict_monedas_filtradas_aux
-    return dict_monedas_filtradas_aux
+    dict_monedas_filtradas_nueva = dict_filtrada
+    return dict_filtrada
 
 def loopfiltradodemonedas ():
     while True:
