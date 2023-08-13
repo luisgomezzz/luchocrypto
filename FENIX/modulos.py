@@ -627,7 +627,7 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     from scipy.stats import linregress
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '15m'
+    timeframe = '1h'
     def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
         if l-n1 < 0 or l+n2 >= len(df1):
             return 0    
@@ -683,11 +683,11 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
             continue        
         slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
         slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)            
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.00001 and slmax<-0.0001:
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.0001 and slmax<-0.001:
             df.loc[[candleid],'signal'] = 2 # desc
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and abs(slmax)<=0.00001:
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.001 and abs(slmax)<=0.0001:
             df.loc[[candleid],'signal'] = 3 # asc
-        if abs(rmax)>=0.9 and abs(rmin)>=0.9 and slmin>=0.0001 and slmax<=-0.0001:
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and slmax<=-0.0001:
             df.loc[[candleid],'signal'] = 4 # comun
         if df.iloc[candleid].signal in (2,3,4):
             # Ecuación de la línea superior
@@ -715,22 +715,22 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
                     and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line 
                     and df.iloc[candleid-1].lower_line!=0
                     and df.iloc[candleid-1].upper_line!=0
-                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
-                    and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
-                    and df.iloc[candleid-2].lower_line!=0
-                    and df.iloc[candleid-2].upper_line!=0
-                    and tendencia == 1
+                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
+                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
+                    #and df.iloc[candleid-2].lower_line!=0
+                    #and df.iloc[candleid-2].upper_line!=0
+                    #and tendencia == 1
                 ):
                 df.loc[[candleid],"signal"] = 1
             elif (  df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
                 and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line 
                 and df.iloc[candleid-1].lower_line!=0
                 and df.iloc[candleid-1].upper_line!=0
-                and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
-                and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
-                and df.iloc[candleid-2].lower_line!=0
-                and df.iloc[candleid-2].upper_line!=0
-                and tendencia == -1
+                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
+                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
+                #and df.iloc[candleid-2].lower_line!=0
+                #and df.iloc[candleid-2].upper_line!=0
+                #and tendencia == -1
                 ):
                 df.loc[[candleid],"signal"] = -1
             
@@ -742,22 +742,20 @@ def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
     df['take_profit'] =   np.where(
                             tp_flag,np.where(
                             df.signal == 1,
-                            df.Close + 2*df.atr,
+                            df.Close + 5*df.atr,
                             np.where(
                                     df.signal == -1,
-                                    df.Close - 2*df.atr,  
+                                    df.Close - 5*df.atr,  
                                     0
                                     )
                             ),np.NaN
                                     )
     df['stop_loss'] = np.where(
         df.signal == 1,
-        df.lower_line,    # se exagera colocando 5 ya que el stop lo realiza el trailing
-        #df.lower_line,
+        df.Close - 1.5*df.atr,
         np.where(
             df.signal == -1,
-            df.upper_line,
-            #df.upper_line,
+            df.Close + 1.5*df.atr,
             0
         )
     ) 
