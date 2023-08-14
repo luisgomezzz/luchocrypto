@@ -575,8 +575,8 @@ def estrategia_santa(symbol,tp_flag = True):
     porcentajeentrada = 10
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '15m'
-    ventana = 2
+    timeframe = '1m'
+    ventana = 30
     porc_alto = 100
     porc_bajo = 5
     data = obtiene_historial(symbol,timeframe)
@@ -840,7 +840,8 @@ def backtestingsanta(data, plot_flag=False, debug = False):
                         self.buy(limit=current_price*0.933714432, size=0.28561)
                         self.buy(limit=current_price*0.917841286, size=0.371293)
                         self.buy(limit=current_price*0.902237984, size=0.4826809)
-                        self.buy(limit=current_price*0.886899939, size=0.62748517)                        
+                        self.buy(limit=current_price*0.886899939, size=0.62748517)
+                        self.buy(limit=current_price*0.87182264,  size=4294)      #ataque                  
                     elif self.data.signal[-1]==-1:
                         self.sell(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
                         current_price = self.data.Close[-1]
@@ -851,6 +852,7 @@ def backtestingsanta(data, plot_flag=False, debug = False):
                         self.sell(limit=current_price*1.087939549, size=0.371293)
                         self.sell(limit=current_price*1.106434521, size=0.4826809)
                         self.sell(limit=current_price*1.125243908, size=0.62748517)
+                        self.sell(limit=current_price*1.144373055, size=4294) # ataque
         bt = Backtest(data, Fenix, cash=balance)
         output = bt.run()
         if plot_flag:
@@ -902,10 +904,10 @@ def estrategia_adrian(symbol,tp_flag = False):
                                     )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close*0.87,    
+        data.Close*0.86,    
         np.where(
             data.signal == -1,
-            data.Close*1.13,
+            data.Close*1.14,
             0
         )
     )    
