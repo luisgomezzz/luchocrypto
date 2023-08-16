@@ -102,7 +102,7 @@ def filtradodemonedas ():
         try:
             data,_ = md.estrategia_santa(symbol,tp_flag = True)
             resultado = md.backtestingsanta(data, plot_flag = False)
-            if resultado['Return [%]'] >= 0:
+            if resultado['Return [%]'] >= -2:
                     dict_filtrada[symbol]={"volumeOf24h":dict_monedas_filtradas_aux[symbol]['volumeOf24h'],"capitalizacion":0}
             else:
                 # Agregar a mazmorra. Ahora filtra esta moneda y safamos pero en el futuro no detectará estas variaciones que llegan 
