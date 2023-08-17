@@ -595,9 +595,22 @@ def interfaz_usuario():
         with open(os.path.join(cons.pathroot, "configuration.json"), "w") as json_file:
             json.dump(nueva_configuracion, json_file, indent=4)
         messagebox.showinfo("Éxito", "Configuración guardada exitosamente")
+    def cargar_operando():
+        try:
+            with open(os.path.join(cons.pathroot, "operando.txt"), "r") as operando_file:
+                operando_data = operando_file.read()
+                operando_text.delete(1.0, tk.END)
+                operando_text.insert(tk.END, operando_data)
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Archivo operando.txt no encontrado")
+    def guardar_operando():
+        operando_data = operando_text.get("1.0", tk.END)
+        with open(os.path.join(cons.pathroot, "operando.txt"), "w") as operando_file:
+            operando_file.write(operando_data)
+        messagebox.showinfo("Éxito", "Datos de operando.txt guardados exitosamente")
     # Crear la ventana principal
     root = tk.Tk()
-    root.title("Editor de Configuración")
+    root.title("Santa3")
     # Variables de control
     ventana_var = tk.IntVar()
     porcentaje_entrada_var = tk.IntVar()
@@ -665,6 +678,13 @@ def interfaz_usuario():
     tk.Entry(root, textvariable=porcentaje_desocupar_var).grid(row=14, column=1)
     # Botón para guardar la configuración
     tk.Button(root, text="Guardar Configuración", command=guardar_configuracion).grid(row=15, columnspan=2)
+    # Crear el widget de texto para mostrar y editar los datos de operando.txt
+    operando_text = tk.Text(root, height=5, width=20)
+    operando_text.grid(row=16, column=0, columnspan=2, padx=10, pady=10)
+    # Leer los datos de operando.txt y mostrarlos en el widget de texto
+    cargar_operando()
+    # Botón para guardar los cambios en operando.txt
+    tk.Button(root, text="Guardar Operando", command=guardar_operando).grid(row=17, columnspan=2)
     root.mainloop()
 
 def main() -> None:
