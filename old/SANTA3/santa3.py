@@ -14,6 +14,8 @@ from binance.streams import BinanceSocketManager
 import asyncio
 import websockets
 import json
+import tkinter as tk
+from tkinter import messagebox
 
 class Archivooperando:    
     def leer(self):
@@ -571,8 +573,104 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
     return salida
 
+def interfaz_usuario():
+    def guardar_configuracion():
+        nueva_configuracion = {
+            "ventana": ventana_var.get(),
+            "porcentajeentrada": porcentaje_entrada_var.get(),
+            "procentajeperdida": porcentaje_perdida_var.get(),
+            "incrementocompensacionporc": incremento_compensacion_var.get(),
+            "cantidadcompensaciones": cantidad_compensaciones_var.get(),
+            "variaciontrigger": variacion_trigger_var.get(),
+            "maximavariaciondiaria": max_variacion_diaria_var.get(),
+            "tradessimultaneos": trades_simultaneos_var.get(),
+            "distanciaentrecompensacionesalta": distancia_comp_alta_var.get(),
+            "distanciaentrecompensacionesbaja": distancia_comp_baja_var.get(),
+            "reservas": reservas_var.get(),
+            "sideflag": side_flag_var.get(),
+            "sonidos": sonidos_var.get(),
+            "restriccionhoraria": restriccion_horaria_var.get(),
+            "porcentajeadesocupar": porcentaje_desocupar_var.get()
+        }
+        with open(os.path.join(cons.pathroot, "configuration.json"), "w") as json_file:
+            json.dump(nueva_configuracion, json_file, indent=4)
+        messagebox.showinfo("Éxito", "Configuración guardada exitosamente")
+    # Crear la ventana principal
+    root = tk.Tk()
+    root.title("Editor de Configuración")
+    # Variables de control
+    ventana_var = tk.IntVar()
+    porcentaje_entrada_var = tk.IntVar()
+    porcentaje_perdida_var = tk.IntVar()
+    incremento_compensacion_var = tk.IntVar()
+    cantidad_compensaciones_var = tk.IntVar()
+    variacion_trigger_var = tk.IntVar()
+    max_variacion_diaria_var = tk.IntVar()
+    trades_simultaneos_var = tk.IntVar()
+    distancia_comp_alta_var = tk.DoubleVar()
+    distancia_comp_baja_var = tk.DoubleVar()
+    reservas_var = tk.IntVar()
+    side_flag_var = tk.IntVar()
+    sonidos_var = tk.IntVar()
+    restriccion_horaria_var = tk.IntVar()
+    porcentaje_desocupar_var = tk.IntVar()
+    # Cargar valores iniciales desde el archivo JSON
+    with open(os.path.join(cons.pathroot, "configuration.json"), "r") as json_file:
+        configuracion = json.load(json_file)
+        ventana_var.set(configuracion["ventana"])
+        porcentaje_entrada_var.set(configuracion["porcentajeentrada"])
+        porcentaje_perdida_var.set(configuracion["procentajeperdida"])
+        incremento_compensacion_var.set(configuracion["incrementocompensacionporc"])
+        cantidad_compensaciones_var.set(configuracion["cantidadcompensaciones"])
+        variacion_trigger_var.set(configuracion["variaciontrigger"])
+        max_variacion_diaria_var.set(configuracion["maximavariaciondiaria"])
+        trades_simultaneos_var.set(configuracion["tradessimultaneos"])
+        distancia_comp_alta_var.set(configuracion["distanciaentrecompensacionesalta"])
+        distancia_comp_baja_var.set(configuracion["distanciaentrecompensacionesbaja"])
+        reservas_var.set(configuracion["reservas"])
+        side_flag_var.set(configuracion["sideflag"])
+        sonidos_var.set(configuracion["sonidos"])
+        restriccion_horaria_var.set(configuracion["restriccionhoraria"])
+        porcentaje_desocupar_var.set(configuracion["porcentajeadesocupar"])
+    # Crear etiquetas y campos de entrada
+    tk.Label(root, text="Ventana:").grid(row=0, column=0)
+    tk.Entry(root, textvariable=ventana_var).grid(row=0, column=1)
+    tk.Label(root, text="Porcentaje de Entrada:").grid(row=1, column=0)
+    tk.Entry(root, textvariable=porcentaje_entrada_var).grid(row=1, column=1)
+    tk.Label(root, text="Porcentaje de Pérdida:").grid(row=2, column=0)
+    tk.Entry(root, textvariable=porcentaje_perdida_var).grid(row=2, column=1)
+    tk.Label(root, text="Incremento Compensación (%):").grid(row=3, column=0)
+    tk.Entry(root, textvariable=incremento_compensacion_var).grid(row=3, column=1)
+    tk.Label(root, text="Cantidad de Compensaciones:").grid(row=4, column=0)
+    tk.Entry(root, textvariable=cantidad_compensaciones_var).grid(row=4, column=1)
+    tk.Label(root, text="Variación Trigger:").grid(row=5, column=0)
+    tk.Entry(root, textvariable=variacion_trigger_var).grid(row=5, column=1)
+    tk.Label(root, text="Máxima Variación Diaria:").grid(row=6, column=0)
+    tk.Entry(root, textvariable=max_variacion_diaria_var).grid(row=6, column=1)
+    tk.Label(root, text="Trades Simultáneos:").grid(row=7, column=0)
+    tk.Entry(root, textvariable=trades_simultaneos_var).grid(row=7, column=1)
+    tk.Label(root, text="Distancia Compensaciones Alta:").grid(row=8, column=0)
+    tk.Entry(root, textvariable=distancia_comp_alta_var).grid(row=8, column=1)
+    tk.Label(root, text="Distancia Compensaciones Baja:").grid(row=9, column=0)
+    tk.Entry(root, textvariable=distancia_comp_baja_var).grid(row=9, column=1)
+    tk.Label(root, text="Reservas:").grid(row=10, column=0)
+    tk.Entry(root, textvariable=reservas_var).grid(row=10, column=1)
+    tk.Label(root, text="Side Flag:").grid(row=11, column=0)
+    tk.Entry(root, textvariable=side_flag_var).grid(row=11, column=1)
+    tk.Label(root, text="Sonidos:").grid(row=12, column=0)
+    tk.Entry(root, textvariable=sonidos_var).grid(row=12, column=1)
+    tk.Label(root, text="Restricción Horaria:").grid(row=13, column=0)
+    tk.Entry(root, textvariable=restriccion_horaria_var).grid(row=13, column=1)
+    tk.Label(root, text="Porcentaje a Desocupar:").grid(row=14, column=0)
+    tk.Entry(root, textvariable=porcentaje_desocupar_var).grid(row=14, column=1)
+    # Botón para guardar la configuración
+    tk.Button(root, text="Guardar Configuración", command=guardar_configuracion).grid(row=15, columnspan=2)
+    root.mainloop()
+
 def main() -> None:
     ##PARAMETROS##########################################################################################
+    gui_thread = threading.Thread(target=interfaz_usuario)
+    gui_thread.start()
     vueltas=0
     minutes_diff=0    
     maximavariacion=0.0
