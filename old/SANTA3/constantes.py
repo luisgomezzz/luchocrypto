@@ -209,5 +209,6 @@ apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total,
 #BELUSDT moneda que ya ha hecho manipulaciones.
 mazmorra=['BELUSDT','RENUSDT','KNCUSDT','CVCUSDT','GTCUSDT','LQTYUSDT','STGUSDT','BAKEUSDT','AUDIOUSDT','MAVUSDT','BNTUSDT',
 'LPTUSDT',
-'LEVERUSDT'
+'LEVERUSDT',
+'XRPUSDT'
 ]

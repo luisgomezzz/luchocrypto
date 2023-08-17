@@ -111,7 +111,7 @@ def filtradodemonedas ():
                 # al stop porque solo se toman 1000 frames.
                 # Basicamente lo que se hace es alertar de monedas con demasiada variación ya que luego de un tiempo no es posible detectar
                 # el historial ya que se toman solo 1000 frames y es aconsajable agregar a la mazmorra o estudiar si vale la pena agragarla.
-                print(f"Analizar si se agrega a mazmorra : {symbol}")
+                print(f"\nAnalizar si se agrega a mazmorra : {symbol}")
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
