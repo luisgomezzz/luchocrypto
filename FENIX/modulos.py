@@ -585,22 +585,20 @@ def estrategia_santa(symbol,tp_flag = True):
     data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
     data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
     data2 = obtiene_historial(symbol,'15m')
-    ema200_15m = data2.ema200
-    ema200_15m = ema200_15m.reindex(data.index, method='nearest')
-    data['ema200_15m']=ema200_15m
+    ema50_15m = data2.ema50
+    ema50_15m = ema50_15m.reindex(data.index, method='nearest')
+    data['ema50_15m']=ema50_15m
     data['signal'] = np.where(
          (data.Close.shift(1) >= data.maximo.shift(2)) # para que solo sea reentrada
         &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) # variacion desde
         &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) # variacion hasta
-        &(data.Close.shift(1) < data.ema200.shift(1))
-        &(data.Close.shift(1) < data.ema200_15m.shift(1))
+        &(data.Close.shift(1) < data.ema50_15m.shift(1))
         ,-1,
         np.where(
              (data.Close.shift(1) <= data.minimo.shift(2))
             &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100))
             &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100))
-            &(data.Close.shift(1) > data.ema200.shift(1))
-            &(data.Close.shift(1) > data.ema200_15m.shift(1))
+            &(data.Close.shift(1) > data.ema50_15m.shift(1))
             ,1,
             0
         )

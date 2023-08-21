@@ -481,15 +481,15 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
     distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
 
     data2 = ut.calculardf (symbol,'15m',1000)
-    ema200_15m = data2.ema200
-    ema200_15m = ema200_15m.reindex(df.index, method='nearest')
-    df['ema200_15m']=ema200_15m
+    ema50_15m = data2.ema50
+    ema50_15m = ema50_15m.reindex(df.index, method='nearest')
+    df['ema50_15m']=ema50_15m
 
     if side=='SELL':
-        if precioactual<S5 and df.Close.iloc[-1] < df.ema200.iloc[-1] and df.Close.iloc[-1] < df.ema200_15m.iloc[-1]: # si el precio anda por abajo de todos los muros
+        if precioactual<S5 and df.Close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda por abajo de todos los muros
             salida = True
         else:        
-            if precioactual<R4 and df.Close.iloc[-1] > df.ema200.iloc[-1] and df.Close.iloc[-1] > df.ema200_15m.iloc[-1]: # si el precio anda entre los muros
+            if precioactual<R4 and df.Close.iloc[-1] > df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
                 salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
