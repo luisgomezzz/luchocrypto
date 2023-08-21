@@ -80,9 +80,7 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
         preciostop = 0
     return preciostop   
 
-def filtradodemonedas ():    
-    sys.path.insert(0, 'C:/LUCHO/personal/repopersonal/luchocrypto/FENIX')
-    import modulos as md        
+def filtradodemonedas ():
     dict_monedas_filtradas_aux = {}
     lista_de_monedas = ut.lista_de_monedas ()
     for par in lista_de_monedas:
@@ -99,6 +97,8 @@ def filtradodemonedas ():
             sys.exit()   
     dict_filtrada = {}
     import warnings
+    sys.path.insert(0, 'C:/LUCHO/personal/repopersonal/luchocrypto/FENIX')
+    import modulos as md  
     warnings.filterwarnings("ignore")
     for symbol in dict_monedas_filtradas_aux:    
         try:
