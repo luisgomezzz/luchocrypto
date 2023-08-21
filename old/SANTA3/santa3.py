@@ -479,98 +479,32 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
     R5=LL['R5']
     # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
     distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
-    if side=='BUY':
-        proximomuro=R5
-        preciosoporta=precioactual*(1-(distanciasoportada/100))
-    else:
-        proximomuro=S5
-        preciosoporta=precioactual*(1+(distanciasoportada/100))
-    for rs, precio in LL.items():
-        if side =='BUY':
-            if preciosoporta<precio:
-                if precio<proximomuro:
-                    proximomuro=precio
-        else:
-            if preciosoporta>precio:
-                if precio>proximomuro:
-                    proximomuro=precio
-    # Variacion es la variacion entre el precio stop y el muro más cercano en dirección hacia la posición.
+
+    data2 = ut.calculardf (symbol,'15m',1000)
+    ema200_15m = data2.ema200
+    ema200_15m = ema200_15m.reindex(df.index, method='nearest')
+    df['ema200_15m']=ema200_15m
+
     if side=='SELL':
-        variacion =((preciosoporta/proximomuro)-1)*100
-    else:
-        variacion =((proximomuro/preciosoporta)-1)*100
-    if side=='SELL':
-        if precioactual<S5: # si el precio anda por abajo de todos los muros
-            #if abs(variacion)<distanciasoportada:
-            #    if (
-            #        df.close.iloc[-3] > df.upper.iloc[-3]
-            #        and
-            #        df.close.iloc[-2] < df.upper.iloc[-2]
-            #        ):
-            #        salida = True
-            #    else:
-            #        print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
-            #        salida = False
-            #else:
-            #    print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-            #    salida = False
+        if precioactual<S5 and df.Close.iloc[-1] < df.ema200.iloc[-1] and df.Close.iloc[-1] < df.ema200_15m.iloc[-1]: # si el precio anda por abajo de todos los muros
             salida = True
         else:        
-            if precioactual<R4: # si el precio anda entre los muros
-                #if abs(variacion)<distanciasoportada:
-                #    if (
-                #        df.close.iloc[-3] > df.upper.iloc[-3]
-                #        and
-                #        df.close.iloc[-2] < df.upper.iloc[-2]
-                #        ):
-                #        salida = True
-                #    else:
-                #        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                #        salida = False
-                #else:
-                #    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                #    salida = False
+            if precioactual<R4 and df.Close.iloc[-1] > df.ema200.iloc[-1] and df.Close.iloc[-1] > df.ema200_15m.iloc[-1]: # si el precio anda entre los muros
                 salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
                 salida = False
     else:
         if precioactual>R5: # si el precio anda por arriba de todos los muros
-            #if abs(variacion)<distanciasoportada:
-            #    if  (
-            #        df.close.iloc[-3] < df.lower.iloc[-3]
-            #        and
-            #        df.close.iloc[-2] > df.lower.iloc[-2] 
-            #        ):
-            #        salida = True
-            #    else:
-            #        salida = False
-            #        print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-            #else:
-            #    print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-            #    salida = False
             salida = True
         else:
             if precioactual>S4:# si el precio anda entre los muros
-                #if abs(variacion)<distanciasoportada:
-                #    if  (
-                #        df.close.iloc[-3] < df.lower.iloc[-3]
-                #        and
-                #        df.close.iloc[-2] > df.lower.iloc[-2] 
-                #        ):
-                #        salida = True
-                #    else:
-                #        salida = False
-                #        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                #else:
-                #    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                #    salida = False
                 salida = True
             else:
                 print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
                 salida = False
     if salida==True:
-        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
+        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
     return salida
 
 def interfaz_usuario():
@@ -822,7 +756,7 @@ def main() -> None:
 
                                 sideflag=ut.leeconfiguracion('sideflag')
 
-                                df=ind.get_bollinger_bands(df)
+                                #df=ind.get_bollinger_bands(df)
 
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
