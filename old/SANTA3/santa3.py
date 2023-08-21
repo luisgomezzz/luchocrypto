@@ -481,6 +481,7 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
     distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
 
     data2 = ut.calculardf (symbol,'15m',1000)
+    data2['ema50']=data2.ta.ema(50)
     ema50_15m = data2.ema50
     ema50_15m = ema50_15m.reindex(df.index, method='nearest')
     df['ema50_15m']=ema50_15m
