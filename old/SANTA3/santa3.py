@@ -471,42 +471,41 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
     # que haya al menos 2 resitencias/soportes en la dirección opuesta.
     # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
     # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
-    salida = False
-    LL=ind.PPSR(symbol)
-    R4=LL['R4']
-    S4=LL['S4']
-    S5=LL['S5']
-    R5=LL['R5']
-    # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
-    distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
+    try:
+        salida = False
+        LL=ind.PPSR(symbol)
+        R4=LL['R4']
+        S4=LL['S4']
+        S5=LL['S5']
+        R5=LL['R5']
+        # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
+        distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
 
-    data2 = ut.calculardf (symbol,'15m',1000)
-    data2['ema50']=data2.ta.ema(50)
-    ema50_15m = data2.ema50
-    ema50_15m = ema50_15m.reindex(df.index, method='nearest')
-    df['ema50_15m']=ema50_15m
-
-    if side=='SELL':
-        if precioactual<S5 and df.Close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda por abajo de todos los muros
-            salida = True
-        else:        
-            if precioactual<R4 and df.Close.iloc[-1] > df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
-                salida = True
-            else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
-                salida = False
-    else:
-        if precioactual>R5: # si el precio anda por arriba de todos los muros
-            salida = True
+        data2 = ut.calculardf (symbol,'15m',1000)
+        data2['ema50']=data2.ta.ema(50)
+        ema50_15m = data2.ema50
+        ema50_15m = ema50_15m.reindex(df.index, method='nearest')
+        df['ema50_15m']=ema50_15m
+        if side=='SELL':
+                if precioactual < R4 and df.close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
+                    salida = True
+                else:
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o ema no cumplida.\n")
+                    salida = False
         else:
-            if precioactual>S4:# si el precio anda entre los muros
-                salida = True
-            else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
-                salida = False
-    if salida==True:
-        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
-    return salida
+                if precioactual > S4 and df.close.iloc[-1] > df.ema50_15m.iloc[-1]:# si el precio anda entre los muros
+                    salida = True
+                else:
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o ema no cumplida.\n")
+                    salida = False
+        if salida==True:
+            ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
+        return salida
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass    
 
 def interfaz_usuario():
     def guardar_configuracion():
