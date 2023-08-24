@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_santa','estrategia_triangulos','estrategia_adrian'],
+                choices=['estrategia_santa','estrategia_triangulos','estrategia_trampa'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -31,7 +31,7 @@ if estrategia_name=='estrategia_santa':
     sys.stdout.write(GREEN)
 if estrategia_name=='estrategia_triangulos':
     sys.stdout.write(CYAN)  
-if estrategia_name=='estrategia_adrian':
+if estrategia_name=='estrategia_trampa':
     sys.stdout.write(REVERSE)        
 
 md.printandlog(cons.nombrelog, estrategia_name)   
@@ -46,8 +46,8 @@ def dataframe_estrategia(symbol,estrategia_name):
         data = md.sigo_variacion_bitcoin(symbol)
     if estrategia_name=='estrategia_triangulos':
         data = md.estrategia_triangulos(symbol)   
-    if estrategia_name=='estrategia_adrian':
-        data,porcentajeentrada = md.estrategia_adrian(symbol)                
+    if estrategia_name=='estrategia_trampa':
+        data,porcentajeentrada = md.estrategia_trampa(symbol)                
     return data, porcentajeentrada
 
 posiciones={}

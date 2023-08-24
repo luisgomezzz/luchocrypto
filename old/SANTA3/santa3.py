@@ -487,13 +487,13 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         ema50_15m = ema50_15m.reindex(df.index, method='nearest')
         df['ema50_15m']=ema50_15m
         if side=='SELL':
-                if precioactual < R4 and df.close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
+                if precioactual < R4: #and df.close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
                     salida = True
                 else:
                     print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o ema no cumplida.\n")
                     salida = False
         else:
-                if precioactual > S4 and df.close.iloc[-1] > df.ema50_15m.iloc[-1]:# si el precio anda entre los muros
+                if precioactual > S4: #and df.close.iloc[-1] > df.ema50_15m.iloc[-1]:# si el precio anda entre los muros
                     salida = True
                 else:
                     print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o ema no cumplida.\n")
