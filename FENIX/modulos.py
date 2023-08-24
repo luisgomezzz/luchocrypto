@@ -592,13 +592,13 @@ def estrategia_santa(symbol,tp_flag = True):
          (data.Close.shift(1) >= data.maximo.shift(2)) # para que solo sea reentrada
         &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) # variacion desde
         &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) # variacion hasta
-        &(data.Close.shift(1) < data.ema50_15m.shift(1))
+        #&(data.Close.shift(1) < data.ema50_15m.shift(1))
         ,-1,
         np.where(
              (data.Close.shift(1) <= data.minimo.shift(2))
             &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100))
             &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100))
-            &(data.Close.shift(1) > data.ema50_15m.shift(1))
+            #&(data.Close.shift(1) > data.ema50_15m.shift(1))
             ,1,
             0
         )
