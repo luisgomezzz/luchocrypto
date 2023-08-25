@@ -227,10 +227,10 @@ def obtiene_historial(symbol,timeframe):
             data.dropna(inplace=True)
             data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
                     'Ignore'], axis=1, inplace=True)    
-            data['ema20']=data.ta.ema(20)
-            data['ema50']=data.ta.ema(50)
-            data['ema200']=data.ta.ema(200)
-            data['atr']=ta.atr(data.High, data.Low, data.Close)        
+            data['ema20'] = ta.ema(data.Close, length=20)
+            data['ema50'] = ta.ema(data.Close, length=50)
+            data['ema200'] = ta.ema(data.Close, length=200)
+            data['atr'] = ta.atr(data.High, data.Low, data.Close)        
         except KeyboardInterrupt:        
             salida_solicitada()
         except BinanceAPIException as e:
