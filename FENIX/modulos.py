@@ -975,70 +975,76 @@ def es_martillo(vela):
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = 0.5<=((vela.High/vela.Low)-1)*100
+    condicion_largo = ((vela.High/vela.Low)-1)*100 >= 0.5
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
             if sombra_inferior > 2 * cuerpo: #martillo parado
-                out= 1
+                out = 1
         else:
             if sombra_superior>sombra_inferior*3:
                 if sombra_superior > 2 * cuerpo: #martillo invertido
-                    out= -1
+                    out = -1
     return out    
     
 def estrategia_atrapes(symbol,tp_flag = True, debug = False):
-    porcentajeentrada = 100
-    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '1m'
-    data = obtiene_historial(symbol,timeframe)
-    data['n_atr'] = 50
-    data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
-    data['disparo'] = np.where(data.martillo==1,data.High,np.where(data.martillo==-1,data.Low,0))
-    data['escape']  = np.where(data.martillo==1,data.Low, np.where(data.martillo==-1,data.High,0))
-    data['signal'] = 0
-    previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
-    previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
-    for index, row in data.iterrows():
-        if row['martillo'] == 0:
-            if previous_disparo is not None:
-                if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
-                    data.at[index, 'disparo'] = previous_disparo
-                    data.at[index, 'escape'] = previous_escape
-                else:
-                    if previous_martillo == 1 and row['Close'] > previous_disparo:
-                        data.at[index, 'signal'] = 1
+    try:
+        porcentajeentrada = 100
+        #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
+        np.seterr(divide='ignore', invalid='ignore')
+        timeframe = '1m'
+        data = obtiene_historial(symbol,timeframe)
+        data['n_atr'] = 50
+        data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
+        data['disparo'] = np.where(data.martillo==1,data.High,np.where(data.martillo==-1,data.Low,0))
+        data['escape']  = np.where(data.martillo==1,data.Low, np.where(data.martillo==-1,data.High,0))
+        data['signal'] = 0
+        previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
+        previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
+        for index, row in data.iterrows():
+            if row['martillo'] == 0:
+                if previous_disparo is not None:
+                    if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
+                        data.at[index, 'disparo'] = previous_disparo
+                        data.at[index, 'escape'] = previous_escape
                     else:
-                        if previous_martillo == -1 and row['Close'] < previous_disparo:
-                            data.at[index, 'signal'] = -1
-                    previous_disparo = 0
-                    previous_escape = 0
-                    previous_martillo = 0
-        else:
-            previous_disparo = row['disparo']
-            previous_escape = row['escape']
-            previous_martillo = row['martillo']
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close*1.006,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close*0.994,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close*0.998,    
-        np.where(
-            data.signal == -1,
-            data.Close*1.002,
-            0
-        )
-    )    
-    data['cierra'] = False
-    if debug:
-        print(data[['martillo','disparo','escape','signal']].tail(60))
-    return data,porcentajeentrada            
+                        if previous_martillo == 1 and row['Close'] > previous_disparo:
+                            data.at[index, 'signal'] = 1
+                        else:
+                            if previous_martillo == -1 and row['Close'] < previous_disparo:
+                                data.at[index, 'signal'] = -1
+                        previous_disparo = 0
+                        previous_escape = 0
+                        previous_martillo = 0
+            else:
+                previous_disparo = row['disparo']
+                previous_escape = row['escape']
+                previous_martillo = row['martillo']
+        data['take_profit'] =   np.where(
+                                tp_flag,np.where(
+                                data.signal == 1,
+                                data.Close*1.006,
+                                np.where(
+                                        data.signal == -1,
+                                        data.Close*0.994,  
+                                        0
+                                        )
+                                ),np.NaN
+                                        )
+        data['stop_loss'] = np.where(
+            data.signal == 1,
+            data.Close*0.998,    
+            np.where(
+                data.signal == -1,
+                data.Close*1.002,
+                0
+            )
+        )    
+        data['cierra'] = False
+        if debug:
+            print(data[['martillo','disparo','escape','signal']].tail(60))
+        return data,porcentajeentrada            
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+        pass  
