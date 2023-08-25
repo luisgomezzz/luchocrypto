@@ -991,7 +991,7 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         porcentajeentrada = 100
         #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
         np.seterr(divide='ignore', invalid='ignore')
-        timeframe = '1m'
+        timeframe = '5m'
         data = obtiene_historial(symbol,timeframe)
         data['n_atr'] = 50
         data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
