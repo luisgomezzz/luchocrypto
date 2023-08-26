@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_santa','estrategia_triangulos','estrategia_trampa'],
+                choices=['estrategia_santa','estrategia_triangulos','estrategia_trampa','estrategia_atrapes'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -32,7 +32,9 @@ if estrategia_name=='estrategia_santa':
 if estrategia_name=='estrategia_triangulos':
     sys.stdout.write(CYAN)  
 if estrategia_name=='estrategia_trampa':
-    sys.stdout.write(REVERSE)        
+    sys.stdout.write(REVERSE)
+if estrategia_name=='estrategia_atrapes':
+    sys.stdout.write(RED)            
 
 md.printandlog(cons.nombrelog, estrategia_name)   
 
@@ -47,7 +49,9 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_triangulos':
         data = md.estrategia_triangulos(symbol)   
     if estrategia_name=='estrategia_trampa':
-        data,porcentajeentrada = md.estrategia_trampa(symbol)                
+        data,porcentajeentrada = md.estrategia_trampa(symbol) 
+    if estrategia_name=='estrategia_atrapes':
+        data,porcentajeentrada = md.estrategia_atrapes(symbol)                        
     return data, porcentajeentrada
 
 posiciones={}
@@ -163,7 +167,7 @@ def main():
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
                             md.sound()
                             md.sound() 
-                            md.crea_posicion(symbol,side,porcentajeentrada) 
+                            #md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                

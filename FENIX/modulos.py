@@ -1039,7 +1039,7 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol:"+symbol+"\n")
         pass
 
 def tendencia (symbol,timeframe='1d'):
