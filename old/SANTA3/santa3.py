@@ -468,9 +468,6 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
 
 def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->float:
     # validaciones
-    # que haya al menos 2 resitencias/soportes en la dirección opuesta.
-    # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
-    # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
     try:
         salida = False
         LL=ind.PPSR(symbol)
@@ -480,23 +477,18 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         R5=LL['R5']
         # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
         distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
-
-        data2 = ut.calculardf (symbol,'15m',1000)
-        data2['ema50']=data2.ta.ema(50)
-        ema50_15m = data2.ema50
-        ema50_15m = ema50_15m.reindex(df.index, method='nearest')
-        df['ema50_15m']=ema50_15m
+        trend = ut.tendencia (symbol,timeframe='1d')
         if side=='SELL':
-                if precioactual < R4: #and df.close.iloc[-1] < df.ema50_15m.iloc[-1]: # si el precio anda entre los muros
+                if precioactual < R4 and trend <= 3: # si el precio anda entre los muros y tendencia
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o ema no cumplida.\n")
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o tendencia contraria. Trend {trend}%\n")
                     salida = False
         else:
-                if precioactual > S4: #and df.close.iloc[-1] > df.ema50_15m.iloc[-1]:# si el precio anda entre los muros
+                if precioactual > S4 and trend >= -3: # si el precio anda entre los muros y tendencia
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o ema no cumplida.\n")
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o tendencia contraria. Trend {trend}%\n")
                     salida = False
         if salida==True:
             ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")

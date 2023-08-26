@@ -208,12 +208,12 @@ def salida_solicitada():
     global salida_solicitada_flag
     salida_solicitada_flag = True
 
-def obtiene_historial(symbol,timeframe):
+def obtiene_historial(symbol,timeframe,limit=1000):
     client = cons.client    
     leido = False
     while leido == False:
         try:
-            historical_data = client.get_historical_klines(symbol, timeframe)
+            historical_data = client.get_historical_klines(symbol, timeframe,limit=limit)
             leido = True
             data = pd.DataFrame(historical_data)
             data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
@@ -582,27 +582,20 @@ def estrategia_santa(symbol,tp_flag = True):
     data = obtiene_historial(symbol,timeframe)
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
-    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
-    data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
-    data2 = obtiene_historial(symbol,'15m')
-    ema50_15m = data2.ema50
-    ema50_15m = ema50_15m.reindex(data.index, method='nearest')
-    data['ema50_15m']=ema50_15m
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.    
     data['signal'] = np.where(
-         (data.Close.shift(1) >= data.maximo.shift(2)) # para que solo sea reentrada
-        &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) # variacion desde
-        &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) # variacion hasta
-        #&(data.Close.shift(1) < data.ema50_15m.shift(1))
-        ,-1,
-        np.where(
-             (data.Close.shift(1) <= data.minimo.shift(2))
-            &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100))
-            &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100))
-            #&(data.Close.shift(1) > data.ema50_15m.shift(1))
-            ,1,
-            0
-        )
-    )  
+                            (data.Close.shift(1) <= data.minimo.shift(2)) # para que solo sea reentrada
+                            &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100)) # variacion desde
+                            &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100)) # variacion hasta
+                            ,1,
+                            np.where(
+                                    (data.Close.shift(1) >= data.maximo.shift(2)) 
+                                    &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) 
+                                    &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) 
+                                    ,-1,
+                                    0
+                                    )
+                            )  
     data['take_profit'] =   np.where(
                             tp_flag,np.where(
                             data.signal == 1,
@@ -1047,4 +1040,27 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
-        pass  
+        pass
+
+def tendencia (symbol,timeframe='1d'):
+    try:
+        tendencia=0.0
+        data= obtiene_historial(symbol,timeframe)
+        len_df = len(data)
+        if len_df >= 400:# si tiene historial mayor a 400 velas entonces tomo ema200
+            longitud_ema = 200
+        else:
+            longitud_ema = int((len_df/2))
+        emax = ta.ema(data.Close, length=longitud_ema)
+        if longitud_ema>=200:
+            comienzo = emax.iloc[-200]
+        else:
+            comienzo = emax[longitud_ema-1]
+        final = emax.iloc[-1]
+        tendencia=truncate((final/comienzo-1)*100,2)
+        return tendencia
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+        pass    

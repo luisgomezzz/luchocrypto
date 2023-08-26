@@ -13,6 +13,7 @@ import math
 import ccxt as ccxt
 from numerize import numerize
 from playsound import playsound
+import pandas_ta as ta
 
 exchange_name=cons.exchange_name
 
@@ -86,7 +87,7 @@ def timeindex(df):
     df['timestamp']=df.indice
     df.set_index('indice', inplace=True)
 
-def calculardf (par,temporalidad,ventana=500):
+def calculardf (par,temporalidad,ventana=1000):
     df = pd.DataFrame()
     while True:
         try:            
@@ -644,3 +645,26 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+
+def tendencia (symbol,timeframe='1d'):
+    try:
+        tendencia=0.0
+        data= calculardf(symbol,timeframe)
+        len_df = len(data)
+        if len_df >= 400:# si tiene historial mayor a 400 velas entonces tomo ema200
+            longitud_ema = 200
+        else:
+            longitud_ema = int((len_df/2))
+        emax = ta.ema(data.close, length=longitud_ema)
+        if longitud_ema>=200:
+            comienzo = emax.iloc[-200]
+        else:
+            comienzo = emax[longitud_ema-1]
+        final = emax.iloc[-1]
+        tendencia=truncate((final/comienzo-1)*100,2)
+        return tendencia
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+        pass            
