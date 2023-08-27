@@ -64,7 +64,10 @@ def lista_de_monedas ():
             exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
+                    if (    s['quoteAsset'] =='USDT' 
+                        and s['status'] =='TRADING'
+                        and s['contractType'] == 'PERPETUAL'
+                        and s['symbol'] not in mazmorra):                        
                         lista_de_monedas.append(s['symbol'])
                 except Exception as ex:
                     pass    

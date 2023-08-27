@@ -13,6 +13,7 @@ import pandas_ta as ta
 from backtesting import Backtest
 import talib
 from backtesting import Strategy
+from binance.enums import HistoricalKlinesType
 
 salida_solicitada_flag = False
 
@@ -143,7 +144,10 @@ def lista_de_monedas ():
             exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
+                    if (    s['quoteAsset'] =='USDT' 
+                        and s['status'] =='TRADING'
+                        and s['contractType'] == 'PERPETUAL'
+                        and s['symbol'] not in mazmorra):
                         lista_de_monedas.append(s['symbol'])
                 except Exception as ex:
                     pass    
@@ -213,7 +217,7 @@ def obtiene_historial(symbol,timeframe,limit=1000):
     leido = False
     while leido == False:
         try:
-            historical_data = client.get_historical_klines(symbol, timeframe,limit=limit)
+            historical_data = client.get_historical_klines(symbol, timeframe,limit=limit,klines_type=HistoricalKlinesType.FUTURES)
             leido = True
             data = pd.DataFrame(historical_data)
             data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
@@ -1053,7 +1057,7 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol:"+symbol+"\n")
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
         pass
 
 def tendencia (symbol,timeframe='1d'):
