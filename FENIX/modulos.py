@@ -968,7 +968,7 @@ def es_martillo(vela):
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = ((vela.High/vela.Low)-1)*100 >= 0.5
+    condicion_largo = ((vela.High/vela.Low)-1)*100 >= 0.7
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
             if sombra_inferior > 2 * cuerpo: #martillo parado
@@ -994,21 +994,28 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
         previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
         for index, row in data.iterrows():
+            # si no es unb martillo
             if row['martillo'] == 0:
                 if previous_disparo is not None:
+                    # si Close está dentro de los valores claves mantengo las ultimas claves
                     if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
                         data.at[index, 'disparo'] = previous_disparo
                         data.at[index, 'escape'] = previous_escape
+                    # Si cruzó algún valor clave
                     else:
+                        # Si cruzó el disparo para Long
                         if previous_martillo == 1 and row['Close'] > previous_disparo:
                             data.at[index, 'signal'] = 1
                         else:
+                            # Si cruzó el disparo para Short
                             if previous_martillo == -1 and row['Close'] < previous_disparo:
                                 data.at[index, 'signal'] = -1
+                        # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
                         previous_disparo = 0
                         previous_escape = 0
                         previous_martillo = 0
-            else:
+            # si es un martillo guardo los valores claves
+            else: 
                 previous_disparo = row['disparo']
                 previous_escape = row['escape']
                 previous_martillo = row['martillo']
@@ -1033,6 +1040,13 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
             )
         )    
         data['cierra'] = False
+
+        trend=tendencia (symbol,timeframe='1d')
+        if data.disparo.iloc[-2] != 0:# and data.disparo.iloc[-3] != 0: # dos intentos
+            print(f"\nOporunidad {symbol} - Tendencia {trend}% - lineas: {data.disparo.iloc[-2]} y {data.escape.iloc[-2]}")
+            sound()
+            sound()
+            sound()
         if debug:
             print(data[['martillo','disparo','escape','signal']].tail(60))
         return data,porcentajeentrada            
