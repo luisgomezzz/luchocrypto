@@ -14,6 +14,8 @@ from backtesting import Backtest
 import talib
 from backtesting import Strategy
 from binance.enums import HistoricalKlinesType
+from numerize import numerize
+import requests
 
 salida_solicitada_flag = False
 
@@ -442,8 +444,8 @@ class TrailingStrategy(Strategy):
                                self.data.Close[index] + atr[index] * self.data.n_atr[index])
                 
 def backtesting(data, plot_flag=False,porcentajeentrada=100):
-    balance = 1000
-    size= 1000*porcentajeentrada/100
+    balance = 100000
+    size= balance*porcentajeentrada/100
     def ema(data):
         indi=ta.ema(data.Close.s,length=21)
         return indi.to_numpy()
@@ -1082,3 +1084,93 @@ def tendencia (symbol,timeframe='1d'):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
         pass    
+
+def obiene_capitalizacion(symbol):
+    API_KEY = '4c9c0645-49c7-48c3-9a42-e7a2f94d448f'
+    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    HEADERS = {'Accepts': 'application/json',
+            'X-CMC_PRO_API_KEY': API_KEY}
+    PARAMS = {'convert': 'USD',
+            'limit': 1500}
+    resp = requests.get(url, headers=HEADERS, params=PARAMS)
+    def get_data(resp):
+        data = json.loads(resp.content)['data']
+        rows = list()
+        for item in data:
+            rows.append([
+                    item['cmc_rank'],
+                    item['id'],
+                    item['name'],
+                    item['symbol'],
+                    item['slug'], 
+                    item['quote']['USD']['market_cap'],
+                    item['quote']['USD']['volume_24h'],
+                    item['date_added']])
+        df = pd.DataFrame(rows, columns=['cmc_rank','id','name','symbol','slug','market_cap','volume_24h','date_added'])
+        df.index.name = 'id'
+        return(df)
+    if resp.status_code == 200:
+        df = get_data(resp)
+        if not df.empty:
+            df.to_csv('crypto_latests.csv')
+            print("Archivo con datos de CoinMarketCap gruadado crypto_latests.csv")
+            df2 = pd.read_csv('crypto_latests.csv', index_col=0)
+        else:
+            print("df de CoinMarketCap vacío. No se actualizó crypto_latests.csv")
+    else:
+        print(resp.status_code)
+    ##toma valor desde el file    
+    df2 = pd.read_csv('crypto_latests.csv', index_col=0)    
+    for index, row in df2.iterrows():
+        if row['symbol'] == (symbol[0:symbol.find('USDT')]).upper():       
+            print(f"Symbol: {symbol} - Ranking: {row.cmc_rank} - Market cap: {numerize.numerize(row.market_cap)} - Vol24h: {numerize.numerize(row.volume_24h)} - date_added: {row.date_added}")
+
+def estrategia_oro(symbol,tp_flag = True):
+    porcentajeentrada = 0.01
+    archivo_csv = 'historico.csv'
+    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
+    data = pd.read_csv(archivo_csv, header=None, names=column_names)
+    data['Open Time']=pd.to_datetime(data['Open Time'])
+    data['timestamp']=data['Open Time']
+    data.set_index('timestamp', inplace=True)
+    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
+    data.sort_values(by='timestamp', ascending = True, inplace = True)
+    data['Volume'] = 1
+    data['atr'] = ta.atr(data.High, data.Low, data.Close)
+    data['n_atr'] = 50
+    data['time_hour'] = pd.to_datetime(data['Open Time']).dt.hour
+    numeric_columns = ['Open', 'High', 'Low', 'Close','time_hour','Volume']
+    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+    data['signal'] = np.where(
+        (data.time_hour.shift(1) == 14)
+        &(data.Close.shift(2) > data.Close.shift(1)) 
+        ,1,
+        np.where(
+            (data.time_hour.shift(1) == 14)
+            &(data.Close.shift(2) < data.Close.shift(1)) 
+            ,-1,
+            0
+        )
+    )  
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close*1.01,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close*0.999,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close*0.995,    
+        np.where(
+            data.signal == -1,
+            data.Close*1.005,
+            0
+        )
+    )
+    data['cierra'] = False
+    return data,porcentajeentrada    
