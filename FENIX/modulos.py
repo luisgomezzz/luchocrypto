@@ -988,34 +988,37 @@ def es_martillo(vela):
 def estrategia_atrapes(symbol,tp_flag = True, debug = False):
     try:
         porcentajeentrada = 100
-        #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
         np.seterr(divide='ignore', invalid='ignore')
-        timeframe = '5m'
-        data = obtiene_historial(symbol,timeframe)
-        data['n_atr'] = 50
-        data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
-        data['disparo'] = np.where(data.martillo==1,data.High,np.where(data.martillo==-1,data.Low,0))
-        data['escape']  = np.where(data.martillo==1,data.Low, np.where(data.martillo==-1,data.High,0))
-        data['signal'] = 0
+        # temporalidad de 1h para encontrar martillos y soportes/resistencias
+        data1h = obtiene_historial(symbol,'1h')        
+        data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
+        data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
+        data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
+        # Temporalidad de 5m para tradear
+        data5m = obtiene_historial(symbol,'5m')
+        resample = data1h.reindex(data5m.index, method='pad')
+        data5m = data5m.join(resample[['martillo','disparo','escape']])
+        data5m['n_atr'] = 1.5
+        data5m['signal'] = 0
         previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
         previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
-        for index, row in data.iterrows():
+        for index, row in data5m.iterrows():
             # si no es unb martillo
             if row['martillo'] == 0:
                 if previous_disparo is not None:
                     # si Close está dentro de los valores claves mantengo las ultimas claves
                     if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
-                        data.at[index, 'disparo'] = previous_disparo
-                        data.at[index, 'escape'] = previous_escape
+                        data5m.at[index, 'disparo'] = previous_disparo
+                        data5m.at[index, 'escape'] = previous_escape
                     # Si cruzó algún valor clave
                     else:
                         # Si cruzó el disparo para Long
                         if previous_martillo == 1 and row['Close'] > previous_disparo:
-                            data.at[index, 'signal'] = 1
+                            data5m.at[index, 'signal'] = 1
                         else:
                             # Si cruzó el disparo para Short
                             if previous_martillo == -1 and row['Close'] < previous_disparo:
-                                data.at[index, 'signal'] = -1
+                                data5m.at[index, 'signal'] = -1
                         # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
                         previous_disparo = 0
                         previous_escape = 0
@@ -1025,37 +1028,36 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
                 previous_disparo = row['disparo']
                 previous_escape = row['escape']
                 previous_martillo = row['martillo']
-        data['take_profit'] =   np.where(
+        data5m['take_profit'] =   np.where(
                                 tp_flag,np.where(
-                                data.signal == 1,
-                                data.Close*1.006,
+                                data5m.signal == 1,
+                                data5m.Close*1.006,
                                 np.where(
-                                        data.signal == -1,
-                                        data.Close*0.994,  
+                                        data5m.signal == -1,
+                                        data5m.Close*0.994,  
                                         0
                                         )
                                 ),np.NaN
                                         )
-        data['stop_loss'] = np.where(
-            data.signal == 1,
-            data.Close*0.998,    
+        data5m['stop_loss'] = np.where(
+            data5m.signal == 1,
+            data5m.Close.shift(1),    
             np.where(
-                data.signal == -1,
-                data.Close*1.002,
+                data5m.signal == -1,
+                data5m.Close.shift(1),
                 0
             )
         )    
-        data['cierra'] = False
-
-        trend=tendencia (symbol,timeframe='1d')
-        if data.disparo.iloc[-2] != 0:# and data.disparo.iloc[-3] != 0: # dos intentos
-            print(f"\nOporunidad {symbol} - Tendencia {trend}% - lineas: {data.disparo.iloc[-2]} y {data.escape.iloc[-2]}")
+        data5m['cierra'] = False
+        trend=tendencia (symbol,'1d')
+        if data5m.disparo.iloc[-2] != 0: #significa que estamos en la ventana de posible atrape
+            print(f"\nOporunidad {symbol} - Tendencia {trend}% - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
             sound()
             sound()
             sound()
         if debug:
-            print(data[['martillo','disparo','escape','signal']].tail(60))
-        return data,porcentajeentrada            
+            print(data5m[['martillo','disparo','escape','signal']].tail(60))
+        return data5m,porcentajeentrada            
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1143,11 +1145,11 @@ def estrategia_oro(symbol,tp_flag = True):
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     data['signal'] = np.where(
         (data.time_hour.shift(1) == 14)
-        &(data.Close.shift(2) > data.Close.shift(1)) 
+        &(data.Close.shift(3) > data.Close.shift(1)) 
         ,1,
         np.where(
             (data.time_hour.shift(1) == 14)
-            &(data.Close.shift(2) < data.Close.shift(1)) 
+            &(data.Close.shift(3) < data.Close.shift(1)) 
             ,-1,
             0
         )
