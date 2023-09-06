@@ -1062,7 +1062,7 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
             flecha = " ↓"
             variacion = ((preciomenor/preciomayor)-1)*-100
         #######################
-        if data5m.disparo.iloc[-2] != 0: #significa que estamos en la ventana de posible atrape
+        if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
             print(f"\nOporunidad {symbol} - variacion {truncate(variacion,2)}% - flecha: {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
             sound()
             sound()
