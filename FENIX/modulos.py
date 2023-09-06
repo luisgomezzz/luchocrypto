@@ -1058,14 +1058,14 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         timestampmaximo=max(chg[chg['High']==max( chg['High'])]['Open Time'])
         timestampminimo=max(chg[chg['Low']==min( chg['Low'])]['Open Time'])
         if timestampmaximo>=timestampminimo:
-            flecha = " ↑"
+            flecha = "↑"
             variacion = ((preciomayor/preciomenor)-1)*100
         else:
-            flecha = " ↓"
+            flecha = "↓"
             variacion = ((preciomenor/preciomayor)-1)*-100
         #######################
         if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
-            print(f"\nOporunidad {symbol} - variacion {truncate(variacion,2)}% - flecha: {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
+            print(f"\nOporunidad {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
             sound()
             sound()
             sound()
