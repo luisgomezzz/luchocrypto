@@ -1041,17 +1041,29 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
                                         )
         data5m['stop_loss'] = np.where(
             data5m.signal == 1,
-            data5m.Close.shift(1),    
+            data5m.Low.shift(1),    
             np.where(
                 data5m.signal == -1,
-                data5m.Close.shift(1),
+                data5m.High.shift(1),
                 0
             )
         )    
         data5m['cierra'] = False
-        trend=tendencia (symbol,'1d')
+        #######################
+        chg=obtiene_historial (symbol,'1h',limit=24)
+        preciomenor=chg.Low.min()
+        preciomayor=chg.High.max()
+        timestampmaximo=max(chg[chg['High']==max( chg['High'])]['Open Time'])
+        timestampminimo=max(chg[chg['Low']==min( chg['Low'])]['Open Time'])
+        if timestampmaximo>=timestampminimo:
+            flecha = " ↑"
+            variacion = ((preciomayor/preciomenor)-1)*100
+        else:
+            flecha = " ↓"
+            variacion = ((preciomenor/preciomayor)-1)*-100
+        #######################
         if data5m.disparo.iloc[-2] != 0: #significa que estamos en la ventana de posible atrape
-            print(f"\nOporunidad {symbol} - Tendencia {trend}% - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
+            print(f"\nOporunidad {symbol} - variacion {truncate(variacion,2)}% - flecha: {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
             sound()
             sound()
             sound()
