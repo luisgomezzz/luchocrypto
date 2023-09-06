@@ -994,11 +994,13 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
         data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
         data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
+        data1h = data1h[:-1]
+        data1h['date1h']=data1h['Open Time']
         # Temporalidad de 5m para tradear
         data5m = obtiene_historial(symbol,'5m')
         resample = data1h.reindex(data5m.index, method='pad')
-        data5m = data5m.join(resample[['martillo','disparo','escape']])
-        data5m['n_atr'] = 1.5
+        data5m = data5m.join(resample[['martillo','disparo','escape','date1h']])
+        data5m['n_atr'] = 50
         data5m['signal'] = 0
         previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
         previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
@@ -1013,11 +1015,11 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
                     # Si cruzó algún valor clave
                     else:
                         # Si cruzó el disparo para Long
-                        if previous_martillo == 1 and row['Close'] > previous_disparo:
+                        if previous_martillo == 1 and row['Close'] > previous_disparo :
                             data5m.at[index, 'signal'] = 1
                         else:
                             # Si cruzó el disparo para Short
-                            if previous_martillo == -1 and row['Close'] < previous_disparo:
+                            if previous_martillo == -1 and row['Close'] < previous_disparo :
                                 data5m.at[index, 'signal'] = -1
                         # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
                         previous_disparo = 0
