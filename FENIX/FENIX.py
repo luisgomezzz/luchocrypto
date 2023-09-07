@@ -51,7 +51,7 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_trampa':
         data,porcentajeentrada = md.estrategia_trampa(symbol) 
     if estrategia_name=='estrategia_atrapes':
-        data,porcentajeentrada = md.estrategia_atrapes(symbol)                        
+        data,porcentajeentrada = md.estrategia_atrapes(symbol,alerta=False)                        
     return data, porcentajeentrada
 
 posiciones={}

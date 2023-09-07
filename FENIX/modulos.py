@@ -444,7 +444,7 @@ class TrailingStrategy(Strategy):
                                self.data.Close[index] + atr[index] * self.data.n_atr[index])
                 
 def backtesting(data, plot_flag=False,porcentajeentrada=100):
-    balance = 100000
+    balance = 100
     size= balance*porcentajeentrada/100
     def ema(data):
         indi=ta.ema(data.Close.s,length=21)
@@ -985,9 +985,11 @@ def es_martillo(vela):
                     out = -1
     return out    
     
-def estrategia_atrapes(symbol,tp_flag = True, debug = False):
+def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
+    # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
+    # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
     try:
-        porcentajeentrada = 100
+        porcentajeentrada = 500
         np.seterr(divide='ignore', invalid='ignore')
         # temporalidad de 1h para encontrar martillos y soportes/resistencias
         data1h = obtiene_historial(symbol,'1h')        
@@ -1002,8 +1004,10 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
         data5m = data5m.join(resample[['martillo','disparo','escape','date1h']])
         data5m['n_atr'] = 50
         data5m['signal'] = 0
+        data5m['previous_martillo'] = 0
         previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
         previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
+        previous_martillo = None
         for index, row in data5m.iterrows():
             # si no es unb martillo
             if row['martillo'] == 0:
@@ -1012,16 +1016,13 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
                     if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
                         data5m.at[index, 'disparo'] = previous_disparo
                         data5m.at[index, 'escape'] = previous_escape
+                        data5m.at[index, 'previous_martillo'] = previous_martillo
                     # Si cruzó algún valor clave
                     else:
-                        # Si cruzó el disparo para Long
-                        if previous_martillo == 1 and row['Close'] > previous_disparo :
-                            data5m.at[index, 'signal'] = 1
-                        else:
-                            # Si cruzó el disparo para Short
-                            if previous_martillo == -1 and row['Close'] < previous_disparo :
-                                data5m.at[index, 'signal'] = -1
                         # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
+                        data5m.at[index, 'disparo'] = previous_disparo
+                        data5m.at[index, 'escape'] = previous_escape
+                        data5m.at[index, 'previous_martillo'] = previous_martillo
                         previous_disparo = 0
                         previous_escape = 0
                         previous_martillo = 0
@@ -1029,17 +1030,22 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
             else: 
                 previous_disparo = row['disparo']
                 previous_escape = row['escape']
-                previous_martillo = row['martillo']
-        data5m['take_profit'] =   np.where(
-                                tp_flag,np.where(
-                                data5m.signal == 1,
-                                data5m.Close*1.006,
-                                np.where(
-                                        data5m.signal == -1,
-                                        data5m.Close*0.994,  
+                previous_martillo = row['martillo']        
+        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo),
+                                        1,
+                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo),
+                                        -1,  
                                         0
                                         )
-                                ),np.NaN
+                            )
+        data5m['take_profit'] = np.where(tp_flag,
+                                                np.where(data5m.signal == 1,
+                                                        data5m.Close*1.006,
+                                                            np.where(data5m.signal == -1,
+                                                                data5m.Close*0.994,  
+                                                            0
+                                                            )
+                                                ),np.NaN
                                         )
         data5m['stop_loss'] = np.where(
             data5m.signal == 1,
@@ -1064,13 +1070,18 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False):
             flecha = "↓"
             variacion = ((preciomenor/preciomayor)-1)*-100
         #######################
-        if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
-            print(f"\nOporunidad {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]}")
-            sound()
-            sound()
-            sound()
+        if alerta:
+            if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
+                print(f"\n{symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
+                sound()
+                sound()
+                sound()
         if debug:
-            print(data5m[['martillo','disparo','escape','signal']].tail(60))
+            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','previous_martillo']].to_string(index=False)
+
+            # print the string
+            print(df_str)
+            #print(data5m[['martillo','disparo','escape','signal','take_profit','stop_loss']].tail(60))
         return data5m,porcentajeentrada            
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
