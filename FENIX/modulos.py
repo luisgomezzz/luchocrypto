@@ -1057,8 +1057,8 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
             )
         )    
         data5m['cierra'] = False
-        #######################
-        chg=obtiene_historial (symbol,'1h',limit=24)
+        ####################### alertas y valores
+        chg=data1h.tail(24)
         preciomenor=chg.Low.min()
         preciomayor=chg.High.max()
         timestampmaximo=max(chg[chg['High']==max( chg['High'])]['Open Time'])
@@ -1069,19 +1069,14 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
         else:
             flecha = "↓"
             variacion = ((preciomenor/preciomayor)-1)*-100
-        #######################
         if alerta:
             if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
                 print(f"\n{symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
-                sound()
-                sound()
-                sound()
         if debug:
             df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','previous_martillo']].to_string(index=False)
-
-            # print the string
             print(df_str)
-            #print(data5m[['martillo','disparo','escape','signal','take_profit','stop_loss']].tail(60))
+        if data5m.signal.iloc[-1] !=0:
+            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]}")
         return data5m,porcentajeentrada            
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
