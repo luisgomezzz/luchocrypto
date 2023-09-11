@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_santa','estrategia_triangulos','estrategia_trampa','estrategia_atrapes'],
+                choices=['estrategia_atrapes','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -165,7 +165,7 @@ def main():
                             if data.signal[-1] ==-1:
                                 side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0: 
-                            print(f"\nsymbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]}")   
+                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]}")   
                             md.sound()
                             md.sound() 
                             #md.crea_posicion(symbol,side,porcentajeentrada) 

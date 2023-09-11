@@ -866,61 +866,6 @@ def backtestingsanta(data, plot_flag=False, debug = False):
             print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
     return output
 
-def estrategia_adrian(symbol,tp_flag = False):
-    porcentajeentrada = 100
-    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '15m'
-    ventana = 1
-    porc = 2
-    data = obtiene_historial(symbol,timeframe)
-    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
-    data['sma20']=ta.sma(data.Close,length=20)
-    data['ema21']=ta.ema(data.Close,length=21)
-    data['maximo'] = data['High'].rolling(ventana).max()
-    data['minimo'] = data['Low'].rolling(ventana).min()
-    data['signal'] = np.where(
-        (data.Close.shift(1) > data.sma20.shift(1))
-        &(data.Close.shift(1) > data.ema21.shift(1)) 
-        #&((data.Close.shift(1) >= data.minimo.shift(2)*(1+porc/100)) | (data.Close.shift(1) <= data.maximo.shift(2)*(1-porc/100)))
-        ,1,
-        np.where(
-            (data.Close.shift(1) < data.sma20.shift(1))
-            &(data.Close.shift(1) < data.ema21.shift(1)) 
-            #&((data.Close.shift(1) >= data.minimo.shift(2)*(1+porc/100)) | (data.Close.shift(1) <= data.maximo.shift(2)*(1-porc/100)))
-            ,-1,
-            0
-        )
-    )  
-    # SL y TP no son necesarios ya que la estrategia cierra el trade cuando cruza la ema y sma
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close*1.01,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close*0.99,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close*0.86,    
-        np.where(
-            data.signal == -1,
-            data.Close*1.14,
-            0
-        )
-    )    
-    data['cierra'] = np.where(
-        (data.signal.shift(1) != data.signal.shift(2))
-        &((data.signal.shift(1) ==1) | (data.signal.shift(1) ==-1)),
-        True,
-        False
-    )
-    return data,porcentajeentrada
-
 def closeposition(symbol,side):
     if side=='SELL':
         lado='BUY'
@@ -930,51 +875,12 @@ def closeposition(symbol,side):
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
 
-def estrategia_trampa(symbol,tp_flag = True):
-    porcentajeentrada = 100
-    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '1m'
-    data = obtiene_historial(symbol,timeframe)
-    data['n_atr'] = 50
-    data['signal'] = np.where(
-        1==2
-        ,1,
-        np.where(
-            (data.Close < 0.553)
-            ,-1,
-            0
-        )
-    )  
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close*1.006,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close*0.994,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close*0.994,    
-        np.where(
-            data.signal == -1,
-            data.Close*1.006,
-            0
-        )
-    )    
-    data['cierra'] = False
-    return data,porcentajeentrada
-
 def es_martillo(vela):
     out=0
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = ((vela.High/vela.Low)-1)*100 >= 0.7
+    condicion_largo = (vela.High-vela.Low) >= vela.atr
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
             if sombra_inferior > 2 * cuerpo: #martillo parado
@@ -988,8 +894,8 @@ def es_martillo(vela):
 def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
     # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
     # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
-    try:
-        porcentajeentrada = 500
+    try:        
+        
         np.seterr(divide='ignore', invalid='ignore')
         # temporalidad de 1h para encontrar martillos y soportes/resistencias
         data1h = obtiene_historial(symbol,'1h')        
@@ -1038,25 +944,34 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                                         0
                                         )
                             )
+        # En el ultimo registro se define como sell o long si el anteultimo terminó con signal ya que se trabaja a vela cerrada.
+        data5m.loc[data5m.index[-1], 'signal'] = np.where(data5m.signal.iloc[-2] == 1,
+                                        1,
+                                        np.where(data5m.signal.iloc[-2] == -1,
+                                            -1,  
+                                            0
+                                            )
+        
+                                        )
         data5m['take_profit'] = np.where(tp_flag,
                                                 np.where(data5m.signal == 1,
-                                                        data5m.Close*1.006,
-                                                            np.where(data5m.signal == -1,
-                                                                data5m.Close*0.994,  
-                                                            0
-                                                            )
-                                                ),np.NaN
+                                                    data5m.Close+data5m.atr*3,
+                                                np.where(data5m.signal == -1,
+                                                    data5m.Close-data5m.atr*3,  
+                                                    0
+                                                    )
+                                                ),
+                                        np.NaN
                                         )
-        data5m['stop_loss'] = np.where(
-            data5m.signal == 1,
-            data5m.Low.shift(1),    
-            np.where(
-                data5m.signal == -1,
-                data5m.High.shift(1),
-                0
-            )
-        )    
+        data5m['stop_loss'] =   np.where(data5m.signal == 1,
+                                    data5m.Close-data5m.atr*1.250,# un poco más allá para evitar que toque
+                                np.where(data5m.signal == -1,
+                                    data5m.Close+data5m.atr*1.250,
+                                    0
+                                    )
+                                )    
         data5m['cierra'] = False
+        porcentajeentrada = int(data5m.Close.iloc[-1]/data5m.atr.iloc[-1])
         ####################### alertas y valores
         chg=data1h.tail(24)
         preciomenor=chg.Low.min()
@@ -1076,7 +991,7 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
             df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','previous_martillo']].to_string(index=False)
             print(df_str)
         if data5m.signal.iloc[-1] !=0:
-            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]}")
+            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {porcentajeentrada}")
         return data5m,porcentajeentrada            
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
