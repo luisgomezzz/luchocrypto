@@ -894,8 +894,7 @@ def es_martillo(vela):
 def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
     # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
     # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
-    try:        
-        
+    try:                
         np.seterr(divide='ignore', invalid='ignore')
         # temporalidad de 1h para encontrar martillos y soportes/resistencias
         data1h = obtiene_historial(symbol,'1h')        
@@ -904,10 +903,19 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
         data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
         data1h = data1h[:-1]
         data1h['date1h']=data1h['Open Time']
+        preciomenor=data1h.Low.rolling(24).min()
+        preciomayor=data1h.High.rolling(24).max()
+        timestampmaximo=max(data1h[data1h['High']==max( data1h['High'])]['Open Time'])
+        timestampminimo=max(data1h[data1h['Low']==min( data1h['Low'])]['Open Time'])
+        if timestampmaximo>=timestampminimo:
+            variacion = ((preciomayor/preciomenor)-1)*100
+        else:
+            variacion = ((preciomenor/preciomayor)-1)*-100*-1
+        data1h['variacion_porc'] = variacion
         # Temporalidad de 5m para tradear
         data5m = obtiene_historial(symbol,'5m')
         resample = data1h.reindex(data5m.index, method='pad')
-        data5m = data5m.join(resample[['martillo','disparo','escape','date1h']])
+        data5m = data5m.join(resample[['martillo','disparo','escape','date1h','variacion_porc']])
         data5m['n_atr'] = 50
         data5m['signal'] = 0
         data5m['previous_martillo'] = 0
@@ -937,9 +945,9 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                 previous_disparo = row['disparo']
                 previous_escape = row['escape']
                 previous_martillo = row['martillo']        
-        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo),
+        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (abs(data5m.variacion_porc)>=7),
                                         1,
-                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo),
+                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (abs(data5m.variacion_porc)>=7),
                                         -1,  
                                         0
                                         )
@@ -951,7 +959,6 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                                             -1,  
                                             0
                                             )
-        
                                         )
         data5m['take_profit'] = np.where(tp_flag,
                                                 np.where(data5m.signal == 1,
@@ -964,34 +971,23 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                                         np.NaN
                                         )
         data5m['stop_loss'] =   np.where(data5m.signal == 1,
-                                    data5m.Close-data5m.atr*1.250,# un poco más allá para evitar que toque
+                                    data5m.Close-data5m.atr*1,
                                 np.where(data5m.signal == -1,
-                                    data5m.Close+data5m.atr*1.250,
+                                    data5m.Close+data5m.atr*1,
                                     0
                                     )
                                 )    
         data5m['cierra'] = False
         porcentajeentrada = int(data5m.Close.iloc[-1]/data5m.atr.iloc[-1])
         ####################### alertas y valores
-        chg=data1h.tail(24)
-        preciomenor=chg.Low.min()
-        preciomayor=chg.High.max()
-        timestampmaximo=max(chg[chg['High']==max( chg['High'])]['Open Time'])
-        timestampminimo=max(chg[chg['Low']==min( chg['Low'])]['Open Time'])
-        if timestampmaximo>=timestampminimo:
-            flecha = "↑"
-            variacion = ((preciomayor/preciomenor)-1)*100
-        else:
-            flecha = "↓"
-            variacion = ((preciomenor/preciomayor)-1)*-100
         if alerta:
             if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
-                print(f"\n{symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
+                print(f"\n{symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
         if debug:
-            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','previous_martillo']].to_string(index=False)
+            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc']].to_string(index=False)
             print(df_str)
         if data5m.signal.iloc[-1] !=0:
-            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {truncate(variacion,2)}% {flecha} - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {porcentajeentrada}")
+            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {porcentajeentrada}")
         return data5m,porcentajeentrada            
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
