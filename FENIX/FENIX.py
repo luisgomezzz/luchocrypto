@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_atrapes','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
+                choices=['estrategia_haz','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -33,7 +33,7 @@ if estrategia_name=='estrategia_triangulos':
     sys.stdout.write(CYAN)  
 if estrategia_name=='estrategia_trampa':
     sys.stdout.write(REVERSE)
-if estrategia_name=='estrategia_atrapes':
+if estrategia_name=='estrategia_haz':
     sys.stdout.write(RED)            
 
 md.printandlog(cons.nombrelog, estrategia_name)   
@@ -50,8 +50,8 @@ def dataframe_estrategia(symbol,estrategia_name):
         data = md.estrategia_triangulos(symbol)   
     if estrategia_name=='estrategia_trampa':
         data,porcentajeentrada = md.estrategia_trampa(symbol) 
-    if estrategia_name=='estrategia_atrapes':
-        data,porcentajeentrada = md.estrategia_atrapes(symbol,alerta=False)                        
+    if estrategia_name=='estrategia_haz':
+        data = md.estrategia_haz(symbol,alerta=False)                        
     return data, porcentajeentrada
 
 posiciones={}
@@ -152,7 +152,7 @@ def main():
 
                 try:
 
-                    data,porcentajeentrada = dataframe_estrategia(symbol,estrategia_name)
+                    data = dataframe_estrategia(symbol,estrategia_name)
                     
                     # CREA POSICION
                     side=''
@@ -168,6 +168,7 @@ def main():
                             print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]}")   
                             md.sound()
                             md.sound() 
+                            porcentajeentrada = data.porcentajeentrada[-1]
                             #md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)

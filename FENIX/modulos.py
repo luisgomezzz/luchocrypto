@@ -443,9 +443,8 @@ class TrailingStrategy(Strategy):
                 trade.sl = min(trade.sl or np.inf,
                                self.data.Close[index] + atr[index] * self.data.n_atr[index])
                 
-def backtesting(data, plot_flag=False,porcentajeentrada=100):
-    balance = 100
-    size= balance*porcentajeentrada/100
+def backtesting(data, plot_flag=False):
+    balance = 100    
     def ema(data):
         indi=ta.ema(data.Close.s,length=21)
         return indi.to_numpy()
@@ -467,6 +466,7 @@ def backtesting(data, plot_flag=False,porcentajeentrada=100):
                     tp_value = None
                 else:
                     tp_value = self.data.take_profit[-1]
+                size= balance*self.data.porcentajeentrada[-1]/100
                 if self.data.signal[-1]==1:
                     self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
                 elif self.data.signal[-1]==-1:
@@ -891,7 +891,7 @@ def es_martillo(vela):
                     out = -1
     return out    
     
-def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
+def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
     # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
     # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
     try:                
@@ -901,17 +901,9 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
         data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
         data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
         data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
-        data1h = data1h[:-1]
-        data1h['date1h']=data1h['Open Time']
-        preciomenor=data1h.Low.rolling(24).min()
-        preciomayor=data1h.High.rolling(24).max()
-        timestampmaximo=max(data1h[data1h['High']==max( data1h['High'])]['Open Time'])
-        timestampminimo=max(data1h[data1h['Low']==min( data1h['Low'])]['Open Time'])
-        if timestampmaximo>=timestampminimo:
-            variacion = ((preciomayor/preciomenor)-1)*100
-        else:
-            variacion = ((preciomenor/preciomayor)-1)*-100*-1
-        data1h['variacion_porc'] = variacion
+        data1h['date1h'] = data1h['Open Time']
+        data1h['variacion_porc'] = ((data1h.Close/data1h.Close.shift(24))-1)*100
+        data1h = data1h[:-1]        
         # Temporalidad de 5m para tradear
         data5m = obtiene_historial(symbol,'5m')
         resample = data1h.reindex(data5m.index, method='pad')
@@ -945,9 +937,9 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                 previous_disparo = row['disparo']
                 previous_escape = row['escape']
                 previous_martillo = row['martillo']        
-        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (abs(data5m.variacion_porc)>=7),
+        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (data5m.variacion_porc >= 5),
                                         1,
-                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (abs(data5m.variacion_porc)>=7),
+                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (data5m.variacion_porc <= -5),
                                         -1,  
                                         0
                                         )
@@ -978,17 +970,21 @@ def estrategia_atrapes(symbol,tp_flag = True, debug = False, alerta = True):
                                     )
                                 )    
         data5m['cierra'] = False
-        porcentajeentrada = int(data5m.Close.iloc[-1]/data5m.atr.iloc[-1])
+        # Reemplazar valores no finitos (NA e inf) con 0
+        data5m['porcentajeentrada'] = np.nan_to_num((data5m.Close/data5m.atr), nan=0, posinf=0, neginf=0)
+        # Aplicar np.floor y convertir a enteros
+        data5m['porcentajeentrada'] = np.floor(data5m['porcentajeentrada']).astype(int)
+        
         ####################### alertas y valores
         if alerta:
             if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
                 print(f"\n{symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
         if debug:
-            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc']].to_string(index=False)
+            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc','porcentajeentrada']].to_string(index=False)
             print(df_str)
         if data5m.signal.iloc[-1] !=0:
-            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {porcentajeentrada}")
-        return data5m,porcentajeentrada            
+            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {data5m.porcentajeentrada.iloc[-2]}")
+        return data5m
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
