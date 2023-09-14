@@ -577,7 +577,24 @@ def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = T
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass   
 
+def es_martillo(vela):
+    out=0
+    cuerpo = abs(vela['Open'] - vela['Close'])
+    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
+    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
+    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    if condicion_largo:
+        if sombra_inferior>sombra_superior*3:
+            if sombra_inferior > 2 * cuerpo: #martillo parado
+                out = 1
+        else:
+            if sombra_superior>sombra_inferior*3:
+                if sombra_superior > 2 * cuerpo: #martillo invertido
+                    out = -1
+    return out    
+
 def estrategia_santa(symbol,tp_flag = True):
+    # esta estrategia solo se utiliza a modo de prueba y backtesting ya que el programa en realidad es santa3
     porcentajeentrada = 10
     #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
@@ -588,14 +605,17 @@ def estrategia_santa(symbol,tp_flag = True):
     data = obtiene_historial(symbol,timeframe)
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
-    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.    
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. 
+    data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
     data['signal'] = np.where(
                             (data.Close.shift(1) <= data.minimo.shift(2)) # para que solo sea reentrada
+                            &data.martillo.shift(1) == 1
                             &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100)) # variacion desde
                             &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100)) # variacion hasta
                             ,1,
                             np.where(
                                     (data.Close.shift(1) >= data.maximo.shift(2)) 
+                                    &data.martillo.shift(1) == -1
                                     &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) 
                                     &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) 
                                     ,-1,
@@ -875,22 +895,6 @@ def closeposition(symbol,side):
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
 
-def es_martillo(vela):
-    out=0
-    cuerpo = abs(vela['Open'] - vela['Close'])
-    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
-    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= vela.atr
-    if condicion_largo:
-        if sombra_inferior>sombra_superior*3:
-            if sombra_inferior > 2 * cuerpo: #martillo parado
-                out = 1
-        else:
-            if sombra_superior>sombra_inferior*3:
-                if sombra_superior > 2 * cuerpo: #martillo invertido
-                    out = -1
-    return out    
-    
 def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
     # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
     # mientras que el programa verá un close distinto en cada instante a vela no cerrada.

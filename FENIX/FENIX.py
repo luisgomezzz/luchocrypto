@@ -106,7 +106,7 @@ def main():
     vueltas=0
     minutes_diff=0 
     balancetotal=md.balancetotal()
-    reservas = 2965
+    reservas = 3065
     global posiciones
     ##############START        
     print("Saldo: "+str(md.truncate(balancetotal,2)))
@@ -169,7 +169,7 @@ def main():
                             md.sound()
                             md.sound() 
                             porcentajeentrada = data.porcentajeentrada[-1]
-                            #md.crea_posicion(symbol,side,porcentajeentrada) 
+                            md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                

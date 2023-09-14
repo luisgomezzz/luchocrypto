@@ -466,8 +466,23 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass      
 
+def es_martillo(vela):
+    out=0
+    cuerpo = abs(vela['Open'] - vela['Close'])
+    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
+    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
+    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    if condicion_largo:
+        if sombra_inferior>sombra_superior*3:
+            if sombra_inferior > 2 * cuerpo: #martillo parado
+                out = 1
+        else:
+            if sombra_superior>sombra_inferior*3:
+                if sombra_superior > 2 * cuerpo: #martillo invertido
+                    out = -1
+    return out 
+
 def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->float:
-    # validaciones
     try:
         salida = False
         LL=ind.PPSR(symbol)
@@ -475,20 +490,20 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         S4=LL['S4']
         S5=LL['S5']
         R5=LL['R5']
+        df['martillo'] = df.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
         # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
         distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
-        trend = ut.tendencia (symbol,timeframe='1d')
         if side=='SELL':
-                if precioactual < R4 and trend <= 3: # si el precio anda entre los muros y tendencia
+                if precioactual < R4 and df.martillo.iloc[-2] == -1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o tendencia contraria. Trend {trend}%\n")
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o la vela anterior no es martillo.\n")
                     salida = False
         else:
-                if precioactual > S4 and trend >= -3: # si el precio anda entre los muros y tendencia
+                if precioactual > S4 and df.martillo.iloc[-2] == 1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o tendencia contraria. Trend {trend}%\n")
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o la vela anterior no es martillo.\n")
                     salida = False
         if salida==True:
             ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
@@ -736,7 +751,6 @@ def main() -> None:
                                 # #######################################################################################################
 
                                 if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
-                                    ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
                                     if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
                                         lado='SELL'
                                         if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
@@ -749,7 +763,6 @@ def main() -> None:
                                             ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2)))                                                    
                                             trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                             tradingflag=True
-
                                     else:
                                         if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                             lado='BUY'
