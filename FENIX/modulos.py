@@ -582,7 +582,7 @@ def es_martillo(vela):
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    condicion_largo = (vela.High-vela.Low) >= vela.atr/2
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
             if sombra_inferior > 2 * cuerpo: #martillo parado
