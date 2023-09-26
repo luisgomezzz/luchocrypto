@@ -1107,3 +1107,434 @@ def estrategia_oro(symbol,tp_flag = True):
     )
     data['cierra'] = False
     return data,porcentajeentrada    
+
+def backtesting_royal(data, plot_flag=False):
+    balance = 100    
+    def indicador(df_campo):
+        indi=pd.Series(df_campo)
+        return indi.to_numpy()
+    class Fenix(Strategy):
+        def init(self):
+            super().init()
+            #####   PIVOTS ok!!!
+            #self.pivot_high = self.I(indicador,self.data.pivot_high)
+            #self.pivot_low = self.I(indicador,self.data.pivot_low)
+            #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
+            #self.piso_del_maximo = self.I(indicador,self.data.piso_del_maximo)
+            ######  DECISIONALES
+            self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
+            self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
+            #####   EXTREMOS ok!!
+            self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
+            self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
+            self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
+            self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
+            #####   BOSES ok!!!
+            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #####   IMBALANCES ok!!!
+            self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
+            self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
+            self.imba_alcista_low = self.I(indicador,self.data.imba_alcista_low,name="imba_alcista_low", overlay=True, color="springgreen", scatter=True)
+            self.imba_alcista_high = self.I(indicador,self.data.imba_alcista_high,name="imba_alcista_high", overlay=True, color="springgreen", scatter=True)
+        def next(self):       
+            super().next()
+            if self.position:
+                if self.data.cierra[-1]==True:
+                    self.position.close()                    
+            else:   
+                if np.isnan(data.take_profit[-1]):
+                    tp_value = None
+                else:
+                    tp_value = self.data.take_profit[-1]
+                size= balance*self.data.porcentajeentrada[-1]/100
+                if self.data.signal[-1]==1:
+                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+                elif self.data.signal[-1]==-1:
+                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+    bt = Backtest(data, Fenix, cash=balance)
+    output = bt.run()
+    if plot_flag:
+        bt.plot()
+    return output
+
+####################################################################################
+
+def smart_money(df,symbol):
+    try:
+        # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
+        #
+        # Se debe tener en cuenta los boses son marcados una vez que se genera el rompimiento, esto significa que no se ve la línea de
+        # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses (extremos, orders bloks).
+        # Los imbalances no mitigados sí se pueden ver online.
+        #         
+        largo = 1 # Parámetro de longitud para los puntos pivote High y Low
+        df['pivot_high'] = np.NaN
+        df['pivot_low'] = np.NaN
+        df['row_number'] = (range(len(df)))
+        df.set_index('row_number', inplace=True)
+        # PIVOTS
+        for i in range(largo, len(df) - largo):
+            ## PIVOTS SUPERIORES
+            if (
+                df['High'].iloc[i] == df['High'].iloc[i - largo:i + largo + 1].max()
+                and df['High'].iloc[i] > df['High'].iloc[i - 1]
+                and df['High'].iloc[i] > df['High'].iloc[i + 1]
+                ):
+                df.at[i, 'pivot_high'] = df['High'].iloc[i]
+            ## PIVOTS INFERIORES
+            if (
+                df['Low'].iloc[i] == df['Low'].iloc[i - largo:i + largo + 1].min()
+                and df['Low'].iloc[i] < df['Low'].iloc[i - 1]
+                and df['Low'].iloc[i] < df['Low'].iloc[i + 1]
+                ):
+                df.at[i, 'pivot_low'] = df['Low'].iloc[i]
+        ## RELLENO DE PIVOTS
+        for i in range(0, len(df)-1):
+            if np.isnan(df['pivot_low'].iloc[i]):
+                df.at[i, 'pivot_low'] = df['pivot_low'].iloc[i - 1]
+            if np.isnan(df['pivot_high'].iloc[i]):
+                df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
+        ################# IMBALANCES
+        df4h = obtiene_historial(symbol,'4h')
+        df4h['row_number'] = (range(len(df4h)))
+        df4h.set_index('row_number', inplace=True)
+        df4h['imba_bajista_high'] = np.where(
+                                        ((df4h.Low.shift(1)) >= (df4h.High.shift(-1)+df4h.atr))                  
+                                        ,df4h.Low.shift(1),np.NaN)
+        df4h['imba_bajista_low'] = np.where(np.isnan(df4h['imba_bajista_high']),np.NaN,df4h.High.shift(-1))
+        df4h['imba_alcista_high'] = np.where(
+                                        ((df4h.High.shift(1)) <= (df4h.Low.shift(-1)-df4h.atr))
+                                        ,df4h.Low.shift(-1),np.NaN)
+        df4h['imba_alcista_low'] = np.where(np.isnan(df4h['imba_alcista_high']),np.NaN,df4h.High.shift(1))
+        df4h['timestamp']=df4h['Open Time']
+        df4h.set_index('timestamp', inplace=True)    
+        df4h=df4h[['imba_bajista_high','imba_bajista_low','imba_alcista_high','imba_alcista_low','Open Time']]
+        df=pd.merge(df,df4h, on=["Open Time"], how='left')        
+            ## RELLENO Y BORRADO DE IMBALANCES MITIGADOS
+            # imbalance alcista
+        imbalance_creado = False
+        imba_alcista_high = np.nan
+        imba_alcista_low = np.nan
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['imba_alcista_high'].iloc[i]): 
+                # un imbalance detectado en timeframe de 4h. Guardo los valores
+                imba_alcista_high=df['imba_alcista_high'].iloc[i]
+                imba_alcista_low=df['imba_alcista_low'].iloc[i]   
+                imbalance_creado = False
+            if imbalance_creado == False:     
+                # no es un imbalance detectado asi que estiro el dibujo
+                if df.Close.iloc[i] > imba_alcista_low: ## ya se creó el imbalance detectado. Dibujo
+                    df.at[i, 'imba_alcista_high'] = imba_alcista_high
+                    df.at[i, 'imba_alcista_low'] = imba_alcista_low
+                    imbalance_creado = True
+            else:
+                if df.Close.iloc[i] > imba_alcista_low: ## ya se completó el imbalance detectado. Dibujo mientras no sea mitigado
+                    df.at[i, 'imba_alcista_high'] = imba_alcista_high
+                    df.at[i, 'imba_alcista_low'] = imba_alcista_low
+                else:
+                    # se mitigó el imbalance, no dibujo
+                    imba_alcista_high = np.nan
+                    imba_alcista_low = np.nan
+            # imbalance bajista
+        imbalance_creado = False
+        imba_bajista_high = np.nan
+        imba_bajista_low = np.nan
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['imba_bajista_high'].iloc[i]): 
+                # un imbalance detectado en timeframe de 4h. Guardo los valores
+                imba_bajista_high=df['imba_bajista_high'].iloc[i]
+                imba_bajista_low=df['imba_bajista_low'].iloc[i]   
+                imbalance_creado = False
+            if imbalance_creado == False:     
+                # no es un imbalance detectado asi que estiro el dibujo
+                if df.Close.iloc[i] < imba_bajista_high: ## ya se creó el imbalance detectado. Dibujo
+                    df.at[i, 'imba_bajista_high'] = imba_bajista_high
+                    df.at[i, 'imba_bajista_low'] = imba_bajista_low
+                    imbalance_creado = True
+            else:
+                if df.Close.iloc[i] < imba_bajista_high: ## ya se completó el imbalance detectado. Dibujo mientras no sea mitigado
+                    df.at[i, 'imba_bajista_high'] = imba_bajista_high
+                    df.at[i, 'imba_bajista_low'] = imba_bajista_low
+                else:
+                    # se mitigó el imbalance, no dibujo
+                    imba_bajista_high = np.nan
+                    imba_bajista_low = np.nan
+        ################ BOSES
+        ### BOS BAJISTA
+        pico_maximo = 0
+        piso_del_maximo = 0
+        df['piso_del_maximo'] = np.NaN
+        for i in range(0, len(df)-1):
+            if df['pivot_high'].iloc[i]>pico_maximo:
+                pico_maximo = df['pivot_high'].iloc[i]
+                piso_del_maximo = df['pivot_low'].iloc[i]
+                df.at[i, 'piso_del_maximo'] = piso_del_maximo
+            if df['Close'].iloc[i] < piso_del_maximo:
+                pico_maximo = 0
+                piso_del_maximo = 0                
+                ##relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['piso_del_maximo'].iloc[i]):
+                df.at[i, 'piso_del_maximo'] = df['piso_del_maximo'].iloc[i - 1]
+        df['bos_bajista']=df.piso_del_maximo
+        bos=0
+        for i in range(len(df)-1, 0,-1):
+            if (df['Close'].iloc[i] < df['piso_del_maximo'].iloc[i]):
+                bos = df['piso_del_maximo'].iloc[i]
+            if df['bos_bajista'].iloc[i]!=bos:
+                df.at[i, 'bos_bajista'] = np.NaN
+        ### BOS ALCISTA
+        pico_minimo = float('inf')
+        techo_del_minimo = float('inf')
+        df['techo_del_minimo'] = np.NaN
+        for i in range(0, len(df)-1):
+            if df['pivot_low'].iloc[i]<pico_minimo:
+                pico_minimo = df['pivot_low'].iloc[i]
+                techo_del_minimo = df['pivot_high'].iloc[i]
+                df.at[i, 'techo_del_minimo'] = techo_del_minimo
+            if df['Close'].iloc[i] > techo_del_minimo:
+                pico_minimo = float('inf')
+                techo_del_minimo = float('inf')               
+                ##relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['techo_del_minimo'].iloc[i]):
+                df.at[i, 'techo_del_minimo'] = df['techo_del_minimo'].iloc[i - 1]
+        df['bos_alcista']=df.techo_del_minimo
+        bos=0
+        for i in range(len(df)-1, 0,-1):
+            if (df['Close'].iloc[i] > df['techo_del_minimo'].iloc[i]):
+                bos = df['techo_del_minimo'].iloc[i]
+            if df['bos_alcista'].iloc[i]!=bos:
+                df.at[i, 'bos_alcista'] = np.NaN          
+        ###################### EXTREMOS
+    
+        df5m = obtiene_historial(symbol,'1m') #historial de temporalidad inferior para refinar
+        
+        ##   extremos BAJISTAS
+        df['bajista_extremo_high']=np.nan
+        df['bajista_extremo_low']=np.nan
+        indice_guardado = 0
+        pico_maximo = float('-inf')
+        # recorre todo el dataframe principal
+        for i in range(0, len(df)-1): 
+            #si estamos sobre un bos bajista busco la vela con high mas alto y guardo el indice
+            if not np.isnan(df.bos_bajista.iloc[i]): 
+                if df.High.iloc[i] > pico_maximo:
+                    pico_maximo=df.High.iloc[i]
+                    indice_guardado=i                    
+            else: # terminó el bos bajista
+                if indice_guardado!=0:
+                    # Marca el high y low de la vela con mayor high detectado en el dataframe de 15 min para ese BOS
+                    df.at[indice_guardado, 'bajista_extremo_high'] =df.High.iloc[indice_guardado]
+                    df.at[indice_guardado, 'bajista_extremo_low'] =df.Low.iloc[indice_guardado]                    
+                    try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_5m = fecha_inicio_5m
+                        fecha_del_maximo_5m = fecha_actual_5m
+                        pico_maximo_5m = float('-inf')
+                        # busca el high mas alto en velas verdes
+                        for i in range(1,6,1):
+                        #for i in range(5,20,5):
+                            if df5m.High[fecha_actual_5m] > pico_maximo_5m and df5m.Close[fecha_actual_5m] > df5m.Open[fecha_actual_5m]:
+                                pico_maximo_5m = df5m.High[fecha_actual_5m]
+                                fecha_del_maximo_5m = fecha_actual_5m
+                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
+                        df.at[indice_guardado, 'bajista_extremo_high'] =df5m.at[fecha_del_maximo_5m, 'High']
+                        df.at[indice_guardado, 'bajista_extremo_low'] =df5m.at[fecha_del_maximo_5m, 'Low']
+                    except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+                indice_guardado = 0
+                pico_maximo = float('-inf')
+        #   extremos ALCISTAS
+        df['alcista_extremo_high']=np.nan
+        df['alcista_extremo_low']=np.nan
+        indice_guardado = 0
+        pico_minimo = float('inf')
+        # recorre todo el dataframe principal
+        for i in range(0, len(df)-1): 
+            #si estamos sobre un bos alcista busco la vela con low mas bajo y guardo el indice
+            if not np.isnan(df.bos_alcista.iloc[i]): 
+                if df.Low.iloc[i] < pico_minimo:
+                    pico_minimo=df.Low.iloc[i]
+                    indice_guardado=i
+            else: # terminó el bos bajista
+                if indice_guardado!=0:
+                    # Marca el high y low de la vela con mayor high detectado en el dataframe de 15 min para ese BOS
+                    df.at[indice_guardado, 'alcista_extremo_high'] =df.High.iloc[indice_guardado]
+                    df.at[indice_guardado, 'alcista_extremo_low'] =df.Low.iloc[indice_guardado]                    
+                    try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_5m = fecha_inicio_5m
+                        fecha_del_minimo_5m = fecha_actual_5m
+                        pico_minimo_5m = float('inf')
+                        # busca el high mas alto en velas rojas
+                        for i in range(1,6,1):
+                        #for i in range(5,20,5):
+                            if df5m.Low[fecha_actual_5m] < pico_minimo_5m and df5m.Close[fecha_actual_5m] < df5m.Open[fecha_actual_5m]:
+                                pico_minimo_5m = df5m.Low[fecha_actual_5m]
+                                fecha_del_minimo_5m = fecha_actual_5m
+                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
+                        df.at[indice_guardado, 'alcista_extremo_high'] =df5m.at[fecha_del_minimo_5m, 'High']
+                        df.at[indice_guardado, 'alcista_extremo_low'] =df5m.at[fecha_del_minimo_5m, 'Low']
+                    except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+                indice_guardado = 0
+                pico_minimo = float('inf')
+        #relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['bajista_extremo_high'].iloc[i]):
+                df.at[i, 'bajista_extremo_high'] = df['bajista_extremo_high'].iloc[i - 1]
+                df.at[i, 'bajista_extremo_low'] = df['bajista_extremo_low'].iloc[i - 1]
+            if np.isnan(df['alcista_extremo_high'].iloc[i]):
+                df.at[i, 'alcista_extremo_high'] = df['alcista_extremo_high'].iloc[i - 1]
+                df.at[i, 'alcista_extremo_low'] = df['alcista_extremo_low'].iloc[i - 1]                
+
+        ######################
+        ## DECISIONALES
+        df['color'] = np.where(df.Close > df.Open,'verde','rojo')
+        df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)
+        
+        ## BAJISTA
+        df['decisional_bajista_low'] = np.where(
+                                    (df.High >= df.High.shift(1))
+                                    &(df.High >= df.High.shift(-1)) 
+                                    &(df.High < df.bajista_extremo_low)
+                                    & ~np.isnan(df.bos_bajista)
+                                    & (df.Close.shift(-3) < (df.Close-df.Close*0.0007))
+                                    ,df.Low,
+                                    np.NaN)                                    
+        df['decisional_bajista_high'] = np.where(                                
+                                    (df.High >= df.High.shift(1)) 
+                                    &(df.High >= df.High.shift(-1))
+                                    &(df.High < df.bajista_extremo_low)
+                                    & ~np.isnan(df.bos_bajista)
+                                    & (df.Close.shift(-3) < (df.Close-df.Close*0.0007))
+                                    ,df.High,
+                                    np.NaN)  
+        ###refinado y relleno
+        high_guardado=np.nan
+        low_guardado=np.nan                                          
+        for i in range(0, len(df)-1):
+            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.High.iloc[i] < df.bajista_extremo_low.iloc[i]:    
+                df.at[i, 'decisional_bajista_high'] = high_guardado
+                df.at[i, 'decisional_bajista_low'] = low_guardado
+            else:
+                high_guardado = df['decisional_bajista_high'].iloc[i]
+                low_guardado = df['decisional_bajista_low'].iloc[i]
+                indice_guardado = i
+                try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_5m = fecha_inicio_5m
+                        fecha_del_maximo_5m = fecha_actual_5m
+                        pico_maximo_5m = 0
+                        # busca el high mas alto en velas verdes
+                        for i in range(1,6,1):
+                        #for i in range(5,20,5):
+                            if df5m.High[fecha_actual_5m] > pico_maximo_5m and df5m.Close[fecha_actual_5m] > df5m.Open[fecha_actual_5m]:
+                                pico_maximo_5m = df5m.High[fecha_actual_5m]
+                                fecha_del_maximo_5m = fecha_actual_5m
+                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
+                        high_guardado = df5m.High[fecha_del_maximo_5m]
+                        low_guardado = df5m.Low[fecha_del_maximo_5m]
+                except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+        
+        ### ALCISTA
+        df['decisional_alcista_low'] = np.where(
+                                    (df.Low <= df.Low.shift(1))
+                                    &(df.Low <= df.Low.shift(-1)) 
+                                    &(df.Low > df.alcista_extremo_high)
+                                    & ~np.isnan(df.bos_alcista)
+                                    & (df.Close.shift(-3) > (df.Close+df.Close*0.0007))
+                                    ,df.Low,
+                                    np.NaN)                                    
+        df['decisional_alcista_high'] = np.where(                                
+                                    (df.Low <= df.Low.shift(1))
+                                    &(df.Low <= df.Low.shift(-1)) 
+                                    &(df.Low > df.alcista_extremo_high)
+                                    & ~np.isnan(df.bos_alcista)
+                                    & (df.Close.shift(-3) > (df.Close+df.Close*0.0007))
+                                    ,df.High,
+                                    np.NaN)  
+        ###refinado y relleno
+        high_guardado=np.nan
+        low_guardado=np.nan                                          
+        for i in range(0, len(df)-1):
+            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Low.iloc[i] > df.alcista_extremo_high.iloc[i]:    
+                df.at[i, 'decisional_alcista_high'] = high_guardado
+                df.at[i, 'decisional_alcista_low'] = low_guardado
+            else:
+                high_guardado = df['decisional_alcista_high'].iloc[i]
+                low_guardado = df['decisional_alcista_low'].iloc[i]
+                indice_guardado = i
+                try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_5m = fecha_inicio_5m
+                        fecha_del_minimo_5m = fecha_actual_5m
+                        pico_minimo_5m = 0
+                        # busca el low mas bajo en velas rojas
+                        for i in range(1,6,1):
+                        #for i in range(5,20,5):
+                            if df5m.Low[fecha_actual_5m] < pico_minimo_5m and df5m.Close[fecha_actual_5m] < df5m.Open[fecha_actual_5m]:
+                                pico_minimo_5m = df5m.Low[fecha_actual_5m]
+                                fecha_del_minimo_5m = fecha_actual_5m
+                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
+                        high_guardado = df5m.High[fecha_del_minimo_5m]
+                        low_guardado = df5m.Low[fecha_del_minimo_5m]
+                except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+        ########################################## INDICE
+        df['timestamp']=df['Open Time']
+        df.set_index('timestamp', inplace=True)
+        return df
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+##########################################################################################
+
+def estrategia_royal(symbol,debug = False):
+    try:                
+        np.seterr(divide='ignore', invalid='ignore')
+        # temporalidad de 1h para encontrar martillos y soportes/resistencias
+        data = obtiene_historial(symbol,'5m')
+        data=smart_money(data,symbol)          
+        data.drop(['ema20','ema50', 'ema200'], axis=1, inplace=True)    
+        data['signal'] = 0
+        data['take_profit'] = np.NaN
+        data['stop_loss'] = np.NaN
+        data['cierra'] = False
+        # Reemplazar valores no finitos (NA e inf) con 0
+        data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
+        # Aplicar np.floor y convertir a enteros
+        data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
+        ####################### alertas y valores
+        if debug:
+            df_str = data[list(data.columns)].to_string(index=False)
+            print(df_str)
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
