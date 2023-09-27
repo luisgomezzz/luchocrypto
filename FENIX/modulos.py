@@ -1116,7 +1116,12 @@ def backtesting_royal(data, plot_flag=False):
     class Fenix(Strategy):
         def init(self):
             super().init()
+            #### varios
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+
+
             #####   PIVOTS ok!!!
+
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
             #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
@@ -1502,6 +1507,34 @@ def smart_money(df,symbol):
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
+        ##################################tnedencia
+        df['tendencia'] = np.nan
+        v_contador_bajista = 0
+        v_ultimo_bos_bajista = 0
+        v_contador_alcista = 0
+        v_ultimo_bos_alcista = 0
+        v_tendencia_guardada = 0
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['bos_bajista'].iloc[i]) and df['bos_bajista'].iloc[i] !=v_ultimo_bos_bajista:
+                v_ultimo_bos_bajista = df['bos_bajista'].iloc[i]
+                v_contador_bajista=v_contador_bajista+1
+            if not np.isnan(df['bos_alcista'].iloc[i]) and df['bos_alcista'].iloc[i] !=v_ultimo_bos_alcista:
+                v_ultimo_bos_alcista = df['bos_alcista'].iloc[i]
+                v_contador_alcista=v_contador_alcista+1 
+            if  v_contador_bajista == 2:
+                v_tendencia_guardada  = -1
+                v_contador_bajista = 0
+                v_ultimo_bos_bajista = 0
+                v_contador_alcista = 0
+                v_ultimo_bos_alcista = 0
+            if  v_contador_alcista == 2:
+                v_tendencia_guardada  = 1
+                v_contador_bajista = 0
+                v_ultimo_bos_bajista = 0
+                v_contador_alcista = 0
+                v_ultimo_bos_alcista = 0  
+            df.at[i, 'tendencia'] = v_tendencia_guardada         
+
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
