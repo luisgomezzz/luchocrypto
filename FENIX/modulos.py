@@ -1117,11 +1117,8 @@ def backtesting_royal(data, plot_flag=False):
         def init(self):
             super().init()
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
-
-
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             #####   PIVOTS ok!!!
-
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
             #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
@@ -1392,7 +1389,7 @@ def smart_money(df,symbol):
                     except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
                 indice_guardado = 0
                 pico_minimo = float('inf')
@@ -1456,7 +1453,7 @@ def smart_money(df,symbol):
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
         
         ### ALCISTA
@@ -1505,7 +1502,7 @@ def smart_money(df,symbol):
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
         ##################################tnedencia
         df['tendencia'] = np.nan
@@ -1553,9 +1550,38 @@ def estrategia_royal(symbol,debug = False):
         data = obtiene_historial(symbol,'5m')
         data=smart_money(data,symbol)          
         data.drop(['ema20','ema50', 'ema200'], axis=1, inplace=True)    
-        data['signal'] = 0
-        data['take_profit'] = np.NaN
-        data['stop_loss'] = np.NaN
+        data['signal'] = np.where((data.tendencia == 1)
+                                  &(data.Low > data.decisional_alcista_low)
+                                  &(data.Low <= data.decisional_alcista_high)
+                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  ,1,
+                                  np.where((data.tendencia == -1)
+                                  &(data.High < data.decisional_bajista_high)
+                                  &(data.High >= data.decisional_bajista_low)
+                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  ,-1,
+                                  0
+                                )
+                                )
+        data['take_profit'] =   np.where(
+                                data.signal == -1,
+                                data.Close-data.atr*3,
+                                np.where(
+                                data.signal == 1,
+                                data.Close+data.atr*3,
+                                0
+                                )
+                                )
+        data['stop_loss'] = np.where(
+                                data.signal == -1,
+                                data.decisional_bajista_high,
+                                np.where(
+                                data.signal == 1,
+                                data.decisional_alcista_low,
+                                0
+                                )
+                                )
+
         data['cierra'] = False
         # Reemplazar valores no finitos (NA e inf) con 0
         data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
