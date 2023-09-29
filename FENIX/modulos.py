@@ -1134,8 +1134,8 @@ def backtesting_royal(data, plot_flag=False):
             self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
             self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
             self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
             self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
@@ -1200,7 +1200,7 @@ def smart_money(df,symbol):
             if np.isnan(df['pivot_high'].iloc[i]):
                 df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
         ################# IMBALANCES
-        df4h = obtiene_historial(symbol,'4h')
+        df4h = obtiene_historial(symbol,'5m')
         df4h['row_number'] = (range(len(df4h)))
         df4h.set_index('row_number', inplace=True)
         df4h['imba_bajista_high'] = np.where(
@@ -1408,25 +1408,30 @@ def smart_money(df,symbol):
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)
         
         ## BAJISTA
+        decisional_bajista_condicion =  (
+                                        (df.High >= df.High.shift(1))
+                                        &(df.High >= df.High.shift(-1)) 
+                                        &(df.High <  df.bajista_extremo_low)
+                                        & ~np.isnan(df.bos_bajista)
+                                        & (
+                                            ((df.Low) >= (df.High.shift(-2)+df.atr))
+                                            |
+                                            ((df.Low.shift(-1)) >= (df.High.shift(-3)+df.atr))
+                                            |
+                                            ((df.Low.shift(-2)) >= (df.High.shift(-4)+df.atr))                                          
+                                          )
+                                        )
         df['decisional_bajista_low'] = np.where(
-                                    (df.High >= df.High.shift(1))
-                                    &(df.High >= df.High.shift(-1)) 
-                                    &(df.High < df.bajista_extremo_low)
-                                    & ~np.isnan(df.bos_bajista)
-                                    & (df.Close.shift(-3) < (df.Close-df.Close*0.0007))
+                                    decisional_bajista_condicion
                                     ,df.Low,
                                     np.NaN)                                    
         df['decisional_bajista_high'] = np.where(                                
-                                    (df.High >= df.High.shift(1)) 
-                                    &(df.High >= df.High.shift(-1))
-                                    &(df.High < df.bajista_extremo_low)
-                                    & ~np.isnan(df.bos_bajista)
-                                    & (df.Close.shift(-3) < (df.Close-df.Close*0.0007))
+                                    decisional_bajista_condicion
                                     ,df.High,
                                     np.NaN)  
         ###refinado y relleno
-        high_guardado=np.nan
-        low_guardado=np.nan                                          
+        high_guardado = np.nan
+        low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
             if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.High.iloc[i] < df.bajista_extremo_low.iloc[i]:    
                 df.at[i, 'decisional_bajista_high'] = high_guardado
@@ -1457,20 +1462,25 @@ def smart_money(df,symbol):
                         pass
         
         ### ALCISTA
+        decisional_alcista_condicion =  (
+                                        (df.Low <= df.Low.shift(1))
+                                        &(df.Low <= df.Low.shift(-1)) 
+                                        &(df.Low > df.alcista_extremo_high)
+                                        & ~np.isnan(df.bos_alcista)
+                                        &(
+                                            ((df.High) <= (df.Low.shift(-2)-df.atr))
+                                            |
+                                            ((df.High.shift(-1)) <= (df.Low.shift(-3)-df.atr))
+                                            |
+                                            ((df.High.shift(-2)) <= (df.Low.shift(-4)-df.atr))
+                                        )
+                                        )
         df['decisional_alcista_low'] = np.where(
-                                    (df.Low <= df.Low.shift(1))
-                                    &(df.Low <= df.Low.shift(-1)) 
-                                    &(df.Low > df.alcista_extremo_high)
-                                    & ~np.isnan(df.bos_alcista)
-                                    & (df.Close.shift(-3) > (df.Close+df.Close*0.0007))
+                                    decisional_alcista_condicion
                                     ,df.Low,
                                     np.NaN)                                    
         df['decisional_alcista_high'] = np.where(                                
-                                    (df.Low <= df.Low.shift(1))
-                                    &(df.Low <= df.Low.shift(-1)) 
-                                    &(df.Low > df.alcista_extremo_high)
-                                    & ~np.isnan(df.bos_alcista)
-                                    & (df.Close.shift(-3) > (df.Close+df.Close*0.0007))
+                                    decisional_alcista_condicion
                                     ,df.High,
                                     np.NaN)  
         ###refinado y relleno
