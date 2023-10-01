@@ -1183,17 +1183,25 @@ def backtesting_royal(data, plot_flag=False):
 
 ####################################################################################
 
-def smart_money(df,symbol):
+def smart_money(df,symbol,refinado,file_source):
     try:
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
         # Se debe tener en cuenta los boses son marcados una vez que se genera el rompimiento, esto significa que no se ve la línea de
         # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
         # Los imbalances no mitigados sí se pueden ver online.
-        #         
-        df_refinar = obtiene_historial(symbol,'5m') #historial de temporalidad inferior para refinar
-        parametros_refinado = {"start":5,"stop":20,"step":5} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
-        df_imbalance = obtiene_historial(symbol,'5m') #historial para imbalances        
+        #  
+        if refinado:
+            df_refinar = obtiene_historial(symbol,'5m') #historial de temporalidad inferior para refinar
+            parametros_refinado = {"start":5,"stop":20,"step":5} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
+        
+        if file_source:
+            df_imbalance = myfxbook_file_historico() 
+            refinado = False
+        else:
+            df_imbalance = obtiene_historial(symbol,'15m') #historial para imbalances        
+        
+
         largo = 1 # Parámetro de longitud para los puntos pivote High y Low
         df['pivot_high'] = np.NaN
         df['pivot_low'] = np.NaN
@@ -1359,14 +1367,15 @@ def smart_money(df,symbol):
                         fecha_actual_refinar = fecha_inicio_refinar
                         fecha_del_maximo_refinar = fecha_actual_refinar
                         pico_maximo_refinar = float('-inf')
-                        # busca el high mas alto en velas verdes
-                        for i in range(parametros_refinado):
-                            if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
-                                pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
-                                fecha_del_maximo_refinar = fecha_actual_refinar
-                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
-                        df.at[indice_guardado, 'bajista_extremo_high'] =df_refinar.at[fecha_del_maximo_refinar, 'High']
-                        df.at[indice_guardado, 'bajista_extremo_low'] =df_refinar.at[fecha_del_maximo_refinar, 'Low']
+                        if refinado:
+                            # busca el high mas alto en velas verdes
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                    pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                    fecha_del_maximo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            df.at[indice_guardado, 'bajista_extremo_high'] =df_refinar.at[fecha_del_maximo_refinar, 'High']
+                            df.at[indice_guardado, 'bajista_extremo_low'] =df_refinar.at[fecha_del_maximo_refinar, 'Low']
                     except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1397,14 +1406,15 @@ def smart_money(df,symbol):
                         fecha_actual_refinar = fecha_inicio_refinar
                         fecha_del_minimo_refinar = fecha_actual_refinar
                         pico_minimo_refinar = float('inf')
-                        # busca el high mas alto en velas rojas
-                        for i in range(parametros_refinado):
-                            if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
-                                pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
-                                fecha_del_minimo_refinar = fecha_actual_refinar
-                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
-                        df.at[indice_guardado, 'alcista_extremo_high'] =df_refinar.at[fecha_del_minimo_refinar, 'High']
-                        df.at[indice_guardado, 'alcista_extremo_low'] =df_refinar.at[fecha_del_minimo_refinar, 'Low']
+                        if refinado:
+                            # busca el high mas alto en velas rojas
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                    pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                    fecha_del_minimo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            df.at[indice_guardado, 'alcista_extremo_high'] =df_refinar.at[fecha_del_minimo_refinar, 'High']
+                            df.at[indice_guardado, 'alcista_extremo_low'] =df_refinar.at[fecha_del_minimo_refinar, 'Low']
                     except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1463,14 +1473,17 @@ def smart_money(df,symbol):
                         fecha_actual_refinar = fecha_inicio_refinar
                         fecha_del_maximo_refinar = fecha_actual_refinar
                         pico_maximo_refinar = 0
-                        # busca el high mas alto en velas verdes
-                        for i in range(parametros_refinado):
-                            if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
-                                pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
-                                fecha_del_maximo_refinar = fecha_actual_refinar
-                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
-                        high_guardado = df_refinar.High[fecha_del_maximo_refinar]
-                        low_guardado = df_refinar.Low[fecha_del_maximo_refinar]
+                        if refinado:
+                            # busca el high mas alto en velas verdes
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                print(f"fecha_actual_refinar: {fecha_actual_refinar}")
+                                if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                    pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                    fecha_del_maximo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            high_guardado = df_refinar.High[fecha_del_maximo_refinar]
+                            low_guardado = df_refinar.Low[fecha_del_maximo_refinar]
+                            print(f"fecha elegida: {fecha_del_maximo_refinar}")
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1515,14 +1528,15 @@ def smart_money(df,symbol):
                         fecha_actual_refinar = fecha_inicio_refinar
                         fecha_del_minimo_refinar = fecha_actual_refinar
                         pico_minimo_refinar = 0
-                        # busca el low mas bajo en velas rojas
-                        for i in range(parametros_refinado):
-                            if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
-                                pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
-                                fecha_del_minimo_refinar = fecha_actual_refinar
-                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
-                        high_guardado = df_refinar.High[fecha_del_minimo_refinar]
-                        low_guardado = df_refinar.Low[fecha_del_minimo_refinar]
+                        if refinado:
+                            # busca el low mas bajo en velas rojas
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                    pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                    fecha_del_minimo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            high_guardado = df_refinar.High[fecha_del_minimo_refinar]
+                            low_guardado = df_refinar.Low[fecha_del_minimo_refinar]
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1567,12 +1581,18 @@ def smart_money(df,symbol):
         pass
 ##########################################################################################
 
-def estrategia_royal(symbol,debug = False):
+def estrategia_royal(symbol,debug = False, refinado = True, file_source=False):
     try:                
         np.seterr(divide='ignore', invalid='ignore')
-        data = obtiene_historial(symbol,'15m')
-        data = smart_money(data,symbol)          
-        #data.drop(['ema20','ema50', 'ema200'], axis=1, inplace=True)    
+        
+        if file_source:
+            data = myfxbook_file_historico()
+            refinado = False
+        else:
+            data = obtiene_historial(symbol,'15m')
+        
+        
+        data = smart_money(data,symbol,refinado,file_source)          
         data['signal'] = np.where((data.tendencia == 1)
                                   &(data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high)
