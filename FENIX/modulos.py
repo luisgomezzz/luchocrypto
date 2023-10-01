@@ -1108,6 +1108,25 @@ def estrategia_oro(symbol,tp_flag = True):
     data['cierra'] = False
     return data,porcentajeentrada    
 
+def myfxbook_file_historico():
+    # Función que toma datos bajados desde https://www.myfxbook.com/forex-market/currencies/ a un archivo "historico.csv"
+    archivo_csv = 'historico.csv'
+    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
+    data = pd.read_csv(archivo_csv, header=None, names=column_names)
+    data['Open Time']=pd.to_datetime(data['Open Time'])
+    data['timestamp']=data['Open Time']
+    data.set_index('timestamp', inplace=True)
+    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
+    data.sort_values(by='timestamp', ascending = True, inplace = True)
+    data['Volume'] = 1
+    numeric_columns = ['Open', 'High', 'Low', 'Close','Volume']
+    data['ema20'] = ta.ema(data.Close, length=20)
+    data['ema50'] = ta.ema(data.Close, length=50)
+    data['ema200'] = ta.ema(data.Close, length=200)
+    data['atr'] = ta.atr(data.High, data.Low, data.Close)   
+    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+    return data
+
 def backtesting_royal(data, plot_flag=False):
     balance = 100    
     def indicador(df_campo):
@@ -1134,8 +1153,8 @@ def backtesting_royal(data, plot_flag=False):
             self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
             self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
             self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
             self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
@@ -1169,15 +1188,19 @@ def smart_money(df,symbol):
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
         # Se debe tener en cuenta los boses son marcados una vez que se genera el rompimiento, esto significa que no se ve la línea de
-        # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses (extremos, orders bloks).
+        # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
         # Los imbalances no mitigados sí se pueden ver online.
         #         
+        df_refinar = obtiene_historial(symbol,'5m') #historial de temporalidad inferior para refinar
+        parametros_refinado = {"start":5,"stop":20,"step":5} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
+        df_imbalance = obtiene_historial(symbol,'5m') #historial para imbalances        
         largo = 1 # Parámetro de longitud para los puntos pivote High y Low
         df['pivot_high'] = np.NaN
         df['pivot_low'] = np.NaN
         df['row_number'] = (range(len(df)))
         df.set_index('row_number', inplace=True)
-        # PIVOTS
+
+        ##################################################################################### PIVOTS
         for i in range(largo, len(df) - largo):
             ## PIVOTS SUPERIORES
             if (
@@ -1199,22 +1222,22 @@ def smart_money(df,symbol):
                 df.at[i, 'pivot_low'] = df['pivot_low'].iloc[i - 1]
             if np.isnan(df['pivot_high'].iloc[i]):
                 df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
-        ################# IMBALANCES
-        df4h = obtiene_historial(symbol,'5m')
-        df4h['row_number'] = (range(len(df4h)))
-        df4h.set_index('row_number', inplace=True)
-        df4h['imba_bajista_high'] = np.where(
-                                        ((df4h.Low.shift(1)) >= (df4h.High.shift(-1)+df4h.atr))                  
-                                        ,df4h.Low.shift(1),np.NaN)
-        df4h['imba_bajista_low'] = np.where(np.isnan(df4h['imba_bajista_high']),np.NaN,df4h.High.shift(-1))
-        df4h['imba_alcista_high'] = np.where(
-                                        ((df4h.High.shift(1)) <= (df4h.Low.shift(-1)-df4h.atr))
-                                        ,df4h.Low.shift(-1),np.NaN)
-        df4h['imba_alcista_low'] = np.where(np.isnan(df4h['imba_alcista_high']),np.NaN,df4h.High.shift(1))
-        df4h['timestamp']=df4h['Open Time']
-        df4h.set_index('timestamp', inplace=True)    
-        df4h=df4h[['imba_bajista_high','imba_bajista_low','imba_alcista_high','imba_alcista_low','Open Time']]
-        df=pd.merge(df,df4h, on=["Open Time"], how='left')        
+        
+        ###################################################################################### IMBALANCES
+        df_imbalance['row_number'] = (range(len(df_imbalance)))
+        df_imbalance.set_index('row_number', inplace=True)
+        df_imbalance['imba_bajista_high'] = np.where(
+                                        ((df_imbalance.Low.shift(1)) >= (df_imbalance.High.shift(-1)+df_imbalance.atr))
+                                        ,df_imbalance.Low.shift(1),np.NaN)
+        df_imbalance['imba_bajista_low'] = np.where(np.isnan(df_imbalance['imba_bajista_high']),np.NaN,df_imbalance.High.shift(-1))
+        df_imbalance['imba_alcista_high'] = np.where(
+                                        ((df_imbalance.High.shift(1)) <= (df_imbalance.Low.shift(-1)-df_imbalance.atr))
+                                        ,df_imbalance.Low.shift(-1),np.NaN)
+        df_imbalance['imba_alcista_low'] = np.where(np.isnan(df_imbalance['imba_alcista_high']),np.NaN,df_imbalance.High.shift(1))
+        df_imbalance['timestamp']=df_imbalance['Open Time']
+        df_imbalance.set_index('timestamp', inplace=True)    
+        df_imbalance=df_imbalance[['imba_bajista_high','imba_bajista_low','imba_alcista_high','imba_alcista_low','Open Time']]
+        df=pd.merge(df,df_imbalance, on=["Open Time"], how='left')        
             ## RELLENO Y BORRADO DE IMBALANCES MITIGADOS
             # imbalance alcista
         imbalance_creado = False
@@ -1264,7 +1287,7 @@ def smart_money(df,symbol):
                     # se mitigó el imbalance, no dibujo
                     imba_bajista_high = np.nan
                     imba_bajista_low = np.nan
-        ################ BOSES
+        ######################################################################################################## BOSES
         ### BOS BAJISTA
         pico_maximo = 0
         piso_del_maximo = 0
@@ -1311,15 +1334,13 @@ def smart_money(df,symbol):
                 bos = df['techo_del_minimo'].iloc[i]
             if df['bos_alcista'].iloc[i]!=bos:
                 df.at[i, 'bos_alcista'] = np.NaN          
-        ###################### EXTREMOS
+        ################################################################################################### EXTREMOS
     
-        df5m = obtiene_historial(symbol,'1m') #historial de temporalidad inferior para refinar
-        
         ##   extremos BAJISTAS
         df['bajista_extremo_high']=np.nan
         df['bajista_extremo_low']=np.nan
         indice_guardado = 0
-        pico_maximo = float('-inf')
+        pico_maximo = float('-inf')        
         # recorre todo el dataframe principal
         for i in range(0, len(df)-1): 
             #si estamos sobre un bos bajista busco la vela con high mas alto y guardo el indice
@@ -1329,24 +1350,23 @@ def smart_money(df,symbol):
                     indice_guardado=i                    
             else: # terminó el bos bajista
                 if indice_guardado!=0:
-                    # Marca el high y low de la vela con mayor high detectado en el dataframe de 15 min para ese BOS
+                    # Marca el high y low de la vela con mayor high detectado en el dataframe principal para ese BOS
                     df.at[indice_guardado, 'bajista_extremo_high'] =df.High.iloc[indice_guardado]
                     df.at[indice_guardado, 'bajista_extremo_low'] =df.Low.iloc[indice_guardado]                    
                     try:
                         # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
-                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
-                        fecha_actual_5m = fecha_inicio_5m
-                        fecha_del_maximo_5m = fecha_actual_5m
-                        pico_maximo_5m = float('-inf')
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_maximo_refinar = fecha_actual_refinar
+                        pico_maximo_refinar = float('-inf')
                         # busca el high mas alto en velas verdes
-                        for i in range(1,6,1):
-                        #for i in range(5,20,5):
-                            if df5m.High[fecha_actual_5m] > pico_maximo_5m and df5m.Close[fecha_actual_5m] > df5m.Open[fecha_actual_5m]:
-                                pico_maximo_5m = df5m.High[fecha_actual_5m]
-                                fecha_del_maximo_5m = fecha_actual_5m
-                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
-                        df.at[indice_guardado, 'bajista_extremo_high'] =df5m.at[fecha_del_maximo_5m, 'High']
-                        df.at[indice_guardado, 'bajista_extremo_low'] =df5m.at[fecha_del_maximo_5m, 'Low']
+                        for i in range(parametros_refinado):
+                            if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                fecha_del_maximo_refinar = fecha_actual_refinar
+                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                        df.at[indice_guardado, 'bajista_extremo_high'] =df_refinar.at[fecha_del_maximo_refinar, 'High']
+                        df.at[indice_guardado, 'bajista_extremo_low'] =df_refinar.at[fecha_del_maximo_refinar, 'Low']
                     except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1373,19 +1393,18 @@ def smart_money(df,symbol):
                     df.at[indice_guardado, 'alcista_extremo_low'] =df.Low.iloc[indice_guardado]                    
                     try:
                         # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
-                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
-                        fecha_actual_5m = fecha_inicio_5m
-                        fecha_del_minimo_5m = fecha_actual_5m
-                        pico_minimo_5m = float('inf')
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_minimo_refinar = fecha_actual_refinar
+                        pico_minimo_refinar = float('inf')
                         # busca el high mas alto en velas rojas
-                        for i in range(1,6,1):
-                        #for i in range(5,20,5):
-                            if df5m.Low[fecha_actual_5m] < pico_minimo_5m and df5m.Close[fecha_actual_5m] < df5m.Open[fecha_actual_5m]:
-                                pico_minimo_5m = df5m.Low[fecha_actual_5m]
-                                fecha_del_minimo_5m = fecha_actual_5m
-                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
-                        df.at[indice_guardado, 'alcista_extremo_high'] =df5m.at[fecha_del_minimo_5m, 'High']
-                        df.at[indice_guardado, 'alcista_extremo_low'] =df5m.at[fecha_del_minimo_5m, 'Low']
+                        for i in range(parametros_refinado):
+                            if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                fecha_del_minimo_refinar = fecha_actual_refinar
+                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                        df.at[indice_guardado, 'alcista_extremo_high'] =df_refinar.at[fecha_del_minimo_refinar, 'High']
+                        df.at[indice_guardado, 'alcista_extremo_low'] =df_refinar.at[fecha_del_minimo_refinar, 'Low']
                     except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1402,23 +1421,21 @@ def smart_money(df,symbol):
                 df.at[i, 'alcista_extremo_high'] = df['alcista_extremo_high'].iloc[i - 1]
                 df.at[i, 'alcista_extremo_low'] = df['alcista_extremo_low'].iloc[i - 1]                
 
-        ######################
-        ## DECISIONALES
+        ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
-        df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)
-        
+        df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
+        multiplicador_imbalance = 0.5
         ## BAJISTA
         decisional_bajista_condicion =  (
-                                        (df.High >= df.High.shift(1))
-                                        &(df.High >= df.High.shift(-1)) 
-                                        &(df.High <  df.bajista_extremo_low)
-                                        & ~np.isnan(df.bos_bajista)
+                                        #(df.High >= df.High.shift(-1))&
+                                        (df.color =='verde')
+                                        #& ~np.isnan(df.bos_bajista)
                                         & (
-                                            ((df.Low) >= (df.High.shift(-2)+df.atr))
+                                            ((df.Low) >= (df.High.shift(-2)+df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.Low.shift(-1)) >= (df.High.shift(-3)+df.atr))
+                                            ((df.Low.shift(-1)) >= (df.High.shift(-3)+df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.Low.shift(-2)) >= (df.High.shift(-4)+df.atr))                                          
+                                            ((df.Low.shift(-2)) >= (df.High.shift(-4)+df.atr*multiplicador_imbalance))                                          
                                           )
                                         )
         df['decisional_bajista_low'] = np.where(
@@ -1433,7 +1450,7 @@ def smart_money(df,symbol):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.High.iloc[i] < df.bajista_extremo_low.iloc[i]:    
+            if np.isnan(df['decisional_bajista_high'].iloc[i]):# and df.High.iloc[i] < df.bajista_extremo_low.iloc[i]:    
                 df.at[i, 'decisional_bajista_high'] = high_guardado
                 df.at[i, 'decisional_bajista_low'] = low_guardado
             else:
@@ -1441,20 +1458,19 @@ def smart_money(df,symbol):
                 low_guardado = df['decisional_bajista_low'].iloc[i]
                 indice_guardado = i
                 try:
-                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
-                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
-                        fecha_actual_5m = fecha_inicio_5m
-                        fecha_del_maximo_5m = fecha_actual_5m
-                        pico_maximo_5m = 0
+                        # refinacion los valores anteriormente guardados para la temporalidad de refinacion seleccionada en caso de que se pueda
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_maximo_refinar = fecha_actual_refinar
+                        pico_maximo_refinar = 0
                         # busca el high mas alto en velas verdes
-                        for i in range(1,6,1):
-                        #for i in range(5,20,5):
-                            if df5m.High[fecha_actual_5m] > pico_maximo_5m and df5m.Close[fecha_actual_5m] > df5m.Open[fecha_actual_5m]:
-                                pico_maximo_5m = df5m.High[fecha_actual_5m]
-                                fecha_del_maximo_5m = fecha_actual_5m
-                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
-                        high_guardado = df5m.High[fecha_del_maximo_5m]
-                        low_guardado = df5m.Low[fecha_del_maximo_5m]
+                        for i in range(parametros_refinado):
+                            if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                fecha_del_maximo_refinar = fecha_actual_refinar
+                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                        high_guardado = df_refinar.High[fecha_del_maximo_refinar]
+                        low_guardado = df_refinar.Low[fecha_del_maximo_refinar]
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -1463,16 +1479,15 @@ def smart_money(df,symbol):
         
         ### ALCISTA
         decisional_alcista_condicion =  (
-                                        (df.Low <= df.Low.shift(1))
-                                        &(df.Low <= df.Low.shift(-1)) 
-                                        &(df.Low > df.alcista_extremo_high)
-                                        & ~np.isnan(df.bos_alcista)
+                                        #(df.Low <= df.Low.shift(-1))&
+                                        (df.color == 'rojo')
+                                        #& ~np.isnan(df.bos_alcista)
                                         &(
-                                            ((df.High) <= (df.Low.shift(-2)-df.atr))
+                                            ((df.High) <= (df.Low.shift(-2)-df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.High.shift(-1)) <= (df.Low.shift(-3)-df.atr))
+                                            ((df.High.shift(-1)) <= (df.Low.shift(-3)-df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.High.shift(-2)) <= (df.Low.shift(-4)-df.atr))
+                                            ((df.High.shift(-2)) <= (df.Low.shift(-4)-df.atr*multiplicador_imbalance))
                                         )
                                         )
         df['decisional_alcista_low'] = np.where(
@@ -1487,7 +1502,7 @@ def smart_money(df,symbol):
         high_guardado=np.nan
         low_guardado=np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Low.iloc[i] > df.alcista_extremo_high.iloc[i]:    
+            if np.isnan(df['decisional_alcista_high'].iloc[i]):# and df.Low.iloc[i] > df.alcista_extremo_high.iloc[i]:    
                 df.at[i, 'decisional_alcista_high'] = high_guardado
                 df.at[i, 'decisional_alcista_low'] = low_guardado
             else:
@@ -1496,25 +1511,24 @@ def smart_money(df,symbol):
                 indice_guardado = i
                 try:
                         # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
-                        fecha_inicio_5m = df['Open Time'].iloc[indice_guardado]
-                        fecha_actual_5m = fecha_inicio_5m
-                        fecha_del_minimo_5m = fecha_actual_5m
-                        pico_minimo_5m = 0
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_minimo_refinar = fecha_actual_refinar
+                        pico_minimo_refinar = 0
                         # busca el low mas bajo en velas rojas
-                        for i in range(1,6,1):
-                        #for i in range(5,20,5):
-                            if df5m.Low[fecha_actual_5m] < pico_minimo_5m and df5m.Close[fecha_actual_5m] < df5m.Open[fecha_actual_5m]:
-                                pico_minimo_5m = df5m.Low[fecha_actual_5m]
-                                fecha_del_minimo_5m = fecha_actual_5m
-                            fecha_actual_5m = fecha_inicio_5m + pd.DateOffset(minutes=i)
-                        high_guardado = df5m.High[fecha_del_minimo_5m]
-                        low_guardado = df5m.Low[fecha_del_minimo_5m]
+                        for i in range(parametros_refinado):
+                            if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                fecha_del_minimo_refinar = fecha_actual_refinar
+                            fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                        high_guardado = df_refinar.High[fecha_del_minimo_refinar]
+                        low_guardado = df_refinar.Low[fecha_del_minimo_refinar]
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                         #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
-        ##################################tnedencia
+        #################################################################################################### TENDENCIA
         df['tendencia'] = np.nan
         v_contador_bajista = 0
         v_ultimo_bos_bajista = 0
@@ -1556,10 +1570,9 @@ def smart_money(df,symbol):
 def estrategia_royal(symbol,debug = False):
     try:                
         np.seterr(divide='ignore', invalid='ignore')
-        # temporalidad de 1h para encontrar martillos y soportes/resistencias
-        data = obtiene_historial(symbol,'5m')
-        data=smart_money(data,symbol)          
-        data.drop(['ema20','ema50', 'ema200'], axis=1, inplace=True)    
+        data = obtiene_historial(symbol,'15m')
+        data = smart_money(data,symbol)          
+        #data.drop(['ema20','ema50', 'ema200'], axis=1, inplace=True)    
         data['signal'] = np.where((data.tendencia == 1)
                                   &(data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high)
