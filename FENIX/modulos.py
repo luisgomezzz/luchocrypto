@@ -1192,8 +1192,8 @@ def smart_money(df,symbol,refinado,file_source):
         # Los imbalances no mitigados sí se pueden ver online.
         #  
         if refinado:
-            df_refinar = obtiene_historial(symbol,'5m') #historial de temporalidad inferior para refinar
-            parametros_refinado = {"start":5,"stop":20,"step":5} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
+            df_refinar = obtiene_historial(symbol,'15m') #historial de temporalidad inferior para refinar
+            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
         
         if file_source:
             df_imbalance = myfxbook_file_historico() 
@@ -1589,7 +1589,7 @@ def estrategia_royal(symbol,debug = False, refinado = True, file_source=False):
             data = myfxbook_file_historico()
             refinado = False
         else:
-            data = obtiene_historial(symbol,'15m')
+            data = obtiene_historial(symbol,'1h')
         
         
         data = smart_money(data,symbol,refinado,file_source)          
