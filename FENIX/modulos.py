@@ -1153,13 +1153,13 @@ def backtesting_royal(data, plot_flag=False):
             self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
             self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
-            self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
-            self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
-            self.imba_alcista_low = self.I(indicador,self.data.imba_alcista_low,name="imba_alcista_low", overlay=True, color="springgreen", scatter=True)
-            self.imba_alcista_high = self.I(indicador,self.data.imba_alcista_high,name="imba_alcista_high", overlay=True, color="springgreen", scatter=True)
+            #self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
+            #self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
+            #self.imba_alcista_low = self.I(indicador,self.data.imba_alcista_low,name="imba_alcista_low", overlay=True, color="springgreen", scatter=True)
+            #self.imba_alcista_high = self.I(indicador,self.data.imba_alcista_high,name="imba_alcista_high", overlay=True, color="springgreen", scatter=True)
         def next(self):       
             super().next()
             if self.position:
@@ -1183,7 +1183,7 @@ def backtesting_royal(data, plot_flag=False):
 
 ####################################################################################
 
-def smart_money(df,symbol,refinado,file_source):
+def smart_money(symbol,refinado,file_source,timeframe):
     try:
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
@@ -1191,16 +1191,21 @@ def smart_money(df,symbol,refinado,file_source):
         # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
         # Los imbalances no mitigados sí se pueden ver online.
         #  
-        if refinado:
-            df_refinar = obtiene_historial(symbol,'15m') #historial de temporalidad inferior para refinar
-            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1}
-        
-        if file_source:
-            df_imbalance = myfxbook_file_historico() 
+        timeframe_refinado = '15m'
+
+        if file_source: 
+            # Si la data se toma de un file
+            df = myfxbook_file_historico()
+            df_imbalance = myfxbook_file_historico()
             refinado = False
         else:
-            df_imbalance = obtiene_historial(symbol,'15m') #historial para imbalances        
-        
+            # Si la data se saca de binance
+            df = obtiene_historial(symbol, timeframe)
+            df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances        
+
+        if refinado:
+            df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
 
         largo = 1 # Parámetro de longitud para los puntos pivote High y Low
         df['pivot_high'] = np.NaN
@@ -1444,8 +1449,8 @@ def smart_money(df,symbol,refinado,file_source):
                                             ((df.Low) >= (df.High.shift(-2)+df.atr*multiplicador_imbalance))
                                             |
                                             ((df.Low.shift(-1)) >= (df.High.shift(-3)+df.atr*multiplicador_imbalance))
-                                            |
-                                            ((df.Low.shift(-2)) >= (df.High.shift(-4)+df.atr*multiplicador_imbalance))                                          
+                                            #|
+                                            #((df.Low.shift(-2)) >= (df.High.shift(-4)+df.atr*multiplicador_imbalance))                                          
                                           )
                                         )
         df['decisional_bajista_low'] = np.where(
@@ -1499,8 +1504,8 @@ def smart_money(df,symbol,refinado,file_source):
                                             ((df.High) <= (df.Low.shift(-2)-df.atr*multiplicador_imbalance))
                                             |
                                             ((df.High.shift(-1)) <= (df.Low.shift(-3)-df.atr*multiplicador_imbalance))
-                                            |
-                                            ((df.High.shift(-2)) <= (df.Low.shift(-4)-df.atr*multiplicador_imbalance))
+                                            #|
+                                            #((df.High.shift(-2)) <= (df.Low.shift(-4)-df.atr*multiplicador_imbalance))
                                         )
                                         )
         df['decisional_alcista_low'] = np.where(
@@ -1581,18 +1586,9 @@ def smart_money(df,symbol,refinado,file_source):
         pass
 ##########################################################################################
 
-def estrategia_royal(symbol,debug = False, refinado = True, file_source=False):
+def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
     try:                
-        np.seterr(divide='ignore', invalid='ignore')
-        
-        if file_source:
-            data = myfxbook_file_historico()
-            refinado = False
-        else:
-            data = obtiene_historial(symbol,'1h')
-        
-        
-        data = smart_money(data,symbol,refinado,file_source)          
+        data = smart_money(symbol,refinado,file_source,timeframe)          
         data['signal'] = np.where((data.tendencia == 1)
                                   &(data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high)
