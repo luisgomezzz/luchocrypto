@@ -22,7 +22,7 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_haz','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
+                choices=['estrategia_royal','estrategia_haz','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
             ),
 ]
 answers = inquirer.prompt(questions)
@@ -35,11 +35,12 @@ if estrategia_name=='estrategia_trampa':
     sys.stdout.write(REVERSE)
 if estrategia_name=='estrategia_haz':
     sys.stdout.write(RED)            
+if estrategia_name=='estrategia_royal':
+    sys.stdout.write(RED)    
 
 md.printandlog(cons.nombrelog, estrategia_name)   
 
 def dataframe_estrategia(symbol,estrategia_name):
-    porcentajeentrada=100
     if estrategia_name=='estrategia_bb':
         data = md.estrategia_bb(symbol)
     if estrategia_name=='estrategia_santa':
@@ -51,8 +52,10 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_trampa':
         data,porcentajeentrada = md.estrategia_trampa(symbol) 
     if estrategia_name=='estrategia_haz':
-        data = md.estrategia_haz(symbol,alerta=False)                        
-    return data, porcentajeentrada
+        data = md.estrategia_haz(symbol,alerta=False)
+    if estrategia_name=='estrategia_royal':
+        data = md.estrategia_royal(symbol, debug = False, refinado = False, file_source = False,timeframe = '1h')
+    return data
 
 posiciones={}
 lista_monedas_filtradas = estrategia_name+"_symbols.txt"
@@ -74,7 +77,7 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data,_ = dataframe_estrategia(symbol,estrategia_name)
+            data = dataframe_estrategia(symbol,estrategia_name)
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
                 trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
@@ -165,11 +168,11 @@ def main():
                             if data.signal[-1] ==-1:
                                 side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0: 
-                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]}")   
+                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
                             md.sound()
                             md.sound() 
                             porcentajeentrada = data.porcentajeentrada[-1]
-                            md.crea_posicion(symbol,side,porcentajeentrada) 
+                            #md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
