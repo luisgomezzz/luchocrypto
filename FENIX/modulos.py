@@ -1481,14 +1481,12 @@ def smart_money(symbol,refinado,file_source,timeframe):
                         if refinado:
                             # busca el high mas alto en velas verdes
                             for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
-                                print(f"fecha_actual_refinar: {fecha_actual_refinar}")
                                 if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
                                     pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
                                     fecha_del_maximo_refinar = fecha_actual_refinar
                                 fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
                             high_guardado = df_refinar.High[fecha_del_maximo_refinar]
                             low_guardado = df_refinar.Low[fecha_del_maximo_refinar]
-                            print(f"fecha elegida: {fecha_del_maximo_refinar}")
                 except Exception as falla:
                         _, _, exc_tb = sys.exc_info()
                         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
