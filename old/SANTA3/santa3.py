@@ -490,17 +490,17 @@ def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->floa
         S4=LL['S4']
         S5=LL['S5']
         R5=LL['R5']
-        df['martillo'] = df.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
+        # df['martillo'] = df.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
         # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
         distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
         if side=='SELL':
-                if precioactual < R4 and df.martillo.iloc[-2] == -1: # si el precio anda entre los muros y martillo
+                if precioactual < R4: # and df.martillo.iloc[-2] == -1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
                     print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o la vela anterior no es martillo.\n")
                     salida = False
         else:
-                if precioactual > S4 and df.martillo.iloc[-2] == 1: # si el precio anda entre los muros y martillo
+                if precioactual > S4: # and df.martillo.iloc[-2] == 1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
                     print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o la vela anterior no es martillo.\n")
