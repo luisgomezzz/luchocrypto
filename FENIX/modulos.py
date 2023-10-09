@@ -1128,7 +1128,7 @@ def myfxbook_file_historico():
     return data
 
 def backtesting_royal(data, plot_flag=False):
-    balance = 100    
+    balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
     def indicador(df_campo):
         indi=pd.Series(df_campo)
         return indi.to_numpy()
@@ -1170,7 +1170,13 @@ def backtesting_royal(data, plot_flag=False):
                     tp_value = None
                 else:
                     tp_value = self.data.take_profit[-1]
-                size= balance*self.data.porcentajeentrada[-1]/100
+                porcentaje = 0
+                # para evaluar sin usar el apalancamiento
+                if self.data.porcentajeentrada[-1]>=100:
+                    porcentaje = 0.99
+                else:
+                    porcentaje = self.data.porcentajeentrada[-1]/100
+                size=porcentaje # balance*self.data.porcentajeentrada[-1]/100
                 if self.data.signal[-1]==1:
                     self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
                 elif self.data.signal[-1]==-1:
