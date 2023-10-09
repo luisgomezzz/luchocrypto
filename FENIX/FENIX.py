@@ -161,11 +161,11 @@ def main():
                     side=''
                     if symbol not in posiciones:                        
                         ###BUY###
-                        if  data.signal[-1] ==1:
+                        if  data.signal[-1] ==1 or data.signal[-2] ==1:
                             side='BUY'
                         else:
                             ###SELL###
-                            if data.signal[-1] ==-1:
+                            if data.signal[-1] ==-1 or data.signal[-2] ==-1:
                                 side='SELL'
                         if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0: 
                             print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
