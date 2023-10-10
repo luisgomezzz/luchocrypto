@@ -1448,12 +1448,16 @@ def smart_money(symbol,refinado,file_source,timeframe):
         multiplicador_imbalance = 0.5
         ## BAJISTA
         decisional_bajista_condicion =  (
-                                        (df.color =='verde')
+                                        (df.color == 'verde')
                                         & (
-                                            ((df.Low) >= (df.High.shift(-2)+df.atr*multiplicador_imbalance))
+                                            ((df.Low) >= (df.High.shift(-2) + df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.Low.shift(-1)) >= (df.High.shift(-3)+df.atr*multiplicador_imbalance))
+                                            ((df.Low.shift(-1)) >= (df.High.shift(-3) + df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
+                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1499,10 +1503,14 @@ def smart_money(symbol,refinado,file_source,timeframe):
         decisional_alcista_condicion =  (
                                         (df.color == 'rojo')
                                         &(
-                                            ((df.High) <= (df.Low.shift(-2)-df.atr*multiplicador_imbalance))
+                                            ((df.High) <= (df.Low.shift(-2) - df.atr*multiplicador_imbalance))
                                             |
-                                            ((df.High.shift(-1)) <= (df.Low.shift(-3)-df.atr*multiplicador_imbalance))
+                                            ((df.High.shift(-1)) <= (df.Low.shift(-3) - df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
+                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
