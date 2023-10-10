@@ -1445,7 +1445,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 0.5
+        multiplicador_imbalance = 1
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
@@ -1456,7 +1456,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
-                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_bajista_low'] = np.where(
@@ -1509,7 +1509,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
-                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_alcista_low'] = np.where(
@@ -1626,10 +1626,21 @@ def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,ti
                                 )
 
         data['cierra'] = False
+        porcentaje_perdida = 1
+        data['porcentajeentrada'] = np.where(data.signal == 1,
+                       (porcentaje_perdida*100)/
+                       (((data.decisional_alcista_low/data.decisional_alcista_high)-1)*-100),
+                       np.where(data.signal == -1,
+                       (porcentaje_perdida*100)/
+                       (((data.decisional_bajista_high/data.decisional_bajista_low)-1)*100),
+                       0
+                       )
+                       )
+
         # Reemplazar valores no finitos (NA e inf) con 0
-        data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
+        #data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
         # Aplicar np.floor y convertir a enteros
-        data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
+        #data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)
