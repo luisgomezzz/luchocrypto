@@ -528,55 +528,6 @@ def estrategia_bb(symbol,tp_flag=True):
     #    data['stop_loss']=0
     return data
 
-def sigo_variacion_bitcoin(symbol,timeframe='15m',porc=0.8,ventana=2,tp_flag = True):
-    # Si bitcoin varía en un porc% se entra al mercado con symbol para seguir la tendencia y obtener ganancias.
-    try:
-        data = obtiene_historial(symbol,timeframe)
-        data_btc = obtiene_historial('BTCUSDT',timeframe)
-        data['close_btc'] = data_btc.Close
-        data['maximo_btc'] = data['close_btc'].rolling(ventana).max()
-        data['minimo_btc'] = data['close_btc'].rolling(ventana).min()
-        data['n_atr'] = 1.5
-        data['atr']=ta.atr(data.High, data.Low, data.Close, length=4)
-        data['signal'] = np.where(
-            (data.close_btc.shift(1) >= data.maximo_btc.shift(2))
-            &(data.close_btc.shift(1) >= data.minimo_btc.shift(2)*(1+porc/100))
-            ,1,
-            np.where(
-                (data.close_btc.shift(1)  <= data.minimo_btc.shift(2))
-                &(data.close_btc.shift(1) <= data.maximo_btc.shift(2)*(1-porc/100))        
-                ,-1,
-                0
-            )
-        )  
-        data['take_profit'] =   np.where(
-                                tp_flag,np.where(
-                                data.signal == 1,
-                                data.Close + 3*data.atr,
-                                np.where(
-                                        data.signal == -1,
-                                        data.Close - 3*data.atr,  
-                                        0
-                                        )
-                                ),np.NaN
-                                        )
-        data['stop_loss'] = np.where(
-            data.signal == 1,
-            data.Close - 5*data.atr,  # se exagera colocando 5 ya que el stop lo realiza el trailing
-            np.where(
-                data.signal == -1,
-                data.Close + 5*data.atr,
-                0
-            )
-        )
-        data['cierra'] = False    
-        return data
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
-        pass   
-
 def es_martillo(vela):
     out=0
     cuerpo = abs(vela['Open'] - vela['Close'])
@@ -1132,11 +1083,14 @@ def backtesting_royal(data, plot_flag=False):
     def indicador(df_campo):
         indi=pd.Series(df_campo)
         return indi.to_numpy()
+        
     class Fenix(Strategy):
         def init(self):
             super().init()
             #### varios
             self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
+            self.tendencia2 = self.I(indicador,self.data.tendencia2,name="tendencia2")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1148,13 +1102,13 @@ def backtesting_royal(data, plot_flag=False):
             self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
             self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
             #####   EXTREMOS ok!!
-            self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
-            self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
-            self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
-            self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
+            #self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
+            #self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
+            #self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
+            #self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
             #self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
             #self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
@@ -1458,6 +1412,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                           )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        & (~np.isnan(df.bos_bajista))
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1511,6 +1466,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                         )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        & (~np.isnan(df.bos_alcista))
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
@@ -1552,6 +1508,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                         #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
         #################################################################################################### TENDENCIA
+        cantidad_ruptura = 2
         df['tendencia'] = np.nan
         v_contador_bajista = 0
         v_ultimo_bos_bajista = 0
@@ -1565,20 +1522,22 @@ def smart_money(symbol,refinado,file_source,timeframe):
             if not np.isnan(df['bos_alcista'].iloc[i]) and df['bos_alcista'].iloc[i] !=v_ultimo_bos_alcista:
                 v_ultimo_bos_alcista = df['bos_alcista'].iloc[i]
                 v_contador_alcista=v_contador_alcista+1 
-            if  v_contador_bajista == 2:
+            if  v_contador_bajista == cantidad_ruptura:
                 v_tendencia_guardada  = -1
                 v_contador_bajista = 0
                 v_ultimo_bos_bajista = 0
                 v_contador_alcista = 0
                 v_ultimo_bos_alcista = 0
-            if  v_contador_alcista == 2:
+            if  v_contador_alcista == cantidad_ruptura:
                 v_tendencia_guardada  = 1
                 v_contador_bajista = 0
                 v_ultimo_bos_bajista = 0
                 v_contador_alcista = 0
                 v_ultimo_bos_alcista = 0  
             df.at[i, 'tendencia'] = v_tendencia_guardada         
-
+        
+        df['tendencia2'] = df['ema200'].diff()
+        
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
