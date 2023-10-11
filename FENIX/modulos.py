@@ -1138,7 +1138,7 @@ def backtesting_royal(data, plot_flag=False, symbol='NADA'):
     bt = Backtest(data, Fenix, cash=balance)
     output = bt.run()
     if plot_flag:
-        bt.plot(filename=symbol)
+        bt.plot(filename="graficos/"+symbol)
     return output
 
 ####################################################################################
