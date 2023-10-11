@@ -1078,7 +1078,7 @@ def myfxbook_file_historico():
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     return data
 
-def backtesting_royal(data, plot_flag=False):
+def backtesting_royal(data, plot_flag=False, symbol='NADA'):
     balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
     def indicador(df_campo):
         indi=pd.Series(df_campo)
@@ -1138,7 +1138,7 @@ def backtesting_royal(data, plot_flag=False):
     bt = Backtest(data, Fenix, cash=balance)
     output = bt.run()
     if plot_flag:
-        bt.plot()
+        bt.plot(filename=symbol)
     return output
 
 ####################################################################################
