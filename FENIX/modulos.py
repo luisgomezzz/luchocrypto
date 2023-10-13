@@ -1088,7 +1088,7 @@ def backtesting_royal(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
             self.tendencia2 = self.I(indicador,self.data.tendencia2,name="tendencia2")
             #####   PIVOTS ok!!!
