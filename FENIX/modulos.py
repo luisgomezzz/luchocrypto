@@ -1567,10 +1567,10 @@ def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,ti
                                 )
         data['take_profit'] =   np.where(
                                 data.signal == -1,
-                                data.Close-data.atr*3,
+                                data.Close-data.atr*6,
                                 np.where(
                                 data.signal == 1,
-                                data.Close+data.atr*3,
+                                data.Close+data.atr*6,
                                 0
                                 )
                                 )
