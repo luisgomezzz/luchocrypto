@@ -188,8 +188,9 @@ dictionary = {
     "reservas": 3065, #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
     "sideflag": 0, # 0 ambos | 1 solo shorts | 2 solo longs
     "sonidos": 1, # 1 sonido ON, 0 sonido OFF
-    "restriccionhoraria": 1, # 1 restricción ON, 0 restricción OFF
-    "porcentajeadesocupar": 50 # porcentaje de la posición que desocupa al tocar el tp.
+    "restriccionhoraria": 0, # 1 restricción ON, 0 restricción OFF
+    "porcentajeadesocupar": 50, # porcentaje de la posición que desocupa al tocar el tp.
+    "modo_solo_chequeo": 1 # si está en 0 puede tradear, si está en 1 solo observa.
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)

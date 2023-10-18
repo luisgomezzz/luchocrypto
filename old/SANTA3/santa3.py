@@ -556,6 +556,7 @@ def interfaz_usuario():
     sonidos_var = tk.IntVar()
     restriccion_horaria_var = tk.IntVar()
     porcentaje_desocupar_var = tk.IntVar()
+    modo_solo_chequeo = tk.IntVar()
     # Cargar valores iniciales desde el archivo JSON
     with open(os.path.join(cons.pathroot, "configuration.json"), "r") as json_file:
         configuracion = json.load(json_file)
@@ -574,6 +575,7 @@ def interfaz_usuario():
         sonidos_var.set(configuracion["sonidos"])
         restriccion_horaria_var.set(configuracion["restriccionhoraria"])
         porcentaje_desocupar_var.set(configuracion["porcentajeadesocupar"])
+        modo_solo_chequeo.set(configuracion["modo_solo_chequeo"])
     # Crear etiquetas y campos de entrada
     tk.Label(root, text="Ventana:").grid(row=0, column=0)
     tk.Entry(root, textvariable=ventana_var).grid(row=0, column=1)
@@ -605,8 +607,10 @@ def interfaz_usuario():
     tk.Entry(root, textvariable=restriccion_horaria_var).grid(row=13, column=1)
     tk.Label(root, text="Porcentaje a Desocupar:").grid(row=14, column=0)
     tk.Entry(root, textvariable=porcentaje_desocupar_var).grid(row=14, column=1)
+    tk.Label(root, text="Modo solo chequeo:").grid(row=15, column=0)
+    tk.Entry(root, textvariable=modo_solo_chequeo).grid(row=15, column=1)    
     # Botón para guardar la configuración
-    tk.Button(root, text="Guardar Configuración", command=guardar_configuracion).grid(row=15, columnspan=2)    
+    tk.Button(root, text="Guardar Configuración", command=guardar_configuracion).grid(row=16, columnspan=2)    
     root.mainloop()
 
 def main() -> None:
@@ -749,8 +753,8 @@ def main() -> None:
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
-
-                                if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
+                                modo_solo_chequeo = ut.leeconfiguracion('modo_solo_chequeo')
+                                if modo_solo_chequeo == 0 and variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
                                     if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
                                         lado='SELL'
                                         if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
