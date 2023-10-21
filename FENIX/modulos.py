@@ -1088,9 +1088,9 @@ def backtesting_royal(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
-            self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
-            self.tendencia2 = self.I(indicador,self.data.tendencia2,name="tendencia2")
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+            #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
+            #self.tendencia2 = self.I(indicador,self.data.tendencia2,name="tendencia2")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1410,9 +1410,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
-                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
-                                        & (~np.isnan(df.bos_bajista))
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1464,9 +1463,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
-                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
+                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
-                                        & (~np.isnan(df.bos_alcista))
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
@@ -1508,13 +1506,16 @@ def smart_money(symbol,refinado,file_source,timeframe):
                         #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
                         pass
         #################################################################################################### TENDENCIA
+        # alcista = -1
+        # neutral = -2
+        # bajista = -3        
         cantidad_ruptura = 2
         df['tendencia'] = np.nan
         v_contador_bajista = 0
-        v_ultimo_bos_bajista = 0
+        v_ultimo_bos_bajista = -2
         v_contador_alcista = 0
-        v_ultimo_bos_alcista = 0
-        v_tendencia_guardada = 0
+        v_ultimo_bos_alcista = -2
+        v_tendencia_guardada = -2
         for i in range(0, len(df)-1):
             if not np.isnan(df['bos_bajista'].iloc[i]) and df['bos_bajista'].iloc[i] !=v_ultimo_bos_bajista:
                 v_ultimo_bos_bajista = df['bos_bajista'].iloc[i]
@@ -1523,17 +1524,17 @@ def smart_money(symbol,refinado,file_source,timeframe):
                 v_ultimo_bos_alcista = df['bos_alcista'].iloc[i]
                 v_contador_alcista=v_contador_alcista+1 
             if  v_contador_bajista == cantidad_ruptura:
+                v_tendencia_guardada  = -3
+                v_contador_bajista = 0
+                v_ultimo_bos_bajista = -2
+                v_contador_alcista = 0
+                v_ultimo_bos_alcista = -2
+            if  v_contador_alcista == cantidad_ruptura:
                 v_tendencia_guardada  = -1
                 v_contador_bajista = 0
-                v_ultimo_bos_bajista = 0
+                v_ultimo_bos_bajista = -2
                 v_contador_alcista = 0
-                v_ultimo_bos_alcista = 0
-            if  v_contador_alcista == cantidad_ruptura:
-                v_tendencia_guardada  = 1
-                v_contador_bajista = 0
-                v_ultimo_bos_bajista = 0
-                v_contador_alcista = 0
-                v_ultimo_bos_alcista = 0  
+                v_ultimo_bos_alcista = -2
             df.at[i, 'tendencia'] = v_tendencia_guardada         
         
         df['tendencia2'] = df['ema200'].diff()
@@ -1552,12 +1553,12 @@ def smart_money(symbol,refinado,file_source,timeframe):
 def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
     try:                
         data = smart_money(symbol,refinado,file_source,timeframe)          
-        data['signal'] = np.where((data.tendencia == 1)
+        data['signal'] = np.where((data.tendencia == -1)
                                   &(data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   ,1,
-                                  np.where((data.tendencia == -1)
+                                  np.where((data.tendencia == -3)
                                   &(data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
