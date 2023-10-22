@@ -1088,7 +1088,7 @@ def backtesting_royal(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
             #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
@@ -1424,7 +1424,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_bajista_high'].iloc[i]):# and df.High.iloc[i] < df.bajista_extremo_low.iloc[i]:    
+            if np.isnan(df['decisional_bajista_high'].iloc[i]):# and df.High.iloc[i] < high_guardado:
                 df.at[i, 'decisional_bajista_high'] = high_guardado
                 df.at[i, 'decisional_bajista_low'] = low_guardado
             else:
@@ -1477,7 +1477,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado=np.nan
         low_guardado=np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_alcista_high'].iloc[i]):# and df.Low.iloc[i] > df.alcista_extremo_high.iloc[i]:    
+            if np.isnan(df['decisional_alcista_high'].iloc[i]):# and df.Low.iloc[i] > low_guardado:
                 df.at[i, 'decisional_alcista_high'] = high_guardado
                 df.at[i, 'decisional_alcista_low'] = low_guardado
             else:
@@ -1559,30 +1559,32 @@ def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,ti
                                   &(data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + data.atr/3)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  #&(data.tendencia == -1)
                                   ,1,
                                   np.where((data['trend'] == 'Bajista')
                                   &(data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - data.atr/3)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  #&(data.tendencia == -3)
                                   ,-1,
                                   0
                                 )
                                 )
         data['take_profit'] =   np.where(
-                                data.signal == -1,
-                                data.decisional_bajista_low-data.atr*10,
+                                data.signal == 1,                                
+                                data.Low + data.atr*10,
                                 np.where(
-                                data.signal == 1,
-                                data.decisional_alcista_high+data.atr*10,
+                                data.signal == -1,
+                                data.High - data.atr*10,
                                 0
                                 )
                                 )
         data['stop_loss'] = np.where(
-                                data.signal == -1,
-                                data.decisional_bajista_high,
-                                np.where(
                                 data.signal == 1,
                                 data.decisional_alcista_low,
+                                np.where(
+                                data.signal == -1,
+                                data.decisional_bajista_high,                                
                                 0
                                 )
                                 )
