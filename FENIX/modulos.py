@@ -1088,9 +1088,8 @@ def backtesting_royal(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
             #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
-            #self.tendencia2 = self.I(indicador,self.data.tendencia2,name="tendencia2")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1537,7 +1536,10 @@ def smart_money(symbol,refinado,file_source,timeframe):
                 v_ultimo_bos_alcista = -2
             df.at[i, 'tendencia'] = v_tendencia_guardada         
         
-        df['tendencia2'] = df['ema200'].diff()
+        # Calcular el precio promedio de cada vela (promedio entre el precio de apertura y cierre)
+        average = (df['Open'] + df['Close']) / 2
+        # Calcular la tendencia general
+        df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
         
         ########################################## INDICE
         df['timestamp']=df['Open Time']
@@ -1553,14 +1555,14 @@ def smart_money(symbol,refinado,file_source,timeframe):
 def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
     try:                
         data = smart_money(symbol,refinado,file_source,timeframe)          
-        data['signal'] = np.where((data.tendencia == -1)
+        data['signal'] = np.where((data['trend'] == 'Alcista')
                                   &(data.Low > data.decisional_alcista_low)
-                                  &(data.Low <= data.decisional_alcista_high)
+                                  &(data.Low <= data.decisional_alcista_high + data.atr/3)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   ,1,
-                                  np.where((data.tendencia == -3)
+                                  np.where((data['trend'] == 'Bajista')
                                   &(data.High < data.decisional_bajista_high)
-                                  &(data.High >= data.decisional_bajista_low)
+                                  &(data.High >= data.decisional_bajista_low - data.atr/3)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   ,-1,
                                   0
@@ -1568,10 +1570,10 @@ def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,ti
                                 )
         data['take_profit'] =   np.where(
                                 data.signal == -1,
-                                data.Close-data.atr*6,
+                                data.decisional_bajista_low-data.atr*10,
                                 np.where(
                                 data.signal == 1,
-                                data.Close+data.atr*6,
+                                data.decisional_alcista_high+data.atr*10,
                                 0
                                 )
                                 )
