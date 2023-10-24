@@ -1078,7 +1078,7 @@ def myfxbook_file_historico():
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     return data
 
-def backtesting_royal(data, plot_flag=False, symbol='NADA'):
+def backtesting_smart(data, plot_flag=False, symbol='NADA'):
     balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
     def indicador(df_campo):
         indi=pd.Series(df_campo)
@@ -1552,7 +1552,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         pass
 ##########################################################################################
 
-def estrategia_royal(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
+def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
     try:                
         data = smart_money(symbol,refinado,file_source,timeframe)          
         data['signal'] = np.where((data['trend'] == 'Alcista')
