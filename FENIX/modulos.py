@@ -1409,7 +1409,6 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
-                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_bajista_low'] = np.where(
@@ -1424,7 +1423,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_bajista_high'].iloc[i]):# and df.High.iloc[i] < high_guardado:
+            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.Close.iloc[i] < high_guardado:
                 df.at[i, 'decisional_bajista_high'] = high_guardado
                 df.at[i, 'decisional_bajista_low'] = low_guardado
             else:
@@ -1462,7 +1461,6 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             |
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
-                                        #& (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-1))
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
                                         )
         df['decisional_alcista_low'] = np.where(
@@ -1477,7 +1475,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado=np.nan
         low_guardado=np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_alcista_high'].iloc[i]):# and df.Low.iloc[i] > low_guardado:
+            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Close.iloc[i] > low_guardado:
                 df.at[i, 'decisional_alcista_high'] = high_guardado
                 df.at[i, 'decisional_alcista_low'] = low_guardado
             else:
@@ -1555,16 +1553,18 @@ def smart_money(symbol,refinado,file_source,timeframe):
 def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
     try:                
         data = smart_money(symbol,refinado,file_source,timeframe)          
-        data['signal'] = np.where((data['trend'] == 'Alcista')
-                                  &(data.Low > data.decisional_alcista_low)
+        data['signal'] = np.where(
+                                  (data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + data.atr/3)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  &(data['trend'] == 'Alcista')
                                   #&(data.tendencia == -1)
                                   ,1,
-                                  np.where((data['trend'] == 'Bajista')
-                                  &(data.High < data.decisional_bajista_high)
+                                  np.where(
+                                  (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - data.atr/3)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  &(data['trend'] == 'Bajista')
                                   #&(data.tendencia == -3)
                                   ,-1,
                                   0
