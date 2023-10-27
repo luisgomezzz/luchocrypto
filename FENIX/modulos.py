@@ -408,7 +408,21 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         creado = False
         orderid = 0
         pass    
-    return creado,orderid        
+    return creado,orderid
+
+def obtiene_capitalizacion(symbol):
+    market_cap = 0
+    url = f'https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}'    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        market_cap = float(data['quoteVolume'])
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
+    return market_cap
 
 def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar manipulacion.
     lista = lista_de_monedas ()
@@ -416,7 +430,8 @@ def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar
     for symbol in lista:
         try:  
             vol= volumeOf24h(symbol)
-            if vol >= cons.minvolumen24h:
+            cap = obtiene_capitalizacion(symbol)
+            if vol >= cons.minvolumen24h and cap >= cons.mincapitalizacion:
                 lista_filtrada.append(symbol)
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
@@ -945,69 +960,6 @@ def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
         pass
-
-def tendencia (symbol,timeframe='1d'):
-    try:
-        tendencia=0.0
-        data= obtiene_historial(symbol,timeframe)
-        len_df = len(data)
-        if len_df >= 400:# si tiene historial mayor a 400 velas entonces tomo ema200
-            longitud_ema = 200
-        else:
-            longitud_ema = int((len_df/2))
-        emax = ta.ema(data.Close, length=longitud_ema)
-        if longitud_ema>=200:
-            comienzo = emax.iloc[-200]
-        else:
-            comienzo = emax[longitud_ema-1]
-        final = emax.iloc[-1]
-        tendencia=truncate((final/comienzo-1)*100,2)
-        return tendencia
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
-        pass    
-
-def obiene_capitalizacion(symbol):
-    API_KEY = '4c9c0645-49c7-48c3-9a42-e7a2f94d448f'
-    url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
-    HEADERS = {'Accepts': 'application/json',
-            'X-CMC_PRO_API_KEY': API_KEY}
-    PARAMS = {'convert': 'USD',
-            'limit': 1500}
-    resp = requests.get(url, headers=HEADERS, params=PARAMS)
-    def get_data(resp):
-        data = json.loads(resp.content)['data']
-        rows = list()
-        for item in data:
-            rows.append([
-                    item['cmc_rank'],
-                    item['id'],
-                    item['name'],
-                    item['symbol'],
-                    item['slug'], 
-                    item['quote']['USD']['market_cap'],
-                    item['quote']['USD']['volume_24h'],
-                    item['date_added']])
-        df = pd.DataFrame(rows, columns=['cmc_rank','id','name','symbol','slug','market_cap','volume_24h','date_added'])
-        df.index.name = 'id'
-        return(df)
-    if resp.status_code == 200:
-        df = get_data(resp)
-        if not df.empty:
-            df.to_csv('crypto_latests.csv')
-            print("Archivo con datos de CoinMarketCap gruadado crypto_latests.csv")
-            df2 = pd.read_csv('crypto_latests.csv', index_col=0)
-        else:
-            print("df de CoinMarketCap vacío. No se actualizó crypto_latests.csv")
-    else:
-        print(resp.status_code)
-    ##toma valor desde el file    
-    df2 = pd.read_csv('crypto_latests.csv', index_col=0)    
-    for index, row in df2.iterrows():
-        if row['symbol'] == (symbol[0:symbol.find('USDT')]).upper():       
-            print(f"Symbol: {symbol} - Ranking: {row.cmc_rank} - Market cap: {numerize.numerize(row.market_cap)} - Vol24h: {numerize.numerize(row.volume_24h)} - date_added: {row.date_added}")
 
 def estrategia_oro(symbol,tp_flag = True):
     porcentajeentrada = 0.01

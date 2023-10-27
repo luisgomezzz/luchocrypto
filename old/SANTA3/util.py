@@ -14,6 +14,7 @@ import ccxt as ccxt
 from numerize import numerize
 from playsound import playsound
 import pandas_ta as ta
+import requests
 
 exchange_name=cons.exchange_name
 
@@ -648,3 +649,17 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+
+def obtiene_capitalizacion(symbol):
+    market_cap = 0
+    url = f'https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}'    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        market_cap = float(data['quoteVolume'])
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
+    return market_cap

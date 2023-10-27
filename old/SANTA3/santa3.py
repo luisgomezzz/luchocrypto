@@ -86,10 +86,9 @@ def filtradodemonedas ():
     for par in lista_de_monedas:
         try:  
             volumeOf24h=ut.volumeOf24h(par)
-            # por ahora dejo de funcionar la obtencion de la capitalizacion porque binance cambió ciertas funciones
-            #capitalizacion=ut.capitalizacion(par)
-            if volumeOf24h >= cons.minvolumen24h:# and capitalizacion >= cons.mincapitalizacion:
-                dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":0}
+            capitalizacion=ut.obtiene_capitalizacion(par)
+            if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
+                dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
         except Exception as ex:
             pass        
         except KeyboardInterrupt as ky:
@@ -105,7 +104,7 @@ def filtradodemonedas ():
             data,_ = md.estrategia_santa(symbol,tp_flag = True)
             resultado = md.backtestingsanta(data, plot_flag = False)
             if resultado['Return [%]'] >= -2:
-                    dict_filtrada[symbol]={"volumeOf24h":dict_monedas_filtradas_aux[symbol]['volumeOf24h'],"capitalizacion":0}
+                    dict_filtrada[symbol]={"volumeOf24h":dict_monedas_filtradas_aux[symbol]['volumeOf24h'],"capitalizacion":dict_monedas_filtradas_aux[symbol]['capitalizacion']}
             else:
                 # Agregar a mazmorra. Ahora filtra esta moneda y safamos pero en el futuro no detectará estas variaciones que llegan 
                 # al stop porque solo se toman 1000 frames.
