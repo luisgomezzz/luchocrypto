@@ -1350,7 +1350,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 0.3
+        multiplicador_imbalance = 1.5
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
@@ -1370,14 +1370,20 @@ def smart_money(symbol,refinado,file_source,timeframe):
         df['decisional_bajista_high'] = np.where(                                
                                     decisional_bajista_condicion
                                     ,df.High,
-                                    np.NaN)  
+                                    np.NaN)        
         ###refinado y relleno
+        df['decisional_bajista'] = np.where(np.isnan(df.decisional_bajista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.High.iloc[i] < high_guardado:
-                df.at[i, 'decisional_bajista_high'] = high_guardado
-                df.at[i, 'decisional_bajista_low'] = low_guardado
+            if np.isnan(df['decisional_bajista_high'].iloc[i]):
+                if df.High.iloc[i] < high_guardado: # si no es un decisional copio el anterior siempre que no haya sido mitigado
+                    df.at[i, 'decisional_bajista_high'] = high_guardado
+                    df.at[i, 'decisional_bajista_low'] = low_guardado
+                else:
+                    if df.decisional_bajista.iloc[i-1] == True: # si fue mitigado no lo tengo en cuenta si recien se acaba de crear
+                        df.at[i, 'decisional_bajista_high'] = high_guardado
+                        df.at[i, 'decisional_bajista_low'] = low_guardado
             else:
                 high_guardado = df['decisional_bajista_high'].iloc[i]
                 low_guardado = df['decisional_bajista_low'].iloc[i]
@@ -1424,12 +1430,18 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                     ,df.High,
                                     np.NaN)  
         ###refinado y relleno
+        df['decisional_alcista'] = np.where(np.isnan(df.decisional_alcista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
         high_guardado=np.nan
         low_guardado=np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Low.iloc[i] > low_guardado:
-                df.at[i, 'decisional_alcista_high'] = high_guardado
-                df.at[i, 'decisional_alcista_low'] = low_guardado
+            if np.isnan(df['decisional_alcista_high'].iloc[i]): 
+                if df.Low.iloc[i] > low_guardado: # si no es un decisional copio el anterior siempre que no haya sido mitigado
+                    df.at[i, 'decisional_alcista_high'] = high_guardado
+                    df.at[i, 'decisional_alcista_low'] = low_guardado
+                else: # si fue mitigado no lo tengo en cuenta si recien se acaba de crear
+                    if df.decisional_alcista.iloc[i-1] == True:
+                        df.at[i, 'decisional_alcista_high'] = high_guardado
+                        df.at[i, 'decisional_alcista_low'] = low_guardado                    
             else:
                 high_guardado = df['decisional_alcista_high'].iloc[i]
                 low_guardado = df['decisional_alcista_low'].iloc[i]
