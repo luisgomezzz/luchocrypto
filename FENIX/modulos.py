@@ -1398,7 +1398,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 1
+        multiplicador_imbalance = 0.3
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
@@ -1423,7 +1423,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.Close.iloc[i] < high_guardado:
+            if np.isnan(df['decisional_bajista_high'].iloc[i]) and df.High.iloc[i] < high_guardado:
                 df.at[i, 'decisional_bajista_high'] = high_guardado
                 df.at[i, 'decisional_bajista_low'] = low_guardado
             else:
@@ -1475,7 +1475,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado=np.nan
         low_guardado=np.nan                                          
         for i in range(0, len(df)-1):
-            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Close.iloc[i] > low_guardado:
+            if np.isnan(df['decisional_alcista_high'].iloc[i]) and df.Low.iloc[i] > low_guardado:
                 df.at[i, 'decisional_alcista_high'] = high_guardado
                 df.at[i, 'decisional_alcista_low'] = low_guardado
             else:
