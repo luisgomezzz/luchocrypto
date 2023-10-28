@@ -1519,21 +1519,29 @@ def smart_money(symbol,refinado,file_source,timeframe):
 ##########################################################################################
 
 def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
+    busca_decisionales_filas=10
+    def hay_true_ultimas_10_registros(column):
+        # Definimos una función que verifica si hay un True en las últimas X filas.
+        # Esto sirve para controlar que no se tome como válido un order block recién creado.
+        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
     try:                
-        data = smart_money(symbol,refinado,file_source,timeframe)          
+        data = smart_money(symbol,refinado,file_source,timeframe)     
+        offset = data.atr/3
+        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
+        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
-                                  &(data.Low <= data.decisional_alcista_high + data.atr/3)
+                                  &(data.Low <= data.decisional_alcista_high + offset)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  #&(data.tendencia == -1)
+                                  &(data.decisional_alcista_cerca == False)
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
-                                  &(data.High >= data.decisional_bajista_low - data.atr/3)
+                                  &(data.High >= data.decisional_bajista_low - offset)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  #&(data.tendencia == -3)
+                                  &(data.decisional_bajista_cerca == False)
                                   ,-1,
                                   0
                                 )
@@ -1549,14 +1557,13 @@ def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,ti
                                 )
         data['stop_loss'] = np.where(
                                 data.signal == 1,
-                                data.decisional_alcista_low,
+                                data.decisional_alcista_low - offset,
                                 np.where(
                                 data.signal == -1,
-                                data.decisional_bajista_high,                                
+                                data.decisional_bajista_high + offset,
                                 0
                                 )
                                 )
-
         data['cierra'] = False
         porcentaje_perdida = 1
         data['porcentajeentrada'] = np.where(data.signal == 1,
