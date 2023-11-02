@@ -1350,7 +1350,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 1
+        multiplicador_imbalance = 1.5
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
