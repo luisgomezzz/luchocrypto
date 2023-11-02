@@ -4,7 +4,7 @@
 import sys
 sys.path.insert(1,'./')
 import santa3 as san
-par='REEFUSDT'
-lado='SELL'
+par='BAKEUSDT'
+lado='BUY'
 #san.trading(par,lado,10)
 san.updating(par,lado)

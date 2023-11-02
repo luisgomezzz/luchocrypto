@@ -14,6 +14,8 @@ from binance.streams import BinanceSocketManager
 import asyncio
 import websockets
 import json
+import tkinter as tk
+from tkinter import messagebox
 
 class Archivooperando:    
     def leer(self):
@@ -78,13 +80,13 @@ def preciostopsantasugerido(lado,cantidadtotalconataqueusdt,preciodondequedariap
         preciostop = 0
     return preciostop   
 
-def filtradodemonedas ():    
+def filtradodemonedas ():
     dict_monedas_filtradas_aux = {}
     lista_de_monedas = ut.lista_de_monedas ()
     for par in lista_de_monedas:
         try:  
             volumeOf24h=ut.volumeOf24h(par)
-            capitalizacion=ut.capitalizacion(par)
+            capitalizacion=ut.obtiene_capitalizacion(par)
             if volumeOf24h >= cons.minvolumen24h and capitalizacion >= cons.mincapitalizacion:
                 dict_monedas_filtradas_aux[par]={"volumeOf24h":volumeOf24h,"capitalizacion":capitalizacion}
         except Exception as ex:
@@ -92,9 +94,31 @@ def filtradodemonedas ():
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit()   
+    dict_filtrada = {}
+    import warnings
+    sys.path.insert(0, 'C:/LUCHO/personal/repopersonal/luchocrypto/FENIX')
+    import modulos as md  
+    warnings.filterwarnings("ignore")
+    for symbol in dict_monedas_filtradas_aux:    
+        try:
+            data,_ = md.estrategia_santa(symbol,tp_flag = True)
+            resultado = md.backtestingsanta(data, plot_flag = False)
+            if resultado['Return [%]'] >= -2:
+                    dict_filtrada[symbol]={"volumeOf24h":dict_monedas_filtradas_aux[symbol]['volumeOf24h'],"capitalizacion":dict_monedas_filtradas_aux[symbol]['capitalizacion']}
+            else:
+                # Agregar a mazmorra. Ahora filtra esta moneda y safamos pero en el futuro no detectará estas variaciones que llegan 
+                # al stop porque solo se toman 1000 frames.
+                # Basicamente lo que se hace es alertar de monedas con demasiada variación ya que luego de un tiempo no es posible detectar
+                # el historial ya que se toman solo 1000 frames y es aconsajable agregar a la mazmorra o estudiar si vale la pena agragarla.
+                print(f"\nAnalizar si se agrega a mazmorra : {symbol}")
+        except Exception as ex:
+            pass        
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit() 
     global dict_monedas_filtradas_nueva
-    dict_monedas_filtradas_nueva = dict_monedas_filtradas_aux
-    return dict_monedas_filtradas_aux
+    dict_monedas_filtradas_nueva = dict_filtrada
+    return dict_filtrada
 
 def loopfiltradodemonedas ():
     while True:
@@ -441,111 +465,157 @@ def callback_stopvelavela(par,lado,preciostopenganancias):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+par+"\n")
         pass      
 
+def es_martillo(vela):
+    out=0
+    cuerpo = abs(vela['Open'] - vela['Close'])
+    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
+    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
+    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    if condicion_largo:
+        if sombra_inferior>sombra_superior*3:
+            if sombra_inferior > 2 * cuerpo: #martillo parado
+                out = 1
+        else:
+            if sombra_superior>sombra_inferior*3:
+                if sombra_superior > 2 * cuerpo: #martillo invertido
+                    out = -1
+    return out 
+
 def validaciones(symbol,side,precioactual,distanciaentrecompensaciones,df)->float:
-    # validaciones
-    # que haya al menos 2 resitencias/soportes en la dirección opuesta.
-    # que el stop esté cerca de una resistencia/compensación. O en caso de que entryprice esté más allá de los límites, tenga una-
-    # resitencia/compensación a menos del porcentaje de variación que soporta la estrategia.
-    salida = False
-    LL=ind.PPSR(symbol)
-    R4=LL['R4']
-    S4=LL['S4']
-    S5=LL['S5']
-    R5=LL['R5']
-    # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
-    distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
-    if side=='BUY':
-        proximomuro=R5
-        preciosoporta=precioactual*(1-(distanciasoportada/100))
-    else:
-        proximomuro=S5
-        preciosoporta=precioactual*(1+(distanciasoportada/100))
-    for rs, precio in LL.items():
-        if side =='BUY':
-            if preciosoporta<precio:
-                if precio<proximomuro:
-                    proximomuro=precio
-        else:
-            if preciosoporta>precio:
-                if precio>proximomuro:
-                    proximomuro=precio
-    # Variacion es la variacion entre el precio stop y el muro más cercano en dirección hacia la posición.
-    if side=='SELL':
-        variacion =((preciosoporta/proximomuro)-1)*100
-    else:
-        variacion =((proximomuro/preciosoporta)-1)*100
-    if side=='SELL':
-        if precioactual<S5: # si el precio anda por abajo de todos los muros
-            if abs(variacion)<distanciasoportada:
-                if (
-                    df.close.iloc[-3] > df.upper.iloc[-3]
-                    and
-                    df.close.iloc[-2] < df.upper.iloc[-2]
-                    ):
+    try:
+        salida = False
+        LL=ind.PPSR(symbol)
+        R4=LL['R4']
+        S4=LL['S4']
+        S5=LL['S5']
+        R5=LL['R5']
+        # df['martillo'] = df.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
+        # variacion porcentual aproximada soportada por la estrategia antes de caer en stop loss...
+        distanciasoportada=(ut.leeconfiguracion('cantidadcompensaciones')*distanciaentrecompensaciones)+distanciaentrecompensaciones
+        if side=='SELL':
+                if precioactual < R4: # and df.martillo.iloc[-2] == -1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))    
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4 o la vela anterior no es martillo.\n")
                     salida = False
-            else:
-                print(f"\n{symbol} {side} - Incumplida. Precio debajo de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                salida = False
-        else:        
-            if precioactual<R4: # si el precio anda entre los muros
-                if abs(variacion)<distanciasoportada:
-                    if (
-                        df.close.iloc[-3] > df.upper.iloc[-3]
-                        and
-                        df.close.iloc[-2] < df.upper.iloc[-2]
-                        ):
-                        salida = True
-                    else:
-                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                        salida = False
-                else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    salida = False
-            else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es menor que R4.\n")
-                salida = False
-    else:
-        if precioactual>R5: # si el precio anda por arriba de todos los muros
-            if abs(variacion)<distanciasoportada:
-                if  (
-                    df.close.iloc[-3] < df.lower.iloc[-3]
-                    and
-                    df.close.iloc[-2] > df.lower.iloc[-2] 
-                    ):
+        else:
+                if precioactual > S4: # and df.martillo.iloc[-2] == 1: # si el precio anda entre los muros y martillo
                     salida = True
                 else:
+                    print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4 o la vela anterior no es martillo.\n")
                     salida = False
-                    print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-            else:
-                print(f"\n{symbol} {side} - Incumplida. Precio arriba de todos los muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                salida = False                
-        else:
-            if precioactual>S4:# si el precio anda entre los muros
-                if abs(variacion)<distanciasoportada:
-                    if  (
-                        df.close.iloc[-3] < df.lower.iloc[-3]
-                        and
-                        df.close.iloc[-2] > df.lower.iloc[-2] 
-                        ):
-                        salida = True
-                    else:
-                        salida = False
-                        print(f"\n{symbol} {side} - Incumplida. Precio entre muros. BB no cumplida. Hora: "+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                else:
-                    print(f"\n{symbol} {side} - Incumplida. Precio entre muros. No hay muro cercano para contener una variación en contra. Distancia al más cercano: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%\n")
-                    salida = False                    
-            else:
-                print(f"\n{symbol} {side} - No se cumple condición. El precio actual no es mayor que S4.\n")
-                salida = False
-    if salida==True:
-        ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Variación último soporte: {ut.truncate(variacion,2)}% - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
-    return salida
+        if salida==True:
+            ut.printandlog(cons.nombrelog,f"\n{symbol} {side} - Distancia soportada: {ut.truncate(distanciasoportada,2)}%")
+        return salida
+    except Exception as falla:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass    
+
+def interfaz_usuario():
+    def guardar_configuracion():
+        nueva_configuracion = {
+            "ventana": ventana_var.get(),
+            "porcentajeentrada": porcentaje_entrada_var.get(),
+            "procentajeperdida": porcentaje_perdida_var.get(),
+            "incrementocompensacionporc": incremento_compensacion_var.get(),
+            "cantidadcompensaciones": cantidad_compensaciones_var.get(),
+            "variaciontrigger": variacion_trigger_var.get(),
+            "maximavariaciondiaria": max_variacion_diaria_var.get(),
+            "tradessimultaneos": trades_simultaneos_var.get(),
+            "distanciaentrecompensacionesalta": distancia_comp_alta_var.get(),
+            "distanciaentrecompensacionesbaja": distancia_comp_baja_var.get(),
+            "reservas": reservas_var.get(),
+            "sideflag": side_flag_var.get(),
+            "sonidos": sonidos_var.get(),
+            "restriccionhoraria": restriccion_horaria_var.get(),
+            "porcentajeadesocupar": porcentaje_desocupar_var.get()
+        }
+        with open(os.path.join(cons.pathroot, "configuration.json"), "w") as json_file:
+            json.dump(nueva_configuracion, json_file, indent=4)
+        messagebox.showinfo("Éxito", "Configuración guardada exitosamente")
+    
+    # Crear la ventana principal
+    root = tk.Tk()
+    root.title("Santa3")
+    # Variables de control
+    ventana_var = tk.IntVar()
+    porcentaje_entrada_var = tk.IntVar()
+    porcentaje_perdida_var = tk.IntVar()
+    incremento_compensacion_var = tk.IntVar()
+    cantidad_compensaciones_var = tk.IntVar()
+    variacion_trigger_var = tk.IntVar()
+    max_variacion_diaria_var = tk.IntVar()
+    trades_simultaneos_var = tk.IntVar()
+    distancia_comp_alta_var = tk.DoubleVar()
+    distancia_comp_baja_var = tk.DoubleVar()
+    reservas_var = tk.IntVar()
+    side_flag_var = tk.IntVar()
+    sonidos_var = tk.IntVar()
+    restriccion_horaria_var = tk.IntVar()
+    porcentaje_desocupar_var = tk.IntVar()
+    modo_solo_chequeo = tk.IntVar()
+    # Cargar valores iniciales desde el archivo JSON
+    with open(os.path.join(cons.pathroot, "configuration.json"), "r") as json_file:
+        configuracion = json.load(json_file)
+        ventana_var.set(configuracion["ventana"])
+        porcentaje_entrada_var.set(configuracion["porcentajeentrada"])
+        porcentaje_perdida_var.set(configuracion["procentajeperdida"])
+        incremento_compensacion_var.set(configuracion["incrementocompensacionporc"])
+        cantidad_compensaciones_var.set(configuracion["cantidadcompensaciones"])
+        variacion_trigger_var.set(configuracion["variaciontrigger"])
+        max_variacion_diaria_var.set(configuracion["maximavariaciondiaria"])
+        trades_simultaneos_var.set(configuracion["tradessimultaneos"])
+        distancia_comp_alta_var.set(configuracion["distanciaentrecompensacionesalta"])
+        distancia_comp_baja_var.set(configuracion["distanciaentrecompensacionesbaja"])
+        reservas_var.set(configuracion["reservas"])
+        side_flag_var.set(configuracion["sideflag"])
+        sonidos_var.set(configuracion["sonidos"])
+        restriccion_horaria_var.set(configuracion["restriccionhoraria"])
+        porcentaje_desocupar_var.set(configuracion["porcentajeadesocupar"])
+        modo_solo_chequeo.set(configuracion["modo_solo_chequeo"])
+    # Crear etiquetas y campos de entrada
+    tk.Label(root, text="Ventana:").grid(row=0, column=0)
+    tk.Entry(root, textvariable=ventana_var).grid(row=0, column=1)
+    tk.Label(root, text="Porcentaje de Entrada:").grid(row=1, column=0)
+    tk.Entry(root, textvariable=porcentaje_entrada_var).grid(row=1, column=1)
+    tk.Label(root, text="Porcentaje de Pérdida:").grid(row=2, column=0)
+    tk.Entry(root, textvariable=porcentaje_perdida_var).grid(row=2, column=1)
+    tk.Label(root, text="Incremento Compensación (%):").grid(row=3, column=0)
+    tk.Entry(root, textvariable=incremento_compensacion_var).grid(row=3, column=1)
+    tk.Label(root, text="Cantidad de Compensaciones:").grid(row=4, column=0)
+    tk.Entry(root, textvariable=cantidad_compensaciones_var).grid(row=4, column=1)
+    tk.Label(root, text="Variación Trigger:").grid(row=5, column=0)
+    tk.Entry(root, textvariable=variacion_trigger_var).grid(row=5, column=1)
+    tk.Label(root, text="Máxima Variación Diaria:").grid(row=6, column=0)
+    tk.Entry(root, textvariable=max_variacion_diaria_var).grid(row=6, column=1)
+    tk.Label(root, text="Trades Simultáneos:").grid(row=7, column=0)
+    tk.Entry(root, textvariable=trades_simultaneos_var).grid(row=7, column=1)
+    tk.Label(root, text="Distancia Compensaciones Alta:").grid(row=8, column=0)
+    tk.Entry(root, textvariable=distancia_comp_alta_var).grid(row=8, column=1)
+    tk.Label(root, text="Distancia Compensaciones Baja:").grid(row=9, column=0)
+    tk.Entry(root, textvariable=distancia_comp_baja_var).grid(row=9, column=1)
+    tk.Label(root, text="Reservas:").grid(row=10, column=0)
+    tk.Entry(root, textvariable=reservas_var).grid(row=10, column=1)
+    tk.Label(root, text="Side Flag:").grid(row=11, column=0)
+    tk.Entry(root, textvariable=side_flag_var).grid(row=11, column=1)
+    tk.Label(root, text="Sonidos:").grid(row=12, column=0)
+    tk.Entry(root, textvariable=sonidos_var).grid(row=12, column=1)
+    tk.Label(root, text="Restricción Horaria:").grid(row=13, column=0)
+    tk.Entry(root, textvariable=restriccion_horaria_var).grid(row=13, column=1)
+    tk.Label(root, text="Porcentaje a Desocupar:").grid(row=14, column=0)
+    tk.Entry(root, textvariable=porcentaje_desocupar_var).grid(row=14, column=1)
+    tk.Label(root, text="Modo solo chequeo:").grid(row=15, column=0)
+    tk.Entry(root, textvariable=modo_solo_chequeo).grid(row=15, column=1)    
+    # Botón para guardar la configuración
+    tk.Button(root, text="Guardar Configuración", command=guardar_configuracion).grid(row=16, columnspan=2)    
+    root.mainloop()
 
 def main() -> None:
     ##PARAMETROS##########################################################################################
+    gui_thread = threading.Thread(target=interfaz_usuario)
+    gui_thread.start()
     vueltas=0
     minutes_diff=0    
     maximavariacion=0.0
@@ -664,11 +734,11 @@ def main() -> None:
                                     distanciaentrecompensaciones = ut.leeconfiguracion('distanciaentrecompensacionesalta')                                 
 
                                 precioactual=ut.currentprice(par)
-                                if precioactual>=preciomayor*(1-0.5/100):
+                                if precioactual>=preciomayor*(1-0.5/100): # solo toma reentradas. El 0.5 es amortiguacion ya que a lo mejor bajó un poco.
                                     flechamecha = " ↑"
                                     variacionmecha = ((precioactual/preciomenor)-1)*100
                                 else:
-                                    if precioactual<preciomenor*(1+0.5/100):
+                                    if precioactual<preciomenor*(1+0.5/100): # solo toma reentradas. El 0.5 es amortiguacion ya que a lo mejor subió un poco.
                                         flechamecha = " ↓"
                                         variacionmecha = ((precioactual/preciomayor)-1)*-100       
                                     else:
@@ -677,14 +747,13 @@ def main() -> None:
 
                                 sideflag=ut.leeconfiguracion('sideflag')
 
-                                df=ind.get_bollinger_bands(df)
+                                #df=ind.get_bollinger_bands(df)
 
                                 # #######################################################################################################
                                 ######################################TRADE MECHA
                                 # #######################################################################################################
-
-                                if  variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
-                                    ########### Para chequear que tenga soportes/resitencias si el precio se va en contra.
+                                modo_solo_chequeo = ut.leeconfiguracion('modo_solo_chequeo')
+                                if modo_solo_chequeo == 0 and variacionmecha >= variaciontrigger and btcvariacion<1.5 and tradingflag==False and (17 >= dt.datetime.today().hour >= 7 or ut.leeconfiguracion('restriccionhoraria')==0):                                    
                                     if flechamecha==" ↑" and (sideflag ==0 or sideflag ==1):
                                         lado='SELL'
                                         if validaciones(par,lado,precioactual,distanciaentrecompensaciones,df)==True:
@@ -697,7 +766,6 @@ def main() -> None:
                                             ut.printandlog(cons.nombrelog,"\nPar: "+par+" - Variación mecha: "+str(ut.truncate(variacionmecha,2)))                                                    
                                             trading(par,lado,porcentajeentrada,distanciaentrecompensaciones)
                                             tradingflag=True
-
                                     else:
                                         if flechamecha==" ↓" and (sideflag ==0 or sideflag ==2):
                                             lado='BUY'

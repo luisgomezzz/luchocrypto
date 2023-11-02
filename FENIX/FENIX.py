@@ -8,9 +8,57 @@ from datetime import datetime
 from time import sleep
 import threading
 import numpy as np
+import inquirer
 
-md.printandlog(cons.nombrelog,"FENIX")
+RED   = "\033[1;31m"  
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+YELLOW = "\33[33m"
+#EXCHANGE SELECT
+questions = [
+inquirer.List('Estrategia',
+                message="Seleccionar estrategia: ",
+                choices=['estrategia_royal','estrategia_haz','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
+            ),
+]
+answers = inquirer.prompt(questions)
+estrategia_name=answers['Estrategia']
+if estrategia_name=='estrategia_santa':
+    sys.stdout.write(GREEN)
+if estrategia_name=='estrategia_triangulos':
+    sys.stdout.write(CYAN)  
+if estrategia_name=='estrategia_trampa':
+    sys.stdout.write(REVERSE)
+if estrategia_name=='estrategia_haz':
+    sys.stdout.write(RED)            
+if estrategia_name=='estrategia_royal':
+    sys.stdout.write(RED)    
+
+md.printandlog(cons.nombrelog, estrategia_name)   
+
+def dataframe_estrategia(symbol,estrategia_name):
+    if estrategia_name=='estrategia_bb':
+        data = md.estrategia_bb(symbol)
+    if estrategia_name=='estrategia_santa':
+        data,porcentajeentrada = md.estrategia_santa(symbol)
+    if estrategia_name=='sigo_variacion_bitcoin':
+        data = md.sigo_variacion_bitcoin(symbol)
+    if estrategia_name=='estrategia_triangulos':
+        data = md.estrategia_triangulos(symbol)   
+    if estrategia_name=='estrategia_trampa':
+        data,porcentajeentrada = md.estrategia_trampa(symbol) 
+    if estrategia_name=='estrategia_haz':
+        data = md.estrategia_haz(symbol,alerta=False)
+    if estrategia_name=='estrategia_royal':
+        data = md.estrategia_royal(symbol, debug = False, refinado = False, file_source = False,timeframe = '1h')
+    return data
+
 posiciones={}
+lista_monedas_filtradas = estrategia_name+"_symbols.txt"
 
 def actualiza_trailing_stop(symbol):
     trailing_stop_price = 0.0
@@ -29,49 +77,44 @@ def actualiza_trailing_stop(symbol):
             md.closeallopenorders(symbol)            
             break
         else:
-            data = md.obtiene_historial(symbol)
+            data = dataframe_estrategia(symbol,estrategia_name)
             atr = md.set_atr_periods(data)
             if positionamt>0: #Es un long
-                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * md.n_atr)
+                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
                 side='BUY'
             else: # Es un short
-                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * md.n_atr)
+                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * data.n_atr[-1])
                 side='SELL'
-            if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
-                print(f"\nActualizo Trailing stop {symbol} - {side}.")
-                creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
-                ultimo_trailing_stop_price = trailing_stop_price
-                if creado==True:
-                    if trailing_stop_id_anterior==0:
-                        trailing_stop_id_anterior=trailing_stop_id
-                    else:
-                        try:
-                            cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+            if data.cierra[-1]==True:
+                md.closeposition(symbol,side)
+            else:
+                if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
+                    print(f"\nActualizo Trailing stop {symbol} - {side}.")
+                    creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
+                    ultimo_trailing_stop_price = trailing_stop_price
+                    if creado==True:
+                        if trailing_stop_id_anterior==0:
                             trailing_stop_id_anterior=trailing_stop_id
-                            print("\nTrailing_stop_id anterior cancelado. "+symbol)
-                        except:
-                            trailing_stop_id_anterior=trailing_stop_id
-                            pass
-        sleep(60) 
+                        else:
+                            try:
+                                cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+                                trailing_stop_id_anterior=trailing_stop_id
+                                print("\nTrailing_stop_id anterior cancelado. "+symbol)
+                            except:
+                                trailing_stop_id_anterior=trailing_stop_id
+                                pass
 
 # programa principal
 def main():
     vueltas=0
     minutes_diff=0 
     balancetotal=md.balancetotal()
-    reservas = 2965
+    reservas = 3065
     global posiciones
     ##############START        
     print("Saldo: "+str(md.truncate(balancetotal,2)))
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
 
-    #Lee archivo de mmonedas filtradas
-    listamonedas=[]
-    with open(cons.pathroot+"lista_monedas_filtradas.txt", 'r') as fp:
-        for line in fp:
-            x = line[:-1]
-            listamonedas.append(x)
-    
     try:
 
         while True:
@@ -82,7 +125,17 @@ def main():
             cantidad_posiciones = dic_configuracion['cantidad_posiciones']
             # Lee archivo de posiciones
             with open(cons.pathroot+"posiciones.json","r") as j:
-                posiciones=json.load(j)        
+                posiciones=json.load(j)    
+
+            #Lee archivo de mmonedas filtradas
+            listamonedas=[]            
+            f = open(os.path.join(cons.pathroot, lista_monedas_filtradas), 'a',encoding="utf-8")
+            f.close()      
+            with open(cons.pathroot+lista_monedas_filtradas, 'r') as fp:
+                for line in fp:
+                    x = line[:-1]
+                    listamonedas.append(x)
+
             for symbol in listamonedas:
                 # para calcular tiempo de vuelta completa                
                 if vueltas == 0:
@@ -101,23 +154,25 @@ def main():
                     sys.exit()
 
                 try:
-                    data = md.obtiene_historial(symbol)
-                    data = md.estrategia_bb(data)
+
+                    data = dataframe_estrategia(symbol,estrategia_name)
                     
                     # CREA POSICION
                     side=''
                     if symbol not in posiciones:                        
                         ###BUY###
-                        if  data.signal[-1] ==1:
+                        if  data.signal[-1] ==1 or data.signal[-2] ==1:
                             side='BUY'
                         else:
                             ###SELL###
-                            if data.signal[-1] ==-1:
+                            if data.signal[-1] ==-1 or data.signal[-2] ==-1:
                                 side='SELL'
-                        if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0:    
+                        if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0: 
+                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
                             md.sound()
                             md.sound() 
-                            md.crea_posicion(symbol,side,porcentajeentrada=100) 
+                            porcentajeentrada = data.porcentajeentrada[-1]
+                            #md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
@@ -128,7 +183,8 @@ def main():
                                 stop_price = data.stop_loss[-1]
                                 md.crea_stoploss (symbol,side,stop_price)
                                 profit_price = data.take_profit[-1]
-                                md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
+                                if not np.isnan(data.take_profit[-1]):
+                                    md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 hilo.start()  
 

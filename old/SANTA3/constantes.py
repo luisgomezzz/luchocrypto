@@ -185,11 +185,12 @@ dictionary = {
     "tradessimultaneos" : 3, #Número máximo de operaciones en simultaneo... se puede ir variando colocando palabras en operando.txt  
     "distanciaentrecompensacionesalta" : 1.7, #porcentaje de distancia entre compensaciones para monedas por debajo del top de capitalización
     "distanciaentrecompensacionesbaja" : 1, #porcentaje de distancia entre compensaciones para monedas del top de capitalización.
-    "reservas": 2965, #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
+    "reservas": 3065, #valor ahorrado. Ir sumando los depósitos que se realicen a este valor.
     "sideflag": 0, # 0 ambos | 1 solo shorts | 2 solo longs
     "sonidos": 1, # 1 sonido ON, 0 sonido OFF
-    "restriccionhoraria": 1, # 1 restricción ON, 0 restricción OFF
-    "porcentajeadesocupar": 50 # porcentaje de la posición que desocupa al tocar el tp.
+    "restriccionhoraria": 0, # 1 restricción ON, 0 restricción OFF
+    "porcentajeadesocupar": 50, # porcentaje de la posición que desocupa al tocar el tp.
+    "modo_solo_chequeo": 1 # si está en 0 puede tradear, si está en 1 solo observa.
 }
 # Serializing json
 json_object = json.dumps(dictionary, indent=4)
@@ -207,4 +208,7 @@ apalancamientoreal=10 # Este es el valor que, multiplicado por mi capital total,
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.
-mazmorra=['BELUSDT','RENUSDT']
+mazmorra=['BELUSDT','RENUSDT'
+          #,'KNCUSDT','CVCUSDT','GTCUSDT','LQTYUSDT','STGUSDT','BAKEUSDT','AUDIOUSDT','MAVUSDT','BNTUSDT','LPTUSDT',
+          #'LEVERUSDT','XRPUSDT','SEIUSDT'
+          ]

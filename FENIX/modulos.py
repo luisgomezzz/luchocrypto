@@ -13,6 +13,9 @@ import pandas_ta as ta
 from backtesting import Backtest
 import talib
 from backtesting import Strategy
+from binance.enums import HistoricalKlinesType
+from numerize import numerize
+import requests
 
 salida_solicitada_flag = False
 
@@ -143,7 +146,10 @@ def lista_de_monedas ():
             exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
+                    if (    s['quoteAsset'] =='USDT' 
+                        and s['status'] =='TRADING'
+                        and s['contractType'] == 'PERPETUAL'
+                        and s['symbol'] not in mazmorra):
                         lista_de_monedas.append(s['symbol'])
                 except Exception as ex:
                     pass    
@@ -189,29 +195,7 @@ def coingeckoinfo (par,dato='market_cap'):
         valor = 0
     return valor
 
-def capitalizacion(par):
-    cap=0.0
-    # Primeramente se busca en binance aunque sea de otro exchange... si no lo encuentra va a coingecko.
-    #busqueda en binance
-    clientcap = cons.binanceClient(cons.api_key, cons.api_secret,cons.api_passphares) 
-    info = clientcap.get_products()
-    lista=info['data']
-    for i in range(len(lista)):
-        if lista[i]['s']==par:
-            cap = float(lista[i]['c']*lista[i]['cs'])
-            break
-    if cap==0.0:
-        #busqueda en coingecko
-        try:
-            cap=float(coingeckoinfo (par,dato='market_cap'))
-        except:
-            cap=0.0
-            pass
-    return cap  
-
-def get_bollinger_bands(df):
-    mult = 2.0
-    length = 20
+def get_bollinger_bands(df,mult = 2.0,length = 20):
     # calcular indicadores
     close = df['Close']
     basis = talib.SMA(close, length)
@@ -230,38 +214,43 @@ def salida_solicitada():
     global salida_solicitada_flag
     salida_solicitada_flag = True
 
-def obtiene_historial(symbol,timeframe='30m'):
+def obtiene_historial(symbol,timeframe,limit=1000):
     client = cons.client    
-    try:
-        historical_data = client.get_historical_klines(symbol, timeframe)
-        data = pd.DataFrame(historical_data)
-        data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
-                            'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
-        data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
-        data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
-        numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
-        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-        data['timestamp']=data['Open Time']
-        data.set_index('timestamp', inplace=True)
-        data.dropna(inplace=True)
-        data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
-                'Ignore'], axis=1, inplace=True)    
-        data['ema20']=data.ta.ema(20)
-        data['ema50']=data.ta.ema(50)
-        data['ema200']=data.ta.ema(200)
-        data['atr']=ta.atr(data.High, data.Low, data.Close)        
-        data = get_bollinger_bands(data)
-        data['avg_volume'] = data['Volume'].rolling(20).mean()
-        #data['vwap'] = vwap(data)
-        data['vwap'] = ta.vwap(data.High, data.Low, data.Close, data.Volume)
-        return data
-    except KeyboardInterrupt:        
-        salida_solicitada()
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
-        pass  
+    leido = False
+    while leido == False:
+        try:
+            historical_data = client.get_historical_klines(symbol, timeframe,limit=limit,klines_type=HistoricalKlinesType.FUTURES)
+            leido = True
+            data = pd.DataFrame(historical_data)
+            data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
+                                'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
+            data['Open Time'] = pd.to_datetime(data['Open Time']/1000, unit='s')
+            data['Close Time'] = pd.to_datetime(data['Close Time']/1000, unit='s')
+            numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
+            data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+            data['timestamp']=data['Open Time']
+            data.set_index('timestamp', inplace=True)
+            data.dropna(inplace=True)
+            data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
+                    'Ignore'], axis=1, inplace=True)    
+            data['ema20'] = ta.ema(data.Close, length=20)
+            data['ema50'] = ta.ema(data.Close, length=50)
+            data['ema200'] = ta.ema(data.Close, length=200)
+            data['atr'] = ta.atr(data.High, data.Low, data.Close)        
+        except KeyboardInterrupt:        
+            salida_solicitada()
+        except BinanceAPIException as e:
+            if e.message=="Invalid symbol.":                
+                leido = True
+            else:
+                print("\nError binance - Par:",symbol,"-",e.status_code,e.message)          
+            pass        
+        except Exception as falla:
+            _, _, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
+            pass  
+    return data
 
 def EMA(data,length):
     return data.ta.ema(length)
@@ -275,46 +264,6 @@ def set_atr_periods(data, periods: int = 100):
     tr = np.max([h - l, (c_prev - h).abs(), (c_prev - l).abs()], axis=0)
     atr = pd.Series(tr).rolling(periods).mean().bfill().values    
     return atr
-
-n_atr = 5
-
-class TrailingStrategy(Strategy):
-    def init(self):
-        super().init()        
-    def next(self):        
-        super().next()
-        index = len(self.data)-1
-        atr = set_atr_periods(self.data)
-        for trade in self.trades:
-            if trade.is_long:
-                trade.sl = max(trade.sl or -np.inf,
-                               self.data.Close[index] - atr[index] * n_atr)
-            else:
-                trade.sl = min(trade.sl or np.inf,
-                               self.data.Close[index] + atr[index] * n_atr)
-
-def backtesting(data, plot_flag=False, tp_flag=False):
-    class Fenix(TrailingStrategy):
-        def init(self):
-            super().init()
-        def next(self):       
-            super().next()
-            if self.position:
-                pass
-            else:   
-                if tp_flag==False:
-                    tp_value = None
-                else:
-                    tp_value = self.data.take_profit[-1]
-                if self.data.signal[-1]==1:
-                    self.buy(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
-                elif self.data.signal[-1]==-1:
-                    self.sell(size=1000,sl=self.data.stop_loss[-1],tp=tp_value)
-    bt = Backtest(data, Fenix, cash=1000)
-    output = bt.run()
-    if plot_flag:
-        bt.plot()
-    return output
 
 def get_posiciones_abiertas(): 
     leido = False
@@ -459,91 +408,1185 @@ def crea_takeprofit(par,preciolimit,posicionporc,lado):
         creado = False
         orderid = 0
         pass    
-    return creado,orderid        
+    return creado,orderid
 
-def estrategia_bb(data):
-    '''
-CRVUSDT
-RUNEUSDT
-MAGICUSDT
-STXUSDT
-SUIUSDT
-COMBOUSDT
+def obtiene_capitalizacion(symbol):
+    market_cap = 0
+    url = f'https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}'    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        market_cap = float(data['quoteVolume'])
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
+    return market_cap
 
-    '''
-    mult_take_profit = 1
-    mult_stop_loss = 1.5
+def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar manipulacion.
+    lista = lista_de_monedas ()
+    lista_filtrada = []
+    for symbol in lista:
+        try:  
+            vol= volumeOf24h(symbol)
+            cap = obtiene_capitalizacion(symbol)
+            if vol >= cons.minvolumen24h and cap >= cons.mincapitalizacion:
+                lista_filtrada.append(symbol)
+        except Exception as falla:
+            _, _, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+            pass     
+        except KeyboardInterrupt as ky:
+            print("\nSalida solicitada. ")
+            sys.exit()   
+    return lista_filtrada
+
+class TrailingStrategy(Strategy):
+    def init(self):
+        super().init()        
+    def next(self):        
+        super().next()
+        index = len(self.data)-1
+        atr = set_atr_periods(self.data)
+        for trade in self.trades:
+            if trade.is_long:
+                trade.sl = max(trade.sl or -np.inf,
+                               self.data.Close[index] - atr[index] * self.data.n_atr[index])
+            else:
+                trade.sl = min(trade.sl or np.inf,
+                               self.data.Close[index] + atr[index] * self.data.n_atr[index])
+                
+def backtesting(data, plot_flag=False):
+    balance = 100    
+    def ema(data):
+        indi=ta.ema(data.Close.s,length=21)
+        return indi.to_numpy()
+    def sma(data):
+        indi=ta.sma(data.Close.s,length=20)
+        return indi.to_numpy()    
+    class Fenix(TrailingStrategy):
+        def init(self):
+            super().init()
+            self.ema = self.I(ema,self.data)
+            self.sma = self.I(sma,self.data)
+        def next(self):       
+            super().next()
+            if self.position:
+                if self.data.cierra[-1]==True:
+                    self.position.close()                    
+            else:   
+                if np.isnan(data.take_profit[-1]):
+                    tp_value = None
+                else:
+                    tp_value = self.data.take_profit[-1]
+                size= balance*self.data.porcentajeentrada[-1]/100
+                if self.data.signal[-1]==1:
+                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+                elif self.data.signal[-1]==-1:
+                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+    bt = Backtest(data, Fenix, cash=balance)
+    output = bt.run()
+    if plot_flag:
+        bt.plot()
+    return output
+
+def estrategia_bb(symbol,tp_flag=True):
+    timeframe = '15m'
+    ventana = 7
+    data = obtiene_historial(symbol,timeframe)
+    btc_data = obtiene_historial("BTCUSDT",timeframe)
+    data['variacion_btc'] = ((btc_data['Close'].rolling(ventana).max()/btc_data['Close'].rolling(ventana).min())-1)*100
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia.
+    data['atr']=ta.atr(data.High, data.Low, data.Close, length=14)
+    get_bollinger_bands(data,mult = 1.5,length = 20)
     data['signal'] = np.where(
-        (data.ema20 > data.ema50) 
-        &(data.ema50 > data.ema200) 
-        &(data.Close.shift(1) < data.lower.shift(1)) 
-        &(data.Volume > data.avg_volume)
+         (data.ema20.shift(1) > data.ema50.shift(1)) 
+        &(data.ema50.shift(1) > data.ema200.shift(1)) 
+        &(data.Close.shift(1) < data.lower.shift(1))
+        &(data.variacion_btc.shift(1) < 0.8)        
         ,1,
         np.where(
-            (data.ema20 < data.ema50) 
-            &(data.ema50 < data.ema200)
+             (data.ema20.shift(1) < data.ema50.shift(1)) 
+            &(data.ema50.shift(1) < data.ema200.shift(1))
             &(data.Close.shift(1) > data.upper.shift(1))
-            &(data.Volume > data.avg_volume)
+            &(data.variacion_btc.shift(1) < 0.8)
             ,-1,
             0
         )
     )    
     data['take_profit'] = np.where(
-        data.signal == 1,
-        #data.Close + (data.atr * mult_take_profit),
-        data.upper,
-        np.where(
-            data.signal == -1,
-            #data.Close - (data.atr * mult_take_profit),  
-            data.lower,
-            0
-        )
-    )
+                                tp_flag,np.where(
+                                            data.signal == 1,
+                                            data.upper,
+                                            np.where(
+                                                data.signal == -1,
+                                                data.lower,
+                                                0
+                                                )   
+                                            ),np.NaN
+                                )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  
+        data.Close - 1*data.atr,  
         np.where(
             data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  
+            data.Close + 1*data.atr,
             0
         )
     )
+    data['cierra'] = False
+    #if symbol != 'XRPUSDT':
+    #    data['signal']=0
+    #    data['take_profit']=0
+    #    data['stop_loss']=0
     return data
 
-def estrategia_santa(data):
+def es_martillo(vela):
+    out=0
+    cuerpo = abs(vela['Open'] - vela['Close'])
+    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
+    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
+    condicion_largo = (vela.High-vela.Low) >= vela.atr/2
+    if condicion_largo:
+        if sombra_inferior>sombra_superior*3:
+            if sombra_inferior > 2 * cuerpo: #martillo parado
+                out = 1
+        else:
+            if sombra_superior>sombra_inferior*3:
+                if sombra_superior > 2 * cuerpo: #martillo invertido
+                    out = -1
+    return out    
+
+def estrategia_santa(symbol,tp_flag = True):
+    # esta estrategia solo se utiliza a modo de prueba y backtesting ya que el programa en realidad es santa3
+    porcentajeentrada = 10
+    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
     np.seterr(divide='ignore', invalid='ignore')
-    #solo en caso de timeframe 1m     
-    data['maximo'] = data['Close'].rolling(30).max()
-    data['minimo'] = data['Close'].rolling(30).min()
-    mult_take_profit = 1
-    mult_stop_loss = 1.5
+    timeframe = '1m'
+    ventana = 30
+    porc_alto = 100
+    porc_bajo = 5
+    data = obtiene_historial(symbol,timeframe)
+    data['maximo'] = data['High'].rolling(ventana).max()
+    data['minimo'] = data['Low'].rolling(ventana).min()
+    data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. 
+    data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
     data['signal'] = np.where(
-        (data.maximo*0.95 >= data.Close) 
-        #&(data.Volume > data.avg_volume)
+                            (data.Close.shift(1) <= data.minimo.shift(2)) # para que solo sea reentrada
+                            &data.martillo.shift(1) == 1
+                            &(data.Close.shift(1) <= data.maximo.shift(2)*(1-porc_bajo/100)) # variacion desde
+                            &(data.Close.shift(1) >= data.maximo.shift(2)*(1-porc_alto/100)) # variacion hasta
+                            ,1,
+                            np.where(
+                                    (data.Close.shift(1) >= data.maximo.shift(2)) 
+                                    &data.martillo.shift(1) == -1
+                                    &(data.Close.shift(1) >= data.minimo.shift(2)*(1+porc_bajo/100)) 
+                                    &(data.Close.shift(1) <= data.minimo.shift(2)*(1+porc_alto/100)) 
+                                    ,-1,
+                                    0
+                                    )
+                            )  
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close*1.01,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close*0.99,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
+    data['stop_loss'] = np.where(
+        data.signal == 1,
+        data.Close*0.87,    # stop con una varicion de 13% en contra
+        np.where(
+            data.signal == -1,
+            data.Close*1.13,
+            0
+        )
+    )
+    data['cierra'] = False
+    return data,porcentajeentrada   
+
+def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
+    from scipy.stats import linregress
+    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
+    np.seterr(divide='ignore', invalid='ignore')
+    timeframe = '1h'
+    def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
+        if l-n1 < 0 or l+n2 >= len(df1):
+            return 0    
+        pividlow=1
+        pividhigh=1
+        for i in range(l-n1, l+n2+1):
+            if(df1.Low[l]>df1.Low[i]):
+                pividlow=0
+            if(df1.High[l]<df1.High[i]):
+                pividhigh=0
+        if pividlow and pividhigh:
+            return 3
+        elif pividlow:
+            return 1
+        elif pividhigh:
+            return 2
+        else:
+            return 0
+    def pointpos(x):
+        if x['pivot']==1:
+            return x['Low']-1e-3
+        elif x['pivot']==2:
+            return x['High']+1e-3
+        else:
+            return np.nan
+    df = obtiene_historial(symbol,timeframe)
+    df=df.copy()
+    #Check if NA values are in data
+    df=df[df['Volume']!=0]
+    df.reset_index(drop=True, inplace=True)
+    df.isna().sum()
+    df['n_atr'] = 1.5 
+    df["pivot"] = df.apply(lambda x: pivotid(df, x.name,3,3), axis=1)
+    df["pointpos"] = df.apply(lambda row: pointpos(row), axis=1)
+    df["signal"]=0
+    df["upper_line"]=0
+    df["lower_line"]=0
+    ### detecta la vela donde hay un triangulo a partir de la posicion que se elija en el rango
+    backcandles= 20
+    for candleid in range(0, len(df)):
+        maxim = np.array([])
+        minim = np.array([])
+        xxmin = np.array([])
+        xxmax = np.array([])
+        for i in range(candleid-backcandles, candleid+1):
+            if df.iloc[i].pivot == 1:
+                minim = np.append(minim, df.iloc[i].Low)
+                xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
+            if df.iloc[i].pivot == 2:
+                maxim = np.append(maxim, df.iloc[i].High)
+                xxmax = np.append(xxmax, i) # df.iloc[i].name        
+        if (xxmax.size <3 and xxmin.size <3) or xxmax.size==0 or xxmin.size==0:
+            continue        
+        slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
+        slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)            
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.0001 and slmax<-0.001:
+            df.loc[[candleid],'signal'] = 2 # desc
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.001 and abs(slmax)<=0.0001:
+            df.loc[[candleid],'signal'] = 3 # asc
+        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and slmax<=-0.0001:
+            df.loc[[candleid],'signal'] = 4 # comun
+        if df.iloc[candleid].signal in (2,3,4):
+            # Ecuación de la línea superior
+            xssup = xxmax
+            yssup = slmax*xxmax + intercmax
+            pendiente = (yssup[1]-yssup[0])/(xssup[1]-xssup[0])
+            intersecciony = yssup[0]-pendiente*xssup[0]
+            df.loc[[candleid],"upper_line"]=pendiente*candleid+intersecciony      
+            # Ecuación de la línea inferior
+            xsinf = xxmin
+            ysinf = slmin*xxmin + intercmin
+            pendiente = (ysinf[1]-ysinf[0])/(xsinf[1]-xsinf[0])
+            intersecciony = ysinf[0]-pendiente*xsinf[0]
+            df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
+            # TENDENCIA
+            if df.iloc[candleid].ema20 > df.iloc[candleid].ema50 > df.iloc[candleid].ema200:
+                tendencia = 1
+            else: 
+                if df.iloc[candleid].ema20 < df.iloc[candleid].ema50 < df.iloc[candleid].ema200:
+                    tendencia = -1
+                else:
+                    tendencia = 0
+            #   señales
+            if  (       df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
+                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line 
+                    and df.iloc[candleid-1].lower_line!=0
+                    and df.iloc[candleid-1].upper_line!=0
+                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
+                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
+                    #and df.iloc[candleid-2].lower_line!=0
+                    #and df.iloc[candleid-2].upper_line!=0
+                    #and tendencia == 1
+                ):
+                df.loc[[candleid],"signal"] = 1
+            elif (  df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
+                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line 
+                and df.iloc[candleid-1].lower_line!=0
+                and df.iloc[candleid-1].upper_line!=0
+                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
+                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
+                #and df.iloc[candleid-2].lower_line!=0
+                #and df.iloc[candleid-2].upper_line!=0
+                #and tendencia == -1
+                ):
+                df.loc[[candleid],"signal"] = -1
+            
+            # imprimo lugares donde se da la condición
+            if print_lines_flag and df.iloc[candleid].signal in (1,-1):
+                print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
+                print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
+                print(f"Precio Close-1: {df.iloc[candleid-1].Close}")
+    df['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            df.signal == 1,
+                            df.Close + 5*df.atr,
+                            np.where(
+                                    df.signal == -1,
+                                    df.Close - 5*df.atr,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
+    df['stop_loss'] = np.where(
+        df.signal == 1,
+        df.Close - 1.5*df.atr,
+        np.where(
+            df.signal == -1,
+            df.Close + 1.5*df.atr,
+            0
+        )
+    ) 
+    df['cierra'] = False
+    df["timestamp"] = df["Open Time"]   
+    df.set_index('timestamp', inplace=True)
+    return df        
+
+def dibuja_patrones_triangulos (df,candleid):
+    from scipy.stats import linregress
+    import plotly.graph_objects as go
+    #dibuja
+    df.reset_index(drop=True, inplace=True)    
+    dfpl = df[0:1000]
+    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
+                    open=dfpl['Open'],
+                    high=dfpl['High'],
+                    low=dfpl['Low'],
+                    close=dfpl['Close'])])
+    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
+                    marker=dict(size=5, color="MediumPurple"),
+                    name="pivot")
+    backcandles = 20
+    maxim = np.array([])
+    minim = np.array([])
+    xxmin = np.array([])
+    xxmax = np.array([])
+    for i in range(candleid-backcandles, candleid+1):
+        if df.iloc[i].pivot == 1:
+            minim = np.append(minim, df.iloc[i].Low)
+            xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
+        if df.iloc[i].pivot == 2:
+            maxim = np.append(maxim, df.iloc[i].High)
+            xxmax = np.append(xxmax, i) # df.iloc[i].name            
+    slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
+    slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)
+    print(rmin, rmax)
+    dfpl = df[candleid-backcandles-50:candleid+backcandles+50]
+    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
+                    open=dfpl['Open'],
+                    high=dfpl['High'],
+                    low=dfpl['Low'],
+                    close=dfpl['Close'])])
+    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
+                    marker=dict(size=4, color="MediumPurple"),
+                    name="pivot")
+    xxmin = np.append(xxmin, xxmin[-1]+15)
+    xxmax = np.append(xxmax, xxmax[-1]+15)
+    fig.add_trace(go.Scatter(x=xxmin, y=slmin*xxmin + intercmin, mode='lines', name='min slope'))
+    fig.add_trace(go.Scatter(x=xxmax, y=slmax*xxmax + intercmax, mode='lines', name='max slope'))
+    fig.update_layout(xaxis_rangeslider_visible=False)
+    fig.show()
+    print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
+    print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
+
+def backtestingsanta(data, plot_flag=False, debug = False):
+    balance = 1000    
+    output = None
+    try:
+        class Fenix(TrailingStrategy):
+            def init(self):
+                super().init()
+            def next(self):       
+                super().next()
+                if self.position:                    
+                    #print(f"Trades entry_price: {self.trades[0].entry_price} - entry_time: {self.trades[0].entry_time} - pl_pct: {self.trades[0].pl_pct}")
+                    if ((self.position.is_long and self.data.Close[-1]<=self.trades[0].entry_price*0.87) or
+                        (self.position.is_short and self.data.Close[-1]>=self.trades[0].entry_price*1.13) or
+                        self.position.pl_pct>=.01):
+                        self.position.close()
+                else:   
+                    if np.isnan(data.take_profit[-1]):
+                        tp_value = None
+                    else:
+                        tp_value = self.data.take_profit[-1]
+                    if self.data.signal[-1]==1:
+                        self.buy(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
+                        current_price = self.data.Close[-1]
+                        self.buy(limit=current_price*0.983, size=0.13)
+                        self.buy(limit=current_price*0.966289, size=0.169)
+                        self.buy(limit=current_price*0.949862087, size=0.2197)
+                        self.buy(limit=current_price*0.933714432, size=0.28561)
+                        self.buy(limit=current_price*0.917841286, size=0.371293)
+                        self.buy(limit=current_price*0.902237984, size=0.4826809)
+                        self.buy(limit=current_price*0.886899939, size=0.62748517)
+                        self.buy(limit=current_price*0.87182264,  size=4294)      #ataque                  
+                    elif self.data.signal[-1]==-1:
+                        self.sell(size=0.1,sl=self.data.stop_loss[-1],tp=tp_value)
+                        current_price = self.data.Close[-1]
+                        self.sell(limit=current_price*1.017, size=0.13)
+                        self.sell(limit=current_price*1.034289, size=0.169)
+                        self.sell(limit=current_price*1.051871913, size=0.2197)
+                        self.sell(limit=current_price*1.069753736, size=0.28561)
+                        self.sell(limit=current_price*1.087939549, size=0.371293)
+                        self.sell(limit=current_price*1.106434521, size=0.4826809)
+                        self.sell(limit=current_price*1.125243908, size=0.62748517)
+                        self.sell(limit=current_price*1.144373055, size=4294) # ataque
+        bt = Backtest(data, Fenix, cash=balance)
+        output = bt.run()
+        if plot_flag:
+            bt.plot()
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        if debug == True:
+            print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"\n")
+    return output
+
+def closeposition(symbol,side):
+    if side=='SELL':
+        lado='BUY'
+    else:
+        lado='SELL'
+    quantity=abs(get_positionamt(symbol))
+    if quantity!=0.0:
+        cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+
+def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
+    # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
+    # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
+    try:                
+        np.seterr(divide='ignore', invalid='ignore')
+        # temporalidad de 1h para encontrar martillos y soportes/resistencias
+        data1h = obtiene_historial(symbol,'1h')        
+        data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
+        data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
+        data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
+        data1h['date1h'] = data1h['Open Time']
+        data1h['variacion_porc'] = ((data1h.Close/data1h.Close.shift(24))-1)*100
+        data1h = data1h[:-1]        
+        # Temporalidad de 5m para tradear
+        data5m = obtiene_historial(symbol,'5m')
+        resample = data1h.reindex(data5m.index, method='pad')
+        data5m = data5m.join(resample[['martillo','disparo','escape','date1h','variacion_porc']])
+        data5m['n_atr'] = 50
+        data5m['signal'] = 0
+        data5m['previous_martillo'] = 0
+        previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
+        previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
+        previous_martillo = None
+        for index, row in data5m.iterrows():
+            # si no es unb martillo
+            if row['martillo'] == 0:
+                if previous_disparo is not None:
+                    # si Close está dentro de los valores claves mantengo las ultimas claves
+                    if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
+                        data5m.at[index, 'disparo'] = previous_disparo
+                        data5m.at[index, 'escape'] = previous_escape
+                        data5m.at[index, 'previous_martillo'] = previous_martillo
+                    # Si cruzó algún valor clave
+                    else:
+                        # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
+                        data5m.at[index, 'disparo'] = previous_disparo
+                        data5m.at[index, 'escape'] = previous_escape
+                        data5m.at[index, 'previous_martillo'] = previous_martillo
+                        previous_disparo = 0
+                        previous_escape = 0
+                        previous_martillo = 0
+            # si es un martillo guardo los valores claves
+            else: 
+                previous_disparo = row['disparo']
+                previous_escape = row['escape']
+                previous_martillo = row['martillo']        
+        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (data5m.variacion_porc >= 5),
+                                        1,
+                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (data5m.variacion_porc <= -5),
+                                        -1,  
+                                        0
+                                        )
+                            )
+        # En el ultimo registro se define como sell o long si el anteultimo terminó con signal ya que se trabaja a vela cerrada.
+        data5m.loc[data5m.index[-1], 'signal'] = np.where(data5m.signal.iloc[-2] == 1,
+                                        1,
+                                        np.where(data5m.signal.iloc[-2] == -1,
+                                            -1,  
+                                            0
+                                            )
+                                        )
+        data5m['take_profit'] = np.where(tp_flag,
+                                                np.where(data5m.signal == 1,
+                                                    data5m.Close+data5m.atr*3,
+                                                np.where(data5m.signal == -1,
+                                                    data5m.Close-data5m.atr*3,  
+                                                    0
+                                                    )
+                                                ),
+                                        np.NaN
+                                        )
+        data5m['stop_loss'] =   np.where(data5m.signal == 1,
+                                    data5m.Close-data5m.atr*1,
+                                np.where(data5m.signal == -1,
+                                    data5m.Close+data5m.atr*1,
+                                    0
+                                    )
+                                )    
+        data5m['cierra'] = False
+        # Reemplazar valores no finitos (NA e inf) con 0
+        data5m['porcentajeentrada'] = np.nan_to_num((data5m.Close/data5m.atr), nan=0, posinf=0, neginf=0)
+        # Aplicar np.floor y convertir a enteros
+        data5m['porcentajeentrada'] = np.floor(data5m['porcentajeentrada']).astype(int)
+        
+        ####################### alertas y valores
+        if alerta:
+            if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
+                print(f"\n{symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
+        if debug:
+            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc','porcentajeentrada']].to_string(index=False)
+            print(df_str)
+        if data5m.signal.iloc[-1] !=0:
+            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {data5m.porcentajeentrada.iloc[-2]}")
+        return data5m
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+
+def estrategia_oro(symbol,tp_flag = True):
+    porcentajeentrada = 0.01
+    archivo_csv = 'historico.csv'
+    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
+    data = pd.read_csv(archivo_csv, header=None, names=column_names)
+    data['Open Time']=pd.to_datetime(data['Open Time'])
+    data['timestamp']=data['Open Time']
+    data.set_index('timestamp', inplace=True)
+    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
+    data.sort_values(by='timestamp', ascending = True, inplace = True)
+    data['Volume'] = 1
+    data['atr'] = ta.atr(data.High, data.Low, data.Close)
+    data['n_atr'] = 50
+    data['time_hour'] = pd.to_datetime(data['Open Time']).dt.hour
+    numeric_columns = ['Open', 'High', 'Low', 'Close','time_hour','Volume']
+    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+    data['signal'] = np.where(
+        (data.time_hour.shift(1) == 14)
+        &(data.Close.shift(3) > data.Close.shift(1)) 
         ,1,
         np.where(
-            (data.minimo*1.05 <= data.Close)
-            #&(data.Volume > data.avg_volume)
+            (data.time_hour.shift(1) == 14)
+            &(data.Close.shift(3) < data.Close.shift(1)) 
             ,-1,
             0
         )
-    )    
-    data['take_profit'] = np.where(
-        data.signal == 1,
-        data.Close + (data.atr * mult_take_profit),
-        np.where(
-            data.signal == -1,
-            data.Close - (data.atr * mult_take_profit),  
-            0
-        )
-    )
+    )  
+    data['take_profit'] =   np.where(
+                            tp_flag,np.where(
+                            data.signal == 1,
+                            data.Close*1.01,
+                            np.where(
+                                    data.signal == -1,
+                                    data.Close*0.999,  
+                                    0
+                                    )
+                            ),np.NaN
+                                    )
     data['stop_loss'] = np.where(
         data.signal == 1,
-        data.Close - (data.atr * mult_stop_loss),  
+        data.Close*0.995,    
         np.where(
             data.signal == -1,
-            data.Close + (data.atr * mult_stop_loss),  
+            data.Close*1.005,
             0
         )
     )
+    data['cierra'] = False
+    return data,porcentajeentrada    
+
+def myfxbook_file_historico():
+    # Función que toma datos bajados desde https://www.myfxbook.com/forex-market/currencies/ a un archivo "historico.csv"
+    archivo_csv = 'historico.csv'
+    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
+    data = pd.read_csv(archivo_csv, header=None, names=column_names)
+    data['Open Time']=pd.to_datetime(data['Open Time'])
+    data['timestamp']=data['Open Time']
+    data.set_index('timestamp', inplace=True)
+    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
+    data.sort_values(by='timestamp', ascending = True, inplace = True)
+    data['Volume'] = 1
+    numeric_columns = ['Open', 'High', 'Low', 'Close','Volume']
+    data['ema20'] = ta.ema(data.Close, length=20)
+    data['ema50'] = ta.ema(data.Close, length=50)
+    data['ema200'] = ta.ema(data.Close, length=200)
+    data['atr'] = ta.atr(data.High, data.Low, data.Close)   
+    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     return data
+
+def backtesting_smart(data, plot_flag=False, symbol='NADA'):
+    balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
+    def indicador(df_campo):
+        indi=pd.Series(df_campo)
+        return indi.to_numpy()
+        
+    class Fenix(Strategy):
+        def init(self):
+            super().init()
+            #### varios
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+            #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
+            #####   PIVOTS ok!!!
+            #self.pivot_high = self.I(indicador,self.data.pivot_high)
+            #self.pivot_low = self.I(indicador,self.data.pivot_low)
+            #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
+            #self.piso_del_maximo = self.I(indicador,self.data.piso_del_maximo)
+            ######  DECISIONALES
+            self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
+            self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
+            #####   EXTREMOS ok!!
+            #self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
+            #self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
+            #self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
+            #self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
+            #####   BOSES ok!!!
+            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #####   IMBALANCES ok!!!
+            #self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
+            #self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
+            #self.imba_alcista_low = self.I(indicador,self.data.imba_alcista_low,name="imba_alcista_low", overlay=True, color="springgreen", scatter=True)
+            #self.imba_alcista_high = self.I(indicador,self.data.imba_alcista_high,name="imba_alcista_high", overlay=True, color="springgreen", scatter=True)
+        def next(self):       
+            super().next()
+            if self.position:
+                if self.data.cierra[-1]==True:
+                    self.position.close()                    
+            else:   
+                if np.isnan(data.take_profit[-1]):
+                    tp_value = None
+                else:
+                    tp_value = self.data.take_profit[-1]
+                porcentaje = 0
+                # para evaluar sin usar el apalancamiento
+                if self.data.porcentajeentrada[-1]>=100:
+                    porcentaje = 0.99
+                else:
+                    porcentaje = self.data.porcentajeentrada[-1]/100
+                size=porcentaje # balance*self.data.porcentajeentrada[-1]/100
+                if self.data.signal[-1]==1:
+                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+                elif self.data.signal[-1]==-1:
+                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
+    bt = Backtest(data, Fenix, cash=balance)
+    output = bt.run()
+    if plot_flag:
+        bt.plot(filename="graficos/"+symbol)
+    return output
+
+####################################################################################
+
+def smart_money(symbol,refinado,file_source,timeframe):
+    try:
+        # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
+        #
+        # Se debe tener en cuenta los boses son marcados una vez que se genera el rompimiento, esto significa que no se ve la línea de
+        # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
+        # Los imbalances no mitigados sí se pueden ver online.
+        #  
+        timeframe_refinado = '15m'
+
+        if file_source: 
+            # Si la data se toma de un file
+            df = myfxbook_file_historico()
+            df_imbalance = myfxbook_file_historico()
+            refinado = False
+        else:
+            # Si la data se saca de binance
+            df = obtiene_historial(symbol, timeframe)
+            df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances        
+
+        if refinado:
+            df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
+
+        largo = 1 # Parámetro de longitud para los puntos pivote High y Low
+        df['pivot_high'] = np.NaN
+        df['pivot_low'] = np.NaN
+        df['row_number'] = (range(len(df)))
+        df.set_index('row_number', inplace=True)
+
+        ##################################################################################### PIVOTS
+        for i in range(largo, len(df) - largo):
+            ## PIVOTS SUPERIORES
+            if (
+                df['High'].iloc[i] == df['High'].iloc[i - largo:i + largo + 1].max()
+                and df['High'].iloc[i] > df['High'].iloc[i - 1]
+                and df['High'].iloc[i] > df['High'].iloc[i + 1]
+                ):
+                df.at[i, 'pivot_high'] = df['High'].iloc[i]
+            ## PIVOTS INFERIORES
+            if (
+                df['Low'].iloc[i] == df['Low'].iloc[i - largo:i + largo + 1].min()
+                and df['Low'].iloc[i] < df['Low'].iloc[i - 1]
+                and df['Low'].iloc[i] < df['Low'].iloc[i + 1]
+                ):
+                df.at[i, 'pivot_low'] = df['Low'].iloc[i]
+        ## RELLENO DE PIVOTS
+        for i in range(0, len(df)-1):
+            if np.isnan(df['pivot_low'].iloc[i]):
+                df.at[i, 'pivot_low'] = df['pivot_low'].iloc[i - 1]
+            if np.isnan(df['pivot_high'].iloc[i]):
+                df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
+        
+        ###################################################################################### IMBALANCES
+        df_imbalance['row_number'] = (range(len(df_imbalance)))
+        df_imbalance.set_index('row_number', inplace=True)
+        df_imbalance['imba_bajista_high'] = np.where(
+                                        ((df_imbalance.Low.shift(1)) >= (df_imbalance.High.shift(-1)+df_imbalance.atr))
+                                        ,df_imbalance.Low.shift(1),np.NaN)
+        df_imbalance['imba_bajista_low'] = np.where(np.isnan(df_imbalance['imba_bajista_high']),np.NaN,df_imbalance.High.shift(-1))
+        df_imbalance['imba_alcista_high'] = np.where(
+                                        ((df_imbalance.High.shift(1)) <= (df_imbalance.Low.shift(-1)-df_imbalance.atr))
+                                        ,df_imbalance.Low.shift(-1),np.NaN)
+        df_imbalance['imba_alcista_low'] = np.where(np.isnan(df_imbalance['imba_alcista_high']),np.NaN,df_imbalance.High.shift(1))
+        df_imbalance['timestamp']=df_imbalance['Open Time']
+        df_imbalance.set_index('timestamp', inplace=True)    
+        df_imbalance=df_imbalance[['imba_bajista_high','imba_bajista_low','imba_alcista_high','imba_alcista_low','Open Time']]
+        df=pd.merge(df,df_imbalance, on=["Open Time"], how='left')        
+            ## RELLENO Y BORRADO DE IMBALANCES MITIGADOS
+            # imbalance alcista
+        imbalance_creado = False
+        imba_alcista_high = np.nan
+        imba_alcista_low = np.nan
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['imba_alcista_high'].iloc[i]): 
+                # un imbalance detectado en timeframe de 4h. Guardo los valores
+                imba_alcista_high=df['imba_alcista_high'].iloc[i]
+                imba_alcista_low=df['imba_alcista_low'].iloc[i]   
+                imbalance_creado = False
+            if imbalance_creado == False:     
+                # no es un imbalance detectado asi que estiro el dibujo
+                if df.Close.iloc[i] > imba_alcista_low: ## ya se creó el imbalance detectado. Dibujo
+                    df.at[i, 'imba_alcista_high'] = imba_alcista_high
+                    df.at[i, 'imba_alcista_low'] = imba_alcista_low
+                    imbalance_creado = True
+            else:
+                if df.Close.iloc[i] > imba_alcista_low: ## ya se completó el imbalance detectado. Dibujo mientras no sea mitigado
+                    df.at[i, 'imba_alcista_high'] = imba_alcista_high
+                    df.at[i, 'imba_alcista_low'] = imba_alcista_low
+                else:
+                    # se mitigó el imbalance, no dibujo
+                    imba_alcista_high = np.nan
+                    imba_alcista_low = np.nan
+            # imbalance bajista
+        imbalance_creado = False
+        imba_bajista_high = np.nan
+        imba_bajista_low = np.nan
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['imba_bajista_high'].iloc[i]): 
+                # un imbalance detectado en timeframe de 4h. Guardo los valores
+                imba_bajista_high=df['imba_bajista_high'].iloc[i]
+                imba_bajista_low=df['imba_bajista_low'].iloc[i]   
+                imbalance_creado = False
+            if imbalance_creado == False:     
+                # no es un imbalance detectado asi que estiro el dibujo
+                if df.Close.iloc[i] < imba_bajista_high: ## ya se creó el imbalance detectado. Dibujo
+                    df.at[i, 'imba_bajista_high'] = imba_bajista_high
+                    df.at[i, 'imba_bajista_low'] = imba_bajista_low
+                    imbalance_creado = True
+            else:
+                if df.Close.iloc[i] < imba_bajista_high: ## ya se completó el imbalance detectado. Dibujo mientras no sea mitigado
+                    df.at[i, 'imba_bajista_high'] = imba_bajista_high
+                    df.at[i, 'imba_bajista_low'] = imba_bajista_low
+                else:
+                    # se mitigó el imbalance, no dibujo
+                    imba_bajista_high = np.nan
+                    imba_bajista_low = np.nan
+        ######################################################################################################## BOSES
+        ### BOS BAJISTA
+        pico_maximo = 0
+        piso_del_maximo = 0
+        df['piso_del_maximo'] = np.NaN
+        for i in range(0, len(df)-1):
+            if df['pivot_high'].iloc[i]>pico_maximo:
+                pico_maximo = df['pivot_high'].iloc[i]
+                piso_del_maximo = df['pivot_low'].iloc[i]
+                df.at[i, 'piso_del_maximo'] = piso_del_maximo
+            if df['Close'].iloc[i] < piso_del_maximo:
+                pico_maximo = 0
+                piso_del_maximo = 0                
+                ##relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['piso_del_maximo'].iloc[i]):
+                df.at[i, 'piso_del_maximo'] = df['piso_del_maximo'].iloc[i - 1]
+        df['bos_bajista']=df.piso_del_maximo
+        bos=0
+        for i in range(len(df)-1, 0,-1):
+            if (df['Close'].iloc[i] < df['piso_del_maximo'].iloc[i]):
+                bos = df['piso_del_maximo'].iloc[i]
+            if df['bos_bajista'].iloc[i]!=bos:
+                df.at[i, 'bos_bajista'] = np.NaN
+        ### BOS ALCISTA
+        pico_minimo = float('inf')
+        techo_del_minimo = float('inf')
+        df['techo_del_minimo'] = np.NaN
+        for i in range(0, len(df)-1):
+            if df['pivot_low'].iloc[i]<pico_minimo:
+                pico_minimo = df['pivot_low'].iloc[i]
+                techo_del_minimo = df['pivot_high'].iloc[i]
+                df.at[i, 'techo_del_minimo'] = techo_del_minimo
+            if df['Close'].iloc[i] > techo_del_minimo:
+                pico_minimo = float('inf')
+                techo_del_minimo = float('inf')               
+                ##relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['techo_del_minimo'].iloc[i]):
+                df.at[i, 'techo_del_minimo'] = df['techo_del_minimo'].iloc[i - 1]
+        df['bos_alcista']=df.techo_del_minimo
+        bos=0
+        for i in range(len(df)-1, 0,-1):
+            if (df['Close'].iloc[i] > df['techo_del_minimo'].iloc[i]):
+                bos = df['techo_del_minimo'].iloc[i]
+            if df['bos_alcista'].iloc[i]!=bos:
+                df.at[i, 'bos_alcista'] = np.NaN          
+        ################################################################################################### EXTREMOS
+    
+        ##   extremos BAJISTAS
+        df['bajista_extremo_high']=np.nan
+        df['bajista_extremo_low']=np.nan
+        indice_guardado = 0
+        pico_maximo = float('-inf')        
+        # recorre todo el dataframe principal
+        for i in range(0, len(df)-1): 
+            #si estamos sobre un bos bajista busco la vela con high mas alto y guardo el indice
+            if not np.isnan(df.bos_bajista.iloc[i]): 
+                if df.High.iloc[i] > pico_maximo:
+                    pico_maximo=df.High.iloc[i]
+                    indice_guardado=i                    
+            else: # terminó el bos bajista
+                if indice_guardado!=0:
+                    # Marca el high y low de la vela con mayor high detectado en el dataframe principal para ese BOS
+                    df.at[indice_guardado, 'bajista_extremo_high'] =df.High.iloc[indice_guardado]
+                    df.at[indice_guardado, 'bajista_extremo_low'] =df.Low.iloc[indice_guardado]                    
+                    try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_maximo_refinar = fecha_actual_refinar
+                        pico_maximo_refinar = float('-inf')
+                        if refinado:
+                            # busca el high mas alto en velas verdes
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                    pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                    fecha_del_maximo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            df.at[indice_guardado, 'bajista_extremo_high'] =df_refinar.at[fecha_del_maximo_refinar, 'High']
+                            df.at[indice_guardado, 'bajista_extremo_low'] =df_refinar.at[fecha_del_maximo_refinar, 'Low']
+                    except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+                indice_guardado = 0
+                pico_maximo = float('-inf')
+        #   extremos ALCISTAS
+        df['alcista_extremo_high']=np.nan
+        df['alcista_extremo_low']=np.nan
+        indice_guardado = 0
+        pico_minimo = float('inf')
+        # recorre todo el dataframe principal
+        for i in range(0, len(df)-1): 
+            #si estamos sobre un bos alcista busco la vela con low mas bajo y guardo el indice
+            if not np.isnan(df.bos_alcista.iloc[i]): 
+                if df.Low.iloc[i] < pico_minimo:
+                    pico_minimo=df.Low.iloc[i]
+                    indice_guardado=i
+            else: # terminó el bos bajista
+                if indice_guardado!=0:
+                    # Marca el high y low de la vela con mayor high detectado en el dataframe de 15 min para ese BOS
+                    df.at[indice_guardado, 'alcista_extremo_high'] =df.High.iloc[indice_guardado]
+                    df.at[indice_guardado, 'alcista_extremo_low'] =df.Low.iloc[indice_guardado]                    
+                    try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_minimo_refinar = fecha_actual_refinar
+                        pico_minimo_refinar = float('inf')
+                        if refinado:
+                            # busca el high mas alto en velas rojas
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                    pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                    fecha_del_minimo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            df.at[indice_guardado, 'alcista_extremo_high'] =df_refinar.at[fecha_del_minimo_refinar, 'High']
+                            df.at[indice_guardado, 'alcista_extremo_low'] =df_refinar.at[fecha_del_minimo_refinar, 'Low']
+                    except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+                indice_guardado = 0
+                pico_minimo = float('inf')
+        #relleno
+        for i in range(0, len(df)-1):
+            if np.isnan(df['bajista_extremo_high'].iloc[i]):
+                df.at[i, 'bajista_extremo_high'] = df['bajista_extremo_high'].iloc[i - 1]
+                df.at[i, 'bajista_extremo_low'] = df['bajista_extremo_low'].iloc[i - 1]
+            if np.isnan(df['alcista_extremo_high'].iloc[i]):
+                df.at[i, 'alcista_extremo_high'] = df['alcista_extremo_high'].iloc[i - 1]
+                df.at[i, 'alcista_extremo_low'] = df['alcista_extremo_low'].iloc[i - 1]                
+
+        ####################################################################################################### DECISIONALES
+        df['color'] = np.where(df.Close > df.Open,'verde','rojo')
+        df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
+        multiplicador_imbalance = 1
+        ## BAJISTA
+        decisional_bajista_condicion =  (
+                                        (df.color == 'verde')
+                                        & (
+                                            ((df.Low) >= (df.High.shift(-2) + df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.Low.shift(-1)) >= (df.High.shift(-3) + df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
+                                          )
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        )
+        df['decisional_bajista_low'] = np.where(
+                                    decisional_bajista_condicion
+                                    ,df.Low,
+                                    np.NaN)                                    
+        df['decisional_bajista_high'] = np.where(                                
+                                    decisional_bajista_condicion
+                                    ,df.High,
+                                    np.NaN)        
+        ###refinado y relleno
+        df['decisional_bajista'] = np.where(np.isnan(df.decisional_bajista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
+        high_guardado = np.nan
+        low_guardado = np.nan                                          
+        for i in range(0, len(df)-1):
+            if  (np.isnan(df['decisional_bajista_high'].iloc[i])
+                and 
+                    (
+                    (df.High.iloc[i] < high_guardado) # copio si no fue mitigado
+                    or 
+                    (df.High.iloc[i] >= high_guardado and df.decisional_bajista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
+                    )
+                ): 
+                    df.at[i, 'decisional_bajista_high'] = high_guardado
+                    df.at[i, 'decisional_bajista_low'] = low_guardado
+            else:
+                high_guardado = df['decisional_bajista_high'].iloc[i]
+                low_guardado = df['decisional_bajista_low'].iloc[i]
+                indice_guardado = i
+                try:
+                        # refinacion los valores anteriormente guardados para la temporalidad de refinacion seleccionada en caso de que se pueda
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_maximo_refinar = fecha_actual_refinar
+                        pico_maximo_refinar = 0
+                        if refinado:
+                            # busca el high mas alto en velas verdes
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.High[fecha_actual_refinar] > pico_maximo_refinar and df_refinar.Close[fecha_actual_refinar] > df_refinar.Open[fecha_actual_refinar]:
+                                    pico_maximo_refinar = df_refinar.High[fecha_actual_refinar]
+                                    fecha_del_maximo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            high_guardado = df_refinar.High[fecha_del_maximo_refinar]
+                            low_guardado = df_refinar.Low[fecha_del_maximo_refinar]
+                except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+        
+        ### ALCISTA
+        decisional_alcista_condicion =  (
+                                        (df.color == 'rojo')
+                                        &(
+                                            ((df.High) <= (df.Low.shift(-2) - df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.High.shift(-1)) <= (df.Low.shift(-3) - df.atr*multiplicador_imbalance))
+                                            |
+                                            ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
+                                        )
+                                        & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        )
+        df['decisional_alcista_low'] = np.where(
+                                    decisional_alcista_condicion
+                                    ,df.Low,
+                                    np.NaN)                                    
+        df['decisional_alcista_high'] = np.where(                                
+                                    decisional_alcista_condicion
+                                    ,df.High,
+                                    np.NaN)  
+        ###refinado y relleno
+        df['decisional_alcista'] = np.where(np.isnan(df.decisional_alcista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
+        high_guardado=np.nan
+        low_guardado=np.nan                                          
+        for i in range(0, len(df)-1):
+            if  (np.isnan(df['decisional_alcista_high'].iloc[i])
+                and 
+                    (
+                    (df.Low.iloc[i] > low_guardado) # copio si no fue mitigado
+                    or 
+                    (df.Low.iloc[i] <= low_guardado and df.decisional_alcista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
+                    )
+                ): 
+                    df.at[i, 'decisional_alcista_high'] = high_guardado
+                    df.at[i, 'decisional_alcista_low'] = low_guardado
+            else:
+                high_guardado = df['decisional_alcista_high'].iloc[i]
+                low_guardado = df['decisional_alcista_low'].iloc[i]
+                indice_guardado = i
+                try:
+                        # refinacion los valores anteriormente guardados para 5m en caso de que se pueda
+                        fecha_inicio_refinar = df['Open Time'].iloc[indice_guardado]
+                        fecha_actual_refinar = fecha_inicio_refinar
+                        fecha_del_minimo_refinar = fecha_actual_refinar
+                        pico_minimo_refinar = 0
+                        if refinado:
+                            # busca el low mas bajo en velas rojas
+                            for i in range(parametros_refinado['start'], parametros_refinado['stop'], parametros_refinado['step']):
+                                if df_refinar.Low[fecha_actual_refinar] < pico_minimo_refinar and df_refinar.Close[fecha_actual_refinar] < df_refinar.Open[fecha_actual_refinar]:
+                                    pico_minimo_refinar = df_refinar.Low[fecha_actual_refinar]
+                                    fecha_del_minimo_refinar = fecha_actual_refinar
+                                fecha_actual_refinar = fecha_inicio_refinar + pd.DateOffset(minutes=i)
+                            high_guardado = df_refinar.High[fecha_del_minimo_refinar]
+                            low_guardado = df_refinar.Low[fecha_del_minimo_refinar]
+                except Exception as falla:
+                        _, _, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+                        pass
+        #################################################################################################### TENDENCIA
+        # alcista = -1
+        # neutral = -2
+        # bajista = -3        
+        cantidad_ruptura = 2
+        df['tendencia'] = np.nan
+        v_contador_bajista = 0
+        v_ultimo_bos_bajista = -2
+        v_contador_alcista = 0
+        v_ultimo_bos_alcista = -2
+        v_tendencia_guardada = -2
+        for i in range(0, len(df)-1):
+            if not np.isnan(df['bos_bajista'].iloc[i]) and df['bos_bajista'].iloc[i] !=v_ultimo_bos_bajista:
+                v_ultimo_bos_bajista = df['bos_bajista'].iloc[i]
+                v_contador_bajista=v_contador_bajista+1
+            if not np.isnan(df['bos_alcista'].iloc[i]) and df['bos_alcista'].iloc[i] !=v_ultimo_bos_alcista:
+                v_ultimo_bos_alcista = df['bos_alcista'].iloc[i]
+                v_contador_alcista=v_contador_alcista+1 
+            if  v_contador_bajista == cantidad_ruptura:
+                v_tendencia_guardada  = -3
+                v_contador_bajista = 0
+                v_ultimo_bos_bajista = -2
+                v_contador_alcista = 0
+                v_ultimo_bos_alcista = -2
+            if  v_contador_alcista == cantidad_ruptura:
+                v_tendencia_guardada  = -1
+                v_contador_bajista = 0
+                v_ultimo_bos_bajista = -2
+                v_contador_alcista = 0
+                v_ultimo_bos_alcista = -2
+            df.at[i, 'tendencia'] = v_tendencia_guardada         
+        
+        # Calcular el precio promedio de cada vela (promedio entre el precio de apertura y cierre)
+        average = (df['Open'] + df['Close']) / 2
+        # Calcular la tendencia general
+        df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
+        
+        ########################################## INDICE
+        df['timestamp']=df['Open Time']
+        df.set_index('timestamp', inplace=True)
+        return df
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+##########################################################################################
+
+def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
+    busca_decisionales_filas=10
+    def hay_true_ultimas_10_registros(column):
+        # Definimos una función que verifica si hay un True en las últimas X filas.
+        # Esto sirve para controlar que no se tome como válido un order block recién creado.
+        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
+    try:                
+        data = smart_money(symbol,refinado,file_source,timeframe)     
+        offset = data.atr/3
+        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
+        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
+        data['signal'] = np.where(
+                                  (data.Low > data.decisional_alcista_low)
+                                  &(data.Low <= data.decisional_alcista_high + offset)
+                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  &(data['trend'] == 'Alcista')
+                                  &(data.decisional_alcista_cerca == False)
+                                  ,1,
+                                  np.where(
+                                  (data.High < data.decisional_bajista_high)
+                                  &(data.High >= data.decisional_bajista_low - offset)
+                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  &(data['trend'] == 'Bajista')
+                                  &(data.decisional_bajista_cerca == False)
+                                  ,-1,
+                                  0
+                                )
+                                )
+        data['take_profit'] =   np.where(
+                                data.signal == 1,                                
+                                data.Low + data.atr*10,
+                                np.where(
+                                data.signal == -1,
+                                data.High - data.atr*10,
+                                0
+                                )
+                                )
+        data['stop_loss'] = np.where(
+                                data.signal == 1,
+                                data.decisional_alcista_low - offset,
+                                np.where(
+                                data.signal == -1,
+                                data.decisional_bajista_high + offset,
+                                0
+                                )
+                                )
+        data['cierra'] = False
+        porcentaje_perdida = 1
+        data['porcentajeentrada'] = np.where(data.signal == 1,
+                       (porcentaje_perdida*100)/
+                       (((data.decisional_alcista_low/data.decisional_alcista_high)-1)*-100),
+                       np.where(data.signal == -1,
+                       (porcentaje_perdida*100)/
+                       (((data.decisional_bajista_high/data.decisional_bajista_low)-1)*100),
+                       0
+                       )
+                       )
+
+        # Reemplazar valores no finitos (NA e inf) con 0
+        #data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
+        # Aplicar np.floor y convertir a enteros
+        #data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
+        ####################### alertas y valores
+        if debug:
+            df_str = data[list(data.columns)].to_string(index=False)
+            print(df_str)
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass

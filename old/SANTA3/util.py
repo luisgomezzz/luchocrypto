@@ -13,6 +13,8 @@ import math
 import ccxt as ccxt
 from numerize import numerize
 from playsound import playsound
+import pandas_ta as ta
+import requests
 
 exchange_name=cons.exchange_name
 
@@ -63,7 +65,10 @@ def lista_de_monedas ():
             exchange_info = cons.client.futures_exchange_info()['symbols'] #obtiene lista de monedas        
             for s in exchange_info:
                 try:
-                    if 'USDT' in s['symbol'] and '_' not in s['symbol'] and s['symbol'] not in mazmorra:
+                    if (    s['quoteAsset'] =='USDT' 
+                        and s['status'] =='TRADING'
+                        and s['contractType'] == 'PERPETUAL'
+                        and s['symbol'] not in mazmorra):                        
                         lista_de_monedas.append(s['symbol'])
                 except Exception as ex:
                     pass    
@@ -86,7 +91,7 @@ def timeindex(df):
     df['timestamp']=df.indice
     df.set_index('indice', inplace=True)
 
-def calculardf (par,temporalidad,ventana=500):
+def calculardf (par,temporalidad,ventana=1000):
     df = pd.DataFrame()
     while True:
         try:            
@@ -644,3 +649,17 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+
+def obtiene_capitalizacion(symbol):
+    market_cap = 0
+    url = f'https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}'    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        market_cap = float(data['quoteVolume'])
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        #print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
+    return market_cap
