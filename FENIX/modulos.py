@@ -1362,6 +1362,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        & (df.Close > (df.Close.shift(-15) + df.atr*multiplicador_imbalance)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1422,6 +1423,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+                                        & (df.Close < (df.Close.shift(-15) - df.atr*multiplicador_imbalance)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
@@ -1519,10 +1521,10 @@ def smart_money(symbol,refinado,file_source,timeframe):
 ##########################################################################################
 
 def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
-    busca_decisionales_filas=10
+    busca_decisionales_filas = 20
     def hay_true_ultimas_10_registros(column):
         # Definimos una función que verifica si hay un True en las últimas X filas.
-        # Esto sirve para controlar que no se tome como válido un order block recién creado.
+        # Esto sirve para no entrar en un trade si recién se detectó un order block y ya se tocá.
         return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
     try:                
         data = smart_money(symbol,refinado,file_source,timeframe)     
@@ -1534,14 +1536,14 @@ def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,ti
                                   &(data.Low <= data.decisional_alcista_high + offset)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  &(data.decisional_alcista_cerca == False)
+                                  #&(data.decisional_alcista_cerca == False)
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - offset)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  &(data.decisional_bajista_cerca == False)
+                                  #&(data.decisional_bajista_cerca == False)
                                   ,-1,
                                   0
                                 )
