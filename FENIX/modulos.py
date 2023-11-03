@@ -1362,7 +1362,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
-                                        & (df.Close > (df.Close.shift(-15) + df.atr*multiplicador_imbalance)) # que luego del decisional el precio se mantenga lejos un tiempo. 
+										& (df.High > (df.High.shift(-4) + df.atr*multiplicador_imbalance))
+                                        & (df.Close > (df.Close.shift(-20) + df.atr*3)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1423,7 +1424,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
-                                        & (df.Close < (df.Close.shift(-15) - df.atr*multiplicador_imbalance)) # que luego del decisional el precio se mantenga lejos un tiempo. 
+										& (df.Low < (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
+                                        & (df.Close < (df.Close.shift(-20) - df.atr*3)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
