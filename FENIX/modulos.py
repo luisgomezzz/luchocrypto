@@ -1522,7 +1522,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         pass
 ##########################################################################################
 
-def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
+def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100):
     busca_decisionales_filas = 20
     def hay_true_ultimas_10_registros(column):
         # Definimos una función que verifica si hay un True en las últimas X filas.
@@ -1571,11 +1571,11 @@ def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,ti
         data['cierra'] = False
         porcentaje_perdida = 1
         data['porcentajeentrada'] = np.where(data.signal == 1,
-                       (porcentaje_perdida*100)/
-                       (((data.decisional_alcista_low/data.decisional_alcista_high)-1)*-100),
+                       (porcentaje_perdida*balance)/
+                       ((((data.decisional_alcista_low - offset)/data.decisional_alcista_high)-1)*-100),
                        np.where(data.signal == -1,
-                       (porcentaje_perdida*100)/
-                       (((data.decisional_bajista_high/data.decisional_bajista_low)-1)*100),
+                       (porcentaje_perdida*balance)/
+                       ((((data.decisional_bajista_high + offset)/data.decisional_bajista_low)-1)*100),
                        0
                        )
                        )

@@ -9,6 +9,8 @@ from time import sleep
 import threading
 import numpy as np
 import inquirer
+import ccxt
+from datetime import datetime
 
 RED   = "\033[1;31m"  
 BLUE  = "\033[1;34m"
@@ -22,39 +24,25 @@ YELLOW = "\33[33m"
 questions = [
 inquirer.List('Estrategia',
                 message="Seleccionar estrategia: ",
-                choices=['estrategia_royal','estrategia_haz','estrategia_santa','estrategia_triangulos','estrategia_trampa'],
+                choices=['estrategia_smart','estrategia_haz'],
             ),
 ]
 answers = inquirer.prompt(questions)
 estrategia_name=answers['Estrategia']
-if estrategia_name=='estrategia_santa':
-    sys.stdout.write(GREEN)
-if estrategia_name=='estrategia_triangulos':
-    sys.stdout.write(CYAN)  
-if estrategia_name=='estrategia_trampa':
-    sys.stdout.write(REVERSE)
 if estrategia_name=='estrategia_haz':
     sys.stdout.write(RED)            
-if estrategia_name=='estrategia_royal':
-    sys.stdout.write(RED)    
+if estrategia_name=='estrategia_smart':
+    sys.stdout.write(YELLOW)    
 
 md.printandlog(cons.nombrelog, estrategia_name)   
 
 def dataframe_estrategia(symbol,estrategia_name):
-    if estrategia_name=='estrategia_bb':
-        data = md.estrategia_bb(symbol)
-    if estrategia_name=='estrategia_santa':
-        data,porcentajeentrada = md.estrategia_santa(symbol)
-    if estrategia_name=='sigo_variacion_bitcoin':
-        data = md.sigo_variacion_bitcoin(symbol)
-    if estrategia_name=='estrategia_triangulos':
-        data = md.estrategia_triangulos(symbol)   
-    if estrategia_name=='estrategia_trampa':
-        data,porcentajeentrada = md.estrategia_trampa(symbol) 
+    balance = md.balancetotal()
+    timeframe = '1h'
     if estrategia_name=='estrategia_haz':
         data = md.estrategia_haz(symbol,alerta=False)
-    if estrategia_name=='estrategia_royal':
-        data = md.estrategia_royal(symbol, debug = False, refinado = False, file_source = False,timeframe = '1h')
+    if estrategia_name=='estrategia_smart':
+        data = md.estrategia_smart(symbol, debug = False, refinado = False, file_source = False, timeframe = timeframe, balance = balance)
     return data
 
 posiciones={}
@@ -114,15 +102,21 @@ def main():
     ##############START        
     print("Saldo: "+str(md.truncate(balancetotal,2)))
     print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
-
+    exchange = ccxt.binance()
     try:
 
         while True:
+
+            # Obtiene la hora del servidor de Binance
+            server_time = exchange.fetch_time()
+            # Convierte la marca de tiempo a formato de fecha y hora
+            hora_utc = datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H')
 
             # Lee archivo de configuracion
             with open(cons.pathroot+"configuracion.json","r") as j:
                 dic_configuracion=json.load(j) 
             cantidad_posiciones = dic_configuracion['cantidad_posiciones']
+            restriccionhoraria = dic_configuracion['restriccionhoraria']
             # Lee archivo de posiciones
             with open(cons.pathroot+"posiciones.json","r") as j:
                 posiciones=json.load(j)    
@@ -167,12 +161,16 @@ def main():
                             ###SELL###
                             if data.signal[-1] ==-1 or data.signal[-2] ==-1:
                                 side='SELL'
-                        if side !='' and len(md.get_posiciones_abiertas()) < cantidad_posiciones and md.get_positionamt(symbol)==0.0: 
+                        if (side !='' 
+                            and len(md.get_posiciones_abiertas()) < cantidad_posiciones 
+                            and md.get_positionamt(symbol) == 0.0
+                            and (16 >= hora_utc >= 0 or restriccionhoraria == 0) # killzones de asia, london y NY
+                            ):
                             print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
                             md.sound()
                             md.sound() 
                             porcentajeentrada = data.porcentajeentrada[-1]
-                            #md.crea_posicion(symbol,side,porcentajeentrada) 
+                            md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
@@ -185,8 +183,8 @@ def main():
                                 profit_price = data.take_profit[-1]
                                 if not np.isnan(data.take_profit[-1]):
                                     md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
-                                hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
-                                hilo.start()  
+                                #hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
+                                #hilo.start()  
 
                 except:
                     pass        
