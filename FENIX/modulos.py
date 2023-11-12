@@ -16,6 +16,8 @@ from backtesting import Strategy
 from binance.enums import HistoricalKlinesType
 from numerize import numerize
 import requests
+import ccxt
+from datetime import datetime
 
 salida_solicitada_flag = False
 
@@ -248,7 +250,7 @@ def obtiene_historial(symbol,timeframe,limit=1000):
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
+            #print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
             pass  
     return data
 
@@ -491,6 +493,12 @@ def backtesting(data, plot_flag=False):
     if plot_flag:
         bt.plot()
     return output
+
+def leeconfiguracion(parameter='cantidad_posiciones'):
+    with open(os.path.join(cons.pathroot, "configuracion.json"), 'r') as openfile: 
+        json_object = json.load(openfile)
+    valor = json_object[parameter]        
+    return valor 
 
 def estrategia_bb(symbol,tp_flag=True):
     timeframe = '15m'
@@ -961,56 +969,6 @@ def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
         pass
 
-def estrategia_oro(symbol,tp_flag = True):
-    porcentajeentrada = 0.01
-    archivo_csv = 'historico.csv'
-    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
-    data = pd.read_csv(archivo_csv, header=None, names=column_names)
-    data['Open Time']=pd.to_datetime(data['Open Time'])
-    data['timestamp']=data['Open Time']
-    data.set_index('timestamp', inplace=True)
-    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
-    data.sort_values(by='timestamp', ascending = True, inplace = True)
-    data['Volume'] = 1
-    data['atr'] = ta.atr(data.High, data.Low, data.Close)
-    data['n_atr'] = 50
-    data['time_hour'] = pd.to_datetime(data['Open Time']).dt.hour
-    numeric_columns = ['Open', 'High', 'Low', 'Close','time_hour','Volume']
-    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-    data['signal'] = np.where(
-        (data.time_hour.shift(1) == 14)
-        &(data.Close.shift(3) > data.Close.shift(1)) 
-        ,1,
-        np.where(
-            (data.time_hour.shift(1) == 14)
-            &(data.Close.shift(3) < data.Close.shift(1)) 
-            ,-1,
-            0
-        )
-    )  
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close*1.01,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close*0.999,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close*0.995,    
-        np.where(
-            data.signal == -1,
-            data.Close*1.005,
-            0
-        )
-    )
-    data['cierra'] = False
-    return data,porcentajeentrada    
-
 def myfxbook_file_historico():
     # Función que toma datos bajados desde https://www.myfxbook.com/forex-market/currencies/ a un archivo "historico.csv"
     archivo_csv = 'historico.csv'
@@ -1247,7 +1205,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
             if df['Close'].iloc[i] > techo_del_minimo:
                 pico_minimo = float('inf')
                 techo_del_minimo = float('inf')               
-                ##relleno
+        ## RELLENO
         for i in range(0, len(df)-1):
             if np.isnan(df['techo_del_minimo'].iloc[i]):
                 df.at[i, 'techo_del_minimo'] = df['techo_del_minimo'].iloc[i - 1]
@@ -1528,9 +1486,13 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
         # Definimos una función que verifica si hay un True en las últimas X filas.
         # Esto sirve para no entrar en un trade si recién se detectó un order block y ya se tocá.
         return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
-    try:                
+    try:
+        exchange = ccxt.binance()
+        server_time = exchange.fetch_time()
+        hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
+        restriccionhoraria=leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe)     
-        offset = data.atr/3
+        offset = data.atr/3        
         data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
         data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
         data['signal'] = np.where(
@@ -1538,14 +1500,14 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
                                   &(data.Low <= data.decisional_alcista_high + offset)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  #&(data.decisional_alcista_cerca == False)
+                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - offset)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  #&(data.decisional_bajista_cerca == False)
+                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
                                   ,-1,
                                   0
                                 )
@@ -1579,11 +1541,6 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
                        0
                        )
                        )
-
-        # Reemplazar valores no finitos (NA e inf) con 0
-        #data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
-        # Aplicar np.floor y convertir a enteros
-        #data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)

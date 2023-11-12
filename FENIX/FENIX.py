@@ -9,8 +9,6 @@ from time import sleep
 import threading
 import numpy as np
 import inquirer
-import ccxt
-from datetime import datetime
 
 RED   = "\033[1;31m"  
 BLUE  = "\033[1;34m"
@@ -101,22 +99,13 @@ def main():
     global posiciones
     ##############START        
     print("Saldo: "+str(md.truncate(balancetotal,2)))
-    print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")
-    exchange = ccxt.binance()
+    print(f"PNL acumulado: {str(md.truncate(balancetotal-reservas,2))}")    
     try:
 
         while True:
 
-            # Obtiene la hora del servidor de Binance
-            server_time = exchange.fetch_time()
-            # Convierte la marca de tiempo a formato de fecha y hora
-            hora_utc = datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H')
-
             # Lee archivo de configuracion
-            with open(cons.pathroot+"configuracion.json","r") as j:
-                dic_configuracion=json.load(j) 
-            cantidad_posiciones = dic_configuracion['cantidad_posiciones']
-            restriccionhoraria = dic_configuracion['restriccionhoraria']
+            cantidad_posiciones = md.leeconfiguracion("cantidad_posiciones")
             # Lee archivo de posiciones
             with open(cons.pathroot+"posiciones.json","r") as j:
                 posiciones=json.load(j)    
@@ -163,8 +152,7 @@ def main():
                                 side='SELL'
                         if (side !='' 
                             and len(md.get_posiciones_abiertas()) < cantidad_posiciones 
-                            and md.get_positionamt(symbol) == 0.0
-                            and (16 >= hora_utc >= 0 or restriccionhoraria == 0) # killzones de asia, london y NY
+                            and md.get_positionamt(symbol) == 0.0                            
                             ):
                             print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
                             md.sound()
