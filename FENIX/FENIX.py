@@ -40,7 +40,7 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_haz':
         data = md.estrategia_haz(symbol,alerta=False)
     if estrategia_name=='estrategia_smart':
-        data = md.estrategia_smart(symbol, debug = False, refinado = False, file_source = False, timeframe = timeframe, balance = balance)
+        data = md.estrategia_smart(symbol, debug = False, refinado = False, file_source = False, timeframe = timeframe, balance = balance, largo = 1)
     return data
 
 posiciones={}

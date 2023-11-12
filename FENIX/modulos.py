@@ -1052,7 +1052,7 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
 
 ####################################################################################
 
-def smart_money(symbol,refinado,file_source,timeframe):
+def smart_money(symbol,refinado,file_source,timeframe,largo):
     try:
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
@@ -1060,6 +1060,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
         # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
         # Los imbalances no mitigados sí se pueden ver online.
         #  
+        # largo es el parámetro de longitud para los puntos pivote High y Low
+        #
         timeframe_refinado = '15m'
 
         if file_source: 
@@ -1075,8 +1077,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         if refinado:
             df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
             parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
-
-        largo = 1 # Parámetro de longitud para los puntos pivote High y Low
+        
         df['pivot_high'] = np.NaN
         df['pivot_low'] = np.NaN
         df['row_number'] = (range(len(df)))
@@ -1480,7 +1481,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         pass
 ##########################################################################################
 
-def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100):
+def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
     busca_decisionales_filas = 20
     def hay_true_ultimas_10_registros(column):
         # Definimos una función que verifica si hay un True en las últimas X filas.
@@ -1491,7 +1492,79 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
         server_time = exchange.fetch_time()
         hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
         restriccionhoraria=leeconfiguracion("restriccionhoraria")
-        data = smart_money(symbol,refinado,file_source,timeframe)     
+        data = smart_money(symbol,refinado,file_source,timeframe,largo)     
+        offset = data.atr/3        
+        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
+        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
+        data['signal'] = np.where(
+                                  (data.Low > data.decisional_alcista_low)
+                                  &(data.Low <= data.decisional_alcista_high + offset)
+                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  &(data['trend'] == 'Alcista')
+                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
+                                  ,1,
+                                  np.where(
+                                  (data.High < data.decisional_bajista_high)
+                                  &(data.High >= data.decisional_bajista_low - offset)
+                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  &(data['trend'] == 'Bajista')
+                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
+                                  ,-1,
+                                  0
+                                )
+                                )
+        data['take_profit'] =   np.where(
+                                data.signal == 1,                                
+                                data.Low + data.atr*10,
+                                np.where(
+                                data.signal == -1,
+                                data.High - data.atr*10,
+                                0
+                                )
+                                )
+        data['stop_loss'] = np.where(
+                                data.signal == 1,
+                                data.decisional_alcista_low - offset,
+                                np.where(
+                                data.signal == -1,
+                                data.decisional_bajista_high + offset,
+                                0
+                                )
+                                )
+        data['cierra'] = False
+        porcentaje_perdida = 1
+        data['porcentajeentrada'] = np.where(data.signal == 1,
+                       (porcentaje_perdida*balance)/
+                       ((((data.decisional_alcista_low - offset)/data.decisional_alcista_high)-1)*-100),
+                       np.where(data.signal == -1,
+                       (porcentaje_perdida*balance)/
+                       ((((data.decisional_bajista_high + offset)/data.decisional_bajista_low)-1)*100),
+                       0
+                       )
+                       )
+        ####################### alertas y valores
+        if debug:
+            df_str = data[list(data.columns)].to_string(index=False)
+            print(df_str)
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+
+def estrategia_alex(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 12):
+    busca_decisionales_filas = 20
+    def hay_true_ultimas_10_registros(column):
+        # Definimos una función que verifica si hay un True en las últimas X filas.
+        # Esto sirve para no entrar en un trade si recién se detectó un order block y ya se tocá.
+        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
+    try:
+        exchange = ccxt.binance()
+        server_time = exchange.fetch_time()
+        hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
+        restriccionhoraria=leeconfiguracion("restriccionhoraria")
+        data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
         data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
         data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
