@@ -998,7 +998,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
+            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            self.alex = self.I(indicador,self.data.alex,name="alex")
             #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
@@ -1006,10 +1007,10 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
             #self.piso_del_maximo = self.I(indicador,self.data.piso_del_maximo)
             ######  DECISIONALES
-            self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
-            self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
-            self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
-            self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
+            #self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
+            #self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
+            #self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
+            #self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
             #####   EXTREMOS ok!!
             #self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
             #self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
@@ -1043,12 +1044,18 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
                 if self.data.signal[-1]==1:
                     self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
                 elif self.data.signal[-1]==-1:
-                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
-    bt = Backtest(data, Fenix, cash=balance)
-    output = bt.run()
-    if plot_flag:
-        bt.plot(filename="graficos/"+symbol)
-    return output
+                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)    
+    try:
+        bt = Backtest(data, Fenix, cash=balance)
+        output = bt.run()
+        if plot_flag:
+            bt.plot(filename="graficos/"+symbol)
+        return output
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
 
 ####################################################################################
 
@@ -1437,7 +1444,7 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # alcista = -1
         # neutral = -2
         # bajista = -3        
-        cantidad_ruptura = 2
+        cantidad_ruptura = 3
         df['tendencia'] = np.nan
         v_contador_bajista = 0
         v_ultimo_bos_bajista = -2
@@ -1469,6 +1476,27 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         average = (df['Open'] + df['Close']) / 2
         # Calcular la tendencia general
         df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
+
+        #################################################################################################### ALEX
+        # alcista = -1
+        # neutral = -2
+        # bajista = -3        
+        df['alex'] = -2
+        for i in range(0, len(df)-1):
+            # bajista
+            if ((df['bos_bajista'].iloc[i] != df['bos_bajista'].iloc[i-1] or np.isnan(df['bos_bajista'].iloc[i])) # actual distinto del anterior
+                and df['tendencia'].iloc[i] == -1 
+                and not np.isnan(df['bos_bajista'].iloc[i-1])
+                and np.isnan(df['bos_alcista'].iloc[i-1])
+                ):
+                df.at[i, 'alex'] = -3
+            # alcista
+            if ((df['bos_alcista'].iloc[i] != df['bos_alcista'].iloc[i-1] or np.isnan(df['bos_alcista'].iloc[i])) # actual distinto del anterior
+                and df['tendencia'].iloc[i] == -3 
+                and not np.isnan(df['bos_alcista'].iloc[i-1])
+                and np.isnan(df['bos_bajista'].iloc[i-1])
+                ):
+                df.at[i, 'alex'] = -1
         
         ########################################## INDICE
         df['timestamp']=df['Open Time']
@@ -1553,12 +1581,7 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
         pass
 
-def estrategia_alex(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 12):
-    busca_decisionales_filas = 20
-    def hay_true_ultimas_10_registros(column):
-        # Definimos una función que verifica si hay un True en las últimas X filas.
-        # Esto sirve para no entrar en un trade si recién se detectó un order block y ya se tocá.
-        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
+def estrategia_alex(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 10):
     try:
         exchange = ccxt.binance()
         server_time = exchange.fetch_time()
@@ -1566,54 +1589,36 @@ def estrategia_alex(symbol, debug = False, refinado = True, file_source = False,
         restriccionhoraria=leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
-        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
-        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
         data['signal'] = np.where(
-                                  (data.Low > data.decisional_alcista_low)
-                                  &(data.Low <= data.decisional_alcista_high + offset)
-                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
-                                  &(data['trend'] == 'Alcista')
-                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
+                                  data.alex == -1
                                   ,1,
                                   np.where(
-                                  (data.High < data.decisional_bajista_high)
-                                  &(data.High >= data.decisional_bajista_low - offset)
-                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
-                                  &(data['trend'] == 'Bajista')
-                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
+                                  data.alex == -3
                                   ,-1,
                                   0
                                 )
                                 )
         data['take_profit'] =   np.where(
                                 data.signal == 1,                                
-                                data.Low + data.atr*10,
+                                data.Low + data.atr*6,
                                 np.where(
                                 data.signal == -1,
-                                data.High - data.atr*10,
+                                data.High - data.atr*6,
                                 0
                                 )
                                 )
         data['stop_loss'] = np.where(
                                 data.signal == 1,
-                                data.decisional_alcista_low - offset,
+                                data.Close - data.atr*3,
                                 np.where(
                                 data.signal == -1,
-                                data.decisional_bajista_high + offset,
+                                data.Close + data.atr*3,
                                 0
                                 )
                                 )
         data['cierra'] = False
         porcentaje_perdida = 1
-        data['porcentajeentrada'] = np.where(data.signal == 1,
-                       (porcentaje_perdida*balance)/
-                       ((((data.decisional_alcista_low - offset)/data.decisional_alcista_high)-1)*-100),
-                       np.where(data.signal == -1,
-                       (porcentaje_perdida*balance)/
-                       ((((data.decisional_bajista_high + offset)/data.decisional_bajista_low)-1)*100),
-                       0
-                       )
-                       )
+        data['porcentajeentrada'] = 100
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)
