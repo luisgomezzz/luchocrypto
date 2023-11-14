@@ -998,9 +998,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
-            self.alex = self.I(indicador,self.data.alex,name="alex")
-            #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
+            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            self.manipulacion = self.I(indicador,self.data.manipulacion,name="manipulacion")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1477,27 +1476,20 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # Calcular la tendencia general
         df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
 
-        #################################################################################################### ALEX
+        #################################################################################################### manipulacion
         # alcista = -1
         # neutral = -2
         # bajista = -3        
-        df['alex'] = -2
-        for i in range(0, len(df)-1):
-            # bajista
-            if ((df['bos_bajista'].iloc[i] != df['bos_bajista'].iloc[i-1] or np.isnan(df['bos_bajista'].iloc[i])) # actual distinto del anterior
-                and df['tendencia'].iloc[i] == -1 
-                and not np.isnan(df['bos_bajista'].iloc[i-1])
-                and np.isnan(df['bos_alcista'].iloc[i-1])
+        df['manipulacion'] = -2
+        for i in range(0, len(df)-1):                
+            if ((df.Close.iloc[i-1] < df['bos_bajista'].iloc[i-1] ) # bajista
+                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8
                 ):
-                df.at[i, 'alex'] = -3
-            # alcista
-            if ((df['bos_alcista'].iloc[i] != df['bos_alcista'].iloc[i-1] or np.isnan(df['bos_alcista'].iloc[i])) # actual distinto del anterior
-                and df['tendencia'].iloc[i] == -3 
-                and not np.isnan(df['bos_alcista'].iloc[i-1])
-                and np.isnan(df['bos_bajista'].iloc[i-1])
+                df.at[i, 'manipulacion'] = -3                
+            if ((df.Close.iloc[i-1] > df['bos_alcista'].iloc[i-1]) # alcista
+                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8                
                 ):
-                df.at[i, 'alex'] = -1
-        
+                df.at[i, 'manipulacion'] = -1
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
@@ -1511,10 +1503,6 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
 
 def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
     try:
-        #exchange = ccxt.binance()
-        #server_time = exchange.fetch_time()
-        #hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
-        #restriccionhoraria = leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
@@ -1522,14 +1510,12 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
                                   &(data.Low <= data.decisional_alcista_high + offset)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - offset)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  #&((12 >= hora_utc >= 7) | (restriccionhoraria == 0)) # killzone NY
                                   ,-1,
                                   0
                                 )
@@ -1576,21 +1562,9 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
 
 def estrategia_alex(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 10):
     try:
-        exchange = ccxt.binance()
-        server_time = exchange.fetch_time()
-        hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
-        restriccionhoraria=leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
-        data['signal'] = np.where(
-                                  data.alex == -1
-                                  ,1,
-                                  np.where(
-                                  data.alex == -3
-                                  ,-1,
-                                  0
-                                )
-                                )
+        data['signal'] = 0
         data['take_profit'] =   np.where(
                                 data.signal == 1,                                
                                 data.Low + data.atr*6,
