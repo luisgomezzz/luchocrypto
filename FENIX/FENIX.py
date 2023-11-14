@@ -154,10 +154,12 @@ def main():
                             and len(md.get_posiciones_abiertas()) < cantidad_posiciones 
                             and md.get_positionamt(symbol) == 0.0                            
                             ):
-                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {data.take_profit[-1]} - SL: {data.stop_loss[-1]} - porc_ent: {data.porcentajeentrada[-1]}")   
                             md.sound()
                             md.sound() 
-                            porcentajeentrada = data.porcentajeentrada[-1]
+                            porcentajeentrada = data.porcentajeentrada[-2]
+                            stop_price = data.stop_loss[-2]
+                            profit_price = data.take_profit[-2]
+                            print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {profit_price} - SL: {stop_price} - porc_ent: {porcentajeentrada}")   
                             md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
@@ -165,10 +167,8 @@ def main():
                                 posiciones[symbol]=side
                                 with open(cons.pathroot+"posiciones.json","w") as j:
                                     json.dump(posiciones,j, indent=4)
-                                md.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))
-                                stop_price = data.stop_loss[-1]
-                                md.crea_stoploss (symbol,side,stop_price)
-                                profit_price = data.take_profit[-1]
+                                md.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))                                
+                                md.crea_stoploss (symbol,side,stop_price)                                
                                 if not np.isnan(data.take_profit[-1]):
                                     md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 #hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))

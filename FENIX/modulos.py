@@ -1007,10 +1007,10 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #self.techo_del_minimo = self.I(indicador,self.data.techo_del_minimo)
             #self.piso_del_maximo = self.I(indicador,self.data.piso_del_maximo)
             ######  DECISIONALES
-            #self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
-            #self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
-            #self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
-            #self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
+            self.decisional_bajista_high = self.I(indicador,self.data.decisional_bajista_high,name="Decisional_bajista_high", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_bajista_low = self.I(indicador,self.data.decisional_bajista_low,name="Decisional_bajista_Low", overlay=True, color="rosybrown", scatter=False)
+            self.decisional_alcista_high = self.I(indicador,self.data.decisional_alcista_high,name="Decisional_alcista_high", overlay=True, color="mediumturquoise", scatter=False)
+            self.decisional_alcista_low = self.I(indicador,self.data.decisional_alcista_low,name="Decisional_alcista_Low", overlay=True, color="mediumturquoise", scatter=False)
             #####   EXTREMOS ok!!
             #self.bajista_extremo_high = self.I(indicador,self.data.bajista_extremo_high,name="bajista_extremo_high", overlay=True, color="RED", scatter=False)
             #self.bajista_extremo_low = self.I(indicador,self.data.bajista_extremo_low,name="bajista_extremo_low", overlay=True, color="RED", scatter=False)
@@ -1511,19 +1511,13 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
 
 def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
     busca_decisionales_filas = 20
-    def hay_true_ultimas_10_registros(column):
-        # Definimos una función que verifica si hay un True en las últimas X filas.
-        # Esto sirve para no entrar en un trade si recién se detectó un order block y ya se tocá.
-        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
     try:
         exchange = ccxt.binance()
         server_time = exchange.fetch_time()
         hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
-        restriccionhoraria=leeconfiguracion("restriccionhoraria")
+        restriccionhoraria = leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
-        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
-        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + offset)
