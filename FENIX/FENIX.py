@@ -144,11 +144,11 @@ def main():
                     side=''
                     if symbol not in posiciones:                        
                         ###BUY###
-                        if  data.signal[-1] ==1 or data.signal[-2] ==1:
+                        if  data.signal[-2] == 1:
                             side='BUY'
                         else:
                             ###SELL###
-                            if data.signal[-1] ==-1 or data.signal[-2] ==-1:
+                            if data.signal[-2] == -1:
                                 side='SELL'
                         if (side !='' 
                             and len(md.get_posiciones_abiertas()) < cantidad_posiciones 
@@ -169,7 +169,7 @@ def main():
                                     json.dump(posiciones,j, indent=4)
                                 md.printandlog(cons.nombrelog,'Entra en Trade '+symbol+'. Side: '+str(side)+' - hora: '+str(dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')))                                
                                 md.crea_stoploss (symbol,side,stop_price)                                
-                                if not np.isnan(data.take_profit[-1]):
+                                if not np.isnan(profit_price):
                                     md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
                                 #hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
                                 #hilo.start()  

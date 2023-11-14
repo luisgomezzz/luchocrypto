@@ -1510,12 +1510,11 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
 ##########################################################################################
 
 def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
-    busca_decisionales_filas = 20
     try:
-        exchange = ccxt.binance()
-        server_time = exchange.fetch_time()
-        hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
-        restriccionhoraria = leeconfiguracion("restriccionhoraria")
+        #exchange = ccxt.binance()
+        #server_time = exchange.fetch_time()
+        #hora_utc = int(datetime.utcfromtimestamp(server_time / 1000.0).strftime('%H'))
+        #restriccionhoraria = leeconfiguracion("restriccionhoraria")
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
