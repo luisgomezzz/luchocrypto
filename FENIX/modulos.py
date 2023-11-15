@@ -1525,9 +1525,9 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
                                 )
         data['cierra'] = False        
         data['variacion'] = np.where(data.signal == 1,
-                       ((((data.decisional_alcista_low - offset)/data.decisional_alcista_high)-1)*-100),
+                       ((((data.decisional_alcista_low - offset)/data.Close)-1)*-100),
                        np.where(data.signal == -1,
-                       ((((data.decisional_bajista_high + offset)/data.decisional_bajista_low)-1)*100),
+                       ((((data.decisional_bajista_high + offset)/data.Close)-1)*100),
                        0
                        )
                        )
