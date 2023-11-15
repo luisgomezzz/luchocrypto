@@ -967,7 +967,7 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #### varios
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             self.cruce_bos = self.I(indicador,self.data.cruce_bos,name="cruce_bos")
-            self.sentido = self.I(indicador,self.data.sentido,name="sentido")
+            #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1458,7 +1458,7 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
                 and 17 > df["Open Time"].dt.hour.iloc[i] >= 8                
                 ):
                 df.at[i, 'cruce_bos'] = -1
-
+        ########################################### SENTIDO
         ultimo = -2
         df['sentido'] = -2
         for i in range(0, len(df)-1):
@@ -1554,10 +1554,10 @@ def estrategia_alex(symbol, debug = False, refinado = True, file_source = False,
         offset = data.atr/3        
         data['signal'] = np.where(
                                   data.sentido == -1
-                                  ,1,
+                                  ,0,
                                   np.where(
                                   data.sentido == -3
-                                  ,-1,
+                                  ,0,
                                   0
                                 )
                                 )
