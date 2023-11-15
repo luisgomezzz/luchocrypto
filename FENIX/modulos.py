@@ -140,7 +140,6 @@ def crea_posicion(symbol,side,porcentajeentrada):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass
 
-
 def lista_de_monedas ():
     lista_de_monedas = []
     mazmorra = cons.mazmorra
@@ -164,38 +163,6 @@ def volumeOf24h(par): #en usdt
     vol=0.0
     vol= cons.client.futures_ticker(symbol=par)['quoteVolume']
     return float(vol)
-
-def coingeckoinfo (par,dato='market_cap'):
-    '''
-    {'id': 'binancecoin', 'symbol': 'bnb', 'name': 'BNB', 'image': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1644979850', 
-    'current_price': 282.13, 'market_cap': 45966534569, 'market_cap_rank': 4, 'fully_diluted_valuation': 56304980752, 
-    'total_volume': 1748519199, 'high_24h': 291.05, 'low_24h': 272.34, 'price_change_24h': -3.749382261274775, 
-    'price_change_percentage_24h': -1.31152, 'market_cap_change_24h': -772981310.7671661, 'market_cap_change_percentage_24h': -1.65381,
-    'circulating_supply': 163276974.63, 'total_supply': 163276974.63, 'max_supply': 200000000.0, 'ath': 686.31, 
-    'ath_change_percentage': -58.97972, 'ath_date': '2021-05-10T07:24:17.097Z', 'atl': 0.0398177, 'atl_change_percentage': 706934.61939, 
-    'atl_date': '2017-10-19T00:00:00.000Z', 'roi': None, 'last_updated': '2022-11-12T14:45:04.478Z'}
-    '''
-    symbol = (par[0:par.find('USDT')]).lower()
-    url = 'https://api.coingecko.com/api/v3/coins/list' 
-    session = Session()
-    response = session.get(url)
-    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-    id=''
-    valor=0
-    for i in range(len(info)):
-        if info[i]['symbol']==symbol:
-            id=info[i]['id']
-            break
-    if id!='':
-        urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-        parameters = {}
-        session = Session()
-        response = session.get(urldetalle, params=parameters)
-        info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-        valor = info[0][dato]
-    else:
-        valor = 0
-    return valor
 
 def get_bollinger_bands(df,mult = 2.0,length = 20):
     # calcular indicadores
@@ -999,7 +966,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             super().init()
             #### varios
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
-            self.manipulacion = self.I(indicador,self.data.manipulacion,name="manipulacion")
+            self.cruce_bos = self.I(indicador,self.data.cruce_bos,name="cruce_bos")
+            self.sentido = self.I(indicador,self.data.sentido,name="sentido")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1480,16 +1448,32 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # alcista = -1
         # neutral = -2
         # bajista = -3        
-        df['manipulacion'] = -2
+        df['cruce_bos'] = -2
         for i in range(0, len(df)-1):                
             if ((df.Close.iloc[i-1] < df['bos_bajista'].iloc[i-1] ) # bajista
                 and 17 > df["Open Time"].dt.hour.iloc[i] >= 8
                 ):
-                df.at[i, 'manipulacion'] = -3                
+                df.at[i, 'cruce_bos'] = -3                
             if ((df.Close.iloc[i-1] > df['bos_alcista'].iloc[i-1]) # alcista
                 and 17 > df["Open Time"].dt.hour.iloc[i] >= 8                
                 ):
-                df.at[i, 'manipulacion'] = -1
+                df.at[i, 'cruce_bos'] = -1
+
+        ultimo = -2
+        df['sentido'] = -2
+        for i in range(0, len(df)-1):
+            if 17 > df["Open Time"].dt.hour.iloc[i] >= 8:
+                if df.cruce_bos.iloc[i] == -1 and ultimo == -3:
+                    df.at[i, 'sentido'] = -1
+                else:
+                    if df.cruce_bos.iloc[i] == -3 and ultimo == -1:
+                        df.at[i, 'sentido'] = -3
+                    else:
+                        df.at[i, 'sentido'] = -2
+                if df.cruce_bos.iloc[i] != -2:
+                    ultimo=df.cruce_bos.iloc[i]
+            else:
+                ultimo=-2
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
@@ -1564,7 +1548,15 @@ def estrategia_alex(symbol, debug = False, refinado = True, file_source = False,
     try:
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
-        data['signal'] = 0
+        data['signal'] = np.where(
+                                  data.sentido == -1
+                                  ,1,
+                                  np.where(
+                                  data.sentido == -3
+                                  ,-1,
+                                  0
+                                )
+                                )
         data['take_profit'] =   np.where(
                                 data.signal == 1,                                
                                 data.Low + data.atr*6,
