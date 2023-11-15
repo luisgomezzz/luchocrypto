@@ -1487,6 +1487,7 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
 
 def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
     try:
+        porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
         data = smart_money(symbol,refinado,file_source,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
@@ -1522,17 +1523,20 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
                                 0
                                 )
                                 )
-        data['cierra'] = False
-        porcentaje_perdida = 1
-        data['porcentajeentrada'] = np.where(data.signal == 1,
-                       (porcentaje_perdida*balance)/
+        data['cierra'] = False        
+        data['variacion'] = np.where(data.signal == 1,
                        ((((data.decisional_alcista_low - offset)/data.decisional_alcista_high)-1)*-100),
                        np.where(data.signal == -1,
-                       (porcentaje_perdida*balance)/
                        ((((data.decisional_bajista_high + offset)/data.decisional_bajista_low)-1)*100),
                        0
                        )
                        )
+        data['porcentajeentrada'] = np.where(data.variacion!=0,
+                                             np.where(((porcentaje_perdida/data.variacion)*100)>100,
+                                                      100,
+                                                      ((porcentaje_perdida/data.variacion)*100)
+                                                      ),
+                                             0)
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)
