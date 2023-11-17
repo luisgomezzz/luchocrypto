@@ -967,7 +967,7 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #### varios
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             self.cruce_bos = self.I(indicador,self.data.cruce_bos,name="cruce_bos")
-            #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
+            self.sentido = self.I(indicador,self.data.sentido,name="sentido")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1444,25 +1444,29 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # Calcular la tendencia general
         df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
 
-        #################################################################################################### manipulacion
+        #################################################################################################### CRUCE DE BOS
         # alcista = -1
         # neutral = -2
         # bajista = -3        
         df['cruce_bos'] = -2
         for i in range(0, len(df)-1):                
             if ((df.Close.iloc[i-1] < df['bos_bajista'].iloc[i-1] ) # bajista
-                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8
+                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
                 df.at[i, 'cruce_bos'] = -3                
             if ((df.Close.iloc[i-1] > df['bos_alcista'].iloc[i-1]) # alcista
-                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8                
+                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
                 df.at[i, 'cruce_bos'] = -1
         ########################################### SENTIDO
         ultimo = -2
         df['sentido'] = -2
         for i in range(0, len(df)-1):
-            if 17 > df["Open Time"].dt.hour.iloc[i] >= 8:
+            if  (17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
                 if df.cruce_bos.iloc[i] == -1 and ultimo == -3:
                     df.at[i, 'sentido'] = -1
                 else:

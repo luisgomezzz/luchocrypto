@@ -62,33 +62,34 @@ def actualiza_trailing_stop(symbol):
                 json.dump(posiciones,j, indent=4)
             md.closeallopenorders(symbol)            
             break
-        else:
-            data = dataframe_estrategia(symbol,estrategia_name)
-            atr = md.set_atr_periods(data)
-            if positionamt>0: #Es un long
-                trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
-                side='BUY'
-            else: # Es un short
-                trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * data.n_atr[-1])
-                side='SELL'
-            if data.cierra[-1]==True:
-                md.closeposition(symbol,side)
-            else:
-                if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
-                    print(f"\nActualizo Trailing stop {symbol} - {side}.")
-                    creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
-                    ultimo_trailing_stop_price = trailing_stop_price
-                    if creado==True:
-                        if trailing_stop_id_anterior==0:
-                            trailing_stop_id_anterior=trailing_stop_id
-                        else:
-                            try:
-                                cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
-                                trailing_stop_id_anterior=trailing_stop_id
-                                print("\nTrailing_stop_id anterior cancelado. "+symbol)
-                            except:
-                                trailing_stop_id_anterior=trailing_stop_id
-                                pass
+            # ACTUALIZA TRALLING STOP
+        #else:
+        #    data = dataframe_estrategia(symbol,estrategia_name)
+        #    atr = md.set_atr_periods(data)
+        #    if positionamt>0: #Es un long
+        #        trailing_stop_price = max(trailing_stop_price or -np.inf, data.Close[-1] - atr[-1] * data.n_atr[-1])
+        #        side='BUY'
+        #    else: # Es un short
+        #        trailing_stop_price = min(trailing_stop_price or np.inf, data.Close[-1] + atr[-1] * data.n_atr[-1])
+        #        side='SELL'
+        #    if data.cierra[-1]==True:
+        #        md.closeposition(symbol,side)
+        #    else:
+        #        if trailing_stop_price != ultimo_trailing_stop_price or ultimo_trailing_stop_price ==0.0:
+        #            print(f"\nActualizo Trailing stop {symbol} - {side}.")
+        #            creado,trailing_stop_id=md.crea_stoploss (symbol,side,trailing_stop_price)
+        #            ultimo_trailing_stop_price = trailing_stop_price
+        #            if creado==True:
+        #                if trailing_stop_id_anterior==0:
+        #                    trailing_stop_id_anterior=trailing_stop_id
+        #                else:
+        #                    try:
+        #                        cons.exchange.cancel_order(trailing_stop_id_anterior, symbol)
+        #                        trailing_stop_id_anterior=trailing_stop_id
+        #                        print("\nTrailing_stop_id anterior cancelado. "+symbol)
+        #                    except:
+        #                        trailing_stop_id_anterior=trailing_stop_id
+        #                        pass
 
 # programa principal
 def main():
@@ -171,8 +172,8 @@ def main():
                                 md.crea_stoploss (symbol,side,stop_price)                                
                                 if not np.isnan(profit_price):
                                     md.crea_takeprofit(symbol,preciolimit=profit_price,posicionporc=100,lado=posiciones[symbol])  
-                                #hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
-                                #hilo.start()  
+                                hilo = threading.Thread(target=actualiza_trailing_stop, args=(symbol,))
+                                hilo.start()  
 
                 except:
                     pass        
