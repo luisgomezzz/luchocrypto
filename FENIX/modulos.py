@@ -966,8 +966,10 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             super().init()
             #### varios
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
-            self.cruce_bos = self.I(indicador,self.data.cruce_bos,name="cruce_bos")
-            self.sentido = self.I(indicador,self.data.sentido,name="sentido")
+            #self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
+            #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
+            self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
+            self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1444,40 +1446,55 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # Calcular la tendencia general
         df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
 
+        ########################################### INDICADORES #########################################################
+
         #################################################################################################### CRUCE DE BOS
         # alcista = -1
         # neutral = -2
-        # bajista = -3        
-        df['cruce_bos'] = -2
+        # bajista = -3    
+        kill_inicio = 8
+        kill_fin = 21    
+        df['cruce_bos_killzone'] = -2
         for i in range(0, len(df)-1):                
             if ((df.Close.iloc[i-1] < df['bos_bajista'].iloc[i-1] ) # bajista
-                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+                and kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
                 and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
-                df.at[i, 'cruce_bos'] = -3                
+                df.at[i, 'cruce_bos_killzone'] = -3                
             if ((df.Close.iloc[i-1] > df['bos_alcista'].iloc[i-1]) # alcista
-                and 17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+                and kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
                 and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
-                df.at[i, 'cruce_bos'] = -1
+                df.at[i, 'cruce_bos_killzone'] = -1
         ########################################### SENTIDO
         ultimo = -2
         df['sentido'] = -2
         for i in range(0, len(df)-1):
-            if  (17 > df["Open Time"].dt.hour.iloc[i] >= 8 # mercados abiertos
+            if  (kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
                 and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
-                if df.cruce_bos.iloc[i] == -1 and ultimo == -3:
+                if df.cruce_bos_killzone.iloc[i] == -1 and ultimo == -3:
                     df.at[i, 'sentido'] = -1
                 else:
-                    if df.cruce_bos.iloc[i] == -3 and ultimo == -1:
+                    if df.cruce_bos_killzone.iloc[i] == -3 and ultimo == -1:
                         df.at[i, 'sentido'] = -3
                     else:
                         df.at[i, 'sentido'] = -2
-                if df.cruce_bos.iloc[i] != -2:
-                    ultimo=df.cruce_bos.iloc[i]
+                if df.cruce_bos_killzone.iloc[i] != -2:
+                    ultimo=df.cruce_bos_killzone.iloc[i]
             else:
                 ultimo=-2
+
+        #################### ACUMULACION DE LOQUIDEZ
+
+        df['num_valores_iguales'] = (df['bos_bajista'] != df['bos_bajista'].shift(1)).cumsum()
+        df['sell_side_liquidity'] = -(df.groupby('num_valores_iguales').cumcount() + 1)
+        df = df.drop('num_valores_iguales', axis=1)
+
+        df['num_valores_iguales'] = (df['bos_alcista'] != df['bos_alcista'].shift(1)).cumsum()
+        df['buy_side_liquidity'] = (df.groupby('num_valores_iguales').cumcount() + 1)
+        df = df.drop('num_valores_iguales', axis=1)
+
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
