@@ -965,11 +965,12 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
-            #self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
-            #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
+            self.posicion = self.I(indicador,self.data.posicion,name="posicion")
             self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
             self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
+            self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
+            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1452,7 +1453,7 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         # alcista = -1
         # neutral = -2
         # bajista = -3    
-        kill_inicio = 8
+        kill_inicio = 7
         kill_fin = 21    
         df['cruce_bos_killzone'] = -2
         for i in range(0, len(df)-1):                
@@ -1466,7 +1467,7 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
                 and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
                 ):
                 df.at[i, 'cruce_bos_killzone'] = -1
-        ########################################### SENTIDO
+        #######################################################################################################  SENTIDO
         ultimo = -2
         df['sentido'] = -2
         for i in range(0, len(df)-1):
@@ -1494,6 +1495,38 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         df['num_valores_iguales'] = (df['bos_alcista'] != df['bos_alcista'].shift(1)).cumsum()
         df['buy_side_liquidity'] = (df.groupby('num_valores_iguales').cumcount() + 1)
         df = df.drop('num_valores_iguales', axis=1)
+        
+        ########################################################### ENTRADAS
+        
+        pileta_vaciada = 0
+        ventana_analisis_valida = 0        
+        df['posicion'] = -2
+        for i in range(0, len(df)-1):
+             if  (kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
+                if ((abs(df.sell_side_liquidity.iloc[i-1]) >= 50 and abs(df.sell_side_liquidity.iloc[i]) == 1)
+                    or 
+                    (abs(df.buy_side_liquidity.iloc[i-1]) >= 50 and abs(df.buy_side_liquidity.iloc[i]) == 1)                    
+                    ): # se vació la pileta grande
+                        pileta_vaciada = 1
+                        ventana_analisis_valida = 0
+                else:
+                    if pileta_vaciada == 1:
+                        ventana_analisis_valida = ventana_analisis_valida + 1
+                        if ventana_analisis_valida == 20: # reinicio
+                            pileta_vaciada = 0
+                            ventana_analisis_valida = 0
+                        else:
+                            if df.cruce_bos_killzone.iloc[i] == -1:
+                                df.at[i, 'posicion'] = -1
+                                pileta_vaciada = 0
+                                ventana_analisis_valida = 0
+                            else:
+                                if df.cruce_bos_killzone.iloc[i] == -3:
+                                    df.at[i, 'posicion'] = -3
+                                    pileta_vaciada = 0
+                                    ventana_analisis_valida = 0
 
         ########################################## INDICE
         df['timestamp']=df['Open Time']
