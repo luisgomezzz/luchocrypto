@@ -1083,9 +1083,15 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
                     df_imbalance = obtiene_historial_yfinance(symbol, timeframe)
 
         if refinado:
-            df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
-            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
-        
+            if fuente == 0:
+                df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+                parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
+            else:
+                if fuente ==2:
+                    df_refinar = obtiene_historial_yfinance(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+                    parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
+
+
         df['pivot_high'] = np.NaN
         df['pivot_low'] = np.NaN
         df['row_number'] = (range(len(df)))
@@ -1115,7 +1121,8 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
                 df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
         
         ###################################################################################### IMBALANCES
-        df_imbalance['row_number'] = (range(len(df_imbalance)))
+        df_imbalance = df_imbalance.copy()
+        df_imbalance['row_number'] = range(len(df_imbalance))
         df_imbalance.set_index('row_number', inplace=True)
         df_imbalance['imba_bajista_high'] = np.where(
                                         ((df_imbalance.Low.shift(1)) >= (df_imbalance.High.shift(-1)+df_imbalance.atr))
