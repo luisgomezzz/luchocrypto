@@ -957,7 +957,7 @@ def myfxbook_file_historico():
 
 def obtiene_historial_yfinance(symbol, timeframe= "1h"):
     try:
-        data = yf.download(symbol,period="1mo",interval=timeframe)
+        data = yf.download(symbol,period="1mo",interval=timeframe,progress=False)
         data['Open Time'] = pd.to_datetime(data.index)
         data['timestamp']=pd.to_datetime(data.index)
         data.set_index('timestamp', inplace=True)
@@ -969,6 +969,7 @@ def obtiene_historial_yfinance(symbol, timeframe= "1h"):
         data['atr'] = ta.atr(data.High, data.Low, data.Close)   
         data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
         data = data.iloc[:-1]
+        data = data.tail(1000) #para limitar y no sea enorme
         return data
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
@@ -987,8 +988,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             super().init()
             #### varios
             #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
-            #self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
-            #self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
+            self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
+            self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
             self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
