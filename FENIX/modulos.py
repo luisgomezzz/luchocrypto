@@ -7,17 +7,17 @@ import math
 from binance.exceptions import BinanceAPIException
 import json
 import ccxt as ccxt
-from requests import Session
 import numpy as np
 import pandas_ta as ta
 from backtesting import Backtest
 import talib
 from backtesting import Strategy
 from binance.enums import HistoricalKlinesType
-from numerize import numerize
+#from numerize import numerize
 import requests
 import ccxt
-from datetime import datetime
+import yfinance as yf
+import re
 
 salida_solicitada_flag = False
 
@@ -955,6 +955,27 @@ def myfxbook_file_historico():
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     return data
 
+def obtiene_historial_yfinance(symbol, timeframe= "1h"):
+    try:
+        data = yf.download(symbol,period="1mo",interval=timeframe)
+        data['Open Time'] = pd.to_datetime(data.index)
+        data['timestamp']=pd.to_datetime(data.index)
+        data.set_index('timestamp', inplace=True)
+        data.drop(['Adj Close'], axis=1, inplace=True)
+        numeric_columns = ['Open', 'High', 'Low', 'Close','Volume']
+        data['ema20'] = ta.ema(data.Close, length=20)
+        data['ema50'] = ta.ema(data.Close, length=50)
+        data['ema200'] = ta.ema(data.Close, length=200)
+        data['atr'] = ta.atr(data.High, data.Low, data.Close)   
+        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+        data = data.iloc[:-1]
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+
 def backtesting_smart(data, plot_flag=False, symbol='NADA'):
     balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
     def indicador(df_campo):
@@ -965,9 +986,9 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.posicion = self.I(indicador,self.data.posicion,name="posicion")
-            self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
-            self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
+            #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
+            #self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
+            #self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
             self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
@@ -1029,7 +1050,7 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
 
 ####################################################################################
 
-def smart_money(symbol,refinado,file_source,timeframe,largo):
+def smart_money(symbol,refinado,fuente,timeframe,largo):
     try:
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
@@ -1039,17 +1060,27 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         #  
         # largo es el parámetro de longitud para los puntos pivote High y Low
         #
+        # FUENTE
+        # 0 Binance
+        # 1 File
+        # 2 yfinance
         timeframe_refinado = '15m'
 
-        if file_source: 
+        if fuente == 1: 
             # Si la data se toma de un file
             df = myfxbook_file_historico()
             df_imbalance = myfxbook_file_historico()
             refinado = False
         else:
-            # Si la data se saca de binance
-            df = obtiene_historial(symbol, timeframe)
-            df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances        
+            if fuente == 0:
+                # La data se saca de binance
+                df = obtiene_historial(symbol, timeframe)
+                df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances  
+            else:
+                # La data se saca de yahoo
+                if fuente == 2:
+                    df = obtiene_historial_yfinance(symbol, timeframe)
+                    df_imbalance = obtiene_historial_yfinance(symbol, timeframe)
 
         if refinado:
             df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
@@ -1539,10 +1570,10 @@ def smart_money(symbol,refinado,file_source,timeframe,largo):
         pass
 ##########################################################################################
 
-def estrategia_smart(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 1):
+def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', balance = 100, largo = 1):
     try:
         porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
-        data = smart_money(symbol,refinado,file_source,timeframe,largo)     
+        data = smart_money(symbol,refinado,fuente,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
@@ -1602,9 +1633,9 @@ def estrategia_smart(symbol, debug = False, refinado = True, file_source = False
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
         pass
 
-def estrategia_alex(symbol, debug = False, refinado = True, file_source = False, timeframe = '1h', balance = 100, largo = 10):
+def estrategia_alex(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', balance = 100, largo = 10):
     try:
-        data = smart_money(symbol,refinado,file_source,timeframe,largo)     
+        data = smart_money(symbol,refinado,fuente,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
                                   data.sentido == -1
