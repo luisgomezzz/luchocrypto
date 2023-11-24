@@ -40,7 +40,7 @@ def dataframe_estrategia(symbol,estrategia_name):
     if estrategia_name=='estrategia_haz':
         data = md.estrategia_haz(symbol,alerta=False)
     if estrategia_name=='estrategia_smart':
-        data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, balance = balance, largo = 1)
+        data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 2, timeframe = timeframe, balance = balance, largo = 1)
     return data
 
 posiciones={}
@@ -161,7 +161,7 @@ def main():
                             stop_price = data.stop_loss[-2]
                             profit_price = data.take_profit[-2]
                             print(f"Symbol: {symbol} - Hora: {dt.datetime.today().strftime('%d/%b/%Y %H:%M:%S')} - Side: {side} - TP: {profit_price} - SL: {stop_price} - porc_ent: {porcentajeentrada}")   
-                            md.crea_posicion(symbol,side,porcentajeentrada) 
+                            #md.crea_posicion(symbol,side,porcentajeentrada) 
                             # STOP LOSS Y TAKE PROFIT 
                             entry_price = md.getentryprice(symbol)
                             if entry_price!=0.0:                                
