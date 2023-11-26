@@ -55,7 +55,7 @@ if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
         json.dump(configuracion,j, indent=4)
 
 minvolumen24h = float(100000000)
-mincapitalizacion = float(10000000)
+mincapitalizacion = float(50000000)
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.
