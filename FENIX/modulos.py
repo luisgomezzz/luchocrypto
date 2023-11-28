@@ -987,7 +987,7 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
+            self.posicion = self.I(indicador,self.data.posicion,name="posicion")
             self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
             self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
             self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
@@ -1600,10 +1600,10 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
                                 )
         data['take_profit'] =   np.where(
                                 data.signal == 1,                                
-                                data.Low + data.atr*10,
+                                data.Low + data.atr*6,
                                 np.where(
                                 data.signal == -1,
-                                data.High - data.atr*10,
+                                data.High - data.atr*6,
                                 0
                                 )
                                 )
@@ -1646,11 +1646,11 @@ def estrategia_alex(symbol, debug = False, refinado = True, fuente = 0, timefram
         data = smart_money(symbol,refinado,fuente,timeframe,largo)     
         offset = data.atr/3        
         data['signal'] = np.where(
-                                  data.sentido == -1
-                                  ,0,
+                                  data.posicion == -1
+                                  ,1,
                                   np.where(
-                                  data.sentido == -3
-                                  ,0,
+                                  data.posicion == -3
+                                  ,-1,
                                   0
                                 )
                                 )
