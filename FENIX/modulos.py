@@ -1325,7 +1325,7 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 1.5
+        multiplicador_imbalance = 0.75
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
@@ -1582,18 +1582,26 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
     try:
         porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
         data = smart_money(symbol,refinado,fuente,timeframe,largo)     
-        offset = data.atr/3        
+        offset = data.atr/3   
+        kill_inicio = 7
+        kill_fin = 15             
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + offset)
                                   &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
+                                  &(kill_inicio <= data["Open Time"].dt.hour) #london y NY
+                                  &(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
+                                  &(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - offset)
                                   &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
+                                  &(kill_inicio <= data["Open Time"].dt.hour) #london y NY
+                                  &(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
+                                  &(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom                                  
                                   ,-1,
                                   0
                                 )
