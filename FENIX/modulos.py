@@ -987,9 +987,9 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def init(self):
             super().init()
             #### varios
-            self.posicion = self.I(indicador,self.data.posicion,name="posicion")
-            self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
-            self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
+            #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
+            #self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
+            #self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
             self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
             #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
             #self.sentido = self.I(indicador,self.data.sentido,name="sentido")
@@ -1583,8 +1583,8 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
         porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
         data = smart_money(symbol,refinado,fuente,timeframe,largo)     
         offset = data.atr/3   
-        kill_inicio = 7
-        kill_fin = 15             
+        kill_inicio = 8
+        kill_fin = 16
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + offset)
