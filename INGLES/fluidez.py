@@ -26,7 +26,7 @@ oracion_elegida = random.choice(list(diccionario.keys()))
 print(f"\nOración elegida: {oracion_elegida}")
 
 # Pausar después de la oración elegida
-input("Presiona Enter para continuar...")
+input("...")
 
 tiempos = diccionario[oracion_elegida]
 
@@ -37,7 +37,7 @@ for tiempo in tiempos_mezclados:
     print(f"\n  Tiempo: {tiempo}")
 
     # Pausar después de cada tiempo verbal
-    input("Presiona Enter para continuar...")
+    input("...")
 
     formas = tiempos[tiempo]
     
@@ -58,4 +58,4 @@ for tiempo in tiempos_mezclados:
         reproducir_pronunciacion(formas[tipo])
 
         # Pausar después de cada tipo de forma verbal
-        input("Presiona Enter para continuar...")
+        input("...")
