@@ -352,5 +352,133 @@
       "negativa": "They haven't coded many successful software applications.",
       "interrogativa": "Have they coded many successful software applications?"
     }
+  },
+  "We are friends": {
+    "present_simple": {
+        "affirmative": "We are friends.",
+        "negative": "We are not friends.",
+        "interrogative": "Are we friends?"
+    },
+    "present_continuous": {
+        "affirmative": "We are being friends.",
+        "negative": "We are not being friends.",
+        "interrogative": "Are we being friends?"
+    },
+    "future_with_going_to": {
+        "affirmative": "We are going to be friends.",
+        "negative": "We are not going to be friends.",
+        "interrogative": "Are we going to be friends?"
+    },
+    "future_simple": {
+        "affirmative": "We will be friends.",
+        "negative": "We will not be friends.",
+        "interrogative": "Will we be friends?"
+    },
+    "past_simple": {
+        "affirmative": "We were friends.",
+        "negative": "We were not friends.",
+        "interrogative": "Were we friends?"
+    },
+    "present_perfect": {
+        "affirmative": "We have been friends.",
+        "negative": "We have not been friends.",
+        "interrogative": "Have we been friends?"
+    }
+},
+"I eat pizza": {
+  "present_simple": {
+      "affirmative": "I eat pizza.",
+      "negative": "I do not eat pizza.",
+      "interrogative": "Do I eat pizza?"
+  },
+  "present_continuous": {
+      "affirmative": "I am eating pizza.",
+      "negative": "I am not eating pizza.",
+      "interrogative": "Am I eating pizza?"
+  },
+  "future_with_going_to": {
+      "affirmative": "I am going to eat pizza.",
+      "negative": "I am not going to eat pizza.",
+      "interrogative": "Am I going to eat pizza?"
+  },
+  "future_simple": {
+      "affirmative": "I will eat pizza.",
+      "negative": "I will not eat pizza.",
+      "interrogative": "Will I eat pizza?"
+  },
+  "past_simple": {
+      "affirmative": "I ate pizza.",
+      "negative": "I did not eat pizza.",
+      "interrogative": "Did I eat pizza?"
+  },
+  "present_perfect": {
+      "affirmative": "I have eaten pizza.",
+      "negative": "I have not eaten pizza.",
+      "interrogative": "Have I eaten pizza?"
   }
+},
+"They play music": {
+  "present_simple": {
+      "affirmative": "They play music.",
+      "negative": "They do not play music.",
+      "interrogative": "Do they play music?"
+  },
+  "present_continuous": {
+      "affirmative": "They are playing music.",
+      "negative": "They are not playing music.",
+      "interrogative": "Are they playing music?"
+  },
+  "future_with_going_to": {
+      "affirmative": "They are going to play music.",
+      "negative": "They are not going to play music.",
+      "interrogative": "Are they going to play music?"
+  },
+  "future_simple": {
+      "affirmative": "They will play music.",
+      "negative": "They will not play music.",
+      "interrogative": "Will they play music?"
+  },
+  "past_simple": {
+      "affirmative": "They played music.",
+      "negative": "They did not play music.",
+      "interrogative": "Did they play music?"
+  },
+  "present_perfect": {
+      "affirmative": "They have played music.",
+      "negative": "They have not played music.",
+      "interrogative": "Have they played music?"
+  }
+},
+"We are on the beach": {
+  "present_simple": {
+      "affirmative": "We are on the beach.",
+      "negative": "We are not on the beach.",
+      "interrogative": "Are we on the beach?"
+  },
+  "present_continuous": {
+      "affirmative": "We are being on the beach.",
+      "negative": "We are not being on the beach.",
+      "interrogative": "Are we being on the beach?"
+  },
+  "future_with_going_to": {
+      "affirmative": "We are going to be on the beach.",
+      "negative": "We are not going to be on the beach.",
+      "interrogative": "Are we going to be on the beach?"
+  },
+  "future_simple": {
+      "affirmative": "We will be on the beach.",
+      "negative": "We will not be on the beach.",
+      "interrogative": "Will we be on the beach?"
+  },
+  "past_simple": {
+      "affirmative": "We were on the beach.",
+      "negative": "We were not on the beach.",
+      "interrogative": "Were we on the beach?"
+  },
+  "present_perfect": {
+      "affirmative": "We have been on the beach.",
+      "negative": "We have not been on the beach.",
+      "interrogative": "Have we been on the beach?"
+  }
+}
 }
