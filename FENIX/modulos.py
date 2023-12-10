@@ -1591,30 +1591,30 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
         data['signal'] = np.where(
                                   (data.Low > data.decisional_alcista_low)
                                   &(data.Low <= data.decisional_alcista_high + offset)
-                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
+                                  #&(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  &(kill_inicio <= data["Open Time"].dt.hour) #london y NY
-                                  &(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
-                                  &(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom
+                                  #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
+                                  #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
+                                  #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom
                                   ,1,
                                   np.where(
                                   (data.High < data.decisional_bajista_high)
                                   &(data.High >= data.decisional_bajista_low - offset)
-                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
+                                  #&(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  &(kill_inicio <= data["Open Time"].dt.hour) #london y NY
-                                  &(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
-                                  &(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom                                  
+                                  #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
+                                  #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
+                                  #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom                                  
                                   ,-1,
                                   0
                                 )
                                 )
         data['take_profit'] =   np.where(
                                 data.signal == 1,                                
-                                data.Low + data.atr*6,
+                                data.Low + data.atr*9,
                                 np.where(
                                 data.signal == -1,
-                                data.High - data.atr*6,
+                                data.High - data.atr*9,
                                 0
                                 )
                                 )
