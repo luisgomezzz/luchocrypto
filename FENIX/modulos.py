@@ -518,22 +518,6 @@ def estrategia_bb(symbol,tp_flag=True):
     #    data['stop_loss']=0
     return data
 
-def es_martillo(vela):
-    out=0
-    cuerpo = abs(vela['Open'] - vela['Close'])
-    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
-    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= vela.atr/2
-    if condicion_largo:
-        if sombra_inferior>sombra_superior*3:
-            if sombra_inferior > 2 * cuerpo: #martillo parado
-                out = 1
-        else:
-            if sombra_superior>sombra_inferior*3:
-                if sombra_superior > 2 * cuerpo: #martillo invertido
-                    out = -1
-    return out    
-
 def estrategia_santa(symbol,tp_flag = True):
     # esta estrategia solo se utiliza a modo de prueba y backtesting ya que el programa en realidad es santa3
     porcentajeentrada = 10
@@ -547,7 +531,6 @@ def estrategia_santa(symbol,tp_flag = True):
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
     data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. 
-    data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
     data['signal'] = np.where(
                             (data.Close.shift(1) <= data.minimo.shift(2)) # para que solo sea reentrada
                             &data.martillo.shift(1) == 1
@@ -585,194 +568,6 @@ def estrategia_santa(symbol,tp_flag = True):
     )
     data['cierra'] = False
     return data,porcentajeentrada   
-
-def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
-    from scipy.stats import linregress
-    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '1h'
-    def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
-        if l-n1 < 0 or l+n2 >= len(df1):
-            return 0    
-        pividlow=1
-        pividhigh=1
-        for i in range(l-n1, l+n2+1):
-            if(df1.Low[l]>df1.Low[i]):
-                pividlow=0
-            if(df1.High[l]<df1.High[i]):
-                pividhigh=0
-        if pividlow and pividhigh:
-            return 3
-        elif pividlow:
-            return 1
-        elif pividhigh:
-            return 2
-        else:
-            return 0
-    def pointpos(x):
-        if x['pivot']==1:
-            return x['Low']-1e-3
-        elif x['pivot']==2:
-            return x['High']+1e-3
-        else:
-            return np.nan
-    df = obtiene_historial(symbol,timeframe)
-    df=df.copy()
-    #Check if NA values are in data
-    df=df[df['Volume']!=0]
-    df.reset_index(drop=True, inplace=True)
-    df.isna().sum()
-    df['n_atr'] = 1.5 
-    df["pivot"] = df.apply(lambda x: pivotid(df, x.name,3,3), axis=1)
-    df["pointpos"] = df.apply(lambda row: pointpos(row), axis=1)
-    df["signal"]=0
-    df["upper_line"]=0
-    df["lower_line"]=0
-    ### detecta la vela donde hay un triangulo a partir de la posicion que se elija en el rango
-    backcandles= 20
-    for candleid in range(0, len(df)):
-        maxim = np.array([])
-        minim = np.array([])
-        xxmin = np.array([])
-        xxmax = np.array([])
-        for i in range(candleid-backcandles, candleid+1):
-            if df.iloc[i].pivot == 1:
-                minim = np.append(minim, df.iloc[i].Low)
-                xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
-            if df.iloc[i].pivot == 2:
-                maxim = np.append(maxim, df.iloc[i].High)
-                xxmax = np.append(xxmax, i) # df.iloc[i].name        
-        if (xxmax.size <3 and xxmin.size <3) or xxmax.size==0 or xxmin.size==0:
-            continue        
-        slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
-        slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)            
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.0001 and slmax<-0.001:
-            df.loc[[candleid],'signal'] = 2 # desc
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.001 and abs(slmax)<=0.0001:
-            df.loc[[candleid],'signal'] = 3 # asc
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and slmax<=-0.0001:
-            df.loc[[candleid],'signal'] = 4 # comun
-        if df.iloc[candleid].signal in (2,3,4):
-            # Ecuación de la línea superior
-            xssup = xxmax
-            yssup = slmax*xxmax + intercmax
-            pendiente = (yssup[1]-yssup[0])/(xssup[1]-xssup[0])
-            intersecciony = yssup[0]-pendiente*xssup[0]
-            df.loc[[candleid],"upper_line"]=pendiente*candleid+intersecciony      
-            # Ecuación de la línea inferior
-            xsinf = xxmin
-            ysinf = slmin*xxmin + intercmin
-            pendiente = (ysinf[1]-ysinf[0])/(xsinf[1]-xsinf[0])
-            intersecciony = ysinf[0]-pendiente*xsinf[0]
-            df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
-            # TENDENCIA
-            if df.iloc[candleid].ema20 > df.iloc[candleid].ema50 > df.iloc[candleid].ema200:
-                tendencia = 1
-            else: 
-                if df.iloc[candleid].ema20 < df.iloc[candleid].ema50 < df.iloc[candleid].ema200:
-                    tendencia = -1
-                else:
-                    tendencia = 0
-            #   señales
-            if  (       df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
-                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line 
-                    and df.iloc[candleid-1].lower_line!=0
-                    and df.iloc[candleid-1].upper_line!=0
-                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
-                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
-                    #and df.iloc[candleid-2].lower_line!=0
-                    #and df.iloc[candleid-2].upper_line!=0
-                    #and tendencia == 1
-                ):
-                df.loc[[candleid],"signal"] = 1
-            elif (  df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
-                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line 
-                and df.iloc[candleid-1].lower_line!=0
-                and df.iloc[candleid-1].upper_line!=0
-                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
-                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
-                #and df.iloc[candleid-2].lower_line!=0
-                #and df.iloc[candleid-2].upper_line!=0
-                #and tendencia == -1
-                ):
-                df.loc[[candleid],"signal"] = -1
-            
-            # imprimo lugares donde se da la condición
-            if print_lines_flag and df.iloc[candleid].signal in (1,-1):
-                print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
-                print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
-                print(f"Precio Close-1: {df.iloc[candleid-1].Close}")
-    df['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            df.signal == 1,
-                            df.Close + 5*df.atr,
-                            np.where(
-                                    df.signal == -1,
-                                    df.Close - 5*df.atr,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    df['stop_loss'] = np.where(
-        df.signal == 1,
-        df.Close - 1.5*df.atr,
-        np.where(
-            df.signal == -1,
-            df.Close + 1.5*df.atr,
-            0
-        )
-    ) 
-    df['cierra'] = False
-    df["timestamp"] = df["Open Time"]   
-    df.set_index('timestamp', inplace=True)
-    return df        
-
-def dibuja_patrones_triangulos (df,candleid):
-    from scipy.stats import linregress
-    import plotly.graph_objects as go
-    #dibuja
-    df.reset_index(drop=True, inplace=True)    
-    dfpl = df[0:1000]
-    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
-                    open=dfpl['Open'],
-                    high=dfpl['High'],
-                    low=dfpl['Low'],
-                    close=dfpl['Close'])])
-    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
-                    marker=dict(size=5, color="MediumPurple"),
-                    name="pivot")
-    backcandles = 20
-    maxim = np.array([])
-    minim = np.array([])
-    xxmin = np.array([])
-    xxmax = np.array([])
-    for i in range(candleid-backcandles, candleid+1):
-        if df.iloc[i].pivot == 1:
-            minim = np.append(minim, df.iloc[i].Low)
-            xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
-        if df.iloc[i].pivot == 2:
-            maxim = np.append(maxim, df.iloc[i].High)
-            xxmax = np.append(xxmax, i) # df.iloc[i].name            
-    slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
-    slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)
-    print(rmin, rmax)
-    dfpl = df[candleid-backcandles-50:candleid+backcandles+50]
-    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
-                    open=dfpl['Open'],
-                    high=dfpl['High'],
-                    low=dfpl['Low'],
-                    close=dfpl['Close'])])
-    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
-                    marker=dict(size=4, color="MediumPurple"),
-                    name="pivot")
-    xxmin = np.append(xxmin, xxmin[-1]+15)
-    xxmax = np.append(xxmax, xxmax[-1]+15)
-    fig.add_trace(go.Scatter(x=xxmin, y=slmin*xxmin + intercmin, mode='lines', name='min slope'))
-    fig.add_trace(go.Scatter(x=xxmax, y=slmax*xxmax + intercmax, mode='lines', name='max slope'))
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    fig.show()
-    print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
-    print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
 
 def backtestingsanta(data, plot_flag=False, debug = False):
     balance = 1000    
@@ -835,106 +630,6 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
-
-def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
-    # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
-    # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
-    try:                
-        np.seterr(divide='ignore', invalid='ignore')
-        # temporalidad de 1h para encontrar martillos y soportes/resistencias
-        data1h = obtiene_historial(symbol,'1h')        
-        data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
-        data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
-        data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
-        data1h['date1h'] = data1h['Open Time']
-        data1h['variacion_porc'] = ((data1h.Close/data1h.Close.shift(24))-1)*100
-        data1h = data1h[:-1]        
-        # Temporalidad de 5m para tradear
-        data5m = obtiene_historial(symbol,'5m')
-        resample = data1h.reindex(data5m.index, method='pad')
-        data5m = data5m.join(resample[['martillo','disparo','escape','date1h','variacion_porc']])
-        data5m['n_atr'] = 50
-        data5m['signal'] = 0
-        data5m['previous_martillo'] = 0
-        previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
-        previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
-        previous_martillo = None
-        for index, row in data5m.iterrows():
-            # si no es unb martillo
-            if row['martillo'] == 0:
-                if previous_disparo is not None:
-                    # si Close está dentro de los valores claves mantengo las ultimas claves
-                    if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
-                        data5m.at[index, 'disparo'] = previous_disparo
-                        data5m.at[index, 'escape'] = previous_escape
-                        data5m.at[index, 'previous_martillo'] = previous_martillo
-                    # Si cruzó algún valor clave
-                    else:
-                        # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
-                        data5m.at[index, 'disparo'] = previous_disparo
-                        data5m.at[index, 'escape'] = previous_escape
-                        data5m.at[index, 'previous_martillo'] = previous_martillo
-                        previous_disparo = 0
-                        previous_escape = 0
-                        previous_martillo = 0
-            # si es un martillo guardo los valores claves
-            else: 
-                previous_disparo = row['disparo']
-                previous_escape = row['escape']
-                previous_martillo = row['martillo']        
-        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (data5m.variacion_porc >= 5),
-                                        1,
-                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (data5m.variacion_porc <= -5),
-                                        -1,  
-                                        0
-                                        )
-                            )
-        # En el ultimo registro se define como sell o long si el anteultimo terminó con signal ya que se trabaja a vela cerrada.
-        data5m.loc[data5m.index[-1], 'signal'] = np.where(data5m.signal.iloc[-2] == 1,
-                                        1,
-                                        np.where(data5m.signal.iloc[-2] == -1,
-                                            -1,  
-                                            0
-                                            )
-                                        )
-        data5m['take_profit'] = np.where(tp_flag,
-                                                np.where(data5m.signal == 1,
-                                                    data5m.Close+data5m.atr*3,
-                                                np.where(data5m.signal == -1,
-                                                    data5m.Close-data5m.atr*3,  
-                                                    0
-                                                    )
-                                                ),
-                                        np.NaN
-                                        )
-        data5m['stop_loss'] =   np.where(data5m.signal == 1,
-                                    data5m.Close-data5m.atr*1,
-                                np.where(data5m.signal == -1,
-                                    data5m.Close+data5m.atr*1,
-                                    0
-                                    )
-                                )    
-        data5m['cierra'] = False
-        # Reemplazar valores no finitos (NA e inf) con 0
-        data5m['porcentajeentrada'] = np.nan_to_num((data5m.Close/data5m.atr), nan=0, posinf=0, neginf=0)
-        # Aplicar np.floor y convertir a enteros
-        data5m['porcentajeentrada'] = np.floor(data5m['porcentajeentrada']).astype(int)
-        
-        ####################### alertas y valores
-        if alerta:
-            if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
-                print(f"\n{symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
-        if debug:
-            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc','porcentajeentrada']].to_string(index=False)
-            print(df_str)
-        if data5m.signal.iloc[-1] !=0:
-            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {data5m.porcentajeentrada.iloc[-2]}")
-        return data5m
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
-        pass
 
 def myfxbook_file_historico():
     # Función que toma datos bajados desde https://www.myfxbook.com/forex-market/currencies/ a un archivo "historico.csv"
@@ -1010,8 +705,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
             #self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
             #self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
             #self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
@@ -1354,16 +1049,12 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if  (np.isnan(df['decisional_bajista_high'].iloc[i])
-                and 
-                    (
-                    (df.High.iloc[i] < high_guardado) # copio si no fue mitigado
-                    or 
-                    (df.High.iloc[i] >= high_guardado and df.decisional_bajista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
-                    )
-                ): 
+            if  ((df['decisional_bajista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_bajista_high'] = high_guardado
                     df.at[i, 'decisional_bajista_low'] = low_guardado
+                    if (df.High.iloc[i] >= high_guardado and df.decisional_bajista.iloc[i-1] != True): # borro decisional si fue mitigado
+                        high_guardado = np.nan
+                        low_guardado = np.nan
             else:
                 high_guardado = df['decisional_bajista_high'].iloc[i]
                 low_guardado = df['decisional_bajista_low'].iloc[i]
@@ -1414,18 +1105,14 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
         ###refinado y relleno
         df['decisional_alcista'] = np.where(np.isnan(df.decisional_alcista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
         high_guardado=np.nan
-        low_guardado=np.nan                                          
+        low_guardado=np.nan
         for i in range(0, len(df)-1):
-            if  (np.isnan(df['decisional_alcista_high'].iloc[i])
-                and 
-                    (
-                    (df.Low.iloc[i] > low_guardado) # copio si no fue mitigado
-                    or 
-                    (df.Low.iloc[i] <= low_guardado and df.decisional_alcista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
-                    )
-                ): 
+            if  ((df['decisional_alcista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_alcista_high'] = high_guardado
                     df.at[i, 'decisional_alcista_low'] = low_guardado
+                    if (df.Low.iloc[i] <= low_guardado and df.decisional_alcista.iloc[i-1] != True): # borro decisional si fue mitigado
+                        high_guardado = np.nan
+                        low_guardado = np.nan
             else:
                 high_guardado = df['decisional_alcista_high'].iloc[i]
                 low_guardado = df['decisional_alcista_low'].iloc[i]
@@ -1588,23 +1275,31 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
         offset = data.atr/3   
         kill_inicio = 8
         kill_fin = 16
-        data['signal'] = np.where(
-                                  (data.Low > data.decisional_alcista_low)
-                                  &(data.Low <= data.decisional_alcista_high + offset)
+        data['signal'] = np.where(                                  
+                                  (data.Low <= data.decisional_alcista_high)
+                                  #&(data.Low > data.decisional_alcista_low)
                                   #&(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
                                   #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
                                   #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
                                   #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom
+                                  &(data.decisional_alcista==False)
+                                  &(data.decisional_alcista.shift(1)==False)
+                                  &(data.decisional_alcista.shift(2)==False)
+                                  &(data.decisional_alcista.shift(3)==False)
                                   ,1,
-                                  np.where(
-                                  (data.High < data.decisional_bajista_high)
-                                  &(data.High >= data.decisional_bajista_low - offset)
+                                  np.where(                                  
+                                  (data.High >= data.decisional_bajista_low)
+                                  #&(data.High < data.decisional_bajista_high)
                                   #&(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
                                   #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
                                   #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
                                   #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom                                  
+                                  &(data.decisional_bajista==False)
+                                  &(data.decisional_bajista.shift(1)==False)
+                                  &(data.decisional_bajista.shift(2)==False)
+                                  &(data.decisional_bajista.shift(3)==False)
                                   ,-1,
                                   0
                                 )
@@ -1620,21 +1315,21 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
                                 )
         data['stop_loss'] = np.where(
                                 data.signal == 1,
-                                data.decisional_alcista_low - offset,
+                                data.decisional_alcista_low - offset*2,
                                 np.where(
                                 data.signal == -1,
-                                data.decisional_bajista_high + offset,
+                                data.decisional_bajista_high + offset*2,
                                 0
                                 )
                                 )
         data['cierra'] = False        
-        data['variacion'] = np.where(data.signal == 1,
+        data['variacion'] = abs(np.where(data.signal == 1,
                        ((((data.decisional_alcista_low - offset)/data.Close)-1)*-100),
                        np.where(data.signal == -1,
                        ((((data.decisional_bajista_high + offset)/data.Close)-1)*100),
                        0
                        )
-                       )
+                       ))
         data['porcentajeentrada'] = np.where(data.variacion!=0,
                                              np.where(((porcentaje_perdida/data.variacion)*100)>100,
                                                       100,
