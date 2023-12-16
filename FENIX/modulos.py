@@ -1277,12 +1277,7 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
         kill_fin = 16
         data['signal'] = np.where(                                  
                                   (data.Low <= data.decisional_alcista_high)
-                                  #&(data.Low > data.decisional_alcista_low)
-                                  #&(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
                                   &(data['trend'] == 'Alcista')
-                                  #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
-                                  #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
-                                  #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom
                                   &(data.decisional_alcista==False)
                                   &(data.decisional_alcista.shift(1)==False)
                                   &(data.decisional_alcista.shift(2)==False)
@@ -1290,12 +1285,7 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
                                   ,1,
                                   np.where(                                  
                                   (data.High >= data.decisional_bajista_low)
-                                  #&(data.High < data.decisional_bajista_high)
-                                  #&(data.High.shift(1) < data.decisional_bajista_low.shift(1))
                                   &(data['trend'] == 'Bajista')
-                                  #&(kill_inicio <= data["Open Time"].dt.hour) #london y NY
-                                  #&(kill_fin > data["Open Time"].dt.hour ) #london y NY                                  
-                                  #&(~data['Open Time'].dt.dayofweek.isin([5, 6])) # no sab y dom                                  
                                   &(data.decisional_bajista==False)
                                   &(data.decisional_bajista.shift(1)==False)
                                   &(data.decisional_bajista.shift(2)==False)
