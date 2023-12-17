@@ -681,6 +681,9 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
     class Fenix(Strategy):
         def init(self):
             super().init()
+            self.decisional_alcista_high_guardado = 0.0
+            self.decisional_bajista_low_guardado = 0.0
+            self.tp_multiplicador = 18
             ########################################### INDICADORES #####################################################
             #### varios
             #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
@@ -715,24 +718,66 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def next(self):       
             super().next()
             if self.position:
-                if self.data.cierra[-1]==True:
-                    self.position.close()                    
+                self.decisional_alcista_high_guardado = 0.0
+                self.decisional_bajista_low_guardado = 0.0
             else:   
-                if np.isnan(data.take_profit[-1]):
-                    tp_value = None
+                # ALCISTA
+                if (self.data.Close[-1] > self.data.decisional_alcista_high[-1] 
+                    and self.data.trend == 'Alcista'
+                    and self.data.decisional_alcista_high[-1] != self.decisional_alcista_high_guardado
+                    and self.data.decisional_alcista[-1] != True
+                    and self.data.decisional_alcista[-2] != True
+                    and self.data.decisional_alcista[-3] != True
+                    and self.data.decisional_alcista[-4] != True
+                    ):
+                        try:
+                            # para evaluar sin usar el apalancamiento
+                            if self.data.porcentajeentrada_alcista[-1]>=100:
+                                size = 0.99
+                            else:
+                                size = self.data.porcentajeentrada_alcista[-1]/100
+                            for order in self.orders:
+                                order.cancel()
+                            self.buy(limit = self.data.decisional_alcista_high[-1]+self.data.offset[-1],
+                                     size = size,
+                                     sl = self.data.decisional_alcista_low[-1] - self.data.offset[-1],
+                                     tp = self.data.decisional_alcista_high[-1] + self.data.atr[-1]*self.tp_multiplicador
+                                     )
+                            self.decisional_alcista_high_guardado = self.data.decisional_alcista_high[-1]           
+                        except Exception as falla:
+                            _, _, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            print("\n*******Error: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"*****\n")
+                            pass
+                # BAJISTA
                 else:
-                    tp_value = self.data.take_profit[-1]
-                porcentaje = 0
-                # para evaluar sin usar el apalancamiento
-                if self.data.porcentajeentrada[-1]>=100:
-                    porcentaje = 0.99
-                else:
-                    porcentaje = self.data.porcentajeentrada[-1]/100
-                size=porcentaje # balance*self.data.porcentajeentrada[-1]/100
-                if self.data.signal[-1]==1:
-                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
-                elif self.data.signal[-1]==-1:
-                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)    
+                    if (self.data.Close[-1] < self.data.decisional_bajista_low[-1] 
+                        and self.data.trend == 'Bajista'
+                        and self.data.decisional_bajista_low[-1] != self.decisional_bajista_low_guardado
+                        and self.data.decisional_bajista[-1] != True
+                        and self.data.decisional_bajista[-2] != True
+                        and self.data.decisional_bajista[-3] != True
+                        and self.data.decisional_bajista[-4] != True
+                        ):
+                            try:
+                                # para evaluar sin usar el apalancamiento
+                                if self.data.porcentajeentrada_bajista[-1]>=100:
+                                    size = 0.99
+                                else:
+                                    size = self.data.porcentajeentrada_bajista[-1]/100
+                                for order in self.orders:
+                                    order.cancel()
+                                self.sell(limit = self.data.decisional_bajista_low[-1] ,
+                                        size = size
+                                        ,sl = self.data.decisional_bajista_high[-1] + self.data.offset[-1]
+                                        ,tp = self.data.decisional_bajista_low[-1] - self.data.atr[-1]*self.tp_multiplicador
+                                        )
+                                self.decisional_bajista_low_guardado = self.data.decisional_bajista_low[-1]           
+                            except Exception as falla:
+                                _, _, exc_tb = sys.exc_info()
+                                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                                print("\n*******Error: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"*****\n")
+                                pass
     try:
         bt = Backtest(data, Fenix, cash=balance)
         output = bt.run()
@@ -1052,7 +1097,11 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
             if  ((df['decisional_bajista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_bajista_high'] = high_guardado
                     df.at[i, 'decisional_bajista_low'] = low_guardado
-                    if (df.High.iloc[i] >= high_guardado and df.decisional_bajista.iloc[i-1] != True): # borro decisional si fue mitigado
+                    if (df.High.iloc[i] >= high_guardado 
+                        and df.decisional_bajista.iloc[i-1] != True
+                        and df.decisional_bajista.iloc[i-2] != True
+                        and df.decisional_bajista.iloc[i-3] != True
+                        ): # borro decisional si fue mitigado
                         high_guardado = np.nan
                         low_guardado = np.nan
             else:
@@ -1110,7 +1159,11 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
             if  ((df['decisional_alcista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_alcista_high'] = high_guardado
                     df.at[i, 'decisional_alcista_low'] = low_guardado
-                    if (df.Low.iloc[i] <= low_guardado and df.decisional_alcista.iloc[i-1] != True): # borro decisional si fue mitigado
+                    if (df.Low.iloc[i] <= low_guardado 
+                        and df.decisional_alcista.iloc[i-1] != True
+                        and df.decisional_alcista.iloc[i-2] != True
+                        and df.decisional_alcista.iloc[i-3] != True
+                        ): # borro decisional si fue mitigado                        
                         high_guardado = np.nan
                         low_guardado = np.nan
             else:
@@ -1272,60 +1325,13 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
     try:
         porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
         data = smart_money(symbol,refinado,fuente,timeframe,largo)     
-        offset = data.atr/3   
-        kill_inicio = 8
-        kill_fin = 16
-        data['signal'] = np.where(                                  
-                                  (data.Low <= data.decisional_alcista_high)
-                                  &(data['trend'] == 'Alcista')
-                                  &(data.decisional_alcista==False)
-                                  &(data.decisional_alcista.shift(1)==False)
-                                  &(data.decisional_alcista.shift(2)==False)
-                                  &(data.decisional_alcista.shift(3)==False)
-                                  ,1,
-                                  np.where(                                  
-                                  (data.High >= data.decisional_bajista_low)
-                                  &(data['trend'] == 'Bajista')
-                                  &(data.decisional_bajista==False)
-                                  &(data.decisional_bajista.shift(1)==False)
-                                  &(data.decisional_bajista.shift(2)==False)
-                                  &(data.decisional_bajista.shift(3)==False)
-                                  ,-1,
-                                  0
-                                )
-                                )
-        data['take_profit'] =   np.where(
-                                data.signal == 1,                                
-                                data.Low + data.atr*9,
-                                np.where(
-                                data.signal == -1,
-                                data.High - data.atr*9,
-                                0
-                                )
-                                )
-        data['stop_loss'] = np.where(
-                                data.signal == 1,
-                                data.decisional_alcista_low - offset*2,
-                                np.where(
-                                data.signal == -1,
-                                data.decisional_bajista_high + offset*2,
-                                0
-                                )
-                                )
+        data['offset'] = data.atr/3   
         data['cierra'] = False        
-        data['variacion'] = abs(np.where(data.signal == 1,
-                       ((((data.decisional_alcista_low - offset)/data.Close)-1)*-100),
-                       np.where(data.signal == -1,
-                       ((((data.decisional_bajista_high + offset)/data.Close)-1)*100),
-                       0
-                       )
-                       ))
-        data['porcentajeentrada'] = np.where(data.variacion!=0,
-                                             np.where(((porcentaje_perdida/data.variacion)*100)>100,
-                                                      100,
-                                                      ((porcentaje_perdida/data.variacion)*100)
-                                                      ),
-                                             0)
+        data['variacion_alcista'] = abs((((data.decisional_alcista_low - data.offset)/(data.decisional_alcista_high + data.offset))-1)*-100)                       
+        data['variacion_bajista'] = abs((((data.decisional_bajista_high + data.offset)/(data.decisional_bajista_low - data.offset))-1)*100)        
+        data['porcentajeentrada_alcista'] = np.where(((porcentaje_perdida/data.variacion_alcista)*100)>100,100,((porcentaje_perdida/data.variacion_alcista)*100))
+        data['porcentajeentrada_bajista'] = np.where(((porcentaje_perdida/data.variacion_bajista)*100)>100,100,((porcentaje_perdida/data.variacion_bajista)*100))
+    
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)
