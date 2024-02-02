@@ -1321,7 +1321,7 @@ def smart_money(symbol,refinado,fuente,timeframe,largo):
         pass
 ##########################################################################################
 
-def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', balance = 100, largo = 1):
+def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', largo = 1):
     try:
         porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
         data = smart_money(symbol,refinado,fuente,timeframe,largo)     
@@ -1332,51 +1332,6 @@ def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timefra
         data['porcentajeentrada_alcista'] = np.where(((porcentaje_perdida/data.variacion_alcista)*100)>100,100,((porcentaje_perdida/data.variacion_alcista)*100))
         data['porcentajeentrada_bajista'] = np.where(((porcentaje_perdida/data.variacion_bajista)*100)>100,100,((porcentaje_perdida/data.variacion_bajista)*100))
     
-        ####################### alertas y valores
-        if debug:
-            df_str = data[list(data.columns)].to_string(index=False)
-            print(df_str)
-        return data
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
-        pass
-
-def estrategia_alex(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', balance = 100, largo = 10):
-    try:
-        data = smart_money(symbol,refinado,fuente,timeframe,largo)     
-        offset = data.atr/3        
-        data['signal'] = np.where(
-                                  data.sentido == -1
-                                  ,1,
-                                  np.where(
-                                  data.sentido == -3
-                                  ,-1,
-                                  0
-                                )
-                                )
-        data['take_profit'] =   np.where(
-                                data.signal == 1,                                
-                                data.Low + data.atr*6,
-                                np.where(
-                                data.signal == -1,
-                                data.High - data.atr*6,
-                                0
-                                )
-                                )
-        data['stop_loss'] = np.where(
-                                data.signal == 1,
-                                data.Close - data.atr*3,
-                                np.where(
-                                data.signal == -1,
-                                data.Close + data.atr*3,
-                                0
-                                )
-                                )
-        data['cierra'] = False
-        porcentaje_perdida = 1
-        data['porcentajeentrada'] = 100
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)
