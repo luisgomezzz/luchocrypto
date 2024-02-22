@@ -107,8 +107,8 @@ while True:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print("Error: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname))
             pass
-    print("duermo 30 minutos...")
-    sleep(1800)
     for symbol in lista_filtrada:
         md.printandlog(cons.nombrelog,symbol,pal=1)
     print(f"Timeframe {timeframe} - porcentajes_sumados {md.truncate(porcentajes_sumados,2)} - trades {trades} - win_rate_buenos {win_rate_buenos} - win_rate_malos {win_rate_malos} - Ganancia por trade: {md.truncate((porcentajes_sumados/trades if trades !=0 else porcentajes_sumados),2)}%")
+    print("duermo 30 minutos...")
+    sleep(1800)
