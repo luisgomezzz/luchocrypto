@@ -31,7 +31,7 @@ while True:
     win_rate_buenos = 0
     win_rate_malos = 0
     trades = 0
-    balance = 100
+    balance = int(md.balancetotal())
     tp_multiplicador = 18
     poisiciones_abiertas = md.get_posiciones_abiertas()
     for symbol in lista:    
