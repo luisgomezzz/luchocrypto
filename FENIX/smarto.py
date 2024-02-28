@@ -33,10 +33,25 @@ while True:
     trades = 0
     balance = int(md.balancetotal())
     tp_multiplicador = 18
-    poisiciones_abiertas = md.get_posiciones_abiertas()
+
+    # posiciones abiertas    
+    posiciones_abiertas = md.get_posiciones_abiertas()
+
+    # obtiene una lista de las ordenes actuales
+    open_orders = cons.client.futures_get_open_orders() 
+    lista =[]
+    for dato in open_orders:    
+        if dato['symbol'] not in lista:
+            lista.append(dato['symbol'])
+
+    # cierra las ordenes que no estén en trades abiertos
+    for i in lista:
+        if i not in posiciones_abiertas:
+            md.closeallopenorders (i)
+
     for symbol in lista:    
         try:
-            if symbol not in poisiciones_abiertas:
+            if symbol not in posiciones_abiertas:
                 crear_orden = False
                 data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
                 resultado = md.backtesting_smart(data, plot_flag=imprimo, symbol=symbol)
@@ -76,7 +91,7 @@ while True:
                 ### creacion de ordenes
                 #crear_orden=False
                 if crear_orden==True:
-                    md.closeallopenorders (symbol)
+                    
                     cons.client.futures_create_order(symbol=symbol,
                         side=side,
                         type='LIMIT',
