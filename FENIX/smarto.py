@@ -39,13 +39,13 @@ while True:
 
     # obtiene una lista de las ordenes actuales
     open_orders = cons.client.futures_get_open_orders() 
-    lista =[]
+    lista_ordenes_acutales =[]
     for dato in open_orders:    
-        if dato['symbol'] not in lista:
-            lista.append(dato['symbol'])
+        if dato['symbol'] not in lista_ordenes_acutales:
+            lista_ordenes_acutales.append(dato['symbol'])
 
     # cierra las ordenes que no estén en trades abiertos
-    for i in lista:
+    for i in lista_ordenes_acutales:
         if i not in posiciones_abiertas:
             md.closeallopenorders (i)
 
