@@ -89,9 +89,7 @@ while True:
                         tamanio = md.truncate((size/precio),md.get_quantityprecision(symbol))
                         side = 'SELL'
                 ### creacion de ordenes
-                #crear_orden=False
-                if crear_orden==True:
-                    
+                if crear_orden==True:                    
                     cons.client.futures_create_order(symbol=symbol,
                         side=side,
                         type='LIMIT',
@@ -108,15 +106,29 @@ while True:
                         stopPrice=sl,
                         closePosition=True
                     )
-                    ## Crear la orden take profit
-                    #orden_take_profit = cons.client.futures_create_order(
-                    #    symbol=symbol,
-                    #    side=np.where(side == 'BUY','SELL','BUY'),
-                    #    type='TAKE_PROFIT_MARKET',
-                    #    quantity=tamanio,
-                    #    stopPrice=tp,
-                    #    closePosition=True
-                    #)
+            else:
+                # crea TP para las órdenes abiertas si no lo poseen
+                tps_creados = 0
+                open_limits = cons.client.futures_get_open_orders(symbol=symbol)     
+                for orden in open_limits:
+                    if orden['type'] == 'TAKE_PROFIT_MARKET':
+                        tps_creados = tps_creados + 1
+                if tps_creados == 0:
+                    lado = posiciones_abiertas[symbol]
+                    data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
+                    if lado == 'BUY':
+                        tp = data['Close'].rolling(40).max().iloc[-1]
+                    else:
+                        tp = data['Close'].rolling(40).min().iloc[-1]
+                    print(f"creo tp para {symbol}")
+                    orden_take_profit = cons.client.futures_create_order(
+                                                                        symbol=symbol,
+                                                                        side=np.where(lado == 'BUY','SELL','BUY'),
+                                                                        type='TAKE_PROFIT_MARKET',
+                                                                        stopPrice=tp,
+                                                                        closePosition=True
+                                                                        )
+
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

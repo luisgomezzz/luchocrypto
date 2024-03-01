@@ -242,7 +242,8 @@ def get_posiciones_abiertas():
             position = cons.exchange.fetch_balance()['info']['positions']
             for i in range(len(position)):
                 if float(position[i]['positionAmt'])!=0.0:
-                    dict_posiciones[position[i]['symbol']]=position[i]['positionSide']
+                    side = "BUY" if float(position[i]['positionAmt']) > 0 else "SELL"
+                    dict_posiciones[position[i]['symbol']]=side
             leido = True
         except:
             pass
