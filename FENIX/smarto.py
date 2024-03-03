@@ -14,7 +14,7 @@ lista_filtrada = []
 
 while True:
     print(f"Filtrando monedas...")
-    lista=md.filtradodemonedas ()
+    lista = md.filtradodemonedas ()
     #lista = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'LINKUSDT', 'BNBUSDT', 'SOLUSDT', 'ARBUSDT', 'SUIUSDT', 'ORDIUSDT', '1000SATSUSDT', 'MANTAUSDT', 'ALTUSDT', 'JUPUSDT']
     #lista = ['XRPUSDT']
 
@@ -49,11 +49,17 @@ while True:
         if i not in posiciones_abiertas:
             md.closeallopenorders (i)
 
+    # si hay una posición abierta y no está en la lista de monedas filtradas porque ya no comple las condiciones 
+    # entonces la agrego ya que debo crear el tp.
+    for i in posiciones_abiertas.keys():
+        if i not in lista:
+            lista.append(i)
+
     for symbol in lista:    
         try:
+            data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
             if symbol not in posiciones_abiertas:
-                crear_orden = False
-                data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
+                crear_orden = False                
                 resultado = md.backtesting_smart(data, plot_flag=imprimo, symbol=symbol)
                 if resultado['Win Rate [%]'] >= 50:
                     lista_filtrada.append(symbol)
@@ -115,7 +121,6 @@ while True:
                         tps_creados = tps_creados + 1
                 if tps_creados == 0:
                     lado = posiciones_abiertas[symbol]
-                    data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
                     if lado == 'BUY':
                         tp = data['Close'].rolling(40).max().iloc[-1]
                     else:
@@ -128,7 +133,6 @@ while True:
                                                                         stopPrice=tp,
                                                                         closePosition=True
                                                                         )
-
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
