@@ -33,7 +33,7 @@ while True:
     trades = 0
     balance = int(md.balancetotal())
     tp_multiplicador = 18
-
+    lejania = 12
     # posiciones abiertas    
     posiciones_abiertas = md.get_posiciones_abiertas()
 
@@ -74,7 +74,7 @@ while True:
                 ## para smart        
                 if (### LONG
                     data.trend.iloc[-2]=='Alcista' and
-                    data.Close.iloc[-1] < (data.decisional_alcista_high.iloc[-2] + (data.atr.iloc[-1]*6))):
+                    data.Close.iloc[-1] < (data.decisional_alcista_high.iloc[-2] + (data.atr.iloc[-1]*lejania))):
                     print(f"posible entrada long symbol: {symbol}")   
                     crear_orden=True
                     size = balance * data.porcentajeentrada_alcista.iloc[-2]/100
@@ -85,7 +85,7 @@ while True:
                     side = 'BUY'
                 elif (### SHORT
                         data.trend.iloc[-2]=='Bajista' and
-                        data.Close.iloc[-1] > (data.decisional_bajista_low.iloc[-2] - (data.atr.iloc[-1]*6))):
+                        data.Close.iloc[-1] > (data.decisional_bajista_low.iloc[-2] - (data.atr.iloc[-1]*lejania))):
                         print(f"posible entrada short symbol: {symbol}")
                         crear_orden=True
                         size = balance * data.porcentajeentrada_bajista.iloc[-2]/100
@@ -141,5 +141,5 @@ while True:
     for symbol in lista_filtrada:
         md.printandlog(cons.nombrelog,symbol,pal=1)
     print(f"Timeframe {timeframe} - porcentajes_sumados {md.truncate(porcentajes_sumados,2)} - trades {trades} - win_rate_buenos {win_rate_buenos} - win_rate_malos {win_rate_malos} - Ganancia por trade: {md.truncate((porcentajes_sumados/trades if trades !=0 else porcentajes_sumados),2)}%")
-    print("duermo 30 minutos...")
-    sleep(1800)
+    print("duermo 15 minutos...")
+    sleep(900)
