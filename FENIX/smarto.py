@@ -3,20 +3,15 @@ import numpy as np
 import os
 import sys
 import constantes as cons
-import warnings
 from time import sleep
 import threading
 
-def warn(*args, **kwargs):
-    pass
-warnings.warn = warn
-np.seterr(divide='ignore')
-
-def filtradodemonedas ():
+def variacion_btc ():
     import warnings
     sys.path.insert(0, 'C:/LUCHO/personal/repopersonal/luchocrypto/FENIX')
     import modulos as md  
     warnings.filterwarnings("ignore")
+    raise_variacion = 1.5
     try:
         symbol='BTCUSDT'
         timeframe = '1m'
@@ -30,31 +25,30 @@ def filtradodemonedas ():
             variacion = md.truncate(((preciomayor/preciomenor)-1)*100,2)
         else:    
             variacion = md.truncate(-((preciomenor/preciomayor)-1)*-100,2)
-        if abs(variacion)>=1.5:
-            print("\nALTA VARIACION DE BTC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+        if abs(variacion) >= raise_variacion:
             anuncio=True
         else:
             anuncio=False
-        sys.stdout.write("\rVariación BTC:"+str(variacion)+"%")
-        sys.stdout.flush()              
         global anuncioaltavariacionbtc
-        anuncioaltavariacionbtc = anuncio            
+        anuncioaltavariacionbtc = anuncio
+        global variacionbtc            
+        variacionbtc = variacion
     except Exception as ex:
         pass        
     except KeyboardInterrupt as ky:
         print("\nSalida solicitada. ")
         sys.exit() 
 
-def loopfiltradodemonedas ():
+def loopvariacion_btc ():
     while True:
-        filtradodemonedas ()
+        variacion_btc ()
 
 def main() -> None:    
     lista_filtrada = []
-    anuncioaltavariacionbtc = False  # va a ser global
-
-        #lanza filtrado de monedas paralelo
-    hilofiltramoneda = threading.Thread(target=loopfiltradodemonedas)
+    global anuncioaltavariacionbtc
+    global variacionbtc
+    #lanza filtrado de monedas paralelo
+    hilofiltramoneda = threading.Thread(target=loopvariacion_btc)
     hilofiltramoneda.daemon = True
     hilofiltramoneda.start()      
 
@@ -62,12 +56,6 @@ def main() -> None:
         print(f"Filtrando monedas...")
         lista = md.filtradodemonedas ()
         timeframe = '1h'
-        if len(lista) > 1:
-            imprimo = False
-            debug = False
-        else:
-            imprimo = True
-            debug = True
         print(lista)
         porcentajes_sumados = 0
         win_rate_buenos = 0
@@ -76,6 +64,7 @@ def main() -> None:
         balance = int(md.balancetotal())
         tp_multiplicador = 18
         lejania = 6
+
         # posiciones abiertas    
         posiciones_abiertas = md.get_posiciones_abiertas()
 
@@ -102,7 +91,7 @@ def main() -> None:
                 data = md.estrategia_smart(symbol, debug = False, refinado = False, fuente = 0, timeframe = timeframe, largo = 1)
                 if symbol not in posiciones_abiertas:
                     crear_orden = False                
-                    resultado = md.backtesting_smart(data, plot_flag=imprimo, symbol=symbol)
+                    resultado = md.backtesting_smart(data, plot_flag=False, symbol=symbol)
                     if resultado['Win Rate [%]'] >= 50:
                         lista_filtrada.append(symbol)
                     print(f"{symbol} - Return [%]: {md.truncate(resultado['Return [%]'],2)}% - # Trades: {resultado['# Trades']} - Profit Factor: {resultado['Profit Factor']} - Win Rate [%]: {resultado['Win Rate [%]']}")
@@ -185,13 +174,36 @@ def main() -> None:
         print(f"Timeframe {timeframe} - porcentajes_sumados {md.truncate(porcentajes_sumados,2)} - trades {trades} - win_rate_buenos {win_rate_buenos} - win_rate_malos {win_rate_malos} - Ganancia por trade: {md.truncate((porcentajes_sumados/trades if trades !=0 else porcentajes_sumados),2)}%")
         print("duermo 30 minutos...")
         cuentasegundos=1800
+        todocerrado=False
         while cuentasegundos > 0:
             sleep(1)
             cuentasegundos=cuentasegundos-1
-            if anuncioaltavariacionbtc == True:
+            if anuncioaltavariacionbtc == True: # se queda dando vueltas hasta que baje la variacion de BTC
                 cuentasegundos=1800
-            sys.stdout.write("\r"+str(cuentasegundos)+" segundos - anuncioaltavariacionbtc: "+str(anuncioaltavariacionbtc))
+                if todocerrado == False:
+                    # posiciones abiertas    
+                    posiciones_abiertas = md.get_posiciones_abiertas()
+                    # obtiene una lista de las ordenes actuales
+                    open_orders = cons.client.futures_get_open_orders() 
+                    lista_ordenes_acutales =[]
+                    for dato in open_orders:    
+                        if dato['symbol'] not in lista_ordenes_acutales:
+                            lista_ordenes_acutales.append(dato['symbol'])
+                    # cierra las ordenes que no estén en trades abiertos
+                    for i in lista_ordenes_acutales:
+                        if i not in posiciones_abiertas:
+                            md.closeallopenorders (i)
+                    # cierro posiciones que estan abiertas y en contra de la tendencia
+                    for i in posiciones_abiertas:
+                        if (variacionbtc > 0 and posiciones_abiertas[i] == 'SELL') or (variacionbtc < 0 and posiciones_abiertas[i] == 'BUY'):
+                            md.closeposition(i,posiciones_abiertas[i])
+                            md.closeallopenorders (i)
+                    todocerrado=True
+            mensaje = f"{cuentasegundos} segundos - anuncioaltavariacionbtc: {anuncioaltavariacionbtc} - Variación BTC: {variacionbtc}%"
+            sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()  
 
 if __name__ == '__main__':
+    anuncioaltavariacionbtc = False  #global
+    variacionbtc = 0.0 #global
     main()
