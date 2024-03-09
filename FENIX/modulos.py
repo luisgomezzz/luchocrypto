@@ -399,6 +399,9 @@ def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar
     lista_filtrada = []
     for symbol in lista:
         try:  
+            mensaje = f"Filtrando monedas... {symbol}                                                  "
+            sys.stdout.write("\r"+mensaje)
+            sys.stdout.flush()              
             vol= volumeOf24h(symbol)
             cap = obtiene_capitalizacion(symbol)
             if vol >= cons.minvolumen24h and cap >= cons.mincapitalizacion:

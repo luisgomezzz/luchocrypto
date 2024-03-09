@@ -52,8 +52,7 @@ def main() -> None:
     hilofiltramoneda.daemon = True
     hilofiltramoneda.start()      
 
-    while True:
-        print(f"Filtrando monedas...")
+    while True:        
         lista = md.filtradodemonedas ()
         timeframe = '1h'
         print(lista)
@@ -199,7 +198,7 @@ def main() -> None:
                             md.closeposition(i,posiciones_abiertas[i])
                             md.closeallopenorders (i)
                     todocerrado=True
-            mensaje = f"{cuentasegundos} segundos - anuncioaltavariacionbtc: {anuncioaltavariacionbtc} - Variación BTC: {variacionbtc}%"
+            mensaje = f"{cuentasegundos} segundos - anuncioaltavariacionbtc: {anuncioaltavariacionbtc} - Variación BTC: {variacionbtc}%         "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()  
 
