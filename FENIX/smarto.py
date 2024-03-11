@@ -198,7 +198,8 @@ def main() -> None:
                             md.closeposition(i,posiciones_abiertas[i])
                             md.closeallopenorders (i)
                     todocerrado=True
-            mensaje = f"{cuentasegundos} segundos - anuncioaltavariacionbtc: {anuncioaltavariacionbtc} - Variación BTC: {variacionbtc}%         "
+                    print("Todo Cerrado por movimiento de BTC\n")
+            mensaje = f"{cuentasegundos} segundos - anuncioaltavariacionbtc: {anuncioaltavariacionbtc} - Variación BTC en 30 min: {variacionbtc}%         "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()  
 
