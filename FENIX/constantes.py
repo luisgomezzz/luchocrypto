@@ -46,7 +46,8 @@ if os.path.isfile(os.path.join(pathroot, "posiciones.json")) == False:
 
 # Crea el file de configuracion si no existe
 configuracion= {
-    "cantidad_posiciones": 2
+    "cantidad_posiciones": 5,
+    "restriccionhoraria": 1
 }
 
 if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
@@ -54,7 +55,7 @@ if os.path.isfile(os.path.join(pathroot, "configuracion.json")) == False:
         json.dump(configuracion,j, indent=4)
 
 minvolumen24h = float(100000000)
-mincapitalizacion = float(10000000)
+mincapitalizacion = float(100000000)
 
 #monedas que no quiero operar
 #BELUSDT moneda que ya ha hecho manipulaciones.

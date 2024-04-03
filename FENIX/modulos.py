@@ -7,15 +7,17 @@ import math
 from binance.exceptions import BinanceAPIException
 import json
 import ccxt as ccxt
-from requests import Session
 import numpy as np
 import pandas_ta as ta
 from backtesting import Backtest
 import talib
 from backtesting import Strategy
 from binance.enums import HistoricalKlinesType
-from numerize import numerize
+#from numerize import numerize
 import requests
+import ccxt
+import yfinance as yf
+import re
 
 salida_solicitada_flag = False
 
@@ -138,7 +140,6 @@ def crea_posicion(symbol,side,porcentajeentrada):
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass
 
-
 def lista_de_monedas ():
     lista_de_monedas = []
     mazmorra = cons.mazmorra
@@ -162,38 +163,6 @@ def volumeOf24h(par): #en usdt
     vol=0.0
     vol= cons.client.futures_ticker(symbol=par)['quoteVolume']
     return float(vol)
-
-def coingeckoinfo (par,dato='market_cap'):
-    '''
-    {'id': 'binancecoin', 'symbol': 'bnb', 'name': 'BNB', 'image': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png?1644979850', 
-    'current_price': 282.13, 'market_cap': 45966534569, 'market_cap_rank': 4, 'fully_diluted_valuation': 56304980752, 
-    'total_volume': 1748519199, 'high_24h': 291.05, 'low_24h': 272.34, 'price_change_24h': -3.749382261274775, 
-    'price_change_percentage_24h': -1.31152, 'market_cap_change_24h': -772981310.7671661, 'market_cap_change_percentage_24h': -1.65381,
-    'circulating_supply': 163276974.63, 'total_supply': 163276974.63, 'max_supply': 200000000.0, 'ath': 686.31, 
-    'ath_change_percentage': -58.97972, 'ath_date': '2021-05-10T07:24:17.097Z', 'atl': 0.0398177, 'atl_change_percentage': 706934.61939, 
-    'atl_date': '2017-10-19T00:00:00.000Z', 'roi': None, 'last_updated': '2022-11-12T14:45:04.478Z'}
-    '''
-    symbol = (par[0:par.find('USDT')]).lower()
-    url = 'https://api.coingecko.com/api/v3/coins/list' 
-    session = Session()
-    response = session.get(url)
-    info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-    id=''
-    valor=0
-    for i in range(len(info)):
-        if info[i]['symbol']==symbol:
-            id=info[i]['id']
-            break
-    if id!='':
-        urldetalle="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids="+id+"&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-        parameters = {}
-        session = Session()
-        response = session.get(urldetalle, params=parameters)
-        info = json.loads(response.text)#[simbolo]['quote']['USD'][dato]
-        valor = info[0][dato]
-    else:
-        valor = 0
-    return valor
 
 def get_bollinger_bands(df,mult = 2.0,length = 20):
     # calcular indicadores
@@ -248,7 +217,7 @@ def obtiene_historial(symbol,timeframe,limit=1000):
         except Exception as falla:
             _, _, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
+            #print(f"Error leyendo historial {symbol}. Intento otra vez. Falla {falla} \n")
             pass  
     return data
 
@@ -273,7 +242,8 @@ def get_posiciones_abiertas():
             position = cons.exchange.fetch_balance()['info']['positions']
             for i in range(len(position)):
                 if float(position[i]['positionAmt'])!=0.0:
-                    dict_posiciones[position[i]['symbol']]=position[i]['positionSide']
+                    side = "BUY" if float(position[i]['positionAmt']) > 0 else "SELL"
+                    dict_posiciones[position[i]['symbol']]=side
             leido = True
         except:
             pass
@@ -429,6 +399,9 @@ def filtradodemonedas ():    # Retorna las monedas con mejor volumen para evitar
     lista_filtrada = []
     for symbol in lista:
         try:  
+            mensaje = f"Filtrando monedas... {symbol}                                                  "
+            sys.stdout.write("\r"+mensaje)
+            sys.stdout.flush()              
             vol= volumeOf24h(symbol)
             cap = obtiene_capitalizacion(symbol)
             if vol >= cons.minvolumen24h and cap >= cons.mincapitalizacion:
@@ -492,6 +465,12 @@ def backtesting(data, plot_flag=False):
         bt.plot()
     return output
 
+def leeconfiguracion(parameter='cantidad_posiciones'):
+    with open(os.path.join(cons.pathroot, "configuracion.json"), 'r') as openfile: 
+        json_object = json.load(openfile)
+    valor = json_object[parameter]        
+    return valor 
+
 def estrategia_bb(symbol,tp_flag=True):
     timeframe = '15m'
     ventana = 7
@@ -543,22 +522,6 @@ def estrategia_bb(symbol,tp_flag=True):
     #    data['stop_loss']=0
     return data
 
-def es_martillo(vela):
-    out=0
-    cuerpo = abs(vela['Open'] - vela['Close'])
-    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
-    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= vela.atr/2
-    if condicion_largo:
-        if sombra_inferior>sombra_superior*3:
-            if sombra_inferior > 2 * cuerpo: #martillo parado
-                out = 1
-        else:
-            if sombra_superior>sombra_inferior*3:
-                if sombra_superior > 2 * cuerpo: #martillo invertido
-                    out = -1
-    return out    
-
 def estrategia_santa(symbol,tp_flag = True):
     # esta estrategia solo se utiliza a modo de prueba y backtesting ya que el programa en realidad es santa3
     porcentajeentrada = 10
@@ -572,7 +535,6 @@ def estrategia_santa(symbol,tp_flag = True):
     data['maximo'] = data['High'].rolling(ventana).max()
     data['minimo'] = data['Low'].rolling(ventana).min()
     data['n_atr'] = 50 # para el trailing stop. default 50 para que no tenga incidencia. 
-    data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
     data['signal'] = np.where(
                             (data.Close.shift(1) <= data.minimo.shift(2)) # para que solo sea reentrada
                             &data.martillo.shift(1) == 1
@@ -610,194 +572,6 @@ def estrategia_santa(symbol,tp_flag = True):
     )
     data['cierra'] = False
     return data,porcentajeentrada   
-
-def estrategia_triangulos(symbol, tp_flag = True, print_lines_flag = False):
-    from scipy.stats import linregress
-    #por defecto está habilitado el tp pero puede sacarse a mano durante el trade si el precio va a favor dejando al trailing stop como profit
-    np.seterr(divide='ignore', invalid='ignore')
-    timeframe = '1h'
-    def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
-        if l-n1 < 0 or l+n2 >= len(df1):
-            return 0    
-        pividlow=1
-        pividhigh=1
-        for i in range(l-n1, l+n2+1):
-            if(df1.Low[l]>df1.Low[i]):
-                pividlow=0
-            if(df1.High[l]<df1.High[i]):
-                pividhigh=0
-        if pividlow and pividhigh:
-            return 3
-        elif pividlow:
-            return 1
-        elif pividhigh:
-            return 2
-        else:
-            return 0
-    def pointpos(x):
-        if x['pivot']==1:
-            return x['Low']-1e-3
-        elif x['pivot']==2:
-            return x['High']+1e-3
-        else:
-            return np.nan
-    df = obtiene_historial(symbol,timeframe)
-    df=df.copy()
-    #Check if NA values are in data
-    df=df[df['Volume']!=0]
-    df.reset_index(drop=True, inplace=True)
-    df.isna().sum()
-    df['n_atr'] = 1.5 
-    df["pivot"] = df.apply(lambda x: pivotid(df, x.name,3,3), axis=1)
-    df["pointpos"] = df.apply(lambda row: pointpos(row), axis=1)
-    df["signal"]=0
-    df["upper_line"]=0
-    df["lower_line"]=0
-    ### detecta la vela donde hay un triangulo a partir de la posicion que se elija en el rango
-    backcandles= 20
-    for candleid in range(0, len(df)):
-        maxim = np.array([])
-        minim = np.array([])
-        xxmin = np.array([])
-        xxmax = np.array([])
-        for i in range(candleid-backcandles, candleid+1):
-            if df.iloc[i].pivot == 1:
-                minim = np.append(minim, df.iloc[i].Low)
-                xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
-            if df.iloc[i].pivot == 2:
-                maxim = np.append(maxim, df.iloc[i].High)
-                xxmax = np.append(xxmax, i) # df.iloc[i].name        
-        if (xxmax.size <3 and xxmin.size <3) or xxmax.size==0 or xxmin.size==0:
-            continue        
-        slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
-        slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)            
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and abs(slmin)<=0.0001 and slmax<-0.001:
-            df.loc[[candleid],'signal'] = 2 # desc
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.001 and abs(slmax)<=0.0001:
-            df.loc[[candleid],'signal'] = 3 # asc
-        if abs(rmax)>=0.7 and abs(rmin)>=0.7 and slmin>=0.0001 and slmax<=-0.0001:
-            df.loc[[candleid],'signal'] = 4 # comun
-        if df.iloc[candleid].signal in (2,3,4):
-            # Ecuación de la línea superior
-            xssup = xxmax
-            yssup = slmax*xxmax + intercmax
-            pendiente = (yssup[1]-yssup[0])/(xssup[1]-xssup[0])
-            intersecciony = yssup[0]-pendiente*xssup[0]
-            df.loc[[candleid],"upper_line"]=pendiente*candleid+intersecciony      
-            # Ecuación de la línea inferior
-            xsinf = xxmin
-            ysinf = slmin*xxmin + intercmin
-            pendiente = (ysinf[1]-ysinf[0])/(xsinf[1]-xsinf[0])
-            intersecciony = ysinf[0]-pendiente*xsinf[0]
-            df.loc[[candleid],"lower_line"]=pendiente*candleid+intersecciony
-            # TENDENCIA
-            if df.iloc[candleid].ema20 > df.iloc[candleid].ema50 > df.iloc[candleid].ema200:
-                tendencia = 1
-            else: 
-                if df.iloc[candleid].ema20 < df.iloc[candleid].ema50 < df.iloc[candleid].ema200:
-                    tendencia = -1
-                else:
-                    tendencia = 0
-            #   señales
-            if  (       df.iloc[candleid-1].Close > df.iloc[candleid-1].lower_line 
-                    and df.iloc[candleid-1].Close > df.iloc[candleid-1].upper_line 
-                    and df.iloc[candleid-1].lower_line!=0
-                    and df.iloc[candleid-1].upper_line!=0
-                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].lower_line 
-                    #and df.iloc[candleid-2].Close > df.iloc[candleid-2].upper_line 
-                    #and df.iloc[candleid-2].lower_line!=0
-                    #and df.iloc[candleid-2].upper_line!=0
-                    #and tendencia == 1
-                ):
-                df.loc[[candleid],"signal"] = 1
-            elif (  df.iloc[candleid-1].Close < df.iloc[candleid-1].lower_line 
-                and df.iloc[candleid-1].Close < df.iloc[candleid-1].upper_line 
-                and df.iloc[candleid-1].lower_line!=0
-                and df.iloc[candleid-1].upper_line!=0
-                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].lower_line 
-                #and df.iloc[candleid-2].Close < df.iloc[candleid-2].upper_line 
-                #and df.iloc[candleid-2].lower_line!=0
-                #and df.iloc[candleid-2].upper_line!=0
-                #and tendencia == -1
-                ):
-                df.loc[[candleid],"signal"] = -1
-            
-            # imprimo lugares donde se da la condición
-            if print_lines_flag and df.iloc[candleid].signal in (1,-1):
-                print(f"Candleid-1: {candleid-1} - linea superior {df.iloc[candleid-1].upper_line}")        
-                print(f"Candleid-1: {candleid-1} - linea inferior {df.iloc[candleid-1].lower_line}")
-                print(f"Precio Close-1: {df.iloc[candleid-1].Close}")
-    df['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            df.signal == 1,
-                            df.Close + 5*df.atr,
-                            np.where(
-                                    df.signal == -1,
-                                    df.Close - 5*df.atr,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    df['stop_loss'] = np.where(
-        df.signal == 1,
-        df.Close - 1.5*df.atr,
-        np.where(
-            df.signal == -1,
-            df.Close + 1.5*df.atr,
-            0
-        )
-    ) 
-    df['cierra'] = False
-    df["timestamp"] = df["Open Time"]   
-    df.set_index('timestamp', inplace=True)
-    return df        
-
-def dibuja_patrones_triangulos (df,candleid):
-    from scipy.stats import linregress
-    import plotly.graph_objects as go
-    #dibuja
-    df.reset_index(drop=True, inplace=True)    
-    dfpl = df[0:1000]
-    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
-                    open=dfpl['Open'],
-                    high=dfpl['High'],
-                    low=dfpl['Low'],
-                    close=dfpl['Close'])])
-    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
-                    marker=dict(size=5, color="MediumPurple"),
-                    name="pivot")
-    backcandles = 20
-    maxim = np.array([])
-    minim = np.array([])
-    xxmin = np.array([])
-    xxmax = np.array([])
-    for i in range(candleid-backcandles, candleid+1):
-        if df.iloc[i].pivot == 1:
-            minim = np.append(minim, df.iloc[i].Low)
-            xxmin = np.append(xxmin, i) #could be i instead df.iloc[i].name
-        if df.iloc[i].pivot == 2:
-            maxim = np.append(maxim, df.iloc[i].High)
-            xxmax = np.append(xxmax, i) # df.iloc[i].name            
-    slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
-    slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)
-    print(rmin, rmax)
-    dfpl = df[candleid-backcandles-50:candleid+backcandles+50]
-    fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
-                    open=dfpl['Open'],
-                    high=dfpl['High'],
-                    low=dfpl['Low'],
-                    close=dfpl['Close'])])
-    fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
-                    marker=dict(size=4, color="MediumPurple"),
-                    name="pivot")
-    xxmin = np.append(xxmin, xxmin[-1]+15)
-    xxmax = np.append(xxmax, xxmax[-1]+15)
-    fig.add_trace(go.Scatter(x=xxmin, y=slmin*xxmin + intercmin, mode='lines', name='min slope'))
-    fig.add_trace(go.Scatter(x=xxmax, y=slmax*xxmax + intercmax, mode='lines', name='max slope'))
-    fig.update_layout(xaxis_rangeslider_visible=False)
-    fig.show()
-    print(f"linea superior. X: {xxmax} - y: {slmax*xxmax + intercmax}")
-    print(f"linea inferior. X: {xxmin} - y: {slmin*xxmin + intercmin}")
 
 def backtestingsanta(data, plot_flag=False, debug = False):
     balance = 1000    
@@ -861,156 +635,6 @@ def closeposition(symbol,side):
     if quantity!=0.0:
         cons.client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
 
-def estrategia_haz(symbol,tp_flag = True, debug = False, alerta = True):
-    # Tener en cuenta que la ultima vela se trata de una manera distinta ya que el backtesting trabaja con el Close de cada vela
-    # mientras que el programa verá un close distinto en cada instante a vela no cerrada.
-    try:                
-        np.seterr(divide='ignore', invalid='ignore')
-        # temporalidad de 1h para encontrar martillos y soportes/resistencias
-        data1h = obtiene_historial(symbol,'1h')        
-        data1h['martillo'] = data1h.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido
-        data1h['disparo'] = np.where(data1h.martillo==1,data1h.High,np.where(data1h.martillo==-1,data1h.Low,0))
-        data1h['escape']  = np.where(data1h.martillo==1,data1h.Low, np.where(data1h.martillo==-1,data1h.High,0))
-        data1h['date1h'] = data1h['Open Time']
-        data1h['variacion_porc'] = ((data1h.Close/data1h.Close.shift(24))-1)*100
-        data1h = data1h[:-1]        
-        # Temporalidad de 5m para tradear
-        data5m = obtiene_historial(symbol,'5m')
-        resample = data1h.reindex(data5m.index, method='pad')
-        data5m = data5m.join(resample[['martillo','disparo','escape','date1h','variacion_porc']])
-        data5m['n_atr'] = 50
-        data5m['signal'] = 0
-        data5m['previous_martillo'] = 0
-        previous_disparo = None  # Almacenar el valor del disparo de la fila anterior
-        previous_escape = None  # Almacenar el valor del ESCAPE de la fila anterior
-        previous_martillo = None
-        for index, row in data5m.iterrows():
-            # si no es unb martillo
-            if row['martillo'] == 0:
-                if previous_disparo is not None:
-                    # si Close está dentro de los valores claves mantengo las ultimas claves
-                    if  (previous_escape <= row['Close'] <= previous_disparo) or (previous_escape >= row['Close'] >= previous_disparo):
-                        data5m.at[index, 'disparo'] = previous_disparo
-                        data5m.at[index, 'escape'] = previous_escape
-                        data5m.at[index, 'previous_martillo'] = previous_martillo
-                    # Si cruzó algún valor clave
-                    else:
-                        # Limpio valores claves guardados si hubo un trade o simplemente salió por el escape.
-                        data5m.at[index, 'disparo'] = previous_disparo
-                        data5m.at[index, 'escape'] = previous_escape
-                        data5m.at[index, 'previous_martillo'] = previous_martillo
-                        previous_disparo = 0
-                        previous_escape = 0
-                        previous_martillo = 0
-            # si es un martillo guardo los valores claves
-            else: 
-                previous_disparo = row['disparo']
-                previous_escape = row['escape']
-                previous_martillo = row['martillo']        
-        data5m['signal'] = np.where((data5m.previous_martillo==1) & (data5m.Close > data5m.disparo) & (data5m.variacion_porc >= 5),
-                                        1,
-                                    np.where((data5m.previous_martillo==-1) & (data5m.Close < data5m.disparo) & (data5m.variacion_porc <= -5),
-                                        -1,  
-                                        0
-                                        )
-                            )
-        # En el ultimo registro se define como sell o long si el anteultimo terminó con signal ya que se trabaja a vela cerrada.
-        data5m.loc[data5m.index[-1], 'signal'] = np.where(data5m.signal.iloc[-2] == 1,
-                                        1,
-                                        np.where(data5m.signal.iloc[-2] == -1,
-                                            -1,  
-                                            0
-                                            )
-                                        )
-        data5m['take_profit'] = np.where(tp_flag,
-                                                np.where(data5m.signal == 1,
-                                                    data5m.Close+data5m.atr*3,
-                                                np.where(data5m.signal == -1,
-                                                    data5m.Close-data5m.atr*3,  
-                                                    0
-                                                    )
-                                                ),
-                                        np.NaN
-                                        )
-        data5m['stop_loss'] =   np.where(data5m.signal == 1,
-                                    data5m.Close-data5m.atr*1,
-                                np.where(data5m.signal == -1,
-                                    data5m.Close+data5m.atr*1,
-                                    0
-                                    )
-                                )    
-        data5m['cierra'] = False
-        # Reemplazar valores no finitos (NA e inf) con 0
-        data5m['porcentajeentrada'] = np.nan_to_num((data5m.Close/data5m.atr), nan=0, posinf=0, neginf=0)
-        # Aplicar np.floor y convertir a enteros
-        data5m['porcentajeentrada'] = np.floor(data5m['porcentajeentrada']).astype(int)
-        
-        ####################### alertas y valores
-        if alerta:
-            if data5m.disparo.iloc[-2] != 0 and data5m.martillo.iloc[-1] == 0: #significa que estamos en la ventana de posible atrape y no es un martillo actual
-                print(f"\n{symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {previous_martillo}")
-        if debug:
-            df_str = data5m[['Open Time','martillo','disparo','escape','signal','take_profit','stop_loss','variacion_porc','porcentajeentrada']].to_string(index=False)
-            print(df_str)
-        if data5m.signal.iloc[-1] !=0:
-            print(f"\nCRUZANDO!!! {symbol} - CHG 24h: {round(data5m.variacion_porc.iloc[-2],2)}%  - lineas: {data5m.disparo.iloc[-2]} y {data5m.escape.iloc[-2]} - martillo: {data5m.previous_martillo.iloc[-2]} - Porc de entrada: {data5m.porcentajeentrada.iloc[-2]}")
-        return data5m
-    except Exception as falla:
-        _, _, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
-        pass
-
-def estrategia_oro(symbol,tp_flag = True):
-    porcentajeentrada = 0.01
-    archivo_csv = 'historico.csv'
-    column_names = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Change(Pips)', 'Change(%)', 'Nada']
-    data = pd.read_csv(archivo_csv, header=None, names=column_names)
-    data['Open Time']=pd.to_datetime(data['Open Time'])
-    data['timestamp']=data['Open Time']
-    data.set_index('timestamp', inplace=True)
-    data.drop(['Change(Pips)', 'Change(%)', 'Nada'], axis=1, inplace=True)
-    data.sort_values(by='timestamp', ascending = True, inplace = True)
-    data['Volume'] = 1
-    data['atr'] = ta.atr(data.High, data.Low, data.Close)
-    data['n_atr'] = 50
-    data['time_hour'] = pd.to_datetime(data['Open Time']).dt.hour
-    numeric_columns = ['Open', 'High', 'Low', 'Close','time_hour','Volume']
-    data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
-    data['signal'] = np.where(
-        (data.time_hour.shift(1) == 14)
-        &(data.Close.shift(3) > data.Close.shift(1)) 
-        ,1,
-        np.where(
-            (data.time_hour.shift(1) == 14)
-            &(data.Close.shift(3) < data.Close.shift(1)) 
-            ,-1,
-            0
-        )
-    )  
-    data['take_profit'] =   np.where(
-                            tp_flag,np.where(
-                            data.signal == 1,
-                            data.Close*1.01,
-                            np.where(
-                                    data.signal == -1,
-                                    data.Close*0.999,  
-                                    0
-                                    )
-                            ),np.NaN
-                                    )
-    data['stop_loss'] = np.where(
-        data.signal == 1,
-        data.Close*0.995,    
-        np.where(
-            data.signal == -1,
-            data.Close*1.005,
-            0
-        )
-    )
-    data['cierra'] = False
-    return data,porcentajeentrada    
-
 def myfxbook_file_historico():
     # Función que toma datos bajados desde https://www.myfxbook.com/forex-market/currencies/ a un archivo "historico.csv"
     archivo_csv = 'historico.csv'
@@ -1030,6 +654,28 @@ def myfxbook_file_historico():
     data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
     return data
 
+def obtiene_historial_yfinance(symbol, timeframe= "1h"):
+    try:
+        data = yf.download(symbol,period="1mo",interval=timeframe,progress=False)
+        data['Open Time'] = pd.to_datetime(data.index)
+        data['timestamp']=pd.to_datetime(data.index)
+        data.set_index('timestamp', inplace=True)
+        data.drop(['Adj Close'], axis=1, inplace=True)
+        numeric_columns = ['Open', 'High', 'Low', 'Close','Volume']
+        data['ema20'] = ta.ema(data.Close, length=20)
+        data['ema50'] = ta.ema(data.Close, length=50)
+        data['ema200'] = ta.ema(data.Close, length=200)
+        data['atr'] = ta.atr(data.High, data.Low, data.Close)   
+        data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+        data = data.iloc[:-1]
+        data = data.tail(1000) #para limitar y no sea enorme
+        return data
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
+
 def backtesting_smart(data, plot_flag=False, symbol='NADA'):
     balance = 100000 # se coloca 100.000 ya que con valores menores no acepta tradear con BTC o ETH
     def indicador(df_campo):
@@ -1039,9 +685,17 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
     class Fenix(Strategy):
         def init(self):
             super().init()
+            self.decisional_alcista_high_guardado = 0.0
+            self.decisional_bajista_low_guardado = 0.0
+            self.tp_multiplicador = 18
+            ########################################### INDICADORES #####################################################
             #### varios
-            self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")            
-            #self.ema200 = self.I(indicador,self.data.ema200,name="ema200")
+            #self.posicion = self.I(indicador,self.data.posicion,name="posicion")
+            #self.buy_side_liquidity = self.I(indicador,self.data.buy_side_liquidity,name="buy_side_liquidity")
+            #self.sell_side_liquidity = self.I(indicador,self.data.sell_side_liquidity,name="sell_side_liquidity")            
+            self.cruce_bos_killzone = self.I(indicador,self.data.cruce_bos_killzone,name="cruce_bos_killzone")
+            #self.tendencia = self.I(indicador,self.data.tendencia,name="tendencia")
+            self.sentido = self.I(indicador,self.data.sentido,name="sentido")
             #####   PIVOTS ok!!!
             #self.pivot_high = self.I(indicador,self.data.pivot_high)
             #self.pivot_low = self.I(indicador,self.data.pivot_low)
@@ -1058,8 +712,8 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
             #self.alcista_extremo_high = self.I(indicador,self.data.alcista_extremo_high,name="alcista_extremo_high", overlay=True, color="GREEN", scatter=False)
             #self.alcista_extremo_low = self.I(indicador,self.data.alcista_extremo_low,name="alcista_extremo_low", overlay=True, color="GREEN", scatter=False)
             #####   BOSES ok!!!
-            self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
-            self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
+            #self.bos_bajista = self.I(indicador,self.data.bos_bajista,name="BOS bajista", overlay=True, color="RED", scatter=True)
+            #self.bos_alcista = self.I(indicador,self.data.bos_alcista,name="BOS alcista", overlay=True, color="GREEN", scatter=True)
             #####   IMBALANCES ok!!!
             #self.imba_bajista_low = self.I(indicador,self.data.imba_bajista_low,name="imba_bajista_low", overlay=True, color="orange", scatter=True)
             #self.imba_bajista_high = self.I(indicador,self.data.imba_bajista_high,name="imba_bajista_high", overlay=True, color="orange", scatter=True)
@@ -1068,33 +722,81 @@ def backtesting_smart(data, plot_flag=False, symbol='NADA'):
         def next(self):       
             super().next()
             if self.position:
-                if self.data.cierra[-1]==True:
-                    self.position.close()                    
+                self.decisional_alcista_high_guardado = 0.0
+                self.decisional_bajista_low_guardado = 0.0
             else:   
-                if np.isnan(data.take_profit[-1]):
-                    tp_value = None
+                # ALCISTA
+                if (self.data.Close[-1] > self.data.decisional_alcista_high[-1] 
+                    and self.data.trend == 'Alcista'
+                    and self.data.decisional_alcista_high[-1] != self.decisional_alcista_high_guardado
+                    and self.data.decisional_alcista[-1] != True
+                    and self.data.decisional_alcista[-2] != True
+                    and self.data.decisional_alcista[-3] != True
+                    and self.data.decisional_alcista[-4] != True
+                    ):
+                        try:
+                            # para evaluar sin usar el apalancamiento
+                            if self.data.porcentajeentrada_alcista[-1]>=100:
+                                size = 0.99
+                            else:
+                                size = self.data.porcentajeentrada_alcista[-1]/100
+                            for order in self.orders:
+                                order.cancel()
+                            self.buy(limit = self.data.decisional_alcista_high[-1]+self.data.offset[-1],
+                                     size = size,
+                                     sl = self.data.decisional_alcista_low[-1] - self.data.offset[-1],
+                                     tp = self.data.decisional_alcista_high[-1] + self.data.atr[-1]*self.tp_multiplicador
+                                     )
+                            self.decisional_alcista_high_guardado = self.data.decisional_alcista_high[-1]           
+                        except Exception as falla:
+                            _, _, exc_tb = sys.exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            print("\n*******Error: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"*****\n")
+                            pass
+                # BAJISTA
                 else:
-                    tp_value = self.data.take_profit[-1]
-                porcentaje = 0
-                # para evaluar sin usar el apalancamiento
-                if self.data.porcentajeentrada[-1]>=100:
-                    porcentaje = 0.99
-                else:
-                    porcentaje = self.data.porcentajeentrada[-1]/100
-                size=porcentaje # balance*self.data.porcentajeentrada[-1]/100
-                if self.data.signal[-1]==1:
-                    self.buy(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
-                elif self.data.signal[-1]==-1:
-                    self.sell(size=size,sl=self.data.stop_loss[-1],tp=tp_value)
-    bt = Backtest(data, Fenix, cash=balance)
-    output = bt.run()
-    if plot_flag:
-        bt.plot(filename="graficos/"+symbol)
-    return output
+                    if (self.data.Close[-1] < self.data.decisional_bajista_low[-1] 
+                        and self.data.trend == 'Bajista'
+                        and self.data.decisional_bajista_low[-1] != self.decisional_bajista_low_guardado
+                        and self.data.decisional_bajista[-1] != True
+                        and self.data.decisional_bajista[-2] != True
+                        and self.data.decisional_bajista[-3] != True
+                        and self.data.decisional_bajista[-4] != True
+                        ):
+                            try:
+                                # para evaluar sin usar el apalancamiento
+                                if self.data.porcentajeentrada_bajista[-1]>=100:
+                                    size = 0.99
+                                else:
+                                    size = self.data.porcentajeentrada_bajista[-1]/100
+                                for order in self.orders:
+                                    order.cancel()
+                                self.sell(limit = self.data.decisional_bajista_low[-1] ,
+                                        size = size
+                                        ,sl = self.data.decisional_bajista_high[-1] + self.data.offset[-1]
+                                        ,tp = self.data.decisional_bajista_low[-1] - self.data.atr[-1]*self.tp_multiplicador
+                                        )
+                                self.decisional_bajista_low_guardado = self.data.decisional_bajista_low[-1]           
+                            except Exception as falla:
+                                _, _, exc_tb = sys.exc_info()
+                                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                                print("\n*******Error: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+"*****\n")
+                                pass
+    try:
+        bt = Backtest(data, Fenix, cash=balance)
+        output = bt.run()
+        if plot_flag:
+            bt.plot(filename="graficos/"+symbol)
+        return output
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        pass
 
 ####################################################################################
 
-def smart_money(symbol,refinado,file_source,timeframe):
+def smart_money(symbol,refinado,fuente,timeframe,largo):
     try:
         # Devuelve un dataframe con timeframe de 15m con BOSes, imbalances y orders blocks.
         #
@@ -1102,23 +804,40 @@ def smart_money(symbol,refinado,file_source,timeframe):
         # bos hasta que no se produce el quiebre. Ocurre lo mismo con todas las señales que dependan de los boses.
         # Los imbalances no mitigados sí se pueden ver online.
         #  
+        # largo es el parámetro de longitud para los puntos pivote High y Low
+        #
+        # FUENTE
+        # 0 Binance
+        # 1 File
+        # 2 yfinance
         timeframe_refinado = '15m'
 
-        if file_source: 
+        if fuente == 1: 
             # Si la data se toma de un file
             df = myfxbook_file_historico()
             df_imbalance = myfxbook_file_historico()
             refinado = False
         else:
-            # Si la data se saca de binance
-            df = obtiene_historial(symbol, timeframe)
-            df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances        
+            if fuente == 0:
+                # La data se saca de binance
+                df = obtiene_historial(symbol, timeframe)
+                df_imbalance = obtiene_historial(symbol,timeframe) #historial para imbalances  
+            else:
+                # La data se saca de yahoo
+                if fuente == 2:
+                    df = obtiene_historial_yfinance(symbol, timeframe)
+                    df_imbalance = obtiene_historial_yfinance(symbol, timeframe)
 
         if refinado:
-            df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
-            parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
+            if fuente == 0:
+                df_refinar = obtiene_historial(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+                parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
+            else:
+                if fuente ==2:
+                    df_refinar = obtiene_historial_yfinance(symbol,timeframe_refinado) #historial de temporalidad inferior para refinar
+                    parametros_refinado = {"start":15,"stop":75,"step":15} # 5m = {"start":5,"stop":20,"step":5} --- 1m = {"start":1,"stop":6,"step":1} --- 15m {"start":15,"stop":75,"step":15}
 
-        largo = 1 # Parámetro de longitud para los puntos pivote High y Low
+
         df['pivot_high'] = np.NaN
         df['pivot_low'] = np.NaN
         df['row_number'] = (range(len(df)))
@@ -1148,7 +867,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                 df.at[i, 'pivot_high'] = df['pivot_high'].iloc[i - 1]   
         
         ###################################################################################### IMBALANCES
-        df_imbalance['row_number'] = (range(len(df_imbalance)))
+        df_imbalance = df_imbalance.copy()
+        df_imbalance['row_number'] = range(len(df_imbalance))
         df_imbalance.set_index('row_number', inplace=True)
         df_imbalance['imba_bajista_high'] = np.where(
                                         ((df_imbalance.Low.shift(1)) >= (df_imbalance.High.shift(-1)+df_imbalance.atr))
@@ -1247,7 +967,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
             if df['Close'].iloc[i] > techo_del_minimo:
                 pico_minimo = float('inf')
                 techo_del_minimo = float('inf')               
-                ##relleno
+        ## RELLENO
         for i in range(0, len(df)-1):
             if np.isnan(df['techo_del_minimo'].iloc[i]):
                 df.at[i, 'techo_del_minimo'] = df['techo_del_minimo'].iloc[i - 1]
@@ -1350,7 +1070,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ####################################################################################################### DECISIONALES
         df['color'] = np.where(df.Close > df.Open,'verde','rojo')
         df['tamanio_cuerpo'] = np.where(df.color == 'verde',df.Close-df.Open,df.Open-df.Close)        
-        multiplicador_imbalance = 1
+        multiplicador_imbalance = 0.75
         ## BAJISTA
         decisional_bajista_condicion =  (
                                         (df.color == 'verde')
@@ -1362,6 +1082,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.Low.shift(-2)) >= (df.High.shift(-4) + df.atr*multiplicador_imbalance))
                                           )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+										& (df.High > (df.High.shift(-4) + df.atr*multiplicador_imbalance))
+                                        & (df.Close > (df.Close.shift(-20) + df.atr*3)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_bajista_low'] = np.where(
                                     decisional_bajista_condicion
@@ -1376,16 +1098,16 @@ def smart_money(symbol,refinado,file_source,timeframe):
         high_guardado = np.nan
         low_guardado = np.nan                                          
         for i in range(0, len(df)-1):
-            if  (np.isnan(df['decisional_bajista_high'].iloc[i])
-                and 
-                    (
-                    (df.High.iloc[i] < high_guardado) # copio si no fue mitigado
-                    or 
-                    (df.High.iloc[i] >= high_guardado and df.decisional_bajista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
-                    )
-                ): 
+            if  ((df['decisional_bajista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_bajista_high'] = high_guardado
                     df.at[i, 'decisional_bajista_low'] = low_guardado
+                    if (df.High.iloc[i] >= high_guardado 
+                        and df.decisional_bajista.iloc[i-1] != True
+                        and df.decisional_bajista.iloc[i-2] != True
+                        and df.decisional_bajista.iloc[i-3] != True
+                        ): # borro decisional si fue mitigado
+                        high_guardado = np.nan
+                        low_guardado = np.nan
             else:
                 high_guardado = df['decisional_bajista_high'].iloc[i]
                 low_guardado = df['decisional_bajista_low'].iloc[i]
@@ -1422,6 +1144,8 @@ def smart_money(symbol,refinado,file_source,timeframe):
                                             ((df.High.shift(-2)) <= (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
                                         )
                                         & (df.tamanio_cuerpo < df.tamanio_cuerpo.shift(-2))
+										& (df.Low < (df.Low.shift(-4) - df.atr*multiplicador_imbalance))
+                                        & (df.Close < (df.Close.shift(-20) - df.atr*3)) # que luego del decisional el precio se mantenga lejos un tiempo. 
                                         )
         df['decisional_alcista_low'] = np.where(
                                     decisional_alcista_condicion
@@ -1434,18 +1158,18 @@ def smart_money(symbol,refinado,file_source,timeframe):
         ###refinado y relleno
         df['decisional_alcista'] = np.where(np.isnan(df.decisional_alcista_low),False,True) # creo un campo para identificar cuando se detecta el decisional 
         high_guardado=np.nan
-        low_guardado=np.nan                                          
+        low_guardado=np.nan
         for i in range(0, len(df)-1):
-            if  (np.isnan(df['decisional_alcista_high'].iloc[i])
-                and 
-                    (
-                    (df.Low.iloc[i] > low_guardado) # copio si no fue mitigado
-                    or 
-                    (df.Low.iloc[i] <= low_guardado and df.decisional_alcista.iloc[i-1] == True) # copio si fue mitigado pero apenas se estaba creando
-                    )
-                ): 
+            if  ((df['decisional_alcista'].iloc[i]) == False): # no es un decisional asi que copio
                     df.at[i, 'decisional_alcista_high'] = high_guardado
                     df.at[i, 'decisional_alcista_low'] = low_guardado
+                    if (df.Low.iloc[i] <= low_guardado 
+                        and df.decisional_alcista.iloc[i-1] != True
+                        and df.decisional_alcista.iloc[i-2] != True
+                        and df.decisional_alcista.iloc[i-3] != True
+                        ): # borro decisional si fue mitigado                        
+                        high_guardado = np.nan
+                        low_guardado = np.nan
             else:
                 high_guardado = df['decisional_alcista_high'].iloc[i]
                 low_guardado = df['decisional_alcista_low'].iloc[i]
@@ -1474,7 +1198,7 @@ def smart_money(symbol,refinado,file_source,timeframe):
         # alcista = -1
         # neutral = -2
         # bajista = -3        
-        cantidad_ruptura = 2
+        cantidad_ruptura = 3
         df['tendencia'] = np.nan
         v_contador_bajista = 0
         v_ultimo_bos_bajista = -2
@@ -1506,7 +1230,90 @@ def smart_money(symbol,refinado,file_source,timeframe):
         average = (df['Open'] + df['Close']) / 2
         # Calcular la tendencia general
         df['trend'] = 'Alcista' if average.iloc[-1] > average.iloc[0] else 'Bajista'
+
+        ########################################### INDICADORES #########################################################
+
+        #################################################################################################### CRUCE DE BOS
+        # alcista = -1
+        # neutral = -2
+        # bajista = -3    
+        kill_inicio = 8
+        kill_fin = 16
+        df['cruce_bos_killzone'] = -2
+        for i in range(0, len(df)-1):                
+            if ((df.Close.iloc[i-1] < df['bos_bajista'].iloc[i-1] ) # bajista
+                and kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
+                df.at[i, 'cruce_bos_killzone'] = -3                
+            if ((df.Close.iloc[i-1] > df['bos_alcista'].iloc[i-1]) # alcista
+                and kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
+                df.at[i, 'cruce_bos_killzone'] = -1
+        #######################################################################################################  SENTIDO
+        ultimo = -2
+        df['sentido'] = -2
+        for i in range(0, len(df)-1):
+            if  (kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
+                if df.cruce_bos_killzone.iloc[i] == -1 and ultimo == -3:
+                    df.at[i, 'sentido'] = -1
+                else:
+                    if df.cruce_bos_killzone.iloc[i] == -3 and ultimo == -1:
+                        df.at[i, 'sentido'] = -3
+                    else:
+                        df.at[i, 'sentido'] = -2
+                if df.cruce_bos_killzone.iloc[i] != -2:
+                    ultimo=df.cruce_bos_killzone.iloc[i]
+            else:
+                ultimo=-2
+
+        #################### ACUMULACION DE LOQUIDEZ
+
+        df['num_valores_iguales'] = (df['bos_bajista'] != df['bos_bajista'].shift(1)).cumsum()
+        df['sell_side_liquidity'] = -(df.groupby('num_valores_iguales').cumcount() + 1)
+        df = df.drop('num_valores_iguales', axis=1)
+
+        df['num_valores_iguales'] = (df['bos_alcista'] != df['bos_alcista'].shift(1)).cumsum()
+        df['buy_side_liquidity'] = (df.groupby('num_valores_iguales').cumcount() + 1)
+        df = df.drop('num_valores_iguales', axis=1)
         
+        ########################################################### POSICION
+        
+        pileta_vaciada = 0
+        ventana_analisis_valida = 0
+        largo_bos = 50
+        ventana_analisis_limite = 5
+        df['posicion'] = -2
+        for i in range(0, len(df)-1):
+             if  (kill_fin > df["Open Time"].dt.hour.iloc[i] >= kill_inicio # mercados abiertos
+                and df['Open Time'].dt.dayofweek.iloc[i] not in (5,6) # no sab y dom
+                ):
+                if ((abs(df.sell_side_liquidity.iloc[i-1]) >= largo_bos and abs(df.sell_side_liquidity.iloc[i]) == 1)
+                    or 
+                    (abs(df.buy_side_liquidity.iloc[i-1]) >= largo_bos and abs(df.buy_side_liquidity.iloc[i]) == 1)                    
+                    ): # se vació la pileta grande
+                        pileta_vaciada = 1
+                        ventana_analisis_valida = 0
+                else:
+                    if pileta_vaciada == 1:
+                        ventana_analisis_valida = ventana_analisis_valida + 1
+                        if ventana_analisis_valida == ventana_analisis_limite: # reinicio
+                            pileta_vaciada = 0
+                            ventana_analisis_valida = 0
+                        else:
+                            if df.cruce_bos_killzone.iloc[i] == -1:
+                                df.at[i, 'posicion'] = -1
+                                pileta_vaciada = 0
+                                ventana_analisis_valida = 0
+                            else:
+                                if df.cruce_bos_killzone.iloc[i] == -3:
+                                    df.at[i, 'posicion'] = -3
+                                    pileta_vaciada = 0
+                                    ventana_analisis_valida = 0
+
         ########################################## INDICE
         df['timestamp']=df['Open Time']
         df.set_index('timestamp', inplace=True)
@@ -1518,68 +1325,17 @@ def smart_money(symbol,refinado,file_source,timeframe):
         pass
 ##########################################################################################
 
-def estrategia_smart(symbol,debug = False, refinado = True, file_source=False,timeframe = '1h'):
-    busca_decisionales_filas=10
-    def hay_true_ultimas_10_registros(column):
-        # Definimos una función que verifica si hay un True en las últimas X filas.
-        # Esto sirve para controlar que no se tome como válido un order block recién creado.
-        return column.rolling(busca_decisionales_filas).apply(lambda x: any(x), raw=True)
-    try:                
-        data = smart_money(symbol,refinado,file_source,timeframe)     
-        offset = data.atr/3
-        data['decisional_alcista_cerca'] = hay_true_ultimas_10_registros(data.decisional_alcista)
-        data['decisional_bajista_cerca'] = hay_true_ultimas_10_registros(data.decisional_bajista)
-        data['signal'] = np.where(
-                                  (data.Low > data.decisional_alcista_low)
-                                  &(data.Low <= data.decisional_alcista_high + offset)
-                                  &(data.Low.shift(1) > data.decisional_alcista_high.shift(1))
-                                  &(data['trend'] == 'Alcista')
-                                  &(data.decisional_alcista_cerca == False)
-                                  ,1,
-                                  np.where(
-                                  (data.High < data.decisional_bajista_high)
-                                  &(data.High >= data.decisional_bajista_low - offset)
-                                  &(data.High.shift(1) < data.decisional_bajista_low.shift(1))
-                                  &(data['trend'] == 'Bajista')
-                                  &(data.decisional_bajista_cerca == False)
-                                  ,-1,
-                                  0
-                                )
-                                )
-        data['take_profit'] =   np.where(
-                                data.signal == 1,                                
-                                data.Low + data.atr*10,
-                                np.where(
-                                data.signal == -1,
-                                data.High - data.atr*10,
-                                0
-                                )
-                                )
-        data['stop_loss'] = np.where(
-                                data.signal == 1,
-                                data.decisional_alcista_low - offset,
-                                np.where(
-                                data.signal == -1,
-                                data.decisional_bajista_high + offset,
-                                0
-                                )
-                                )
-        data['cierra'] = False
-        porcentaje_perdida = 1
-        data['porcentajeentrada'] = np.where(data.signal == 1,
-                       (porcentaje_perdida*100)/
-                       (((data.decisional_alcista_low/data.decisional_alcista_high)-1)*-100),
-                       np.where(data.signal == -1,
-                       (porcentaje_perdida*100)/
-                       (((data.decisional_bajista_high/data.decisional_bajista_low)-1)*100),
-                       0
-                       )
-                       )
-
-        # Reemplazar valores no finitos (NA e inf) con 0
-        #data['porcentajeentrada'] = np.nan_to_num((data.Close/data.atr), nan=0, posinf=0, neginf=0)
-        # Aplicar np.floor y convertir a enteros
-        #data['porcentajeentrada'] = np.floor(data['porcentajeentrada']).astype(int)
+def estrategia_smart(symbol, debug = False, refinado = True, fuente = 0, timeframe = '1h', largo = 1):
+    try:
+        porcentaje_perdida = 1 # porcentaje que se está dispuesto a perder por trade
+        data = smart_money(symbol,refinado,fuente,timeframe,largo)     
+        data['offset'] = data.atr/3   
+        data['cierra'] = False        
+        data['variacion_alcista'] = abs((((data.decisional_alcista_low - data.offset)/(data.decisional_alcista_high + data.offset))-1)*-100)                       
+        data['variacion_bajista'] = abs((((data.decisional_bajista_high + data.offset)/(data.decisional_bajista_low - data.offset))-1)*100)        
+        data['porcentajeentrada_alcista'] = np.where(((porcentaje_perdida/data.variacion_alcista)*100)>100,100,((porcentaje_perdida/data.variacion_alcista)*100))
+        data['porcentajeentrada_bajista'] = np.where(((porcentaje_perdida/data.variacion_bajista)*100)>100,100,((porcentaje_perdida/data.variacion_bajista)*100))
+    
         ####################### alertas y valores
         if debug:
             df_str = data[list(data.columns)].to_string(index=False)

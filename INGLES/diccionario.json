@@ -1,0 +1,484 @@
+{
+  "She drives her car.": {
+    "presente_simple": {
+      "afirmativa": "She drives her car.",
+      "negativa": "She doesn't drive her car.",
+      "interrogativa": "Does she drive her car?"
+    },
+    "presente_continuo": {
+      "afirmativa": "She's driving her car.",
+      "negativa": "She's not driving her car.",
+      "interrogativa": "Is she driving her car?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "She is going to drive her car.",
+      "negativa": "She's not going to drive her car.",
+      "interrogativa": "Is she going to drive her car?"
+    },
+    "futuro_simple": {
+      "afirmativa": "She will drive her car.",
+      "negativa": "She won't drive her car.",
+      "interrogativa": "Will she drive her car?"
+    },
+    "pasado_simple": {
+      "afirmativa": "She drove her car.",
+      "negativa": "She didn't drive her car.",
+      "interrogativa": "Did she drive her car?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "She has driven her car.",
+      "negativa": "She hasn't driven her car.",
+      "interrogativa": "Has she driven her car?"
+    }
+  },
+  "He studies every day.": {
+    "present_simple": {
+      "afirmativa": "He studies every day.",
+      "negativa": "He doesn't study every day.",
+      "interrogativa": "Does he study every day?"
+    },
+    "presente_continuo": {
+      "afirmativa": "He is studying right now.",
+      "negativa": "He is not studying right now.",
+      "interrogativa": "Is he studying right now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "He is going to study tomorrow.",
+      "negativa": "He's not going to study tomorrow.",
+      "interrogativa": "Is he going to study tomorrow?"
+    },
+    "futuro_simple": {
+      "afirmativa": "He will study in the evening.",
+      "negativa": "He won't study in the evening.",
+      "interrogativa": "Will he study in the evening?"
+    },
+    "pasado_simple": {
+      "afirmativa": "He studied yesterday.",
+      "negativa": "He didn't study yesterday.",
+      "interrogativa": "Did he study yesterday?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "He has studied a lot.",
+      "negativa": "He hasn't studied much.",
+      "interrogativa": "Has he studied a lot?"
+    }
+  },
+  "They play football on weekends.": {
+    "present_simple": {
+      "afirmativa": "They play football on weekends.",
+      "negativa": "They don't play football on weekends.",
+      "interrogativa": "Do they play football on weekends?"
+    },
+    "presente_continuo": {
+      "afirmativa": "They are playing football now.",
+      "negativa": "They are not playing football now.",
+      "interrogativa": "Are they playing football now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "They are going to play football next Sunday.",
+      "negativa": "They're not going to play football next Sunday.",
+      "interrogativa": "Are they going to play football next Sunday?"
+    },
+    "futuro_simple": {
+      "afirmativa": "They will play football in the afternoon.",
+      "negativa": "They won't play football in the afternoon.",
+      "interrogativa": "Will they play football in the afternoon?"
+    },
+    "pasado_simple": {
+      "afirmativa": "They played football last Saturday.",
+      "negativa": "They didn't play football last Saturday.",
+      "interrogativa": "Did they play football last Saturday?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "They have played football many times.",
+      "negativa": "They haven't played football much.",
+      "interrogativa": "Have they played football many times?"
+    }
+  },
+  
+
+    "She reads books.": {
+      "present_simple": {
+        "afirmativa": "She reads books.",
+        "negativa": "She doesn't read books.",
+        "interrogativa": "Does she read books?"
+      },
+      "presente_continuo": {
+        "afirmativa": "She is reading a novel now.",
+        "negativa": "She is not reading a novel now.",
+        "interrogativa": "Is she reading a novel now?"
+      },
+      "futuro_con_going_to": {
+        "afirmativa": "She is going to read a new book tomorrow.",
+        "negativa": "She's not going to read a new book tomorrow.",
+        "interrogativa": "Is she going to read a new book tomorrow?"
+      },
+      "futuro_simple": {
+        "afirmativa": "She will read the entire series.",
+        "negativa": "She won't read the entire series.",
+        "interrogativa": "Will she read the entire series?"
+      },
+      "pasado_simple": {
+        "afirmativa": "She read that book last month.",
+        "negativa": "She didn't read that book last month.",
+        "interrogativa": "Did she read that book last month?"
+      },
+      "presente_perfecto": {
+        "afirmativa": "She has read many classic novels.",
+        "negativa": "She hasn't read many classic novels.",
+        "interrogativa": "Has she read many classic novels?"
+      }
+    },
+    "I enjoy swimming.": {
+      "present_simple": {
+        "afirmativa": "I enjoy swimming.",
+        "negativa": "I don't enjoy swimming.",
+        "interrogativa": "Do I enjoy swimming?"
+      },
+      "presente_continuo": {
+        "afirmativa": "I am enjoying a relaxing swim right now.",
+        "negativa": "I am not enjoying a relaxing swim right now.",
+        "interrogativa": "Am I enjoying a relaxing swim right now?"
+      },
+      "futuro_con_going_to": {
+        "afirmativa": "I am going to enjoy a swim in the ocean next weekend.",
+        "negativa": "I'm not going to enjoy a swim in the ocean next weekend.",
+        "interrogativa": "Am I going to enjoy a swim in the ocean next weekend?"
+      },
+      "futuro_simple": {
+        "afirmativa": "I will enjoy swimming in the new pool.",
+        "negativa": "I won't enjoy swimming in the new pool.",
+        "interrogativa": "Will I enjoy swimming in the new pool?"
+      },
+      "pasado_simple": {
+        "afirmativa": "I enjoyed swimming in the lake last summer.",
+        "negativa": "I didn't enjoy swimming in the lake last summer.",
+        "interrogativa": "Did I enjoy swimming in the lake last summer?"
+      },
+      "presente_perfecto": {
+        "afirmativa": "I have enjoyed swimming since I was a child.",
+        "negativa": "I haven't enjoyed swimming since I was a child.",
+        "interrogativa": "Have I enjoyed swimming since I was a child?"
+      }
+  },
+    "She dances gracefully.": {
+      "presente_simple": {
+        "afirmativa": "She dances gracefully.",
+        "negativa": "She doesn't dance gracefully.",
+        "interrogativa": "Does she dance gracefully?"
+      },
+      "presente_continuo": {
+        "afirmativa": "She is dancing elegantly right now.",
+        "negativa": "She is not dancing elegantly right now.",
+        "interrogativa": "Is she dancing elegantly right now?"
+      },
+      "futuro_con_going_to": {
+        "afirmativa": "She is going to dance at the event tomorrow.",
+        "negativa": "She's not going to dance at the event tomorrow.",
+        "interrogativa": "Is she going to dance at the event tomorrow?"
+      },
+      "futuro_simple": {
+        "afirmativa": "She will dance at the party.",
+        "negativa": "She won't dance at the party.",
+        "interrogativa": "Will she dance at the party?"
+      },
+      "pasado_simple": {
+        "afirmativa": "She danced beautifully last night.",
+        "negativa": "She didn't dance beautifully last night.",
+        "interrogativa": "Did she dance beautifully last night?"
+      },
+      "presente_perfecto": {
+        "afirmativa": "She has danced in many competitions.",
+        "negativa": "She hasn't danced in many competitions.",
+        "interrogativa": "Has she danced in many competitions?"
+      }
+    },
+    "They travel around the world.": {
+      "presente_simple": {
+        "afirmativa": "They travel around the world.",
+        "negativa": "They don't travel around the world.",
+        "interrogativa": "Do they travel around the world?"
+      },
+      "presente_continuo": {
+        "afirmativa": "They are traveling to exotic places right now.",
+        "negativa": "They are not traveling to exotic places right now.",
+        "interrogativa": "Are they traveling to exotic places right now?"
+      },
+      "futuro_con_going_to": {
+        "afirmativa": "They are going to travel to Asia next year.",
+        "negativa": "They're not going to travel to Asia next year.",
+        "interrogativa": "Are they going to travel to Asia next year?"
+      },
+      "futuro_simple": {
+        "afirmativa": "They will travel to Africa in the summer.",
+        "negativa": "They won't travel to Africa in the summer.",
+        "interrogativa": "Will they travel to Africa in the summer?"
+      },
+      "pasado_simple": {
+        "afirmativa": "They traveled to Europe last month.",
+        "negativa": "They didn't travel to Europe last month.",
+        "interrogativa": "Did they travel to Europe last month?"
+      },
+      "presente_perfecto": {
+        "afirmativa": "They have traveled to various continents.",
+        "negativa": "They haven't traveled to various continents.",
+        "interrogativa": "Have they traveled to various continents?"
+      }
+    },
+  "She paints beautiful landscapes.": {
+    "presente_simple": {
+      "afirmativa": "She paints beautiful landscapes.",
+      "negativa": "She doesn't paint beautiful landscapes.",
+      "interrogativa": "Does she paint beautiful landscapes?"
+    },
+    "presente_continuo": {
+      "afirmativa": "She is painting a stunning scene right now.",
+      "negativa": "She is not painting a stunning scene right now.",
+      "interrogativa": "Is she painting a stunning scene right now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "She is going to paint a mural next month.",
+      "negativa": "She's not going to paint a mural next month.",
+      "interrogativa": "Is she going to paint a mural next month?"
+    },
+    "futuro_simple": {
+      "afirmativa": "She will paint a masterpiece someday.",
+      "negativa": "She won't paint a masterpiece someday.",
+      "interrogativa": "Will she paint a masterpiece someday?"
+    },
+    "pasado_simple": {
+      "afirmativa": "She painted a breathtaking sunset last week.",
+      "negativa": "She didn't paint a breathtaking sunset last week.",
+      "interrogativa": "Did she paint a breathtaking sunset last week?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "She has painted numerous landscapes in her career.",
+      "negativa": "She hasn't painted many landscapes in her career.",
+      "interrogativa": "Has she painted numerous landscapes in her career?"
+    }
+  },
+  "We build innovative solutions.": {
+    "presente_simple": {
+      "afirmativa": "We build innovative solutions.",
+      "negativa": "We don't build innovative solutions.",
+      "interrogativa": "Do we build innovative solutions?"
+    },
+    "presente_continuo": {
+      "afirmativa": "We are building a cutting-edge product right now.",
+      "negativa": "We are not building a cutting-edge product right now.",
+      "interrogativa": "Are we building a cutting-edge product right now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "We are going to build a revolutionary app next year.",
+      "negativa": "We're not going to build a revolutionary app next year.",
+      "interrogativa": "Are we going to build a revolutionary app next year?"
+    },
+    "futuro_simple": {
+      "afirmativa": "We will build a game-changing platform.",
+      "negativa": "We won't build a game-changing platform.",
+      "interrogativa": "Will we build a game-changing platform?"
+    },
+    "pasado_simple": {
+      "afirmativa": "We built an award-winning system last month.",
+      "negativa": "We didn't build an award-winning system last month.",
+      "interrogativa": "Did we build an award-winning system last month?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "We have built numerous innovative solutions for clients.",
+      "negativa": "We haven't built many innovative solutions for clients.",
+      "interrogativa": "Have we built numerous innovative solutions for clients?"
+    }
+  },
+  "I love exploring new cuisines.": {
+    "presente_simple": {
+      "afirmativa": "I love exploring new cuisines.",
+      "negativa": "I don't love exploring new cuisines.",
+      "interrogativa": "Do I love exploring new cuisines?"
+    },
+    "presente_continuo": {
+      "afirmativa": "I am enjoying a delicious meal right now.",
+      "negativa": "I am not enjoying a delicious meal right now.",
+      "interrogativa": "Am I enjoying a delicious meal right now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "I am going to try sushi for the first time next week.",
+      "negativa": "I'm not going to try sushi for the first time next week.",
+      "interrogativa": "Am I going to try sushi for the first time next week?"
+    },
+    "futuro_simple": {
+      "afirmativa": "I will taste exotic dishes during my travels.",
+      "negativa": "I won't taste exotic dishes during my travels.",
+      "interrogativa": "Will I taste exotic dishes during my travels?"
+    },
+    "pasado_simple": {
+      "afirmativa": "I tried authentic Indian cuisine last night.",
+      "negativa": "I didn't try authentic Indian cuisine last night.",
+      "interrogativa": "Did I try authentic Indian cuisine last night?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "I have sampled various cuisines from around the world.",
+      "negativa": "I haven't sampled many cuisines from around the world.",
+      "interrogativa": "Have I sampled various cuisines from around the world?"
+    }
+  },
+  "They code innovative software.": {
+    "presente_simple": {
+      "afirmativa": "They code innovative software.",
+      "negativa": "They don't code innovative software.",
+      "interrogativa": "Do they code innovative software?"
+    },
+    "presente_continuo": {
+      "afirmativa": "They are coding a groundbreaking app right now.",
+      "negativa": "They are not coding a groundbreaking app right now.",
+      "interrogativa": "Are they coding a groundbreaking app right now?"
+    },
+    "futuro_con_going_to": {
+      "afirmativa": "They are going to code a revolutionary software next year.",
+      "negativa": "They're not going to code a revolutionary software next year.",
+      "interrogativa": "Are they going to code a revolutionary software next year?"
+    },
+    "futuro_simple": {
+      "afirmativa": "They will code an innovative algorithm.",
+      "negativa": "They won't code an innovative algorithm.",
+      "interrogativa": "Will they code an innovative algorithm?"
+    },
+    "pasado_simple": {
+      "afirmativa": "They coded a cutting-edge program last month.",
+      "negativa": "They didn't code a cutting-edge program last month.",
+      "interrogativa": "Did they code a cutting-edge program last month?"
+    },
+    "presente_perfecto": {
+      "afirmativa": "They have coded many successful software applications.",
+      "negativa": "They haven't coded many successful software applications.",
+      "interrogativa": "Have they coded many successful software applications?"
+    }
+  },
+  "We are friends": {
+    "present_simple": {
+        "affirmative": "We are friends.",
+        "negative": "We are not friends.",
+        "interrogative": "Are we friends?"
+    },
+    "present_continuous": {
+        "affirmative": "We are being friends.",
+        "negative": "We are not being friends.",
+        "interrogative": "Are we being friends?"
+    },
+    "future_with_going_to": {
+        "affirmative": "We are going to be friends.",
+        "negative": "We are not going to be friends.",
+        "interrogative": "Are we going to be friends?"
+    },
+    "future_simple": {
+        "affirmative": "We will be friends.",
+        "negative": "We will not be friends.",
+        "interrogative": "Will we be friends?"
+    },
+    "past_simple": {
+        "affirmative": "We were friends.",
+        "negative": "We were not friends.",
+        "interrogative": "Were we friends?"
+    },
+    "present_perfect": {
+        "affirmative": "We have been friends.",
+        "negative": "We have not been friends.",
+        "interrogative": "Have we been friends?"
+    }
+},
+"I eat pizza": {
+  "present_simple": {
+      "affirmative": "I eat pizza.",
+      "negative": "I do not eat pizza.",
+      "interrogative": "Do I eat pizza?"
+  },
+  "present_continuous": {
+      "affirmative": "I am eating pizza.",
+      "negative": "I am not eating pizza.",
+      "interrogative": "Am I eating pizza?"
+  },
+  "future_with_going_to": {
+      "affirmative": "I am going to eat pizza.",
+      "negative": "I am not going to eat pizza.",
+      "interrogative": "Am I going to eat pizza?"
+  },
+  "future_simple": {
+      "affirmative": "I will eat pizza.",
+      "negative": "I will not eat pizza.",
+      "interrogative": "Will I eat pizza?"
+  },
+  "past_simple": {
+      "affirmative": "I ate pizza.",
+      "negative": "I did not eat pizza.",
+      "interrogative": "Did I eat pizza?"
+  },
+  "present_perfect": {
+      "affirmative": "I have eaten pizza.",
+      "negative": "I have not eaten pizza.",
+      "interrogative": "Have I eaten pizza?"
+  }
+},
+"They play music": {
+  "present_simple": {
+      "affirmative": "They play music.",
+      "negative": "They do not play music.",
+      "interrogative": "Do they play music?"
+  },
+  "present_continuous": {
+      "affirmative": "They are playing music.",
+      "negative": "They are not playing music.",
+      "interrogative": "Are they playing music?"
+  },
+  "future_with_going_to": {
+      "affirmative": "They are going to play music.",
+      "negative": "They are not going to play music.",
+      "interrogative": "Are they going to play music?"
+  },
+  "future_simple": {
+      "affirmative": "They will play music.",
+      "negative": "They will not play music.",
+      "interrogative": "Will they play music?"
+  },
+  "past_simple": {
+      "affirmative": "They played music.",
+      "negative": "They did not play music.",
+      "interrogative": "Did they play music?"
+  },
+  "present_perfect": {
+      "affirmative": "They have played music.",
+      "negative": "They have not played music.",
+      "interrogative": "Have they played music?"
+  }
+},
+"We are on the beach": {
+  "present_simple": {
+      "affirmative": "We are on the beach.",
+      "negative": "We are not on the beach.",
+      "interrogative": "Are we on the beach?"
+  },
+  "present_continuous": {
+      "affirmative": "We are being on the beach.",
+      "negative": "We are not being on the beach.",
+      "interrogative": "Are we being on the beach?"
+  },
+  "future_with_going_to": {
+      "affirmative": "We are going to be on the beach.",
+      "negative": "We are not going to be on the beach.",
+      "interrogative": "Are we going to be on the beach?"
+  },
+  "future_simple": {
+      "affirmative": "We will be on the beach.",
+      "negative": "We will not be on the beach.",
+      "interrogative": "Will we be on the beach?"
+  },
+  "past_simple": {
+      "affirmative": "We were on the beach.",
+      "negative": "We were not on the beach.",
+      "interrogative": "Were we on the beach?"
+  },
+  "present_perfect": {
+      "affirmative": "We have been on the beach.",
+      "negative": "We have not been on the beach.",
+      "interrogative": "Have we been on the beach?"
+  }
+}
+}
