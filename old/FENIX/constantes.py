@@ -21,8 +21,8 @@ nombrelog = "log_finandy.txt"
 f = open(os.path.join(pathroot, nombrelog), 'a',encoding="utf-8")
 f.close() 
 
-api_key="qycthSI8s5HH0b95MxH3lFKPPUeZu8mCSgztp00x2d7SdHmfOp2U9qBeCCbxPyDg"
-api_secret="zeJqYkyWzBIdGDMmyfUnofQiThirgEgOCDYvS3rzcq4yle1afD7YEQkciCI43yNs"
+api_key="NYRJeyPdSulRAL1Chx79V36zXcZ6TmhKGZGkoU2vQSq9elCyJqjq8c8ixywv5Yn0"
+api_secret="5Omvt1ChDkW0ddH51s8X6tXb4rei6TfL3kCllnDFl2Tm3Q3noECOyL6uVzBpxMqJ"
 api_passphares=''
 exchange_name = 'binance'
 client = binanceClient(api_key, api_secret,api_passphares)
