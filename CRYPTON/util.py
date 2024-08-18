@@ -12,6 +12,12 @@ import pandas as pd
 from binance.exceptions import BinanceAPIException
 import sys
 import os
+import warnings
+
+def warn(*args, **kwargs):
+    pass
+warnings.warn = warn
+np.seterr(divide='ignore')
 
 salida_solicitada_flag = False
 
@@ -92,3 +98,6 @@ def obtiene_historial(symbol,timeframe,limit=1000):
             pass  
     return data
 
+def indicador(df_campo):
+    indi=pd.Series(df_campo)
+    return indi.to_numpy()
