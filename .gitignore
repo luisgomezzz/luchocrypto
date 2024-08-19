@@ -71,6 +71,6 @@ INGLES/diccionario.json
 INGLES/pronunciacion.mp3
 FENIX/NOTEBOOK2.ipynb
 CRYPTON/IndiCross.html
-CRYPTON/__pycache__/util.cpython-310.pyc
+CRYPTON/__pycache__
 CRYPTON/graficos/*.html
-
+CRYPTON/__pycache__/*

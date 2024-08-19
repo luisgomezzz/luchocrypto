@@ -6,7 +6,7 @@ import hmac
 import hashlib
 import time
 import pandas_ta as ta
-from backtesting import Strategy, Backtest
+from backtesting import Strategy
 import numpy as np
 import pandas as pd
 from binance.exceptions import BinanceAPIException
@@ -101,3 +101,31 @@ def obtiene_historial(symbol,timeframe,limit=1000):
 def indicador(df_campo):
     indi=pd.Series(df_campo)
     return indi.to_numpy()
+
+def crossover_dataframe(column1, column2):
+    """
+    Detecta si hay un cruce ascendente entre dos columnas.
+    El cruce ascendente ocurre cuando column1 pasa de estar por debajo o igual a column2 a estar por encima.
+    Parámetros:
+    column1: pd.Series - Primera columna
+    column2: pd.Series - Segunda columna
+    Retorna:
+    pd.Series - Una serie booleana indicando dónde ocurre un cruce ascendente
+    """
+    upward_crossover = (column1 > column2) & (column1.shift(1) <= column2.shift(1))
+    return upward_crossover
+
+class backtesting_config(Strategy):
+    def init(self):
+        self.trade = self.I(indicador, self.data.trade)
+        #self.stop_loss = self.I(indicador, self.data.stop_loss)
+        #self.take_profit = self.I(indicador, self.data.take_profit)
+    def next(self):
+        if self.trade==1:
+            self.buy (#size = 1000, 
+                      #sl = self.columna3, tp = self.Close+self.distancia_close_col3*3
+                      )
+        elif self.trade==-1:
+            self.sell(#size = 1000, 
+                      #sl = self.columna3, tp = self.Close-self.distancia_close_col3*3
+                      )
