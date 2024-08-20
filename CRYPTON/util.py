@@ -117,15 +117,19 @@ def crossover_dataframe(column1, column2):
 
 class backtesting_config(Strategy):
     def init(self):
+        #indicadores random
+        self.ema100 = self.I(indicador, self.data.ema100,name='ema100')    
+        self.ema200 = self.I(indicador, self.data.ema200,name='ema200')    
+        #indicadores necesarios
         self.trade = self.I(indicador, self.data.trade)
-        #self.stop_loss = self.I(indicador, self.data.stop_loss)
-        #self.take_profit = self.I(indicador, self.data.take_profit)
+        self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='orange',overlay=True, scatter=True)
+        self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='blue',overlay=True, scatter=True)
     def next(self):
         if self.trade==1:
             self.buy (#size = 1000, 
-                      #sl = self.columna3, tp = self.Close+self.distancia_close_col3*3
+                      sl = self.stop_loss, tp = self.data.take_profit
                       )
         elif self.trade==-1:
             self.sell(#size = 1000, 
-                      #sl = self.columna3, tp = self.Close-self.distancia_close_col3*3
+                      sl = self.stop_loss, tp = self.data.take_profit
                       )
