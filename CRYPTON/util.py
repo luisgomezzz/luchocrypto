@@ -76,12 +76,7 @@ def obtiene_historial(symbol,timeframe,limit=1000):
             data['timestamp']=data['Open Time']
             data.set_index('timestamp', inplace=True)
             data.dropna(inplace=True)
-            data.drop(['Close Time','Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume','Number of Trades',
-                    'Ignore'], axis=1, inplace=True)    
-            data['ema20'] = ta.ema(data.Close, length=20)
-            data['ema50'] = ta.ema(data.Close, length=50)
-            data['ema200'] = ta.ema(data.Close, length=200)
-            data['sma200'] = ta.sma(data.Close, length=200)
+            data.drop(['Close Time','Quote Asset Volume','TB Base Volume','TB Quote Volume','Number of Trades','Ignore'],axis=1,inplace=True)
             data['atr'] = ta.atr(data.High, data.Low, data.Close)        
         except KeyboardInterrupt:        
             salida_solicitada()
@@ -103,33 +98,26 @@ def indicador(df_campo):
     return indi.to_numpy()
 
 def crossover_dataframe(column1, column2):
-    """
-    Detecta si hay un cruce ascendente entre dos columnas.
-    El cruce ascendente ocurre cuando column1 pasa de estar por debajo o igual a column2 a estar por encima.
-    Parámetros:
-    column1: pd.Series - Primera columna
-    column2: pd.Series - Segunda columna
-    Retorna:
-    pd.Series - Una serie booleana indicando dónde ocurre un cruce ascendente
-    """
     upward_crossover = (column1 > column2) & (column1.shift(1) <= column2.shift(1))
     return upward_crossover
 
 class backtesting_config(Strategy):
     def init(self):
-        #indicadores random
-        self.ema100 = self.I(indicador, self.data.ema100,name='ema100')    
-        self.ema200 = self.I(indicador, self.data.ema200,name='ema200')    
-        #indicadores necesarios
-        self.trade = self.I(indicador, self.data.trade)
-        self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='orange',overlay=True, scatter=True)
-        self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='blue',overlay=True, scatter=True)
-    def next(self):
-        if self.trade==1:
-            self.buy (#size = 1000, 
-                      sl = self.stop_loss, tp = self.data.take_profit
-                      )
-        elif self.trade==-1:
-            self.sell(#size = 1000, 
-                      sl = self.stop_loss, tp = self.data.take_profit
-                      )
+        # Obligatorios
+        self.trade = self.I(indicador, self.data.trade,name='trade')
+        self.porcentajeentrada = self.I(indicador, self.data.porcentajeentrada, name='porcentajeentrada')
+        self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='orange', overlay=True, scatter=True)
+        self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='blue', overlay=True, scatter=True)        
+    def next(self):  
+        if self.trade == 1:
+            self.buy(
+                size=self.porcentajeentrada,
+                sl=self.stop_loss,
+                tp=self.take_profit
+            )
+        elif self.trade == -1:
+            self.sell(
+                size=self.porcentajeentrada,
+                sl=self.stop_loss,
+                tp=self.take_profit
+            )
