@@ -104,20 +104,24 @@ def crossover_dataframe(column1, column2):
 class backtesting_config(Strategy):
     def init(self):
         # Obligatorios
-        self.trade = self.I(indicador, self.data.trade,name='trade')
-        self.porcentajeentrada = self.I(indicador, self.data.porcentajeentrada, name='porcentajeentrada')
+        self.trade = self.I(indicador, self.data.trade,name='trade', color='black', overlay=True, scatter=False)
+        self.porcentajeentrada = self.I(indicador, self.data.porcentajeentrada, name='porcentajeentrada', color='Black', overlay=True, scatter=False)
         self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='orange', overlay=True, scatter=True)
         self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='blue', overlay=True, scatter=True)        
     def next(self):  
-        if self.trade == 1:
-            self.buy(
-                size=self.porcentajeentrada,
-                sl=self.stop_loss,
-                tp=self.take_profit
-            )
-        elif self.trade == -1:
-            self.sell(
-                size=self.porcentajeentrada,
-                sl=self.stop_loss,
-                tp=self.take_profit
-            )
+        if self.position:
+            None
+        else:
+            if self.trade == 1:
+                self.buy(
+                    size=self.porcentajeentrada[-1]
+                    ,sl=self.stop_loss[-1]
+                    ,tp=self.take_profit[-1]
+                )
+            elif self.trade == -1:
+                self.sell(
+                    size=self.porcentajeentrada[-1]
+                    ,sl=self.stop_loss[-1]
+                    ,tp=self.take_profit[-1]
+                )
+
