@@ -14,8 +14,8 @@ def clear():
 
 clear() #limpia terminal        
 
-api_key="NYRJeyPdSulRAL1Chx79V36zXcZ6TmhKGZGkoU2vQSq9elCyJqjq8c8ixywv5Yn0"
-api_secret="5Omvt1ChDkW0ddH51s8X6tXb4rei6TfL3kCllnDFl2Tm3Q3noECOyL6uVzBpxMqJ"
+api_key="qReDQIVrlOiPUBG8EdflTSmymj2aUaaGMBP6u0RzRylUAo3sisHX6c7K9TKTKVt3"
+api_secret="8aYWkwSKJHQhmkPFsIl66wPHk8rk3k28GiMFe9i82I7KvdQhbWea2CaUqO6Wd9Rv"
 api_passphares=''
 cliente = Client(api_key, api_secret,api_passphares)
 

@@ -15,6 +15,8 @@ import os
 import warnings
 import winsound as ws
 import math
+from binance.client import Client as binanceClient
+import ccxt as ccxt
 
 def sound(duration = 200, freq = 800):
     # milliseconds
@@ -170,15 +172,6 @@ def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
             pass
     return positionamt
 
-def closeposition(symbol,side):
-    if side=='SELL':
-        lado='BUY'
-    else:
-        lado='SELL'
-    quantity=abs(get_positionamt(symbol))
-    if quantity!=0.0:
-        cons.cliente.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
-
 def currentprice(symbol):
     leido = False
     current=0.0
@@ -209,25 +202,37 @@ def truncate(number, digits) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
 
+api_passphares=''
+exchange_name = 'binance'
+client = binanceClient(API_KEY, API_SECRET, api_passphares)
+exchange_class = getattr(ccxt, exchange_name)
+exchange =   exchange_class({            
+            'apiKey': API_KEY,
+            'secret': API_SECRET,
+            'password': api_passphares,
+            'options': {  
+            'defaultType': 'future',  
+            },
+            })
+
 def crea_posicion(symbol,side,micapital,porcentajeentrada):   
     size = float(micapital*porcentajeentrada)
     try:
-        apalancamiento=10
-        cons.client.futures_change_leverage(symbol=symbol, leverage=apalancamiento)
-        try: 
-            cons.client.futures_change_margin_type(symbol=symbol, marginType=cons.margen)
-        except BinanceAPIException as a:
-            if a.message!="No need to change margin type.":
-                print("Except 7",a.status_code,a.message)
-            pass                    
         tamanio=truncate((size/currentprice(symbol)),get_quantityprecision(symbol))
-        cons.client.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
+        client.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
         print("Posición creada. ",tamanio)
-    except BinanceAPIException as a:
-        print("Falla al crear la posición. Error: ",a.message) 
-        pass
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
-        pass        
+        pass
+
+def closeposition(symbol,side):
+    if side=='SELL':
+        lado='BUY'
+    else:
+        lado='SELL'
+    quantity=abs(get_positionamt(symbol))
+    if quantity!=0.0:
+        client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')  
+        print(f"posición cerrada. ")
