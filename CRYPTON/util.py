@@ -15,7 +15,6 @@ import os
 import warnings
 import winsound as ws
 import math
-from binance.client import Client as binanceClient
 import ccxt as ccxt
 
 def sound(duration = 200, freq = 800):
@@ -204,7 +203,6 @@ def truncate(number, digits) -> float:
 
 api_passphares=''
 exchange_name = 'binance'
-client = binanceClient(API_KEY, API_SECRET, api_passphares)
 exchange_class = getattr(ccxt, exchange_name)
 exchange =   exchange_class({            
             'apiKey': API_KEY,
@@ -219,7 +217,7 @@ def crea_posicion(symbol,side,micapital,porcentajeentrada):
     size = float(micapital*porcentajeentrada)
     try:
         tamanio=truncate((size/currentprice(symbol)),get_quantityprecision(symbol))
-        client.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
+        cons.cliente.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
         print("Posición creada. ",tamanio)
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
@@ -234,5 +232,109 @@ def closeposition(symbol,side):
         lado='SELL'
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
-        client.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')  
+        cons.cliente.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')  
         print(f"posición cerrada. ")
+
+def closeallopenorders(symbol):
+    leido=False
+    while leido==False:      
+        try:
+            cons.cliente.futures_cancel_all_open_orders(symbol=symbol)
+            leido=True
+            print("\nÓrdenes binance cerradas. ")
+        except:
+            pass              
+
+def get_tick_size(symbol) -> float:
+    tick_size = 0.0
+    try:
+            info = cons.cliente.futures_exchange_info()
+            for symbol_info in info['symbols']:
+                if symbol_info['symbol'] == symbol:
+                    for symbol_filter in symbol_info['filters']:
+                        if symbol_filter['filterType'] == 'PRICE_FILTER':
+                            tick_size = float(symbol_filter['tickSize'])  
+                            break
+                    break
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass  
+    return tick_size
+
+def obtienecantidaddecimales(numero):
+    try :
+        int(numero.rstrip('0').rstrip('.'))
+        return 0
+    except: 
+        return len(str(float(numero)).split('.')[-1])
+
+def RoundToTickUp(par,numero):
+    resolucion= get_tick_size(par)
+    cantidaddecimales=obtienecantidaddecimales(resolucion)
+    convertido=truncate((math.floor(numero / resolucion) * resolucion),cantidaddecimales)
+    return float(convertido)
+
+def crea_takeprofit(symbol,preciolimit,posicionporc,side):
+    try:
+        ### exchange details        
+        sizedesocupar=abs(truncate((get_positionamt(symbol)*posicionporc/100),get_quantityprecision(symbol)))
+        ####################
+        creado = True 
+        orderid = 0  
+        if side=='BUY':
+            side='SELL'
+        else:
+            side='BUY'        
+        limitprice=RoundToTickUp(symbol,preciolimit)
+        order = exchange.create_order (symbol, 'limit', side, sizedesocupar, limitprice)
+        orderid = order['id']
+        print("\nTAKE PROFIT creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
+    except BinanceAPIException as a:
+        print(a.message,"No se pudo crear el Limit.")
+        creado = False      
+        orderid = 0
+        pass
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
+        creado = False
+        orderid = 0
+        pass    
+    return creado,orderid
+
+def get_priceprecision(par):
+    leido = False
+    priceprecision = 0
+    while leido == False:
+        try: 
+            info = cons.cliente.futures_exchange_info()
+            leido = True
+        except:
+            pass 
+    for x in info['symbols']:
+        if x['symbol'] == par:
+            priceprecision= x['pricePrecision']  
+            break         
+    return priceprecision
+
+def crea_stoploss (symbol,side,stopprice):   
+    creado = False
+    stopid = 0
+    if side.upper() == 'BUY':
+        side='SELL'
+    else:
+        if side.upper() =='SELL':
+            side='BUY'
+    try:        
+        preciostop=truncate(stopprice,get_priceprecision(symbol))
+        order=cons.cliente.futures_create_order(symbol=symbol,side=side,type='STOP_MARKET', timeInForce='GTC', closePosition='True', stopPrice=preciostop)
+        print("\nStop loss creado. ",preciostop)
+        creado = True
+        stopid = order['orderId']        
+    except BinanceAPIException as a:
+        print(a.message,"no se pudo crear el stop loss.")
+        pass
+    return creado,stopid 
