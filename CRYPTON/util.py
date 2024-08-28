@@ -14,6 +14,7 @@ import sys
 import os
 import warnings
 import winsound as ws
+import math
 
 def sound(duration = 200, freq = 800):
     # milliseconds
@@ -29,12 +30,6 @@ def warn(*args, **kwargs):
     pass
 warnings.warn = warn
 np.seterr(divide='ignore')
-
-salida_solicitada_flag = False
-
-def salida_solicitada():    
-    global salida_solicitada_flag
-    salida_solicitada_flag = True
 
 API_KEY = cons.api_key
 API_SECRET = cons.api_secret
@@ -90,7 +85,8 @@ def obtiene_historial(symbol,timeframe,limit=1000):
             data.drop(['Close Time','Quote Asset Volume','TB Base Volume','TB Quote Volume','Number of Trades','Ignore'],axis=1,inplace=True)
             data['atr'] = ta.atr(data.High, data.Low, data.Close)        
         except KeyboardInterrupt:        
-            salida_solicitada()
+            print("\nSalida solicitada. ")
+            sys.exit()
         except BinanceAPIException as e:
             if e.message=="Invalid symbol.":                
                 leido = True
@@ -122,13 +118,15 @@ class backtesting_config(Strategy):
         self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='darkorange', overlay=True, scatter=True)
         self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='darkblue', overlay=True, scatter=True)        
     def next(self):
-        if self.position:  
-            if self.position.is_long:
-                if self.trade == -2:
-                    self.position.close()
-            elif self.trade == -1:
-                    self.position.close()
-        else:
+        # POR TURNOS    
+        #if self.position:  
+        #    if self.position.is_long:
+        #        if self.trade == -2:
+        #            self.position.close()
+        #    elif self.trade == -1:
+        #            self.position.close()
+        #else:
+            # PERPETUO
             if self.trade == -1:
                 self.buy(
                     size=self.porcentajeentrada[-1]
@@ -142,3 +140,94 @@ class backtesting_config(Strategy):
                     ,tp=self.take_profit[-1]
                 )
 
+def get_posiciones_abiertas(): 
+    leido = False
+    posiciones_abiertas = {}
+    while leido == False:
+        try:
+            position = get_info('/fapi/v3/account')['positions']
+            for i in range(len(position)):
+                if float(position[i]['positionAmt'])!=0.0:
+                    side = "BUY" if float(position[i]['positionAmt']) > 0 else "SELL"
+                    posiciones_abiertas[position[i]['symbol']]=side
+            leido = True
+        except:
+            pass
+    return posiciones_abiertas
+
+def get_positionamt(par): #monto en moneda local y con signo (no en usdt)
+    leido = False
+    positionamt = 0.0
+    while leido == False:
+        try:
+            position = get_info('/fapi/v3/account')['positions']
+            for i in range(len(position)):
+                if position[i]['symbol']==par:
+                    positionamt=float(position[i]['positionAmt'])
+                    break
+            leido = True
+        except:
+            pass
+    return positionamt
+
+def closeposition(symbol,side):
+    if side=='SELL':
+        lado='BUY'
+    else:
+        lado='SELL'
+    quantity=abs(get_positionamt(symbol))
+    if quantity!=0.0:
+        cons.cliente.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')    
+
+def currentprice(symbol):
+    leido = False
+    current=0.0
+    while leido == False:
+        try:
+            current=float(get_info('/fapi/v2/ticker/price',symbol='OPUSDT')['price'])
+            leido = True
+        except:
+            pass
+    return current
+
+def get_quantityprecision(symbol):
+    leido=False
+    quantityprecision=0
+    while leido == False:
+        try:   
+            info = get_info('/fapi/v1/exchangeInfo')
+            leido = True
+        except:
+            pass 
+    for x in info['symbols']:
+        if x['symbol'] == symbol:
+            quantityprecision= x['quantityPrecision']
+            break
+    return quantityprecision
+
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return math.trunc(stepper * number) / stepper
+
+def crea_posicion(symbol,side,micapital,porcentajeentrada):   
+    size = float(micapital*porcentajeentrada)
+    try:
+        apalancamiento=10
+        cons.client.futures_change_leverage(symbol=symbol, leverage=apalancamiento)
+        try: 
+            cons.client.futures_change_margin_type(symbol=symbol, marginType=cons.margen)
+        except BinanceAPIException as a:
+            if a.message!="No need to change margin type.":
+                print("Except 7",a.status_code,a.message)
+            pass                    
+        tamanio=truncate((size/currentprice(symbol)),get_quantityprecision(symbol))
+        cons.client.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
+        print("Posición creada. ",tamanio)
+    except BinanceAPIException as a:
+        print("Falla al crear la posición. Error: ",a.message) 
+        pass
+    except Exception as falla:
+        _, _, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
+        pass        

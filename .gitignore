@@ -74,3 +74,4 @@ CRYPTON/IndiCross.html
 CRYPTON/__pycache__
 CRYPTON/graficos/*.html
 CRYPTON/__pycache__/*
+CRYPTON/__pycache__/constantes.cpython-310.pyc
