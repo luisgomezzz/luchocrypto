@@ -213,17 +213,19 @@ exchange =   exchange_class({
             },
             })
 
-def crea_posicion(symbol,side,micapital,porcentajeentrada):   
+def crea_posicion(symbol,side,micapital,porcentajeentrada) -> bool:   
     size = float(micapital*porcentajeentrada)
     try:
         tamanio=truncate((size/currentprice(symbol)),get_quantityprecision(symbol))
         cons.cliente.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
-        print("Posición creada. ",tamanio)
+        print("\nPosición creada. ",tamanio)
+        return True
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         pass
+        return False        
 
 def closeposition(symbol,side):
     if side=='SELL':
@@ -233,7 +235,7 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.cliente.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')  
-        print(f"posición cerrada. ")
+        print(f"\nposición cerrada. ")
 
 def closeallopenorders(symbol):
     leido=False
@@ -335,6 +337,6 @@ def crea_stoploss (symbol,side,stopprice):
         creado = True
         stopid = order['orderId']        
     except BinanceAPIException as a:
-        print(a.message,"no se pudo crear el stop loss.")
+        print(a.message,"\nno se pudo crear el stop loss.")
         pass
     return creado,stopid 

@@ -7,7 +7,7 @@ import sys
 import util
 from datetime import datetime
 
-lista = ['BTCUSDT', 'ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 'DOGEUSDT', 'DOTUSDT', 
+lista = ['ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 'DOGEUSDT', 'DOTUSDT', 
          'SOLUSDT', 'AVAXUSDT', 'NEARUSDT', 'FILUSDT', 'MATICUSDT', 'OPUSDT', 'FETUSDT', 'AGIXUSDT', 'ARBUSDT',  
          'SLPUSDT', 'MEMEUSDT',  '1000SATSUSDT', 'PIXELUSDT']
 
@@ -38,8 +38,8 @@ while True:
                     # crea posicion
                     util.sound(duration = 1000, freq = 400)
                     print(f"fecha: {fecha_hora_actual} - Entrada en BUY Symbol: {symbol} - precio: {data.Close[-2]} - SL: {data.stop_loss[-2]}")                    
-                    util.crea_posicion(symbol,'BUY',240,data.porcentajeentrada[-2])
-                    util.crea_stoploss (symbol,'BUY',data.stop_loss[-2])
+                    if util.crea_posicion(symbol,'BUY',240,data.porcentajeentrada[-2]):
+                        util.crea_stoploss (symbol,'BUY',data.stop_loss[-2])
             elif data.trade[-2] == -2: #SELL                
                 if symbol in posiciones_abiertas:
                     if posiciones_abiertas[symbol] == 'BUY':
@@ -52,8 +52,8 @@ while True:
                     # crea posicion
                     util.sound(duration = 1000, freq = 400)
                     print(f"fecha: {fecha_hora_actual} - Entrada en SELL Symbol: {symbol} - precio: {data.Close[-2]} - SL: {data.stop_loss[-2]}")
-                    util.crea_posicion(symbol,'SELL',240,data.porcentajeentrada[-2])
-                    util.crea_stoploss (symbol,'SELL',data.stop_loss[-2])
+                    if util.crea_posicion(symbol,'SELL',240,data.porcentajeentrada[-2]):
+                        util.crea_stoploss (symbol,'SELL',data.stop_loss[-2])
         except Exception as e:
             print(f"Error en {symbol}: {e}")
         except KeyboardInterrupt as ky:
