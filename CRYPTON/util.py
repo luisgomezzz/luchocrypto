@@ -223,6 +223,7 @@ def crea_posicion(symbol,side,micapital,porcentajeentrada) -> bool:
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(f"\Falla al crear la posicion. Tamaño: {tamanio} \n")
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - par: "+symbol+"\n")
         return False        
 
