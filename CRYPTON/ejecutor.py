@@ -6,11 +6,12 @@ import estrategias as est
 import sys
 import util
 from datetime import datetime
+from time import sleep
 
 lista = ['ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 'DOGEUSDT', 'DOTUSDT', 
          'SOLUSDT', 'AVAXUSDT', 'NEARUSDT', 'FILUSDT', 'MATICUSDT', 'OPUSDT', 'FETUSDT', 'AGIXUSDT', 'ARBUSDT',  
          'SLPUSDT', 'MEMEUSDT',  '1000SATSUSDT', 'PIXELUSDT'
-         ,'BNBUSDT' #no alcanza para crear la posicion
+         #,'BNBUSDT' #no alcanza para crear la posicion
          #,'BTCUSDT' #no alcanza para crear la posicion
          ]
 
@@ -63,3 +64,4 @@ while True:
         except KeyboardInterrupt as ky:
             print("\nSalida solicitada. ")
             sys.exit() 
+    sleep(1200) # espero 1200 segundos
