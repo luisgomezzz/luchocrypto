@@ -176,7 +176,7 @@ def currentprice(symbol):
     current=0.0
     while leido == False:
         try:
-            current=float(get_info('/fapi/v2/ticker/price',symbol='OPUSDT')['price'])
+            current=float(get_info('/fapi/v2/ticker/price',symbol=symbol)['price'])
             leido = True
         except:
             pass
