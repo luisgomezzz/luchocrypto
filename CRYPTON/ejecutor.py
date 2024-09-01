@@ -26,11 +26,11 @@ while True:
     for symbol in lista:
         try:
             posiciones_abiertas = util.get_posiciones_abiertas()
-            mensaje = f"Symbol: {symbol} - posiciones_abiertas: {posiciones_abiertas}                                       "
+            fecha_hora_actual = datetime.now()
+            mensaje = f"Fecha: {fecha_hora_actual} - Symbol: {symbol} - posiciones_abiertas: {posiciones_abiertas}                                       "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()
-            data = est.estrategia_divergencias (symbol,timeframe,limit,sma_length,sma_macd_length)
-            fecha_hora_actual = datetime.now()
+            data = est.estrategia_divergencias (symbol,timeframe,limit,sma_length,sma_macd_length)            
             if data.trade[-2] == -1: #BUY                
                 if symbol in posiciones_abiertas:
                     if posiciones_abiertas[symbol] == 'SELL':
