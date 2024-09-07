@@ -218,7 +218,7 @@ def crea_posicion(symbol,side,micapital,porcentajeentrada) -> bool:
     try:
         tamanio=truncate((size/currentprice(symbol)),get_quantityprecision(symbol))
         cons.cliente.futures_create_order(symbol=symbol,side=side,type='MARKET',quantity=tamanio)        
-        print(f"\nPosición creada. Tamaño: {tamanio} \n")
+        print(f"\nPosición creada. Tamaño: {tamanio} ")
         return True
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
@@ -235,7 +235,7 @@ def closeposition(symbol,side):
     quantity=abs(get_positionamt(symbol))
     if quantity!=0.0:
         cons.cliente.futures_create_order(symbol=symbol, side=lado, type='MARKET', quantity=quantity, reduceOnly='true')  
-        print(f"\nPosición {symbol} cerrada. \n")
+        print(f"\nPosición {symbol} cerrada. ")
 
 def closeallopenorders(symbol):
     leido=False
@@ -243,9 +243,9 @@ def closeallopenorders(symbol):
         try:
             cons.cliente.futures_cancel_all_open_orders(symbol=symbol)
             leido=True
-            print(f"\nÓrdenes {symbol} cerradas. \n")
+            print(f"\nÓrdenes {symbol} cerradas. ")
         except:
-            print(f"\nFalla al cancelar las órdenes de {symbol}. \n")
+            print(f"\nFalla al cancelar las órdenes de {symbol}. ")
 
 def get_tick_size(symbol) -> float:
     tick_size = 0.0
