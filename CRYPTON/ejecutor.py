@@ -27,7 +27,7 @@ while True:
         try:
             posiciones_abiertas = util.get_posiciones_abiertas()
             fecha_hora_actual = datetime.now()
-            mensaje = f"Fecha: {fecha_hora_actual} - Symbol: {symbol} - posiciones_abiertas: {posiciones_abiertas}                                       "
+            mensaje = f"{fecha_hora_actual} - Symbol: {symbol} - posiciones: {posiciones_abiertas}          "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()
             data = est.estrategia_divergencias (symbol,timeframe,limit,sma_length,sma_macd_length)            
