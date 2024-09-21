@@ -8,11 +8,11 @@ import util
 from datetime import datetime
 from time import sleep
 
-lista = ['ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'BNBUSDT', 'DOGEUSDT', 'DOTUSDT', 
+lista = ['ETHUSDT', 'BCHUSDT', 'XRPUSDT', 'LTCUSDT', 'ETCUSDT', 'LINKUSDT', 'ADAUSDT', 'DOGEUSDT', 'DOTUSDT', 
          'SOLUSDT', 'AVAXUSDT', 'NEARUSDT', 'FILUSDT', 'MATICUSDT', 'OPUSDT', 'FETUSDT', 'AGIXUSDT', 'ARBUSDT',  
          'SLPUSDT', 'MEMEUSDT',  '1000SATSUSDT', 'PIXELUSDT'
-         #,'BNBUSDT' #no alcanza para crear la posicion
-         #,'BTCUSDT' #no alcanza para crear la posicion
+         ,'BNBUSDT' 
+         ,'BTCUSDT' 
          ]
 
 timeframe = '1h'
@@ -20,6 +20,8 @@ limit = 1000
 sma_length = 50
 sma_macd_length = 80
 balance_tradear = 240
+umbral = 20
+largo = 40
 
 print(f"timeframe: {timeframe} - limit: {limit} - sma_length: {sma_length} - sma_macd_length: {sma_macd_length}")
 while True:
@@ -30,7 +32,7 @@ while True:
             mensaje = f"{fecha_hora_actual} - Symbol: {symbol} - posiciones: {posiciones_abiertas}          "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()
-            data = est.estrategia_divergencias (symbol,timeframe,limit,sma_length,sma_macd_length)            
+            data = est.estrategia_divergencias (symbol,timeframe,limit,sma_length,sma_macd_length,umbral,largo)            
             if data.trade[-2] == -1: #BUY                
                 if symbol in posiciones_abiertas:
                     if posiciones_abiertas[symbol] == 'SELL':
