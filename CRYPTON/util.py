@@ -111,8 +111,8 @@ def crossover_dataframe(column1, column2):
 
 class backtesting_config(Strategy):
     def init(self):
-        self.indicador1 = self.I(indicador, self.data.Indicator1,name='indicador1', color='black', overlay=True, scatter=False)
-        self.indicador2 = self.I(indicador, self.data.Indicator2,name='indicador2', color='grey', overlay=True, scatter=False)
+        self.indicador1 = self.I(indicador, self.data.Indicator1,name='indicador1', color='red', overlay=True, scatter=False)
+        self.indicador2 = self.I(indicador, self.data.Indicator2,name='indicador2', color='green', overlay=True, scatter=False)
         # Obligatorios
         self.trade = self.I(indicador, self.data.trade,name='trade', color='black', overlay=False, scatter=False)
         self.porcentajeentrada = self.I(indicador, self.data.porcentajeentrada, name='porcentajeentrada', color='Black', overlay=False, scatter=False)
@@ -120,13 +120,13 @@ class backtesting_config(Strategy):
         self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='darkblue', overlay=True, scatter=True)        
     def next(self):
         # POR TURNOS    
-        #if self.position:  
-        #    if self.position.is_long:
-        #        if self.trade == -2:
-        #            self.position.close()
-        #    elif self.trade == -1:
-        #            self.position.close()
-        #else:
+        if self.position:  
+            if self.position.is_long:
+                if self.trade == -2:
+                    self.position.close()
+            elif self.trade == -1:
+                    self.position.close()
+        else:
             # PERPETUO
             if self.trade == -1:
                 self.buy(
@@ -340,3 +340,55 @@ def crea_stoploss (symbol,side,stopprice):
         print(a.message,"\nno se pudo crear el stop loss.")
         pass
     return creado,stopid 
+
+def obtiene_historial2(symbol, timeframe, start_date, end_date=None, limit=1000):
+    # mascara de fechas YYYY-MM-DD
+    leido = False
+    all_data = []
+    start_timestamp = int(pd.to_datetime(start_date).timestamp() * 1000)
+    if end_date:
+        end_timestamp = int(pd.to_datetime(end_date).timestamp() * 1000)
+    else:
+        end_timestamp = int(pd.Timestamp.now().timestamp() * 1000)
+    while leido == False:
+        try:
+            while start_timestamp < end_timestamp:
+                # Obtener los datos históricos con paginación
+                historical_data = get_info(endpoint='/fapi/v1/klines', symbol=symbol, interval=timeframe, limit=limit, startTime=start_timestamp)
+                if not historical_data:
+                    leido = True
+                    break
+                # Agregar a la lista total de datos
+                all_data.extend(historical_data)
+                # Actualizar el timestamp para la próxima iteración
+                start_timestamp = historical_data[-1][0] + 1  # Continuar desde la última vela obtenida
+                # Evitar hacer demasiadas solicitudes rápidamente
+                time.sleep(1)
+            leido = True
+            # Convertir datos a DataFrame
+            data = pd.DataFrame(all_data)
+            data.columns = ['Open Time', 'Open', 'High', 'Low', 'Close', 'Volume', 'Close Time', 'Quote Asset Volume', 
+                            'Number of Trades', 'TB Base Volume', 'TB Quote Volume', 'Ignore']
+            data['Open Time'] = pd.to_datetime(data['Open Time'] / 1000, unit='s')
+            data['Close Time'] = pd.to_datetime(data['Close Time'] / 1000, unit='s')
+            numeric_columns = ['Open', 'High', 'Low', 'Close', 'Volume', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume']
+            data[numeric_columns] = data[numeric_columns].apply(pd.to_numeric, axis=1)
+            data['timestamp'] = data['Open Time']
+            data.set_index('timestamp', inplace=True)
+            data.dropna(inplace=True)
+            data.drop(['Close Time', 'Quote Asset Volume', 'TB Base Volume', 'TB Quote Volume', 'Number of Trades', 'Ignore'], axis=1, inplace=True)
+            data['atr'] = ta.atr(data.High, data.Low, data.Close)
+        except KeyboardInterrupt:
+            print("\nSalida solicitada.")
+            sys.exit()
+        except BinanceAPIException as e:
+            if e.message == "Invalid symbol.":
+                leido = True
+            else:
+                print("\nError binance - Par:", symbol, "-", e.status_code, e.message)
+            pass
+        except Exception as falla:
+            _, _, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            pass
+    return data
