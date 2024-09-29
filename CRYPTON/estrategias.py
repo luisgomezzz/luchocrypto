@@ -42,3 +42,21 @@ def estrategia_lucho (symbol,timeframe):
     data['take_profit'] = np.where(data.trade==-1,data.Close+data.atr*8,np.where(data.trade==-2,data.Close-data.atr*8,0))
     data['porcentajeentrada'] = np.where(((porcentaje_perdida/variacion_hasta_stop_loss))>=1,0.99,((porcentaje_perdida/variacion_hasta_stop_loss)))
     return data
+
+def estrategia_adx (symbol,timeframe):
+    data = util.obtiene_historial2(symbol=symbol, timeframe=timeframe, start_date='2024-01-01', end_date=None)
+    data['Indicator1'] = ta.sma(data.Close, length = 9)
+    data['Indicator2'] = ta.sma(data.Close, length = 150)
+    data['adx'] = ta.adx(high=data.High, low=data.Low, close=data.Close, length=100).iloc[:, 0]
+    data['adx_condicion'] = np.where((data.adx >= 8) & (data.adx.shift(1) < 8), True, False)
+    ##################################    obligatorios ##############  --->>>  trade, stop_loss, take_profit, porcentajeentrada
+    ###########################################################################################################################
+    porcentaje_perdida = 1
+    data['trade'] = np.where((data.Close > data.Indicator2) & (data.adx_condicion)
+                             ,-1,np.where((data.Close < data.Indicator2) & (data.adx_condicion)
+                                          ,-2,-1.5))
+    data['stop_loss'] = np.where(data.trade==-1,data.Close-data.atr*4,np.where(data.trade==-2,data.Close+data.atr*4,0))
+    variacion_hasta_stop_loss = np.where(data.trade==-1,(((data.stop_loss/data.Close)-1)*-100),np.where(data.trade==-2,(((data.stop_loss/data.Close)-1)*100),0))
+    data['take_profit'] = np.where(data.trade==-1,data.Close+data.atr*16,np.where(data.trade==-2,data.Close-data.atr*16,0))
+    data['porcentajeentrada'] = np.where(((porcentaje_perdida/variacion_hasta_stop_loss))>=1,0.99,((porcentaje_perdida/variacion_hasta_stop_loss)))
+    return data
