@@ -9,9 +9,12 @@ from datetime import datetime
 from time import sleep
 
 lista = ['ETHUSDT','BCHUSDT','XRPUSDT','ADAUSDT','FILUSDT','MATICUSDT','OPUSDT','FETUSDT','BTCUSDT'] # lista acotada
-
 timeframe = '1h'
 balance_tradear = 240
+
+length_sma = 50
+order = 550
+length_adx = 90
 
 while True:
     for symbol in lista:
@@ -21,7 +24,8 @@ while True:
             mensaje = f"{fecha_hora_actual} - Symbol: {symbol} - posiciones: {posiciones_abiertas}          "
             sys.stdout.write("\r"+mensaje)
             sys.stdout.flush()
-            data = est.estrategia_lucho (symbol,timeframe)
+            #data = est.estrategia_lucho (symbol,timeframe)
+            data = est.estrategia_adx (symbol,timeframe,length_sma,order,length_adx)
             if data.trade[-2] == -1: #BUY                
                 if symbol in posiciones_abiertas:
                     if posiciones_abiertas[symbol] == 'SELL':
