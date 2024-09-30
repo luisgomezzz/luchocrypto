@@ -118,13 +118,14 @@ class backtesting_config(Strategy):
         self.porcentajeentrada = self.I(indicador, self.data.porcentajeentrada, name='porcentajeentrada', color='Black', overlay=False, scatter=False)
         self.stop_loss = self.I(indicador, self.data.stop_loss, name='stop_loss', color='darkorange', overlay=True, scatter=True)
         self.take_profit = self.I(indicador, self.data.take_profit, name='take_profit', color='darkblue', overlay=True, scatter=True)        
+        self.cerrar = self.I(indicador, self.data.cerrar, name='cerrar', color='darkblue', overlay=True, scatter=True)        
     def next(self):
         # POR TURNOS    
         if self.position:  
             if self.position.is_long:
-                if self.trade == -2:
+                if self.trade == -2 or self.cerrar == True:
                     self.position.close()
-            elif self.trade == -1:
+            elif self.trade == -1 or self.cerrar == True:
                     self.position.close()
         else:
             # PERPETUO
