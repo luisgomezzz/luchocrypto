@@ -279,34 +279,18 @@ def RoundToTickUp(par,numero):
     convertido=truncate((math.floor(numero / resolucion) * resolucion),cantidaddecimales)
     return float(convertido)
 
-def crea_takeprofit(symbol,preciolimit,posicionporc,side):
-    try:
-        ### exchange details        
-        sizedesocupar=abs(truncate((get_positionamt(symbol)*posicionporc/100),get_quantityprecision(symbol)))
-        ####################
-        creado = True 
-        orderid = 0  
+def crea_takeprofit(symbol,side,price):
+    try:        
         if side=='BUY':
             side='SELL'
         else:
-            side='BUY'        
-        limitprice=RoundToTickUp(symbol,preciolimit)
-        order = exchange.create_order (symbol, 'limit', side, sizedesocupar, limitprice)
-        orderid = order['id']
-        print("\nTAKE PROFIT creado. Tamanio a desocupar: ",sizedesocupar,". precio: ",limitprice)
-    except BinanceAPIException as a:
-        print(a.message,"No se pudo crear el Limit.")
-        creado = False      
-        orderid = 0
-        pass
+            side='BUY'
+        cons.cliente.futures_create_order(symbol=symbol,side=side,type='TAKE_PROFIT', timeInForce='GTC', stopprice=price,price=price, quantity=get_positionamt(symbol))
+        print("\nTAKE PROFIT creado. ")
     except Exception as falla:
         _, _, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("\nError: "+str(falla)+" - line: "+str(exc_tb.tb_lineno)+" - file: "+str(fname)+" - symbol: "+symbol+"\n")
-        creado = False
-        orderid = 0
-        pass    
-    return creado,orderid
 
 def get_priceprecision(par):
     leido = False
