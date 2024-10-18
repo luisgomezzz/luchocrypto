@@ -79,15 +79,15 @@ def es_martillo(vela):
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= 200
-    if condicion_largo:
-        if sombra_inferior>sombra_superior*3:
-            if sombra_inferior > 5 * cuerpo: #martillo parado
-                out = 1
-        else:
-            if sombra_superior>sombra_inferior*3:
-                if sombra_superior > 5 * cuerpo: #martillo invertido
-                    out = -1
+    #condicion_largo = (vela.High-vela.Low) >= vela.atr
+    #if condicion_largo:
+    if sombra_inferior>sombra_superior*3:
+        if sombra_inferior > 5 * cuerpo: #martillo parado
+            out = 1
+    else:
+        if sombra_superior>sombra_inferior*3:
+            if sombra_superior > 5 * cuerpo: #martillo invertido
+                out = -1
     return out 
 
 def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
@@ -98,9 +98,10 @@ def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
         data['Indicator2'] = None
         # SMA del volumen con una ventana de 20 períodos
         data['SMA_volumen'] = data['Volume'].rolling(window=20).mean()
-        data['martillo'] = np.where(data['Volume'] > (data['SMA_volumen']*2),data.apply(es_martillo, axis=1),0)  # 1: martillo parado * -1: martillo invertido   
+        promedio_atr = data['atr'].rolling(window=int(len(data)/2)).mean().iloc[-1]
+        data['martillo'] = np.where((data['Volume'] > (data['SMA_volumen']*2)) & ((data.High-data.Low) > promedio_atr),data.apply(es_martillo, axis=1),0)  # 1: martillo parado * -1: martillo invertido   
         data['disparo'] = np.where(data.martillo == 1,data.High,np.where(data.martillo == -1,data.Low,0))
-                #relleno
+        #relleno
         data['row_number'] = (range(len(data)))
         data.set_index('row_number', inplace=True)
         for i in range(0, len(data)-1):
