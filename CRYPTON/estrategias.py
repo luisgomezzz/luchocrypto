@@ -82,11 +82,11 @@ def es_martillo(vela):
     condicion_largo = (vela.High-vela.Low) >= vela.atr
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
-            if sombra_inferior > 2 * cuerpo: #martillo parado
+            if sombra_inferior > 5 * cuerpo: #martillo parado
                 out = 1
         else:
             if sombra_superior>sombra_inferior*3:
-                if sombra_superior > 2 * cuerpo: #martillo invertido
+                if sombra_superior > 5 * cuerpo: #martillo invertido
                     out = -1
     return out 
 
