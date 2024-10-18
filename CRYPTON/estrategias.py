@@ -117,8 +117,17 @@ def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
         data['trade'] = np.where((data.martillo == 1) & (data.Close > data.disparo),-1,np.where((data.martillo == -1) & (data.Close < data.disparo),-2,-1.5))
         data['stop_loss'] = np.where(data.trade==-1,data.Low,np.where(data.trade==-2,data.High,None))
         variacion_hasta_stop_loss = np.where(data.trade==-1,(((data.stop_loss/data.Close)-1)*-100),np.where(data.trade==-2,(((data.stop_loss/data.Close)-1)*100),0))
-        data['take_profit'] = np.where(data.trade==-1,data.Close*(1+(variacion_hasta_stop_loss*multiplicador_tp/100)),np.where(data.trade==-2,data.Close*(1-(variacion_hasta_stop_loss*multiplicador_tp/100)),0))
-        data['porcentajeentrada'] = 0.99 #np.where(variacion_hasta_stop_loss>0,np.where(((porcentaje_perdida/variacion_hasta_stop_loss))>=1,0.99,((porcentaje_perdida/variacion_hasta_stop_loss))),0)
+        data['take_profit'] = np.where(data.trade==-1,data.Close*(1+(variacion_hasta_stop_loss*multiplicador_tp/100)),np.where(data.trade==-2,data.Close*(1-(variacion_hasta_stop_loss*multiplicador_tp/100)),None))
+        epsilon = 1e-10  # Pequeña constante para evitar la división por cero
+        data['porcentajeentrada'] = np.where(
+            variacion_hasta_stop_loss != 0,
+            np.where(
+                (porcentaje_perdida / (variacion_hasta_stop_loss + epsilon)) >= 1,
+                0.99,
+                porcentaje_perdida / (variacion_hasta_stop_loss + epsilon)
+            ),
+            0
+        )
         data['cerrar'] = None 
     except Exception as e:
         print(f"Error en {symbol}: {e}")
