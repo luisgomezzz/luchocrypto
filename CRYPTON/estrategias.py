@@ -69,7 +69,57 @@ def estrategia_adx (symbol,timeframe,length_sma = 50, order = 550, length_adx = 
         data['take_profit'] = np.where(data.trade==-1,data.Close*(1+(variacion_hasta_stop_loss*multiplicador_tp/100)),np.where(data.trade==-2,data.Close*(1-(variacion_hasta_stop_loss*multiplicador_tp/100)),0))
         data['porcentajeentrada'] = np.where(((porcentaje_perdida/variacion_hasta_stop_loss))>=1,0.99,((porcentaje_perdida/variacion_hasta_stop_loss)))
         data['cerrar'] = np.where(util.crossover_dataframe(data.Close, data.Indicator2) | util.crossover_dataframe(data.Indicator2, data.Close), True, False)
-        print(f'umbral: {umbral}')
+        #print(f'umbral: {umbral}')
+    except Exception as e:
+        print(f"Error en {symbol}: {e}")
+    return data
+
+def es_martillo(vela):
+    out = 0
+    cuerpo = abs(vela['Open'] - vela['Close'])
+    sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
+    sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
+    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    if condicion_largo:
+        if sombra_inferior>sombra_superior*3:
+            if sombra_inferior > 2 * cuerpo: #martillo parado
+                out = 1
+        else:
+            if sombra_superior>sombra_inferior*3:
+                if sombra_superior > 2 * cuerpo: #martillo invertido
+                    out = -1
+    return out 
+
+def color_vela(vela):
+    color = 'negro'
+    color = np.where(vela['Open'] > vela['Close'],'rojo','verde')
+    return color
+
+def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
+    try:
+        data = util.obtiene_historial2(symbol=symbol, timeframe=timeframe, start_date = start_date, end_date=None)
+        multiplicador_tp = 7
+        data['Indicator1'] = None
+        data['Indicator2'] = None
+        data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
+        data['disparo'] = np.where(data.martillo == 1,data.High,np.where(data.martillo == -1,data.Low,0))
+                #relleno
+        data['row_number'] = (range(len(data)))
+        data.set_index('row_number', inplace=True)
+        for i in range(0, len(data)-1):
+            if data['martillo'].iloc[i] == 0:
+                data.at[i, 'martillo'] = data['martillo'].iloc[i - 1]
+                data.at[i, 'disparo'] = data['disparo'].iloc[i - 1]
+        data.set_index('Open Time', inplace=True)
+        ##################################    obligatorios ##############  --->>>  trade, stop_loss, take_profit, porcentajeentrada, cerrar
+        ###########################################################################################################################
+        porcentaje_perdida = 1
+        data['trade'] = np.where((data.martillo == 1) & (data.Close > data.disparo),-1,np.where((data.martillo == -1) & (data.Close < data.disparo),-2,-1.5))
+        data['stop_loss'] = np.where(data.trade==-1,data.Low,np.where(data.trade==-2,data.High,None))
+        variacion_hasta_stop_loss = np.where(data.trade==-1,(((data.stop_loss/data.Close)-1)*-100),np.where(data.trade==-2,(((data.stop_loss/data.Close)-1)*100),0))
+        data['take_profit'] = np.where(data.trade==-1,data.Close*(1+(variacion_hasta_stop_loss*multiplicador_tp/100)),np.where(data.trade==-2,data.Close*(1-(variacion_hasta_stop_loss*multiplicador_tp/100)),0))
+        data['porcentajeentrada'] = 0.99 #np.where(variacion_hasta_stop_loss>0,np.where(((porcentaje_perdida/variacion_hasta_stop_loss))>=1,0.99,((porcentaje_perdida/variacion_hasta_stop_loss))),0)
+        data['cerrar'] = None 
     except Exception as e:
         print(f"Error en {symbol}: {e}")
     return data
