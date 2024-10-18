@@ -79,7 +79,7 @@ def es_martillo(vela):
     cuerpo = abs(vela['Open'] - vela['Close'])
     sombra_superior = vela['High'] - max(vela['Open'], vela['Close'])
     sombra_inferior = min(vela['Open'], vela['Close']) - vela['Low']
-    condicion_largo = (vela.High-vela.Low) >= vela.atr
+    condicion_largo = (vela.High-vela.Low) >= 200
     if condicion_largo:
         if sombra_inferior>sombra_superior*3:
             if sombra_inferior > 5 * cuerpo: #martillo parado
@@ -90,32 +90,39 @@ def es_martillo(vela):
                     out = -1
     return out 
 
-def color_vela(vela):
-    color = 'negro'
-    color = np.where(vela['Open'] > vela['Close'],'rojo','verde')
-    return color
-
 def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
     try:
         data = util.obtiene_historial2(symbol=symbol, timeframe=timeframe, start_date = start_date, end_date=None)
-        multiplicador_tp = 7
+        multiplicador_tp = 2
         data['Indicator1'] = None
         data['Indicator2'] = None
-        data['martillo'] = data.apply(es_martillo, axis=1)  # 1: martillo parado * -1: martillo invertido   
+        # SMA del volumen con una ventana de 20 períodos
+        data['SMA_volumen'] = data['Volume'].rolling(window=20).mean()
+        data['martillo'] = np.where(data['Volume'] > (data['SMA_volumen']*2),data.apply(es_martillo, axis=1),0)  # 1: martillo parado * -1: martillo invertido   
         data['disparo'] = np.where(data.martillo == 1,data.High,np.where(data.martillo == -1,data.Low,0))
                 #relleno
         data['row_number'] = (range(len(data)))
         data.set_index('row_number', inplace=True)
         for i in range(0, len(data)-1):
             if data['martillo'].iloc[i] == 0:
-                data.at[i, 'martillo'] = data['martillo'].iloc[i - 1]
-                data.at[i, 'disparo'] = data['disparo'].iloc[i - 1]
+                if ((data['martillo'].iloc[i - 1] == 1 and data['Close'].iloc[i] < data['disparo'].iloc[i - 1])
+                    or
+                    (data['martillo'].iloc[i - 1] == -1 and data['Close'].iloc[i] > data['disparo'].iloc[i - 1])):                    
+                    data.at[i, 'martillo'] = data['martillo'].iloc[i - 1]
+                    data.at[i, 'disparo'] = data['disparo'].iloc[i - 1]
         data.set_index('Open Time', inplace=True)
         ##################################    obligatorios ##############  --->>>  trade, stop_loss, take_profit, porcentajeentrada, cerrar
         ###########################################################################################################################
         porcentaje_perdida = 1
-        data['trade'] = np.where((data.martillo == 1) & (data.Close > data.disparo),-1,np.where((data.martillo == -1) & (data.Close < data.disparo),-2,-1.5))
-        data['stop_loss'] = np.where(data.trade==-1,data.Low,np.where(data.trade==-2,data.High,None))
+        data['trade'] = np.where(data.martillo == 0, 
+                                 np.where(data.martillo.shift(1) == 1,
+                                          -1,
+                                            np.where(data.martillo.shift(1) == -1,
+                                                    -2,
+                                            -1.5)
+                                ), 
+                        -1.5)
+        data['stop_loss'] = np.where(data.trade==-1,data.Low.shift(1),np.where(data.trade==-2,data.High.shift(1),None))
         variacion_hasta_stop_loss = np.where(data.trade==-1,(((data.stop_loss/data.Close)-1)*-100),np.where(data.trade==-2,(((data.stop_loss/data.Close)-1)*100),0))
         data['take_profit'] = np.where(data.trade==-1,data.Close*(1+(variacion_hasta_stop_loss*multiplicador_tp/100)),np.where(data.trade==-2,data.Close*(1-(variacion_hasta_stop_loss*multiplicador_tp/100)),None))
         epsilon = 1e-10  # Pequeña constante para evitar la división por cero
