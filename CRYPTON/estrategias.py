@@ -94,7 +94,7 @@ def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
     try:
         data = util.obtiene_historial2(symbol=symbol, timeframe=timeframe, start_date = start_date, end_date=None)
         multiplicador_tp = 2
-        data['Indicator1'] = None
+        data['Indicator1'] = ta.sma(data.Close, length = 200)
         data['Indicator2'] = None
         # SMA del volumen con una ventana de 20 períodos
         data['SMA_volumen'] = data['Volume'].rolling(window=20).mean()
@@ -116,9 +116,9 @@ def estrategia_martillo (symbol,timeframe='15m',start_date='2024-09-01'):
         ###########################################################################################################################
         porcentaje_perdida = 1
         data['trade'] = np.where(data.martillo == 0, 
-                                 np.where(data.martillo.shift(1) == 1,
+                                 np.where((data.martillo.shift(1) == 1) & (data.Close > data.Indicator1),
                                           -1,
-                                            np.where(data.martillo.shift(1) == -1,
+                                            np.where((data.martillo.shift(1) == -1) & (data.Close < data.Indicator1),
                                                     -2,
                                             -1.5)
                                 ), 

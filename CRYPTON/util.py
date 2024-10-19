@@ -129,13 +129,13 @@ class backtesting_config(Strategy):
                     self.position.close()
         else:
             # PERPETUO
-            if self.trade == -1:
+            if self.trade == -1 and self.porcentajeentrada[-1]>0:
                 self.buy(
                     size=self.porcentajeentrada[-1]
                     ,sl=self.stop_loss[-1]
                     ,tp=self.take_profit[-1]
                 )
-            elif self.trade == -2:
+            elif self.trade == -2 and self.porcentajeentrada[-1]>0:
                 self.sell(
                     size=self.porcentajeentrada[-1]
                     ,sl=self.stop_loss[-1]
