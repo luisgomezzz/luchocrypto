@@ -76,3 +76,4 @@ CRYPTON/graficos/*.html
 CRYPTON/__pycache__/*
 CRYPTON/__pycache__/constantes.cpython-310.pyc
 CRYPTON/player_data.json
+CRYPTON/leader_copy_trading.json
